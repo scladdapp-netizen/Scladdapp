@@ -110,7 +110,7 @@ const Notifications = () => {
     }
     setIsCreateMenuOpen(true);
     if (schoolId && templates.length === 0) {
-      fetch(`http://localhost:3000/announcement-template/school/${schoolId}`)
+      fetch(`${import.meta.env.VITE_API_BASE_URL}/announcement-template/school/${schoolId}`)
         .then((r) => r.json())
         .then((d) => { if (d.success) setTemplates(d.data || []); })
         .catch(() => {});

@@ -34,7 +34,7 @@ const StudentIdentity = () => {
   const [alumniRecord, setAlumniRecord] = useState(null);
   useEffect(() => {
     if (!studentId) return;
-    fetch(`http://localhost:3000/api/alumni/school/${schoolId}`)
+    fetch(`${import.meta.env.VITE_API_BASE_URL}/api/alumni/school/${schoolId}`)
       .then((r) => r.json())
       .then((d) => {
         if (d.success) {
@@ -387,7 +387,7 @@ const StudentIdentity = () => {
   const handleSaveEdit = async () => {
     setEditSaving(true);
     try {
-      const res = await fetch(`http://localhost:3000/student/${studentId}`, {
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/student/${studentId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ...editForm, modified_by: user?.admin?.admin_id || user?.user_id }),

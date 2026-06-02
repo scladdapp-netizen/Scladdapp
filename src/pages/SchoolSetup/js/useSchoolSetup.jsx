@@ -298,7 +298,7 @@ export const useSchoolSetups = () => {
     if (step === 3) {
       setIsLoading(true);
       try {
-        const res = await fetch("http://localhost:3000/setup/check-email", {
+        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/setup/check-email`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ email: adminData.adminEmail }),

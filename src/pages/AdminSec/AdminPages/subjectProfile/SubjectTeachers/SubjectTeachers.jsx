@@ -69,7 +69,7 @@ const SubjectTeachers = ({ subjectData }) => {
     // Fetch teachers + ALL class assignments (active + inactive) in parallel
     Promise.all([
       getTeachersBySubject(subjectId),
-      fetch(`http://localhost:3000/api/class-subjects/by-subject/${subjectId}`)
+      fetch(`${import.meta.env.VITE_API_BASE_URL}/api/class-subjects/by-subject/${subjectId}`)
         .then((r) => r.json())
         .catch(() => ({ success: false, data: [] })),
     ]).then(([teacherRes, classRes]) => {

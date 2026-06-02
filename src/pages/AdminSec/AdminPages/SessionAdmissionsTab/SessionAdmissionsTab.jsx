@@ -32,7 +32,7 @@ const SessionAdmissionsTab = () => {
         });
 
         const response = await fetch(
-          `http://localhost:3000/api/student-class-assignment/session/${seasionId}?${queryParams}`,
+          `${import.meta.env.VITE_API_BASE_URL}/api/student-class-assignment/session/${seasionId}?${queryParams}`,
           {
             method: "GET",
             headers: {

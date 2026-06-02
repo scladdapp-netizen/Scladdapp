@@ -169,7 +169,7 @@ const AlumniCertificatesTab = ({ alumniData }) => {
                     <div className="mm-cert-thumb">
                       <FileIcon type={cert.type} />
                       {["jpg","jpeg","png","gif","webp"].includes(cert.type) && (
-                        <img src={`http://localhost:3000${cert.file_url}`} alt={cert.name}
+                        <img src={`${import.meta.env.VITE_API_BASE_URL}${cert.file_url}`} alt={cert.name}
                           className="mm-cert-thumb-img" onError={(e) => e.target.style.display = "none"} />
                       )}
                     </div>
@@ -185,7 +185,7 @@ const AlumniCertificatesTab = ({ alumniData }) => {
                       </div>
                       <div className="mm-cert-actions" onClick={(e) => e.stopPropagation()}>
                         <button className="mm-cert-action-btn download" title="Download"
-                          onClick={() => { const a = document.createElement("a"); a.href = `http://localhost:3000${cert.file_url}`; a.download = cert.name; a.click(); }}>
+                          onClick={() => { const a = document.createElement("a"); a.href = `${import.meta.env.VITE_API_BASE_URL}${cert.file_url}`; a.download = cert.name; a.click(); }}>
                           <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
                             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                             <polyline points="7,10 12,15 17,10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
@@ -302,7 +302,7 @@ const AlumniCertificatesTab = ({ alumniData }) => {
               <div className="mm-view-panel-body">
                 <div className="mm-view-preview">
                   {["jpg","jpeg","png","gif","webp"].includes(viewCert.type) ? (
-                    <img src={`http://localhost:3000${viewCert.file_url}`} alt={viewCert.name} className="mm-view-preview-img" />
+                    <img src={`${import.meta.env.VITE_API_BASE_URL}${viewCert.file_url}`} alt={viewCert.name} className="mm-view-preview-img" />
                   ) : (
                     <div className="mm-view-preview-placeholder">
                       <FileIcon type={viewCert.type} />
@@ -331,7 +331,7 @@ const AlumniCertificatesTab = ({ alumniData }) => {
                 )}
               </div>
               <div className="mm-view-panel-footer">
-                <Button variant="secondary" onClick={() => { const a = document.createElement("a"); a.href = `http://localhost:3000${viewCert.file_url}`; a.download = viewCert.name; a.click(); }}>Download</Button>
+                <Button variant="secondary" onClick={() => { const a = document.createElement("a"); a.href = `${import.meta.env.VITE_API_BASE_URL}${viewCert.file_url}`; a.download = viewCert.name; a.click(); }}>Download</Button>
                 <Button variant="secondary" onClick={() => { setViewCert(null); if (!canEdit) { addNotification("No permission to edit certificates.", "error"); return; } setEditCert(viewCert); }}>Edit</Button>
                 <Button onClick={() => handleDelete(viewCert)}>Delete</Button>
               </div>

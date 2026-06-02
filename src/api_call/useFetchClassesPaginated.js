@@ -28,7 +28,7 @@ const useFetchClassesPaginated = () => {
       });
 
       const response = await fetch(
-        `http://localhost:3000/class/school/${schoolId}/paginated?${queryParams}`
+        `${import.meta.env.VITE_API_BASE_URL}/class/school/${schoolId}/paginated?${queryParams}`
       );
 
       const result = await response.json();

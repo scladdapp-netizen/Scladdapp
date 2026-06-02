@@ -71,7 +71,7 @@ const StudentPromotion = () => {
         assignmentMethod: "promotion,demotion",
       });
       const res = await fetch(
-        `http://localhost:3000/api/student-class-assignment/session/${seasionId}?${q}`,
+        `${import.meta.env.VITE_API_BASE_URL}/api/student-class-assignment/session/${seasionId}?${q}`,
         { headers: { "Content-Type": "application/json" } }
       );
       if (!res.ok) throw new Error(`HTTP ${res.status}`);

@@ -200,7 +200,7 @@ const Classes = () => {
         if (newClassForm.teacherId) {
           try {
             const headmasterResponse = await fetch(
-              "http://localhost:3000/headmaster",
+              `${import.meta.env.VITE_API_BASE_URL}/headmaster`,
               {
                 method: "POST",
                 headers: {

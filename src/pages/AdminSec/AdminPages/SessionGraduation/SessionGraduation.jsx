@@ -38,7 +38,7 @@ const SessionGraduation = () => {
         sortBy: "graduation_date",
         sortOrder: "desc",
       });
-      const res = await fetch(`http://localhost:3000/api/alumni/session/${seasionId}?${q}`);
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/alumni/session/${seasionId}?${q}`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const result = await res.json();
       if (result.success) {

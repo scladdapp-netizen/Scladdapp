@@ -71,7 +71,7 @@ const AlumniProfile = () => {
   // Handle alumni data update — calls backend then merges locally
   const handleAlumniUpdate = async (updatedFields) => {
     try {
-      const res = await fetch(`http://localhost:3000/api/alumni/${alumniId}`, {
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/alumni/${alumniId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

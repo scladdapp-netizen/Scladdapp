@@ -75,7 +75,7 @@ const BillsTab = () => {
   const [selectedTemplateId, setSelectedTemplateId] = useState("");
 
   useEffect(() => {
-    fetch(`http://localhost:3000/fee-bill-template/school/${schoolId}`)
+    fetch(`${import.meta.env.VITE_API_BASE_URL}/fee-bill-template/school/${schoolId}`)
       .then((r) => r.json())
       .then((d) => { if (d.success) setTemplates(d.data || []); })
       .catch(() => {});

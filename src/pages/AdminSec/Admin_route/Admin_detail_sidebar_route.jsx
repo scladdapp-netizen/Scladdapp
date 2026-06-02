@@ -318,7 +318,7 @@ const AdminDetailWrapper = ({ children }) => {
   const handleToggleStatus = async () => {
     const newStatus = adminStatus === "active" ? "inactive" : "active";
     try {
-      const res = await fetch(`http://localhost:3000/admin/${adminId}/status`, {
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/admin/${adminId}/status`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ is_active: newStatus === "active" }),

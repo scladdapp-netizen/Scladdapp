@@ -1,6 +1,6 @@
 import { useCallback } from "react";
 
-const BASE = "http://localhost:3000/api/student-report";
+const BASE = `${import.meta.env.VITE_API_BASE_URL}/api/student-report`;
 
 export const useSubjectAssessments = (subjectId, subsessionId, modifiedBy = null) => {
   const fetchScores = useCallback(

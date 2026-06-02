@@ -61,7 +61,7 @@ const MarkAttendancePanel = ({
     setError(null);
     try {
       const res = await fetch(
-        `http://localhost:3000/api/class-attendance/${classId}/subsession/${subsessionId}/date/${date}`
+        `${import.meta.env.VITE_API_BASE_URL}/api/class-attendance/${classId}/subsession/${subsessionId}/date/${date}`
       );
       const json = await res.json();
       if (json.success) {

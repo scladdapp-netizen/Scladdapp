@@ -167,7 +167,7 @@ const Subjects = () => {
       await Promise.all(rows.map(async (row) => {
         // Class assignment
         try {
-          const classRes = await fetch("http://localhost:3000/class-subject", {
+          const classRes = await fetch(`${import.meta.env.VITE_API_BASE_URL}/class-subject`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ subject_id: subjectId, class_id: row.class_id, school_id: schoolId }),
@@ -183,7 +183,7 @@ const Subjects = () => {
         // Teacher assignment (optional)
         if (row.teacher_id) {
           try {
-            const teacherRes = await fetch("http://localhost:3000/teacher-subject", {
+            const teacherRes = await fetch(`${import.meta.env.VITE_API_BASE_URL}/teacher-subject`, {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ subject_id: subjectId, teacher_id: row.teacher_id, school_id: schoolId, class_id: row.class_id }),

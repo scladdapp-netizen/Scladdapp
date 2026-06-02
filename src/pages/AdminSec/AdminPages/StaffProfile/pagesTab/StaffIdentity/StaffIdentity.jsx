@@ -76,7 +76,7 @@ const StaffIdentity = ({ staffData: propStaffData, onStaffUpdate, refreshStaffDa
     const newStatus = staffStatus === "active" ? "inactive" : "active";
     setIsUpdating(true);
     try {
-      const res = await fetch(`http://localhost:3000/staff/${staffData.staff_id}/record-status`, {
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/staff/${staffData.staff_id}/record-status`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ recordStatus: newStatus, modified_by: user?.admin?.admin_id || user?.user_id }),
@@ -430,7 +430,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     if (!staffData?.staff_id) return;
     setIsSendingInvite(true);
     try {
-      const res = await fetch(`http://localhost:3000/staff/${staffData.staff_id}/resend-invite`, {
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/staff/${staffData.staff_id}/resend-invite`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
       });

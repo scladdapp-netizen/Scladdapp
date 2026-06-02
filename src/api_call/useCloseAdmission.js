@@ -10,7 +10,7 @@ const useCloseAdmission = () => {
 
     try {
       const response = await fetch(
-        `http://localhost:3000/admission/${admissionId}/close`,
+        `${import.meta.env.VITE_API_BASE_URL}/admission/${admissionId}/close`,
         {
           method: "PATCH",
           headers: {
