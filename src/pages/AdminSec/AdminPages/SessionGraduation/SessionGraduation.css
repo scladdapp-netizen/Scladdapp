@@ -1,0 +1,211 @@
+/* ── Page wrapper ─────────────────────────────────────────────────────────── */
+.sg-container { box-sizing: border-box; }
+
+/* ── Header ───────────────────────────────────────────────────────────────── */
+.sg-header { margin-bottom: 20px; }
+
+.sg-header h2 {
+  margin: 0 0 4px;
+  font-size: 22px;
+  font-weight: 800;
+  color: #111111;
+  letter-spacing: -0.02em;
+}
+
+.sg-header p {
+  margin: 0;
+  font-size: 13px;
+  color: #888888;
+  font-weight: 500;
+}
+
+/* ── Table cell styles ────────────────────────────────────────────────────── */
+.sg-name {
+  font-weight: 700;
+  color: #111111;
+}
+
+.sg-id-pill {
+  font-family: "SF Mono", "Fira Code", "Courier New", monospace;
+  font-size: 11px;
+  font-weight: 700;
+  color: #555555;
+  background: #f4f4f4;
+  border: 1px solid #e8e8e8;
+  padding: 2px 8px;
+  border-radius: 6px;
+}
+
+/* ── Action menu ──────────────────────────────────────────────────────────── */
+.sg-action-wrap { position: relative; display: inline-block; }
+
+.sg-action-btn {
+  width: 30px; height: 30px;
+  border-radius: 8px;
+  border: 1px solid #e8e8e8;
+  background: #f7f7f7;
+  color: #888888;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.sg-action-btn:hover { background: #111111; color: #ffffff; border-color: #111111; }
+
+.sg-action-menu {
+  position: absolute;
+  top: calc(100% + 6px); right: 0;
+  background: #ffffff;
+  border: 1px solid #e8e8e8;
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  min-width: 150px;
+  z-index: 1000;
+  overflow: hidden;
+}
+
+.sg-action-item {
+  display: flex; align-items: center; gap: 9px;
+  width: 100%; padding: 10px 14px;
+  border: none; background: transparent;
+  font-size: 13px; font-weight: 600; color: #111111;
+  cursor: pointer; transition: background 0.15s; text-align: left;
+}
+
+.sg-action-item:hover { background: #f4f4f4; }
+
+/* ── Detail panel ─────────────────────────────────────────────────────────── */
+.sg-detail-container {
+  display: flex; flex-direction: column;
+  height: 100%; min-height: 0;
+  overflow: hidden; background: #ffffff;
+}
+
+/* header */
+.sg-detail-header {
+  position: relative;
+  padding: 22px 24px 20px;
+  background: #111111;
+  flex-shrink: 0; overflow: hidden;
+}
+
+.sg-detail-header::before {
+  content: "";
+  position: absolute;
+  width: 140px; height: 140px; border-radius: 50%;
+  border: 22px solid rgba(255,255,255,0.05);
+  top: -50px; right: -30px; pointer-events: none;
+}
+
+.sg-detail-header::after {
+  content: "";
+  position: absolute;
+  width: 44px; height: 44px; border-radius: 8px;
+  border: 1.5px solid rgba(255,255,255,0.07);
+  bottom: -14px; right: 80px;
+  transform: rotate(18deg); pointer-events: none;
+}
+
+.sg-detail-deco {
+  position: absolute;
+  width: 70px; height: 70px; border-radius: 50%;
+  border: 10px solid rgba(255,255,255,0.04);
+  bottom: -22px; left: -14px; pointer-events: none;
+}
+
+.sg-detail-deco2 {
+  position: absolute;
+  width: 24px; height: 24px; border-radius: 4px;
+  border: 1.5px solid rgba(255,255,255,0.06);
+  top: 12px; left: 180px;
+  transform: rotate(12deg); pointer-events: none;
+}
+
+.sg-detail-header-content {
+  position: relative; z-index: 1;
+  display: flex; align-items: center; gap: 14px;
+}
+
+.sg-detail-avatar {
+  width: 44px; height: 44px; border-radius: 12px;
+  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.18);
+  display: flex; align-items: center; justify-content: center;
+  color: #ffffff; flex-shrink: 0;
+}
+
+.sg-detail-header-text { flex: 1; min-width: 0; }
+
+.sg-detail-header-text h2 {
+  margin: 0 0 2px;
+  font-size: 16px; font-weight: 800; color: #ffffff;
+  letter-spacing: -0.02em;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+.sg-detail-header-text p {
+  margin: 0; font-size: 12px; color: rgba(255,255,255,0.5);
+}
+
+.sg-grad-badge {
+  font-size: 10px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.06em;
+  padding: 4px 10px; border-radius: 20px;
+  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.2);
+  color: rgba(255,255,255,0.8);
+  white-space: nowrap; flex-shrink: 0;
+}
+
+/* body — scrollable */
+.sg-detail-body {
+  flex: 1; min-height: 0; overflow-y: auto;
+  padding: 20px 24px;
+  display: flex; flex-direction: column; gap: 12px;
+}
+
+.sg-detail-body::-webkit-scrollbar { width: 3px; }
+.sg-detail-body::-webkit-scrollbar-track { background: transparent; }
+.sg-detail-body::-webkit-scrollbar-thumb { background: #e0e0e0; border-radius: 2px; }
+
+.sg-section-title {
+  margin: 0 0 8px;
+  font-size: 11px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.07em; color: #888888;
+}
+
+.sg-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 10px;
+}
+
+/* footer — fixed */
+.sg-detail-footer {
+  display: flex; justify-content: flex-end; gap: 10px;
+  padding: 14px 24px;
+  border-top: 1px solid #e8e8e8;
+  background: #f7f7f7; flex-shrink: 0;
+}
+
+/* ── Responsive ───────────────────────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .sg-detail-grid { grid-template-columns: 1fr; }
+}
+
+/* ── Dark theme ───────────────────────────────────────────────────────────── */
+[data-theme="dark"] .sg-header h2 { color: #f0f0f0; }
+[data-theme="dark"] .sg-header p  { color: #555555; }
+[data-theme="dark"] .sg-name { color: #e0e0e0; }
+[data-theme="dark"] .sg-id-pill { background: #2a2a2a; border-color: #3a3a3a; color: #888888; }
+[data-theme="dark"] .sg-action-btn { background: #252525; border-color: #3a3a3a; color: #555555; }
+[data-theme="dark"] .sg-action-btn:hover { background: #f0f0f0; color: #111111; border-color: #f0f0f0; }
+[data-theme="dark"] .sg-action-menu { background: #1e1e1e; border-color: #2a2a2a; box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
+[data-theme="dark"] .sg-action-item { color: #e0e0e0; }
+[data-theme="dark"] .sg-action-item:hover { background: #252525; }
+[data-theme="dark"] .sg-detail-container { background: #1a1a1a; }
+[data-theme="dark"] .sg-detail-header { background: #0a0a0a; }
+[data-theme="dark"] .sg-detail-body { background: #1a1a1a; }
+[data-theme="dark"] .sg-detail-body::-webkit-scrollbar-thumb { background: #2a2a2a; }
+[data-theme="dark"] .sg-section-title { color: #555555; }
+[data-theme="dark"] .sg-detail-footer { background: #1e1e1e; border-top-color: #2a2a2a; }

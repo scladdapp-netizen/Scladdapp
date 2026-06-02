@@ -1,0 +1,139 @@
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 9px 18px;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* --- Variants --- */
+.btn.primary {
+  background: #111111;
+  color: #ffffff;
+  border: 1px solid #111111;
+}
+
+.btn.primary:hover:not(:disabled) {
+  background: #333333;
+  border-color: #333333;
+}
+
+.btn.secondary {
+  background: #f4f4f4;
+  color: #333333;
+  border: 1px solid #e0e0e0;
+}
+
+.btn.secondary:hover:not(:disabled) {
+  background: #e8e8e8;
+}
+
+.btn.danger {
+  background: #cc3333;
+  color: white;
+  border: 1px solid #cc3333;
+}
+
+.btn.danger:hover:not(:disabled) {
+  background: #aa2222;
+}
+
+/* --- Dark theme --- */
+[data-theme="dark"] .btn.primary {
+  background: #f0f0f0;
+  color: #111111;
+  border-color: #f0f0f0;
+}
+[data-theme="dark"] .btn.primary:hover:not(:disabled) {
+  background: #dddddd;
+  border-color: #dddddd;
+}
+
+[data-theme="dark"] .btn.secondary {
+  background: #2a2a2a;
+  color: #cccccc;
+  border-color: #3a3a3a;
+}
+[data-theme="dark"] .btn.secondary:hover:not(:disabled) {
+  background: #333333;
+}
+
+[data-theme="dark"] .btn.danger {
+  background: #7f1d1d;
+  border-color: #7f1d1d;
+  color: #fca5a5;
+}
+[data-theme="dark"] .btn.danger:hover:not(:disabled) {
+  background: #991b1b;
+}
+
+/* --- Loading Spinner --- */
+.btn-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+.btn.secondary .btn-spinner {
+  border: 2px solid rgba(0, 0, 0, 0.2);
+  border-top-color: #333;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* kkkkk */
+
+.agrbut {
+  border: #c9c9c9 1px solid;
+  /* display: inline-flex; */
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 9px 18px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+  color: #636363;
+  display: flex;
+  /* line-height: 1.4rem; */
+}
+
+.dgbtext {
+  margin: 0;
+}
+
+.agrbut:hover {
+  background-color: #c7c7c7;
+}
+.agrbut-disabled {
+  opacity: 0.6;
+  cursor: not-allowed !important;
+}
+
+.agrbut:focus {
+  outline: 2px solid #554eff;
+  outline-offset: 2px;
+}

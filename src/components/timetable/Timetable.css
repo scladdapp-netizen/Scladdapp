@@ -1,0 +1,619 @@
+.timetable-wrapper {
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: auto;
+  overflow-y: hidden;
+  border: 1px solid #e8e8e8;
+  border-radius: 12px;
+  font-family: sans-serif;
+  background: #ffffff;
+  color: #111111;
+}
+
+/* Header uses same columns as rows: first column for day labels, rest are equal hour columns */
+.time-header {
+  display: grid;
+  grid-template-columns: 60px repeat(var(--hours), 1fr);
+  border-bottom: 1px solid #e8e8e8;
+  background: #ffffff;
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+
+.day-label-placeholder {
+  border-right: 1px solid #e8e8e8;
+}
+
+.time-cell {
+  text-align: start;
+  font-size: 12px;
+  padding: 8px 0;
+  border-right: 1px solid #f0f0f0;
+  box-sizing: border-box;
+  color: #888888;
+  font-weight: 600;
+}
+
+.timetable-body {
+  display: block;
+}
+
+/* Each row uses the exact same grid-template-columns so columns line up */
+.day-row {
+  display: grid;
+  grid-template-columns: 60px repeat(var(--hours), 1fr);
+  border-bottom: 1px solid #f0f0f0;
+  min-height: 60px;
+  align-items: stretch;
+}
+
+.day-label {
+  padding: 12px;
+  font-weight: 700;
+  font-size: 12px;
+  color: #555555;
+  border-right: 1px solid #e8e8e8;
+  background: #fafafa;
+  box-sizing: border-box;
+}
+
+/* The track occupies the second..last grid cells and is positioned relative to hold absolutely positioned subjects */
+.day-track {
+  grid-column: 2 / -1;
+  position: relative;
+  height: 100%;
+  /* draw vertical hour lines matching the header columns */
+  background-image: linear-gradient(
+    to right,
+    rgba(0, 0, 0, 0.04) 1px,
+    transparent 1px
+  );
+  background-size: calc(100% / var(--hours)) 100%;
+}
+
+/* .subject {
+position: absolute;
+top: 0px;
+bottom: 0px;
+background: #4f46e5;
+color: #fff;
+border-radius: 8px;
+padding: 6px 8px;
+font-size: 12px;
+box-sizing: border-box;
+overflow: hidden;
+} */
+
+.subject {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  padding: 8px;
+  font-size: 12px;
+  box-sizing: border-box;
+  overflow: hidden;
+  border-radius: 10px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: #ffffff;
+  color: #111111;
+}
+
+.subject:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Animated subject container */
+.animated-subject-container {
+  position: relative;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+/* Subject content container for border animation */
+.subject-content-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  border-radius: 8px;
+  transition: border-color 0.3s ease;
+}
+
+/* Notification badge - positioned relative to the subject cell */
+.subject-count-badge {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background: #ef4444;
+  color: white;
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
+  z-index: 10;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  border: 2px solid white;
+}
+
+/* Animation for content changes */
+.subject-content-animated {
+  animation: slideInFade 0.5s ease-in-out;
+  width: 100%;
+  text-align: center;
+}
+
+@keyframes slideInFade {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Border pulse animation for multi-subject cells */
+@keyframes borderPulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4);
+  }
+}
+
+/* Border color animation for multi-subject cells */
+@keyframes borderColorChange {
+  0% {
+    border-color: #10b981;
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4);
+  }
+  33% {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.4);
+  }
+  66% {
+    border-color: #f59e0b;
+    box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.4);
+  }
+  100% {
+    border-color: #10b981;
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4);
+  }
+}
+
+/* Single subject styles */
+.single-subject-content {
+  text-align: center;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 0;
+}
+
+/* Multi-subject animation */
+.multi-subject {
+  animation: borderColorChange 9s infinite;
+}
+
+/* Period Modal Styles */
+.period-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+}
+
+.period-modal {
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  max-width: 500px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  animation: modalSlideIn 0.3s ease-out;
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.period-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid #e8e8e8;
+}
+
+.period-modal-title {
+  font-size: 16px;
+  font-weight: 800;
+  color: #111111;
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+.period-modal-close {
+  background: #f4f4f4;
+  border: 1px solid #e8e8e8;
+  font-size: 18px;
+  color: #888888;
+  cursor: pointer;
+  padding: 2px 8px;
+  border-radius: 6px;
+  transition: all 0.15s;
+  line-height: 1.4;
+}
+
+.period-modal-close:hover {
+  background: #111111;
+  color: #ffffff;
+  border-color: #111111;
+}
+
+.period-modal-content {
+  padding: 20px 24px 24px;
+}
+
+.period-info-section {
+  margin-bottom: 20px;
+}
+
+.period-info-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.period-info-item:last-child {
+  border-bottom: none;
+}
+
+.period-info-label {
+  font-weight: 700;
+  color: #888888;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.period-info-value {
+  font-weight: 600;
+  color: #111111;
+  font-size: 13px;
+}
+
+.period-stream {
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-size: 12px;
+}
+
+.subjects-list {
+  margin-top: 16px;
+}
+
+.subjects-list-title {
+  font-size: 14px;
+  font-weight: 800;
+  color: #111111;
+  margin: 0 0 12px 0;
+  letter-spacing: -0.01em;
+}
+
+.subject-card {
+  background: #f7f7f7;
+  border: 1px solid #e8e8e8;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 12px;
+}
+
+.subject-card:last-child {
+  margin-bottom: 0;
+}
+
+.subject-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.subject-name {
+  font-weight: 600;
+  color: #111111;
+  font-size: 14px;
+}
+
+.subject-stream-badge {
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.subject-card-details {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.subject-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.subject-detail-label {
+  font-size: 10px;
+  color: #888888;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.subject-detail-value {
+  font-size: 13px;
+  color: #111111;
+  font-weight: 600;
+}
+
+.single-subject-details {
+  margin-top: 16px;
+}
+
+/* Responsive Modal */
+@media (max-width: 640px) {
+  .period-modal {
+    width: 95%;
+    margin: 20px;
+  }
+
+  .period-modal-header,
+  .period-modal-content {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .subject-card-details {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .subject-card-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+}
+
+.subject-title {
+  font-weight: 600;
+  margin-bottom: 3px;
+  font-size: 11px;
+  line-height: 1.2;
+}
+
+.subject-teacher {
+  font-size: 9px;
+  color: #6b7280;
+  margin-bottom: 4px;
+  line-height: 1.1;
+}
+
+.subject-time {
+  font-size: 10px;
+  opacity: 0.9;
+  font-weight: 500;
+  margin-top: auto;
+}
+
+.subject-stream {
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 2px;
+}
+
+.time-header,
+.day-row {
+  min-width: fit-content;
+}
+
+@media (max-width: 600px) {
+  .day-label {
+    font-size: 12px;
+    padding: 8px;
+  }
+
+  .day-label-placeholder {
+    font-size: 12px;
+    padding: 8px;
+  }
+
+  .day-row {
+    grid-template-columns: 50px repeat(var(--hours), 1fr);
+    min-height: 70px;
+  }
+
+  .time-header {
+    grid-template-columns: 50px repeat(var(--hours), 1fr);
+  }
+
+  .time-cell {
+    font-size: 11px;
+  }
+
+  .subject {
+    font-size: 10px;
+    padding: 4px 6px;
+  }
+
+  .subject-count-badge {
+    width: 16px;
+    height: 16px;
+    font-size: 9px;
+    top: -6px;
+    right: -6px;
+  }
+
+  .subject-title {
+    font-size: 10px;
+  }
+
+  .subject-teacher {
+    font-size: 8px;
+  }
+
+  .subject-time {
+    font-size: 9px;
+  }
+}
+
+/* ── Dark theme ───────────────────────────────────────────────────────────── */
+[data-theme="dark"] .timetable-wrapper {
+  background: #1a1a1a;
+  border-color: #2a2a2a;
+  color: #e0e0e0;
+}
+
+[data-theme="dark"] .time-header {
+  background: #141414;
+  border-bottom-color: #2a2a2a;
+}
+
+[data-theme="dark"] .day-label-placeholder {
+  border-right-color: #2a2a2a;
+}
+
+[data-theme="dark"] .time-cell {
+  border-right-color: #252525;
+  color: #555555;
+}
+
+[data-theme="dark"] .day-row {
+  border-bottom-color: #252525;
+}
+
+[data-theme="dark"] .day-label {
+  background: #141414;
+  border-right-color: #2a2a2a;
+  color: #888888;
+}
+
+[data-theme="dark"] .day-track {
+  background-image: linear-gradient(
+    to right,
+    rgba(255,255,255,0.04) 1px,
+    transparent 1px
+  );
+}
+
+[data-theme="dark"] .subject {
+  background: #1e1e1e;
+  color: #e0e0e0;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+}
+
+[data-theme="dark"] .subject:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+}
+
+[data-theme="dark"] .subject-title { color: #e0e0e0; }
+[data-theme="dark"] .subject-teacher { color: #888888; }
+[data-theme="dark"] .subject-time { color: #888888; }
+
+[data-theme="dark"] .subject-count-badge {
+  border-color: #1e1e1e;
+}
+
+[data-theme="dark"] .period-modal-overlay {
+  background: rgba(0,0,0,0.7);
+}
+
+[data-theme="dark"] .period-modal {
+  background: #1a1a1a;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+}
+
+[data-theme="dark"] .period-modal-header {
+  border-bottom-color: #2a2a2a;
+}
+
+[data-theme="dark"] .period-modal-title { color: #f0f0f0; }
+
+[data-theme="dark"] .period-modal-close {
+  background: #252525;
+  border-color: #3a3a3a;
+  color: #888888;
+}
+
+[data-theme="dark"] .period-modal-close:hover {
+  background: #f0f0f0;
+  color: #111111;
+  border-color: #f0f0f0;
+}
+
+[data-theme="dark"] .period-modal-content { background: #1a1a1a; }
+
+[data-theme="dark"] .period-info-item { border-bottom-color: #252525; }
+[data-theme="dark"] .period-info-label { color: #555555; }
+[data-theme="dark"] .period-info-value { color: #e0e0e0; }
+
+[data-theme="dark"] .subjects-list-title { color: #f0f0f0; }
+
+[data-theme="dark"] .subject-card {
+  background: #252525;
+  border-color: #3a3a3a;
+}
+
+[data-theme="dark"] .subject-name { color: #e0e0e0; }
+[data-theme="dark"] .subject-detail-label { color: #555555; }
+[data-theme="dark"] .subject-detail-value { color: #e0e0e0; }

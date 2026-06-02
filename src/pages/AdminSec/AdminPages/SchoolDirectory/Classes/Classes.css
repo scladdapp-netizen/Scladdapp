@@ -1,0 +1,179 @@
+/* ── Header ───────────────────────────────────────────────────────────────── */
+.cls-header { margin-bottom: 20px; }
+.cls-header h2 { margin: 0 0 4px; font-size: 22px; font-weight: 800; color: #111111; letter-spacing: -0.02em; }
+.cls-header p  { margin: 0; font-size: 13px; color: #888888; font-weight: 500; }
+
+/* ── Table cell styles ────────────────────────────────────────────────────── */
+.cls-mono { font-family: monospace; font-size: 12px; font-weight: 600; color: #888888; }
+.cls-code { font-family: monospace; font-size: 12px; font-weight: 700; color: #111111; background: #f4f4f4; padding: 2px 8px; border-radius: 6px; }
+.cls-name { font-size: 13px; font-weight: 700; color: #111111; }
+.cls-teacher   { font-size: 13px; font-weight: 600; color: #111111; }
+.cls-unassigned { font-size: 13px; font-weight: 500; color: #aaaaaa; font-style: italic; }
+.cls-count { font-size: 13px; font-weight: 700; color: #111111; }
+.cls-room  { font-size: 13px; color: #555555; font-weight: 500; }
+
+/* ── Status badge ─────────────────────────────────────────────────────────── */
+.cls-badge {
+  display: inline-flex; align-items: center;
+  padding: 3px 10px; border-radius: 20px;
+  font-size: 11px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.05em;
+  white-space: nowrap; line-height: 1;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.4), 0 1px 2px rgba(0,0,0,0.05);
+}
+
+.cls-badge-active   { background: #dcfce7; color: #166534; }
+.cls-badge-inactive { background: #fecaca; color: #991b1b; }
+
+/* ── Dark theme ───────────────────────────────────────────────────────────── */
+[data-theme="dark"] .cls-header h2 { color: #f0f0f0; }
+[data-theme="dark"] .cls-header p  { color: #555555; }
+[data-theme="dark"] .cls-mono { color: #555555; }
+[data-theme="dark"] .cls-code { background: #252525; color: #e0e0e0; }
+[data-theme="dark"] .cls-name { color: #e0e0e0; }
+[data-theme="dark"] .cls-teacher { color: #e0e0e0; }
+[data-theme="dark"] .cls-unassigned { color: #555555; }
+[data-theme="dark"] .cls-count { color: #e0e0e0; }
+[data-theme="dark"] .cls-room  { color: #888888; }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Add Class Panel
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.acp-container {
+  display: flex; flex-direction: column;
+  height: 100%; min-height: 0; overflow: hidden; background: #ffffff;
+}
+
+/* ── Header ───────────────────────────────────────────────────────────────── */
+.acp-header {
+  position: relative; padding: 22px 24px 20px;
+  background: #111111; flex-shrink: 0; overflow: hidden;
+}
+
+.acp-header::before {
+  content: ""; position: absolute; width: 140px; height: 140px; border-radius: 50%;
+  border: 22px solid rgba(255,255,255,0.05); top: -50px; right: -30px; pointer-events: none;
+}
+
+.acp-header::after {
+  content: ""; position: absolute; width: 44px; height: 44px; border-radius: 8px;
+  border: 1.5px solid rgba(255,255,255,0.07); bottom: -14px; right: 80px;
+  transform: rotate(18deg); pointer-events: none;
+}
+
+.acp-header-deco {
+  position: absolute; width: 70px; height: 70px; border-radius: 50%;
+  border: 10px solid rgba(255,255,255,0.04); bottom: -22px; left: -14px; pointer-events: none;
+}
+
+.acp-header-deco2 {
+  position: absolute; width: 24px; height: 24px; border-radius: 4px;
+  border: 1.5px solid rgba(255,255,255,0.06); top: 12px; left: 180px;
+  transform: rotate(12deg); pointer-events: none;
+}
+
+.acp-header-content {
+  position: relative; z-index: 1; display: flex; align-items: center; gap: 14px;
+}
+
+.acp-header-icon {
+  width: 44px; height: 44px; border-radius: 12px;
+  background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.18);
+  display: flex; align-items: center; justify-content: center;
+  color: #ffffff; flex-shrink: 0;
+}
+
+.acp-header-text h2 {
+  margin: 0 0 3px; font-size: 15px; font-weight: 800;
+  color: #ffffff; letter-spacing: -0.02em;
+}
+
+.acp-header-text p { margin: 0; font-size: 12px; color: rgba(255,255,255,0.5); }
+
+/* ── Body ─────────────────────────────────────────────────────────────────── */
+.acp-body {
+  flex: 1; min-height: 0; overflow-y: auto;
+  padding: 22px 24px; display: flex; flex-direction: column; gap: 16px;
+}
+
+.acp-body::-webkit-scrollbar { width: 3px; }
+.acp-body::-webkit-scrollbar-thumb { background: #e0e0e0; border-radius: 2px; }
+
+.acp-loading { padding: 24px 0; text-align: center; }
+
+/* ── Section title ────────────────────────────────────────────────────────── */
+.acp-section-title {
+  font-size: 10px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.08em; color: #888888;
+  padding-bottom: 10px; border-bottom: 1px solid #f0f0f0;
+}
+
+/* ── Form ─────────────────────────────────────────────────────────────────── */
+.acp-form { display: flex; flex-direction: column; gap: 12px; }
+
+.acp-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+/* ── Teacher field ────────────────────────────────────────────────────────── */
+.acp-teacher-field { display: flex; flex-direction: column; gap: 6px; }
+
+.acp-teacher-label {
+  font-size: 13px; font-weight: 600; color: #111111;
+}
+
+.acp-teacher-hint { margin: 0; font-size: 11px; color: #888888; }
+
+/* ── Selected teacher card ────────────────────────────────────────────────── */
+.acp-teacher-card {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 14px; border-radius: 10px;
+  background: #f4f4f4; border: 1px solid #e8e8e8;
+  margin-top: 4px;
+}
+
+.acp-teacher-avatar {
+  width: 38px; height: 38px; border-radius: 50%; flex-shrink: 0;
+  background: #111111; color: #ffffff;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; font-weight: 800; text-transform: uppercase;
+}
+
+.acp-teacher-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+
+.acp-teacher-name { font-size: 13px; font-weight: 700; color: #111111; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.acp-teacher-meta { font-size: 11px; color: #888888; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.acp-teacher-role-badge {
+  flex-shrink: 0; font-size: 10px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.06em; background: #111111; color: #ffffff;
+  padding: 3px 9px; border-radius: 20px;
+}
+
+/* ── Footer ───────────────────────────────────────────────────────────────── */
+.acp-footer {
+  display: flex; justify-content: flex-end; gap: 10px;
+  padding: 14px 24px; border-top: 1px solid #e8e8e8;
+  background: #f7f7f7; flex-shrink: 0;
+}
+
+/* ── Responsive ───────────────────────────────────────────────────────────── */
+@media (max-width: 480px) {
+  .acp-form-row { grid-template-columns: 1fr; }
+  .acp-footer { flex-direction: column-reverse; }
+}
+
+/* ── Dark theme ───────────────────────────────────────────────────────────── */
+[data-theme="dark"] .acp-container { background: #1a1a1a; }
+[data-theme="dark"] .acp-header { background: #0a0a0a; }
+[data-theme="dark"] .acp-body { background: #1a1a1a; }
+[data-theme="dark"] .acp-body::-webkit-scrollbar-thumb { background: #2a2a2a; }
+[data-theme="dark"] .acp-section-title { color: #555555; border-bottom-color: #2a2a2a; }
+[data-theme="dark"] .acp-teacher-label { color: #e0e0e0; }
+[data-theme="dark"] .acp-teacher-hint { color: #555555; }
+[data-theme="dark"] .acp-teacher-card { background: #252525; border-color: #3a3a3a; }
+[data-theme="dark"] .acp-teacher-avatar { background: #f0f0f0; color: #111111; }
+[data-theme="dark"] .acp-teacher-name { color: #e0e0e0; }
+[data-theme="dark"] .acp-teacher-meta { color: #555555; }
+[data-theme="dark"] .acp-teacher-role-badge { background: #f0f0f0; color: #111111; }
+[data-theme="dark"] .acp-footer { background: #1e1e1e; border-top-color: #2a2a2a; }

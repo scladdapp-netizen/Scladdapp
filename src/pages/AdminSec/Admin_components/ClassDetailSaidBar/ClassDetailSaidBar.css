@@ -1,0 +1,238 @@
+.classDetailSaidBar {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  height: 100%;
+  overflow-y: auto;
+}
+
+.classDetailSaidBar p {
+  margin: 0;
+}
+
+/* Class Info Section */
+.classInfoSection {
+  padding-bottom: 16px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.classInfoHeader {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.classInfoHeader:hover {
+  background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.classInfoTitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+/* Sessions Section */
+.sessionsSection {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sessionFolder {
+  border-radius: 12px;
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.sessionFolder:hover {
+  border-color: #e5e7eb;
+  background: #f9fafb;
+}
+
+.classDetailSaidBar_item {
+  position: relative;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-radius: 12px;
+  padding: 12px;
+}
+
+.sessionContent {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.sessionText {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* Session Navigation (nested items) */
+.sessionNavigation {
+  margin-left: 28px;
+  margin-top: 8px;
+  padding-left: 16px;
+  border-left: 2px solid #e5e7eb;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.seasionname {
+  font-size: 14px;
+  font-weight: 600;
+  color: #374151;
+  transition: color 0.2s ease;
+}
+
+.subseasionname {
+  font-size: 12px;
+  color: #6b7280;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.active_ssd_seasion {
+  color: #4f46e5 !important;
+}
+
+.active_ssd_sub {
+  color: #7c3aed !important;
+}
+
+.ind {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 4px;
+  height: 24px;
+  background: linear-gradient(135deg, #4f46e5, #7c3aed);
+  border-radius: 0 4px 4px 0;
+  box-shadow: 0 2px 8px rgba(79, 70, 229, 0.3);
+}
+
+/* Navigation Section - now nested inside sessions */
+.sdsbitem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+}
+
+.sdsbitem:hover {
+  background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+  border-color: #e2e8f0;
+  transform: translateX(4px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.sdsbitem.active {
+  background: linear-gradient(135deg, #eef2ff, #e0e7ff);
+  border-color: #c7d2fe;
+  transform: translateX(4px);
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.15);
+}
+
+.sdsbitem p {
+  font-size: 13px;
+  font-weight: 500;
+  color: #374151;
+  transition: color 0.2s ease;
+}
+
+.sdsbitem:hover p {
+  color: #1f2937;
+}
+
+.sdsbitem.active p {
+  color: #4f46e5;
+  font-weight: 600;
+}
+
+.sdsbitem svg {
+  transition: all 0.2s ease;
+}
+
+.sdsbitem:hover svg {
+  color: #4f46e5 !important;
+  transform: scale(1.1);
+}
+
+.sdsbitem.active svg {
+  color: #4f46e5 !important;
+  transform: scale(1.1);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .classDetailSaidBar {
+    padding: 12px;
+    gap: 16px;
+  }
+
+  .classInfoHeader {
+    padding: 10px 12px;
+  }
+
+  .classInfoTitle {
+    font-size: 15px;
+  }
+
+  .sessionContent {
+    gap: 10px;
+  }
+
+  .seasionname {
+    font-size: 13px;
+  }
+
+  .subseasionname {
+    font-size: 11px;
+  }
+
+  .sdsbitem {
+    padding: 10px 12px;
+    gap: 10px;
+  }
+
+  .sdsbitem p {
+    font-size: 13px;
+  }
+}
+
+/* Scrollbar styling */
+.classDetailSaidBar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.classDetailSaidBar::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 2px;
+}
+
+.classDetailSaidBar::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 2px;
+}
+
+.classDetailSaidBar::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}

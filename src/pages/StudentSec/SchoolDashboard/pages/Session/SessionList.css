@@ -1,0 +1,198 @@
+.sl-container { padding: 0; }
+
+/* ── Header ── */
+.sl-header {
+  display: flex; align-items: baseline; gap: 10px;
+  margin-bottom: 20px; padding-bottom: 14px;
+  border-bottom: 1px solid #e8e8e8;
+}
+.sl-title   { margin: 0; font-size: 16px; font-weight: 800; color: #111111; letter-spacing: -0.01em; }
+.sl-subtitle { margin: 0; font-size: 12px; color: #888888; font-weight: 600; }
+
+/* ── Empty ── */
+.sl-empty {
+  padding: 56px 20px; text-align: center;
+  background: #f7f7f7; border: 1px dashed #e8e8e8; border-radius: 12px;
+  display: flex; flex-direction: column; align-items: center; gap: 12px;
+}
+.sl-empty-icon { color: #cccccc; }
+.sl-empty p { margin: 0; font-size: 13px; font-weight: 600; color: #888888; }
+
+/* ── Sessions list ── */
+.sl-sessions {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 16px;
+}
+
+/* ── Session card ── */
+.sl-session {
+  background: #ffffff;
+  border: 1px solid #e8e8e8;
+  border-radius: 16px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: box-shadow 0.15s, transform 0.15s;
+}
+.sl-session:hover {
+  box-shadow: 0 4px 20px rgba(0,0,0,0.07);
+  transform: translateY(-2px);
+}
+.sl-session-current { border-color: #111; }
+
+.sl-session-header {
+  display: flex; align-items: center; gap: 12px;
+  padding: 18px 20px;
+  background: #f7f7f7;
+  border-bottom: 1px solid #e8e8e8;
+}
+
+.sl-session-icon {
+  width: 36px; height: 36px; border-radius: 8px;
+  background: #111111; color: #ffffff;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+
+.sl-session-info { flex: 1; min-width: 0; }
+
+.sl-session-name-row { display: flex; align-items: center; gap: 8px; }
+
+.sl-session-name {
+  margin: 0; font-size: 14px; font-weight: 800; color: #111111;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+.sl-current-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: #10b981; flex-shrink: 0;
+  animation: slPulse 2s infinite;
+}
+@keyframes slPulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+.sl-session-dates { margin: 2px 0 0; font-size: 11px; color: #888888; font-weight: 600; }
+
+/* Status badge */
+.sl-status {
+  padding: 3px 10px; border-radius: 20px;
+  font-size: 10px; font-weight: 800; text-transform: capitalize;
+  flex-shrink: 0;
+}
+.sl-status-active    { background: #dcfce7; color: #166534; }
+.sl-status-draft     { background: #f0f0f0; color: #555555; }
+.sl-status-completed { background: #dbeafe; color: #1e40af; }
+.sl-status-archived  { background: #fecaca; color: #991b1b; }
+
+/* ── Subsessions ── */
+.sl-subsessions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px;
+  flex: 1;
+}
+
+.sl-sub {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 16px; gap: 12px;
+  background: #f7f7f7;
+  border: 1px solid #eeeeee;
+  border-radius: 10px;
+  cursor: pointer; text-align: left; width: 100%;
+  transition: background 0.12s, border-color 0.12s;
+  color: #111111;
+}
+.sl-sub:last-child { border-bottom: none; }
+.sl-sub:hover { background: #efefef; border-color: #d0d0d0; }
+.sl-sub-active { background: #f0fdf4; border-color: #bbf7d0; }
+.sl-sub-active:hover { background: #dcfce7; }
+
+.sl-sub-left { display: flex; flex-direction: column; gap: 2px; }
+
+.sl-sub-name { font-size: 13px; font-weight: 700; color: #111111; }
+.sl-sub-dates { font-size: 11px; color: #888888; font-weight: 500; }
+
+.sl-sub-right { display: flex; align-items: center; gap: 6px; color: #888888; }
+
+.sl-sub-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: #10b981; flex-shrink: 0;
+}
+
+.sl-no-subs {
+  padding: 12px 16px; font-size: 12px; color: #aaaaaa;
+  font-weight: 600; margin: 0;
+}
+
+/* ── Dark theme ── */
+[data-theme="dark"] .sl-header   { border-bottom-color: #2a2a2a; }
+[data-theme="dark"] .sl-title    { color: #f0f0f0; }
+[data-theme="dark"] .sl-empty    { background: #1e1e1e; border-color: #2a2a2a; }
+[data-theme="dark"] .sl-empty p  { color: #555555; }
+[data-theme="dark"] .sl-session  { background: #1e1e1e; border-color: #2a2a2a; }
+[data-theme="dark"] .sl-session:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
+[data-theme="dark"] .sl-session-current { border-color: #555555; }
+[data-theme="dark"] .sl-session-header  { background: #252525; border-bottom-color: #2a2a2a; }
+[data-theme="dark"] .sl-session-icon    { background: #f0f0f0; color: #111111; }
+[data-theme="dark"] .sl-session-name    { color: #f0f0f0; }
+[data-theme="dark"] .sl-session-dates   { color: #555555; }
+[data-theme="dark"] .sl-status-draft    { background: #252525; color: #888888; }
+[data-theme="dark"] .sl-sub             { color: #e0e0e0; background: #252525; border-color: #2a2a2a; }
+[data-theme="dark"] .sl-sub:hover       { background: #2e2e2e; border-color: #3a3a3a; }
+[data-theme="dark"] .sl-sub-active      { background: #052e16; }
+[data-theme="dark"] .sl-sub-active:hover { background: #064e24; }
+[data-theme="dark"] .sl-sub-name        { color: #f0f0f0; }
+[data-theme="dark"] .sl-sub-dates       { color: #555555; }
+[data-theme="dark"] .sl-sub-right       { color: #555555; }
+[data-theme="dark"] .sl-no-subs         { color: #555555; }
+
+/* ── Report card states ───────────────────────────────────────────────────── */
+.rpt-not-published {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 20px;
+  background: #fef9c3;
+  border: 1px solid #fde68a;
+  border-left: 4px solid #f59e0b;
+  border-radius: 12px;
+  color: #92400e;
+}
+
+.rpt-np-title {
+  margin: 0 0 4px;
+  font-size: 14px;
+  font-weight: 800;
+  color: #92400e;
+}
+
+.rpt-np-sub {
+  margin: 0;
+  font-size: 13px;
+  color: #b45309;
+  line-height: 1.5;
+}
+
+.rpt-preview-wrap {
+  background: #ffffff;
+  border: 1px solid #e8e8e8;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.rpt-error {
+  padding: 20px;
+  background: #fff0f0;
+  border: 1px solid #fca5a5;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #cc3333;
+}
+
+[data-theme="dark"] .rpt-not-published { background: #1c1200; border-color: #3a2a00; border-left-color: #f59e0b; color: #fcd34d; }
+[data-theme="dark"] .rpt-np-title { color: #fcd34d; }
+[data-theme="dark"] .rpt-np-sub   { color: #d97706; }
+[data-theme="dark"] .rpt-preview-wrap { background: #1e1e1e; border-color: #2a2a2a; }
+[data-theme="dark"] .rpt-error { background: #2a1a1a; border-color: #3a2a2a; color: #f87171; }

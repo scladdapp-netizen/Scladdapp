@@ -1,0 +1,496 @@
+/* ── Base wrapper ── */
+.rcp-wrapper {
+  --rcp-primary: #3b82f6;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 16px;
+  font-size: 11px;
+  color: #1f2937;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* landscape stretches wider */
+.rcp-layout-landscape {
+  padding: 20px 32px;
+}
+
+/* ── Header ── */
+.rcp-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 10px;
+  margin-bottom: 0;
+  border-bottom: 3px solid var(--rcp-primary);
+}
+
+/* Logo */
+.rcp-logo { flex-shrink: 0; }
+.rcp-logo-img {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+  border-radius: 4px;
+}
+.rcp-logo-placeholder {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--rcp-primary);
+  color: #fff;
+  font-size: 20px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* School details — centered */
+.rcp-school-details {
+  flex: 1;
+  text-align: center;
+}
+.rcp-school-name {
+  margin: 0 0 2px;
+  font-size: 13px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--rcp-primary);
+}
+.rcp-school-address {
+  margin: 0 0 1px;
+  font-size: 10px;
+  color: #4b5563;
+}
+.rcp-school-contact {
+  margin: 0;
+  font-size: 9px;
+  color: #6b7280;
+}
+
+/* Session / term — right side */
+.rcp-session-meta {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  text-align: right;
+}
+.rcp-meta-item {
+  display: flex;
+  flex-direction: column;
+  font-size: 11px;
+}
+.rcp-meta-item span {
+  color: #9ca3af;
+  text-transform: uppercase;
+  font-size: 10px;
+  letter-spacing: 0.5px;
+}
+.rcp-meta-item strong {
+  font-size: 13px;
+  color: #1f2937;
+}
+
+/* "STUDENT REPORT CARD" banner */
+.rcp-header-label {
+  text-align: center;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: #fff;
+  background: var(--rcp-primary);
+  padding: 3px 0;
+  margin-bottom: 10px;
+}
+
+/* ── Student info strip ── */
+.rcp-student-info {
+  display: flex;
+  gap: 32px;
+  padding: 10px 0;
+  border-bottom: 1px solid #e5e7eb;
+  margin-bottom: 16px;
+}
+
+/* ── Student info section ── */
+.rcp-student-section {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 10px;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  margin-bottom: 12px;
+}
+
+.rcp-student-photo { flex-shrink: 0; }
+
+.rcp-profile-img {
+  width: 60px;
+  height: 75px;
+  object-fit: cover;
+  border-radius: 4px;
+  border: 2px solid var(--rcp-primary);
+}
+
+.rcp-profile-placeholder {
+  width: 60px;
+  height: 75px;
+  border-radius: 4px;
+  border: 2px dashed var(--rcp-primary);
+  background: #eff6ff;
+  color: var(--rcp-primary);
+  font-size: 24px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.rcp-student-fields {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.rcp-info-row {
+  display: flex;
+  gap: 10px;
+}
+
+.rcp-info-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.rcp-info-item span {
+  font-size: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #9ca3af;
+  font-weight: 600;
+}
+
+.rcp-info-item strong {
+  font-size: 10px;
+  color: #1f2937;
+  font-weight: 600;
+}
+
+.rcp-school-info { flex: 1; }
+.rcp-title { margin: 0; font-size: 13px; letter-spacing: 1px; text-transform: uppercase; color: var(--rcp-primary); }
+.rcp-session-info { text-align: right; font-size: 12px; line-height: 1.6; }
+
+/* ── Sections ── */
+.rcp-section { margin-bottom: 12px; }
+.rcp-section-title {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  border-left: 3px solid var(--rcp-primary);
+  padding-left: 6px;
+  margin-bottom: 6px;
+  color: var(--rcp-primary);
+}
+
+/* ── Table ── */
+.rcp-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 10px;
+}
+.rcp-table thead tr {
+  background: var(--rcp-primary);
+  color: #fff;
+}
+.rcp-table th {
+  padding: 5px 6px;
+  text-align: center;
+  font-weight: 600;
+  font-size: 9px;
+  white-space: nowrap;
+}
+.rcp-table th:first-child { text-align: left; }
+.rcp-th-max { font-weight: 400; opacity: 0.8; font-size: 8px; }
+.rcp-table td {
+  padding: 4px 6px;
+  border-bottom: 1px solid #f3f4f6;
+  text-align: center;
+}
+.rcp-row-even { background: #f9fafb; }
+.rcp-subject-name { text-align: left !important; font-weight: 500; }
+.rcp-score-cell { color: #374151; }
+.rcp-total-cell { font-weight: 700; color: #1f2937; }
+.rcp-position-cell { font-size: 9px; color: #6b7280; }
+.rcp-grade-badge {
+  display: inline-block;
+  padding: 1px 5px;
+  border-radius: 10px;
+  background: var(--rcp-primary);
+  color: #fff;
+  font-weight: 700;
+  font-size: 9px;
+}
+.rcp-table th { padding: 7px 10px; text-align: left; font-weight: 600; }
+.rcp-table td { padding: 6px 10px; border-bottom: 1px solid #f3f4f6; }
+.rcp-row-even { background: #f9fafb; }
+.rcp-grade-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 12px;
+  color: #fff;
+  font-weight: 700;
+  font-size: 11px;
+}
+.rcp-pass-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 12px;
+  background: #dcfce7;
+  color: #16a34a;
+  font-weight: 600;
+  font-size: 11px;
+}
+
+/* ── Grading scale ── */
+.rcp-scale-row { display: flex; flex-wrap: wrap; gap: 8px; }
+.rcp-scale-item {
+  border: 1px solid var(--rcp-primary);
+  border-radius: 6px;
+  padding: 6px 12px;
+  display: flex; flex-direction: column; align-items: center;
+  min-width: 60px;
+}
+.rcp-scale-grade { font-size: 16px; font-weight: 700; }
+.rcp-scale-range { font-size: 10px; color: #6b7280; }
+.rcp-scale-pf { font-size: 10px; font-weight: 600; }
+
+/* ── Summary (GPA / Ranking) ── */
+.rcp-summary-row { display: flex; gap: 16px; }
+.rcp-summary-box {
+  flex: 1;
+  border: 2px solid var(--rcp-primary);
+  border-radius: 8px;
+  padding: 12px;
+  display: flex; flex-direction: column; align-items: center;
+}
+.rcp-summary-label { font-size: 11px; color: #6b7280; text-transform: uppercase; }
+.rcp-summary-value { font-size: 22px; font-weight: 700; }
+
+/* ── Attendance ── */
+.rcp-attendance-row { display: flex; gap: 12px; }
+.rcp-att-item {
+  flex: 1;
+  background: #f9fafb;
+  border-radius: 6px;
+  padding: 10px;
+  display: flex; flex-direction: column; align-items: center;
+  font-size: 12px;
+}
+.rcp-att-item strong { font-size: 18px; margin-top: 4px; }
+
+/* ── Behavioral traits ── */
+.rcp-traits-grid { display: flex; flex-direction: column; gap: 8px; }
+.rcp-trait-row { display: flex; align-items: center; gap: 10px; }
+.rcp-trait-name { min-width: 140px; font-size: 12px; }
+.rcp-trait-bar-wrap { flex: 1; height: 8px; background: #e5e7eb; border-radius: 4px; overflow: hidden; }
+.rcp-trait-bar { height: 100%; border-radius: 4px; transition: width 0.3s; }
+.rcp-trait-rating { min-width: 70px; font-size: 11px; color: #6b7280; text-align: right; }
+
+/* ── Comments ── */
+.rcp-comment-text { margin: 0 0 8px; font-size: 12px; color: #374151; font-style: italic; }
+.rcp-signature { font-size: 12px; color: #6b7280; margin-top: 8px; }
+
+/* ════════════════════════════════════════
+   THEME OVERRIDES
+   ════════════════════════════════════════ */
+
+/* ── Professional (default) — clean, sharp borders ── */
+.rcp-theme-professional .rcp-header {
+  border-bottom-width: 3px;
+}
+.rcp-theme-professional .rcp-header-label {
+  font-weight: 800;
+  letter-spacing: 4px;
+}
+
+/* ── Colorful — gradient header, rounded everything ── */
+.rcp-theme-colorful {
+  border-radius: 14px;
+  border: 2px solid var(--rcp-primary);
+  overflow: hidden;
+}
+.rcp-theme-colorful .rcp-header {
+  background: linear-gradient(135deg, var(--rcp-primary), #a78bfa);
+  padding: 12px;
+  border-bottom: none;
+}
+.rcp-theme-colorful .rcp-school-name,
+.rcp-theme-colorful .rcp-school-address,
+.rcp-theme-colorful .rcp-school-contact,
+.rcp-theme-colorful .rcp-logo-placeholder {
+  color: #fff;
+}
+.rcp-theme-colorful .rcp-logo-placeholder {
+  background: rgba(255,255,255,0.25);
+}
+.rcp-theme-colorful .rcp-header-label {
+  background: linear-gradient(90deg, var(--rcp-primary), #a78bfa);
+}
+.rcp-theme-colorful .rcp-section-title {
+  background: #f5f3ff;
+  border-radius: 4px;
+  padding: 3px 8px;
+}
+.rcp-theme-colorful .rcp-student-section {
+  background: #f5f3ff;
+  border-color: #ddd6fe;
+}
+.rcp-theme-colorful .rcp-table thead tr {
+  background: linear-gradient(90deg, var(--rcp-primary), #a78bfa);
+}
+.rcp-theme-colorful .rcp-grade-badge {
+  background: linear-gradient(90deg, var(--rcp-primary), #a78bfa);
+}
+.rcp-theme-colorful .rcp-tfoot-row td {
+  background: #f5f3ff;
+}
+
+/* ── Minimal — no heavy borders, subtle underlines ── */
+.rcp-theme-minimal {
+  border: none;
+  border-top: 4px solid var(--rcp-primary);
+  border-radius: 0;
+  box-shadow: none;
+}
+.rcp-theme-minimal .rcp-header {
+  border-bottom: 1px solid #e5e7eb;
+}
+.rcp-theme-minimal .rcp-header-label {
+  background: transparent;
+  color: var(--rcp-primary);
+  border-bottom: 1px solid #e5e7eb;
+  letter-spacing: 2px;
+}
+.rcp-theme-minimal .rcp-section-title {
+  border-left: none;
+  border-bottom: 1px solid var(--rcp-primary);
+  padding-left: 0;
+  padding-bottom: 2px;
+  background: transparent;
+}
+.rcp-theme-minimal .rcp-student-section {
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid #e5e7eb;
+  border-radius: 0;
+  padding: 8px 0;
+}
+.rcp-theme-minimal .rcp-table thead tr {
+  background: #f3f4f6;
+}
+.rcp-theme-minimal .rcp-table thead th {
+  color: #374151;
+}
+.rcp-theme-minimal .rcp-tfoot-row td {
+  background: #f9fafb;
+  border-top: 1px solid #d1d5db;
+}
+
+/* ── Classic — formal, double borders, centered header ── */
+.rcp-theme-classic {
+  border: 2px solid var(--rcp-primary);
+  border-radius: 0;
+}
+.rcp-theme-classic .rcp-header {
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  border-bottom: 3px double var(--rcp-primary);
+  gap: 6px;
+}
+.rcp-theme-classic .rcp-school-name {
+  font-size: 14px;
+  letter-spacing: 2px;
+}
+.rcp-theme-classic .rcp-header-label {
+  letter-spacing: 5px;
+  font-size: 8px;
+}
+.rcp-theme-classic .rcp-section-title {
+  text-align: center;
+  border-left: none;
+  border-top: 1px solid var(--rcp-primary);
+  border-bottom: 1px solid var(--rcp-primary);
+  padding: 2px 0;
+  background: transparent;
+}
+.rcp-theme-classic .rcp-student-section {
+  border-radius: 0;
+  border: 1px solid var(--rcp-primary);
+}
+.rcp-theme-classic .rcp-grade-badge {
+  border-radius: 2px;
+}
+.rcp-theme-classic .rcp-tfoot-row td {
+  border-top: 2px double var(--rcp-primary);
+}
+
+/* ── Bottom row: attendance + affective side by side ── */
+.rcp-bottom-row {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.rcp-bottom-col {
+  flex: 1;
+  min-width: 0;
+}
+
+/* ── Table footer total row ── */
+.rcp-tfoot-row td {
+  border-top: 2px solid var(--rcp-primary);
+  background: #eff6ff;
+  font-weight: 600;
+  padding: 5px 6px;
+}
+
+/* ── Remarks ── */
+.rcp-remark-text {
+  margin: 0 0 8px;
+  font-size: 10px;
+  color: #374151;
+  font-style: italic;
+  line-height: 1.5;
+  min-height: 32px;
+}
+
+.rcp-signature {
+  font-size: 9px;
+  color: #9ca3af;
+  margin-top: 6px;
+}
+
+/* ── Theme loading state ── */
+.rcp-theme-loading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 24px 16px;
+  font-size: 13px;
+  color: #6b7280;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+}

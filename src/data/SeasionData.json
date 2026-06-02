@@ -1,0 +1,80 @@
+[
+  {
+    "$id": "343rr3434343434343434",
+    "name": "2025/2023",
+    "active": true,
+    "status": "Active",
+    "subseasion": [
+      {
+        "$id": "232332323232323",
+        "name": "First Term",
+        "active": false,
+        "status": "Completed"
+      },
+      {
+        "$id": "233333333333333",
+        "name": "Second Term",
+        "active": true,
+        "status": "Active"
+      },
+      {
+        "$id": "232332323232323",
+        "name": "Thurd Term",
+        "active": false,
+        "status": "Locked"
+      }
+    ]
+  },
+  {
+    "$id": "343243242432232",
+    "name": "2024/2026",
+    "active": false,
+    "status": "Completed",
+    "subseasion": [
+      {
+        "$id": "232332323232323",
+        "name": "First Term",
+        "active": false,
+        "status": "Completed"
+      },
+      {
+        "$id": "232332323232323",
+        "name": "Second Term",
+        "active": false,
+        "status": "Completed"
+      },
+      {
+        "$id": "232332323232323",
+        "name": "Thurd Term",
+        "active": false,
+        "status": "Completed"
+      }
+    ]
+  },
+  {
+    "$id": "757676767676767",
+    "name": "2029/2034",
+    "active": false,
+    "status": "Completed",
+    "subseasion": [
+      {
+        "$id": "232332323232323",
+        "name": "First Term",
+        "active": false,
+        "status": "Completed"
+      },
+      {
+        "$id": "232332323232323",
+        "name": "Second Term",
+        "active": false,
+        "status": "Completed"
+      },
+      {
+        "$id": "232332323232323",
+        "name": "Thurd Term",
+        "active": false,
+        "status": "Completed"
+      }
+    ]
+  }
+]

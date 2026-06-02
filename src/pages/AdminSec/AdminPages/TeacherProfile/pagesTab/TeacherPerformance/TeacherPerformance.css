@@ -1,0 +1,396 @@
+.teacherPerformance {
+  padding: 24px;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.performanceHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 32px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.performanceHeaderLeft h2 {
+  font-size: 28px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 8px 0;
+}
+
+.performanceHeaderLeft p {
+  font-size: 16px;
+  color: #6b7280;
+  margin: 0;
+}
+
+.performanceHeaderRight {
+  display: flex;
+  gap: 12px;
+}
+
+/* Evaluation Info Styling */
+.evaluationInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.evaluationType {
+  font-weight: 600;
+  color: #111827;
+  font-size: 14px;
+}
+
+.evaluationPeriod {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+/* Evaluator Info */
+.evaluatorInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.evaluatorName {
+  font-weight: 500;
+  color: #111827;
+  font-size: 14px;
+}
+
+.evaluatorRole {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+/* Rating Info */
+.ratingInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: flex-start;
+}
+
+.ratingBadge {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #111827;
+  text-transform: capitalize;
+}
+
+.ratingScore {
+  font-size: 12px;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+/* Status Badge */
+.statusBadge {
+  font-weight: 600;
+  font-size: 12px;
+  text-transform: capitalize;
+}
+
+/* View Details */
+.viewDetails {
+  color: #4f46e5;
+  font-weight: 500;
+  cursor: pointer;
+  font-size: 14px;
+  transition: color 0.2s ease;
+}
+
+.viewDetails:hover {
+  color: #3730a3;
+}
+
+/* Slide Menu Styling */
+.slideMenuContent {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.slideMenuHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 24px;
+  border-bottom: 1px solid #e5e7eb;
+  background: #f9fafb;
+}
+
+.slideMenuHeader h2 {
+  font-size: 24px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 4px 0;
+}
+
+.slideMenuHeader p {
+  font-size: 14px;
+  color: #6b7280;
+  margin: 0;
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+  color: #6b7280;
+  transition: all 0.2s ease;
+}
+
+.closeButton:hover {
+  background: #e5e7eb;
+  color: #374151;
+}
+
+.slideMenuBody {
+  flex: 1;
+  padding: 24px;
+  overflow-y: auto;
+}
+
+.slideMenuFooter {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 24px;
+  border-top: 1px solid #e5e7eb;
+  background: #f9fafb;
+}
+
+/* Evaluation Detail Content */
+.evaluationDetailContent {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.detailSection {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.detailSection h3 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #111827;
+  margin: 0;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.detailGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.detailItem {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.detailLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.detailValue {
+  font-size: 14px;
+  font-weight: 500;
+  color: #111827;
+}
+
+.detailValue.ratingValue,
+.detailValue.statusValue {
+  font-weight: 600;
+}
+
+/* Category Ratings */
+.categoryRatings {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.categoryItem {
+  padding: 20px;
+  background: #f9fafb;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+}
+
+.categoryHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.categoryName {
+  font-size: 16px;
+  font-weight: 600;
+  color: #111827;
+  margin: 0;
+}
+
+.categoryRating {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.categoryScore {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.categoryComments {
+  font-size: 14px;
+  color: #374151;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* Strengths List */
+.strengthsList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.strengthItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: rgba(16, 185, 129, 0.05);
+  border-radius: 8px;
+  border-left: 4px solid #10b981;
+}
+
+.strengthItem span {
+  font-size: 14px;
+  color: #374151;
+  line-height: 1.5;
+}
+
+/* Improvements List */
+.improvementsList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.improvementItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: rgba(245, 158, 11, 0.05);
+  border-radius: 8px;
+  border-left: 4px solid #f59e0b;
+}
+
+.improvementItem span {
+  font-size: 14px;
+  color: #374151;
+  line-height: 1.5;
+}
+
+/* Goals List */
+.goalsList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.goalItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: rgba(59, 130, 246, 0.05);
+  border-radius: 8px;
+  border-left: 4px solid #3b82f6;
+}
+
+.goalItem span {
+  font-size: 14px;
+  color: #374151;
+  line-height: 1.5;
+}
+
+/* Overall Comments */
+.overallComments {
+  padding: 20px;
+  background: #f9fafb;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+}
+
+.overallComments p {
+  font-size: 14px;
+  color: #374151;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .teacherPerformance {
+    padding: 16px;
+  }
+
+  .performanceHeader {
+    flex-direction: column;
+    gap: 16px;
+    align-items: stretch;
+  }
+
+  .detailGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .categoryHeader {
+    flex-direction: column;
+    gap: 8px;
+    align-items: flex-start;
+  }
+
+  .evaluationInfo,
+  .evaluatorInfo,
+  .ratingInfo {
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 480px) {
+  .categoryItem {
+    padding: 16px;
+  }
+
+  .strengthItem,
+  .improvementItem,
+  .goalItem {
+    padding: 10px;
+    gap: 8px;
+  }
+}

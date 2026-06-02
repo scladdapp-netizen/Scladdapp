@@ -1,0 +1,39 @@
+/* ── Tab wrap ─────────────────────────────────────────────────────────────── */
+.alumni-notifications-tab { max-width: 100%; }
+
+/* ── Header ───────────────────────────────────────────────────────────────── */
+.ant-header {
+  padding-bottom: 20px;
+  border-bottom: 1px solid #e8e8e8;
+  margin-bottom: 20px;
+  display: flex; flex-direction: column; gap: 3px;
+}
+
+.ant-title    { margin: 0; font-size: 20px; font-weight: 800; color: #111111; letter-spacing: -0.02em; }
+.ant-subtitle { margin: 0; font-size: 12px; color: #888888; font-weight: 600; }
+
+/* ── Table column helpers ─────────────────────────────────────────────────── */
+.ant-title-cell { display: flex; flex-direction: column; gap: 2px; }
+.ant-title-main { font-size: 13px; font-weight: 700; color: #111111; }
+.ant-title-meta { font-size: 11px; color: #888888; }
+
+.ant-target-badge {
+  font-size: 11px; font-weight: 600; background: #f4f4f4; color: #555555;
+  padding: 2px 8px; border-radius: 8px; text-transform: capitalize;
+}
+
+.ant-read-badge {
+  display: inline-flex; align-items: center;
+  padding: 2px 10px; border-radius: 10px;
+  font-size: 11px; font-weight: 700;
+}
+.ant-read-badge.read   { background: #dcfce7; color: #166634; }
+.ant-read-badge.unread { background: #fee2e2; color: #dc2626; }
+
+/* ── Dark theme ───────────────────────────────────────────────────────────── */
+[data-theme="dark"] .ant-header   { border-bottom-color: #2a2a2a; }
+[data-theme="dark"] .ant-title    { color: #f0f0f0; }
+[data-theme="dark"] .ant-subtitle { color: #555555; }
+[data-theme="dark"] .ant-title-main { color: #e0e0e0; }
+[data-theme="dark"] .ant-title-meta { color: #555555; }
+[data-theme="dark"] .ant-target-badge { background: #252525; color: #888888; }

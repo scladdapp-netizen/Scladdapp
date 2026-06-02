@@ -1,0 +1,117 @@
+Core Academic Entities:
+
+Session (Academic Session)
+Subsession (Terms/Semesters)
+School
+Student
+Teacher
+Staff
+Admin
+Class
+Subject
+Grade/Level
+Stream
+
+Profile & Identity Entities:
+
+StudentProfile
+TeacherProfile
+StaffProfile
+AdminProfile
+Alumni
+Parent/Guardian
+
+Academic Management:
+
+Timetable
+Attendance
+Assignment
+Assessment
+Exam
+Quiz
+Test
+Result
+Report
+ReportCard
+Certificate
+Curriculum
+Syllabus
+
+Administrative Entities:
+
+Department
+Headmaster
+ClassHeadmaster
+SubjectTeacher
+Enrollment
+Admission
+Promotion
+StudentPromotion
+ClassPromotion
+
+Financial Entities:
+
+Fee
+FeeBilling
+Bill
+Payment
+Income
+Expenses
+Subscription
+Plan (Pricing Plans)
+
+Communication & Events:
+
+Announcement
+Notification
+Communication
+Event
+Calendar
+SchoolCalendar
+
+Resources & Materials:
+
+Resource
+Document
+Book
+Material
+Equipment
+Library
+
+Templates:
+
+GradingTemplate
+FeeBillTemplate
+ReportCardLayoutTemplate
+TimetableTemplate
+AnnouncementTemplate
+ClassPromotionTemplate
+
+System & Settings:
+
+SystemSettings
+Security
+Backup
+Role
+Permission
+User
+Account
+
+Behavioral & Disciplinary:
+
+Disciplinary
+BehaviorAssessment
+Activity
+
+Credentials & Qualifications:
+
+Credential
+Qualification
+Experience
+Performance
+
+Infrastructure:
+
+Classroom
+Building
+Facility

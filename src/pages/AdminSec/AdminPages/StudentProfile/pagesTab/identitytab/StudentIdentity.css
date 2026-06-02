@@ -1,0 +1,251 @@
+/* ── Admission status card ────────────────────────────────────────────────── */
+.si-status-card {
+  border-radius: 14px; overflow: hidden;
+  border: 1px solid #e8e8e8;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  margin-bottom: 20px;
+}
+
+/* Coloured top bar */
+.si-status-card::before {
+  content: ""; display: block; height: 5px;
+}
+.si-status-card.active::before    { background: #22c55e; }
+.si-status-card.inactive::before  { background: #cc3333; }
+.si-status-card.graduated::before { background: #7c3aed; }
+
+.si-status-inner { padding: 18px 20px; background: #ffffff; }
+
+.si-status-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+
+.si-status-title { margin: 0; font-size: 14px; font-weight: 800; color: #111111; letter-spacing: -0.01em; }
+
+.si-status-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 4px 12px; border-radius: 20px;
+  font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.4), 0 1px 2px rgba(0,0,0,0.05);
+}
+
+.si-status-card.active    .si-status-badge { background: #dcfce7; color: #166534; }
+.si-status-card.inactive  .si-status-badge { background: #fecaca; color: #991b1b; }
+.si-status-card.graduated .si-status-badge { background: #ede9fe; color: #5b21b6; }
+
+.si-status-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; }
+
+.si-status-item { display: flex; flex-direction: column; gap: 3px; }
+.si-status-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: #888888; }
+.si-status-value { font-size: 13px; font-weight: 700; color: #111111; }
+.si-status-card.graduated .si-status-value.grad { color: #5b21b6; }
+
+.si-status-extra { margin-top: 14px; padding-top: 14px; border-top: 1px solid #f0f0f0; display: flex; flex-direction: column; gap: 3px; }
+.si-status-remarks { font-size: 13px; color: #555555; font-style: italic; font-weight: 500; }
+
+/* ── Remove panel ─────────────────────────────────────────────────────────── */
+.si-remove-container {
+  display: flex; flex-direction: column;
+  height: 100%; min-height: 0; overflow: hidden; background: #ffffff;
+}
+
+.si-remove-header {
+  position: relative; padding: 24px 28px 22px;
+  background: #cc3333; flex-shrink: 0; overflow: hidden;
+}
+
+.si-remove-header::before {
+  content: ""; position: absolute; width: 140px; height: 140px; border-radius: 50%;
+  border: 22px solid rgba(255,255,255,0.07); top: -50px; right: -30px; pointer-events: none;
+}
+
+.si-remove-header::after {
+  content: ""; position: absolute; width: 44px; height: 44px; border-radius: 8px;
+  border: 1.5px solid rgba(255,255,255,0.08); bottom: -14px; right: 80px;
+  transform: rotate(18deg); pointer-events: none;
+}
+
+.si-remove-deco {
+  position: absolute; width: 70px; height: 70px; border-radius: 50%;
+  border: 10px solid rgba(255,255,255,0.06); bottom: -22px; left: -14px; pointer-events: none;
+}
+
+.si-remove-header-content {
+  position: relative; z-index: 1; display: flex; align-items: center; gap: 16px;
+}
+
+.si-remove-icon {
+  width: 48px; height: 48px; border-radius: 14px;
+  background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.22);
+  display: flex; align-items: center; justify-content: center;
+  color: #ffffff; flex-shrink: 0;
+}
+
+.si-remove-header-content h3 { margin: 0 0 3px; font-size: 16px; font-weight: 800; color: #ffffff; letter-spacing: -0.02em; }
+.si-remove-header-content p  { margin: 0; font-size: 12px; color: rgba(255,255,255,0.65); }
+
+.si-remove-body { flex: 1; overflow-y: auto; padding: 22px 28px; display: flex; flex-direction: column; gap: 16px; }
+.si-remove-body::-webkit-scrollbar { width: 3px; }
+.si-remove-body::-webkit-scrollbar-thumb { background: #e0e0e0; border-radius: 2px; }
+
+.si-remove-warn {
+  padding: 12px 16px; background: #fef9c3;
+  border: 1px solid #fde68a; border-left: 4px solid #f59e0b;
+  border-radius: 10px; font-size: 13px; color: #854d0e; font-weight: 600; line-height: 1.5;
+}
+
+.si-remove-student-info {
+  padding: 16px 18px; background: #f4f4f4; border: 1px solid #e8e8e8;
+  border-radius: 12px; display: flex; flex-direction: column; gap: 5px;
+}
+
+.si-remove-student-name { font-size: 15px; font-weight: 800; color: #111111; }
+.si-remove-student-id   { font-size: 12px; color: #888888; font-family: monospace; }
+
+.si-remove-effects { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 5px; }
+.si-remove-effects li { font-size: 13px; color: #555555; line-height: 1.5; }
+
+.si-remove-field { display: flex; flex-direction: column; gap: 6px; }
+.si-remove-field label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: #888888; }
+.si-remove-field textarea {
+  resize: vertical; border: 1px solid #e8e8e8; border-radius: 10px;
+  padding: 10px 14px; font-size: 13px; color: #111111;
+  font-family: inherit; outline: none; transition: border-color 0.2s;
+  background: #fafafa; min-height: 90px;
+}
+.si-remove-field textarea:focus { border-color: #111111; background: #ffffff; }
+
+.si-remove-danger-note { font-size: 12px; color: #cc3333; font-weight: 700; margin: 0; }
+
+.si-remove-footer {
+  display: flex; justify-content: flex-end; gap: 10px;
+  padding: 16px 28px; border-top: 1px solid #e8e8e8;
+  background: #f7f7f7; flex-shrink: 0;
+}
+
+/* ── Edit panel ───────────────────────────────────────────────────────────── */
+.si-edit-container {
+  display: flex; flex-direction: column;
+  height: 100%; min-height: 0; overflow: hidden; background: #ffffff;
+}
+
+.si-edit-header {
+  position: relative; padding: 24px 28px 22px;
+  background: #111111; flex-shrink: 0; overflow: hidden;
+}
+
+.si-edit-header::before {
+  content: ""; position: absolute; width: 160px; height: 160px; border-radius: 50%;
+  border: 26px solid rgba(255,255,255,0.05); top: -60px; right: -40px; pointer-events: none;
+}
+
+.si-edit-header::after {
+  content: ""; position: absolute; width: 48px; height: 48px; border-radius: 8px;
+  border: 1.5px solid rgba(255,255,255,0.07); bottom: -16px; right: 90px;
+  transform: rotate(18deg); pointer-events: none;
+}
+
+.si-edit-deco  { position: absolute; width: 80px; height: 80px; border-radius: 50%; border: 12px solid rgba(255,255,255,0.04); bottom: -26px; left: -16px; pointer-events: none; }
+.si-edit-deco2 { position: absolute; width: 26px; height: 26px; border-radius: 4px; border: 1.5px solid rgba(255,255,255,0.06); top: 14px; left: 200px; transform: rotate(12deg); pointer-events: none; }
+
+.si-edit-header-content { position: relative; z-index: 1; display: flex; align-items: center; gap: 16px; }
+.si-edit-header-icon { width: 48px; height: 48px; border-radius: 14px; background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; color: #ffffff; flex-shrink: 0; }
+.si-edit-header-text h2 { margin: 0 0 4px; font-size: 16px; font-weight: 800; color: #ffffff; letter-spacing: -0.02em; }
+.si-edit-header-text p  { margin: 0; font-size: 12px; color: rgba(255,255,255,0.5); }
+
+.si-edit-body { flex: 1; min-height: 0; overflow-y: auto; padding: 22px 28px; display: flex; flex-direction: column; gap: 18px; }
+.si-edit-body::-webkit-scrollbar { width: 3px; }
+.si-edit-body::-webkit-scrollbar-thumb { background: #e0e0e0; border-radius: 2px; }
+
+/* Photo row */
+.si-edit-photo-row {
+  display: flex; align-items: center; gap: 18px;
+  padding: 16px 18px; background: #f4f4f4; border: 1px solid #e8e8e8; border-radius: 12px;
+}
+
+.si-edit-photo-wrap {
+  width: 68px; height: 68px; border-radius: 50%; overflow: hidden;
+  background: #e8e8e8; flex-shrink: 0; border: 2px solid #e8e8e8;
+  display: flex; align-items: center; justify-content: center;
+}
+
+.si-edit-photo-wrap img { width: 100%; height: 100%; object-fit: cover; }
+.si-edit-photo-placeholder { font-size: 28px; color: #aaaaaa; }
+
+.si-edit-photo-info { display: flex; flex-direction: column; gap: 5px; }
+.si-edit-photo-title { font-size: 13px; font-weight: 700; color: #111111; margin: 0; }
+.si-edit-photo-change { font-size: 12px; color: #111111; font-weight: 700; cursor: pointer; text-decoration: underline; }
+
+/* Form grid */
+.si-edit-section-title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #888888; padding-bottom: 10px; border-bottom: 1px solid #f0f0f0; }
+.si-edit-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.si-edit-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+
+.si-edit-field { display: flex; flex-direction: column; gap: 5px; }
+.si-edit-field label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: #888888; }
+.si-edit-field input,
+.si-edit-field select,
+.si-edit-field textarea {
+  padding: 9px 12px; border-radius: 8px; border: 1px solid #e8e8e8;
+  font-size: 13px; font-weight: 500; color: #111111; background: #fafafa;
+  outline: none; transition: border-color 0.2s; box-sizing: border-box; width: 100%;
+  font-family: inherit;
+}
+.si-edit-field input:focus,
+.si-edit-field select:focus,
+.si-edit-field textarea:focus { border-color: #111111; background: #ffffff; }
+.si-edit-field textarea { resize: vertical; }
+
+.si-edit-footer {
+  display: flex; justify-content: flex-end; gap: 10px;
+  padding: 16px 28px; border-top: 1px solid #e8e8e8;
+  background: #f7f7f7; flex-shrink: 0;
+}
+
+/* ── Responsive ───────────────────────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .si-status-grid { grid-template-columns: 1fr 1fr; }
+  .si-edit-grid   { grid-template-columns: 1fr; }
+  .si-edit-grid-3 { grid-template-columns: 1fr; }
+  .si-edit-footer { flex-direction: column-reverse; }
+  .si-remove-footer { flex-direction: column-reverse; }
+}
+
+/* ── Dark theme ───────────────────────────────────────────────────────────── */
+[data-theme="dark"] .si-status-card { border-color: #2a2a2a; }
+[data-theme="dark"] .si-status-inner { background: #1a1a1a; }
+[data-theme="dark"] .si-status-title { color: #f0f0f0; }
+[data-theme="dark"] .si-status-value { color: #e0e0e0; }
+[data-theme="dark"] .si-status-label { color: #555555; }
+[data-theme="dark"] .si-status-remarks { color: #888888; }
+[data-theme="dark"] .si-status-extra { border-top-color: #2a2a2a; }
+[data-theme="dark"] .si-remove-container,
+[data-theme="dark"] .si-edit-container { background: #1a1a1a; }
+[data-theme="dark"] .si-edit-header { background: #0a0a0a; }
+[data-theme="dark"] .si-edit-body { background: #1a1a1a; }
+[data-theme="dark"] .si-edit-body::-webkit-scrollbar-thumb { background: #2a2a2a; }
+[data-theme="dark"] .si-edit-photo-row { background: #1e1e1e; border-color: #2a2a2a; }
+[data-theme="dark"] .si-edit-photo-title { color: #e0e0e0; }
+[data-theme="dark"] .si-edit-photo-change { color: #f0f0f0; }
+[data-theme="dark"] .si-edit-section-title { color: #555555; border-bottom-color: #2a2a2a; }
+[data-theme="dark"] .si-edit-field label { color: #555555; }
+[data-theme="dark"] .si-edit-field input,
+[data-theme="dark"] .si-edit-field select,
+[data-theme="dark"] .si-edit-field textarea { background: #252525; border-color: #3a3a3a; color: #e0e0e0; }
+[data-theme="dark"] .si-edit-field input:focus,
+[data-theme="dark"] .si-edit-field select:focus,
+[data-theme="dark"] .si-edit-field textarea:focus { border-color: #f0f0f0; background: #2a2a2a; }
+[data-theme="dark"] .si-edit-footer { background: #1e1e1e; border-top-color: #2a2a2a; }
+[data-theme="dark"] .si-remove-body { background: #1a1a1a; }
+[data-theme="dark"] .si-remove-student-info { background: #1e1e1e; border-color: #2a2a2a; }
+[data-theme="dark"] .si-remove-student-name { color: #f0f0f0; }
+[data-theme="dark"] .si-remove-student-id { color: #555555; }
+[data-theme="dark"] .si-remove-effects li { color: #888888; }
+[data-theme="dark"] .si-remove-field label { color: #555555; }
+[data-theme="dark"] .si-remove-field textarea { background: #252525; border-color: #3a3a3a; color: #e0e0e0; }
+[data-theme="dark"] .si-remove-field textarea:focus { border-color: #f0f0f0; background: #2a2a2a; }
+[data-theme="dark"] .si-remove-footer { background: #1e1e1e; border-top-color: #2a2a2a; }
+
+/* ── Misc helpers ─────────────────────────────────────────────────────────── */
+.si-remove-effects-title { margin: 0 0 8px; font-size: 13px; color: #555555; font-weight: 600; }
+.si-hidden-input { display: none; }
+
+[data-theme="dark"] .si-remove-effects-title { color: #888888; }

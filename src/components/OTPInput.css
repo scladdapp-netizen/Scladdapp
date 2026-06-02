@@ -1,0 +1,63 @@
+/* ── OTP Input Row ─────────────────────────────────────────────────────── */
+.otp-input-row {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  width: 100%;
+}
+
+.otp-box {
+  width: 48px;
+  height: 52px;
+  font-size: 22px;
+  font-weight: 700;
+  text-align: center;
+  border-radius: 12px;
+  border: 1.5px solid #d0d0d0;
+  background: #fafafa;
+  color: #1a1a1a;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+  caret-color: #1a1a1a;
+}
+
+.otp-box:focus {
+  border-color: #1a1a1a;
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.06);
+}
+
+.otp-box-filled {
+  border-color: #1a1a1a;
+  background: #ffffff;
+}
+
+.otp-box-error {
+  border-color: #e55 !important;
+  box-shadow: 0 0 0 3px rgba(238, 85, 85, 0.12) !important;
+  animation: otp-shake 0.35s ease;
+}
+
+@keyframes otp-shake {
+  0%, 100% { transform: translateX(0); }
+  25%       { transform: translateX(-4px); }
+  75%       { transform: translateX(4px); }
+}
+
+[data-theme="dark"] .otp-box {
+  background: #252525;
+  border-color: #3a3a3a;
+  color: #f0f0f0;
+  caret-color: #f0f0f0;
+}
+
+[data-theme="dark"] .otp-box:focus {
+  border-color: #f0f0f0;
+  background: #2a2a2a;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.06);
+}
+
+[data-theme="dark"] .otp-box-filled {
+  border-color: #f0f0f0;
+  background: #2a2a2a;
+}

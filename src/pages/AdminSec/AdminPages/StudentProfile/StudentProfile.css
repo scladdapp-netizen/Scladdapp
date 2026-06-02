@@ -1,0 +1,108 @@
+.spTopTiyle {
+  display: flex;
+  padding: 10px 20px;
+  border-bottom: 1px #c2c2c2 solid;
+}
+
+.sprighttopsec {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.sprighttopsec h2 {
+  margin: 0;
+  font-weight: 100;
+}
+.sprighttopsec p {
+  margin: 0;
+  font-size: 13px;
+  color: rgb(63, 61, 61);
+}
+
+.spleftsec {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  align-items: center;
+}
+
+.spcontent {
+  display: flex;
+}
+
+.spcleftsec {
+  padding: 14px;
+  flex: 2;
+  overflow: hidden;
+}
+
+.spcrightsec {
+  padding: 14px;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.apiLink {
+  color: #0400ff;
+  cursor: pointer;
+}
+
+/* Report Grid Layout */
+.reportGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+.StudentReport {
+  padding: 0px 15px;
+}
+/* Responsive Design */
+@media (max-width: 1300px) {
+  .spTopTiyle {
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px 20px;
+  }
+
+  .spleftsec {
+    justify-content: flex-start;
+  }
+
+  .spcontent {
+    flex-direction: column;
+  }
+
+  .spcleftsec {
+    flex: none;
+    padding: 12px;
+  }
+
+  .spcrightsec {
+    flex: none;
+    padding: 12px;
+  }
+
+  .reportGrid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .spTopTiyle {
+    padding: 12px 16px;
+  }
+
+  .spcleftsec {
+    padding: 8px;
+  }
+
+  .spcrightsec {
+    padding: 8px;
+  }
+}

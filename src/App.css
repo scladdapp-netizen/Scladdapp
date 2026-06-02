@@ -1,0 +1,59 @@
+/* In your CSS file */
+.paystack-button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 6px;
+  font-size: 16px;
+  cursor: pointer;
+  width: 100%;
+  margin-top: 1rem;
+}
+.paystack-buttonn {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 6px;
+  font-size: 16px;
+  width: 100%;
+  opacity: 0.7;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.paystack-button:hover {
+  background-color: #0056b3;
+}
+
+.paystack-button:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
+}
+
+/* table style ///////////////////////////////////////////*/
+/* .a */
+
+/* Row hover effects */
+.ag-theme-alpine .ag-row.row-hover {
+  background-color: #e5e7eb !important;
+  transition: background-color 0.2s ease;
+}
+
+.ag-theme-alpine .ag-row.inactive-row.row-hover {
+  background-color: #fecaca !important;
+}
+
+/* Cell hover effects */
+.ag-theme-alpine .ag-cell.cell-hover {
+  background-color: #d1d5db !important;
+  transition: background-color 0.2s ease;
+}
+
+/* Header borders */
+.ag-theme-alpine .ag-header-cell {
+  border-right: 1px solid #d1d5db !important;
+  border-bottom: 2px solid #374151 !important;
+}

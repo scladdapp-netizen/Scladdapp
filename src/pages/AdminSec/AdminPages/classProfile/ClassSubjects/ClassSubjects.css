@@ -1,0 +1,304 @@
+/* ── Wrap ─────────────────────────────────────────────────────────────────── */
+.classSubjects { padding: 0; }
+
+/* ── Header ───────────────────────────────────────────────────────────────── */
+.csHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #e8e8e8;
+  margin-bottom: 20px;
+  gap: 16px;
+}
+
+.csHeaderLeft { flex: 1; display: flex; flex-direction: column; gap: 3px; }
+.csTitle    { margin: 0; font-size: 20px; font-weight: 800; color: #111111; letter-spacing: -0.02em; }
+.csSubtitle { margin: 0; font-size: 12px; color: #888888; font-weight: 600; }
+.csHeaderActions { display: flex; gap: 8px; align-items: center; flex-shrink: 0; }
+
+/* ── Header buttons ───────────────────────────────────────────────────────── */
+.cs-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  border: 1px solid transparent;
+}
+
+.cs-btn-primary  { background: #111111; color: #ffffff; border-color: #111111; }
+.cs-btn-primary:hover { background: #333333; }
+.cs-btn-secondary { background: #f4f4f4; color: #111111; border-color: #e8e8e8; }
+.cs-btn-secondary:hover { background: #111111; color: #ffffff; border-color: #111111; }
+
+/* ── Table container ──────────────────────────────────────────────────────── */
+.csTableContainer { border-radius: 12px; overflow: hidden; }
+
+/* ── Row dropdown ─────────────────────────────────────────────────────────── */
+.cs-row-dropdown { position: relative; display: inline-block; }
+
+.cs-row-btn {
+  background: none;
+  border: 1px solid #e8e8e8;
+  border-radius: 6px;
+  padding: 4px 8px;
+  cursor: pointer;
+  color: #888888;
+  transition: background 0.15s, color 0.15s;
+  display: flex; align-items: center;
+}
+.cs-row-btn:hover { background: #f4f4f4; color: #111111; }
+
+.cs-row-menu {
+  position: absolute; right: 0; top: calc(100% + 4px);
+  z-index: 100;
+  background: #ffffff;
+  border: 1px solid #e8e8e8;
+  border-radius: 10px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+  min-width: 140px;
+  overflow: hidden;
+  animation: cs-fade 0.12s ease-out;
+}
+
+@keyframes cs-fade {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.cs-row-menu-item {
+  width: 100%; padding: 10px 14px;
+  text-align: left; background: none; border: none;
+  font-size: 13px; font-weight: 600; color: #111111;
+  cursor: pointer; transition: background 0.12s;
+  display: flex; align-items: center; gap: 8px;
+}
+.cs-row-menu-item:hover { background: #f4f4f4; }
+.cs-row-menu-item.danger { color: #cc3333; border-top: 1px solid #f0f0f0; }
+.cs-row-menu-item.danger:hover { background: #fff0f0; }
+
+/* ── Subject cell ─────────────────────────────────────────────────────────── */
+.cs-subject-cell { display: flex; align-items: center; gap: 10px; }
+
+.cs-subject-icon {
+  width: 32px; height: 32px; border-radius: 8px;
+  background: #f0f0f0;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  color: #888888;
+}
+
+.cs-subject-name { font-weight: 700; font-size: 13.5px; color: #111111; margin: 0 0 2px; }
+.cs-subject-code {
+  font-size: 11px; font-weight: 600; color: #888888;
+  font-family: monospace;
+  background: #f0f0f0; padding: 1px 6px; border-radius: 4px;
+  display: inline-block;
+}
+
+/* ── Status badge ─────────────────────────────────────────────────────────── */
+.cs-status {
+  display: inline-flex; align-items: center;
+  padding: 3px 10px; border-radius: 20px;
+  font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;
+}
+.cs-status.active   { background: #dcfce7; color: #166534; }
+.cs-status.inactive { background: #fecaca; color: #991b1b; }
+
+/* ── Slide panels ─────────────────────────────────────────────────────────── */
+.cs-panel {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  background: #ffffff;
+}
+
+.cs-panel-header {
+  position: relative;
+  padding: 22px 24px 20px;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.cs-panel-header.default { background: #111111; }
+.cs-panel-header.warning { background: #cc3333; }
+.cs-panel-header.neutral { background: #111111; }
+
+.cs-panel-header::before {
+  content: "";
+  position: absolute;
+  width: 120px; height: 120px; border-radius: 50%;
+  border: 18px solid rgba(255,255,255,0.06);
+  top: -40px; right: -24px; pointer-events: none;
+}
+
+.cs-panel-header-deco {
+  position: absolute;
+  width: 60px; height: 60px; border-radius: 50%;
+  border: 10px solid rgba(255,255,255,0.04);
+  bottom: -20px; left: -12px; pointer-events: none;
+}
+
+.cs-panel-header-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.cs-panel-header-icon {
+  width: 40px; height: 40px; border-radius: 10px;
+  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.18);
+  display: flex; align-items: center; justify-content: center;
+  color: #ffffff; flex-shrink: 0;
+}
+
+.cs-panel-header-text h2 {
+  margin: 0 0 3px;
+  font-size: 14px; font-weight: 800; color: #ffffff; letter-spacing: -0.01em;
+}
+.cs-panel-header-text p {
+  margin: 0;
+  font-size: 12px; color: rgba(255,255,255,0.55);
+}
+
+.cs-panel-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.cs-panel-body::-webkit-scrollbar { width: 3px; }
+.cs-panel-body::-webkit-scrollbar-thumb { background: #e0e0e0; border-radius: 2px; }
+
+.cs-panel-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.cs-panel-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 14px 24px;
+  border-top: 1px solid #e8e8e8;
+  background: #f7f7f7;
+  flex-shrink: 0;
+}
+
+/* ── Warn box ─────────────────────────────────────────────────────────────── */
+.cs-warn-box {
+  padding: 12px 14px; border-radius: 8px;
+  font-size: 13px; font-weight: 600; line-height: 1.5;
+  background: #fef9c3; border: 1px solid #fde68a;
+  border-left: 3px solid #f59e0b; color: #854d0e;
+}
+
+/* ── History card ─────────────────────────────────────────────────────────── */
+.cs-history-card {
+  background: #ffffff;
+  border: 1px solid #e8e8e8;
+  border-radius: 12px;
+  padding: 16px;
+  display: flex; flex-direction: column; gap: 12px;
+  flex-shrink: 0;
+  transition: box-shadow 0.15s;
+}
+.cs-history-card:hover { box-shadow: 0 2px 10px rgba(0,0,0,0.06); }
+
+.cs-history-card-top {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+}
+.cs-history-card-info { display: flex; align-items: center; gap: 10px; }
+
+.cs-history-icon {
+  width: 36px; height: 36px; border-radius: 8px;
+  background: #f0f0f0;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; color: #888888;
+}
+
+.cs-history-name { margin: 0; font-weight: 800; font-size: 14px; color: #111111; }
+.cs-history-code { margin: 0; font-size: 11px; color: #888888; font-family: monospace; }
+
+.cs-history-dates { display: flex; gap: 20px; }
+.cs-history-date-item { display: flex; flex-direction: column; gap: 2px; }
+.cs-history-date-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: #aaaaaa; }
+.cs-history-date-value { font-size: 12px; font-weight: 700; color: #333333; }
+
+.cs-history-actions {
+  display: flex; justify-content: flex-end; gap: 8px;
+  padding-top: 10px; border-top: 1px solid #f0f0f0;
+}
+
+.cs-history-btn {
+  padding: 5px 12px; border-radius: 6px;
+  font-size: 11px; font-weight: 700; cursor: pointer;
+  transition: background 0.15s; border: 1px solid transparent;
+  display: inline-flex; align-items: center; gap: 5px;
+}
+.cs-history-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.cs-history-btn.restore { background: #f0fdf4; border-color: #86efac; color: #16a34a; }
+.cs-history-btn.restore:hover:not(:disabled) { background: #dcfce7; }
+.cs-history-btn.delete  { background: #fff0f0; border-color: #fca5a5; color: #cc3333; }
+.cs-history-btn.delete:hover:not(:disabled)  { background: #fecaca; }
+
+/* ── Empty / loading ──────────────────────────────────────────────────────── */
+.cs-panel-empty {
+  text-align: center; padding: 40px 20px;
+  font-size: 13px; color: #888888; font-weight: 600;
+}
+
+/* ── Responsive ───────────────────────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .csHeader { flex-direction: column; gap: 14px; }
+  .cs-panel-grid { grid-template-columns: 1fr; }
+}
+
+/* ── Dark theme ───────────────────────────────────────────────────────────── */
+[data-theme="dark"] .csTitle    { color: #f0f0f0; }
+[data-theme="dark"] .csSubtitle { color: #555555; }
+[data-theme="dark"] .csHeader   { border-bottom-color: #2a2a2a; }
+[data-theme="dark"] .cs-btn-primary  { background: #f0f0f0; color: #111111; border-color: #f0f0f0; }
+[data-theme="dark"] .cs-btn-primary:hover { background: #ffffff; }
+[data-theme="dark"] .cs-btn-secondary { background: #252525; border-color: #3a3a3a; color: #e0e0e0; }
+[data-theme="dark"] .cs-btn-secondary:hover { background: #f0f0f0; color: #111111; border-color: #f0f0f0; }
+[data-theme="dark"] .cs-row-btn { border-color: #2a2a2a; color: #555555; }
+[data-theme="dark"] .cs-row-btn:hover { background: #252525; color: #e0e0e0; }
+[data-theme="dark"] .cs-row-menu { background: #1e1e1e; border-color: #2a2a2a; box-shadow: 0 6px 20px rgba(0,0,0,0.4); }
+[data-theme="dark"] .cs-row-menu-item { color: #e0e0e0; }
+[data-theme="dark"] .cs-row-menu-item:hover { background: #252525; }
+[data-theme="dark"] .cs-row-menu-item.danger { color: #f87171; border-top-color: #2a2a2a; }
+[data-theme="dark"] .cs-row-menu-item.danger:hover { background: #2a1a1a; }
+[data-theme="dark"] .cs-subject-icon { background: #2a2a2a; color: #555555; }
+[data-theme="dark"] .cs-subject-name { color: #f0f0f0; }
+[data-theme="dark"] .cs-subject-code { background: #2a2a2a; color: #888888; }
+[data-theme="dark"] .cs-status.active   { background: #052e16; color: #4ade80; }
+[data-theme="dark"] .cs-status.inactive { background: #2d0a0a; color: #f87171; }
+[data-theme="dark"] .cs-panel { background: #1a1a1a; }
+[data-theme="dark"] .cs-panel-header.default,
+[data-theme="dark"] .cs-panel-header.neutral { background: #0a0a0a; }
+[data-theme="dark"] .cs-panel-body { background: #1a1a1a; }
+[data-theme="dark"] .cs-panel-body::-webkit-scrollbar-thumb { background: #2a2a2a; }
+[data-theme="dark"] .cs-panel-footer { background: #1e1e1e; border-top-color: #2a2a2a; }
+[data-theme="dark"] .cs-warn-box { background: #1c1200; border-color: #3a2a00; border-left-color: #f59e0b; color: #fcd34d; }
+[data-theme="dark"] .cs-history-card { background: #1e1e1e; border-color: #2a2a2a; }
+[data-theme="dark"] .cs-history-icon { background: #2a2a2a; color: #555555; }
+[data-theme="dark"] .cs-history-name { color: #f0f0f0; }
+[data-theme="dark"] .cs-history-code { color: #555555; }
+[data-theme="dark"] .cs-history-date-value { color: #cccccc; }
+[data-theme="dark"] .cs-history-actions { border-top-color: #2a2a2a; }
+[data-theme="dark"] .cs-panel-empty { color: #555555; }

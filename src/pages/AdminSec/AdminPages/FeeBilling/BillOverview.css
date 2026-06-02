@@ -1,0 +1,177 @@
+/* ── Wrap ─────────────────────────────────────────────────────────────────── */
+.bo-wrap {
+  display: flex; flex-direction: column; gap: 16px;
+  max-width: 800px;
+}
+
+/* ── Actions row ──────────────────────────────────────────────────────────── */
+.bo-actions-row {
+  display: flex; justify-content: flex-end; gap: 8px;
+}
+
+/* ── Meta grid ────────────────────────────────────────────────────────────── */
+.bo-meta-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
+}
+
+.bo-meta-card {
+  background: #f7f7f7; border: 1px solid #e8e8e8;
+  border-radius: 10px; padding: 12px 16px;
+  display: flex; flex-direction: column; gap: 4px;
+}
+
+.bo-meta-label {
+  font-size: 10px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.07em; color: #aaaaaa;
+}
+
+.bo-meta-value {
+  font-size: 13px; font-weight: 700; color: #111111;
+  text-transform: capitalize;
+}
+
+/* ── Section card ─────────────────────────────────────────────────────────── */
+.bo-section {
+  background: #ffffff; border: 1px solid #e8e8e8;
+  border-radius: 10px; padding: 16px 20px;
+  display: flex; flex-direction: column; gap: 8px;
+}
+
+.bo-section-alt { background: #f7f7f7; }
+
+.bo-section-title {
+  font-size: 10px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.08em; color: #888888;
+  padding-bottom: 8px; border-bottom: 1px solid #f0f0f0;
+  display: block;
+}
+
+.bo-amount {
+  margin: 0; font-size: 22px; font-weight: 800; color: #111111;
+  letter-spacing: -0.02em;
+}
+
+.bo-installment-note {
+  margin: 0; font-size: 12px; color: #888888;
+}
+
+.bo-description-text {
+  margin: 0; font-size: 14px; color: #333333; line-height: 1.7;
+}
+
+/* ── Bill items ───────────────────────────────────────────────────────────── */
+.bo-items-list { display: flex; flex-direction: column; gap: 4px; }
+
+.bo-item-row {
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: 13px; padding: 6px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.bo-item-name  { color: #333333; }
+.bo-item-amount { font-weight: 700; color: #111111; }
+
+.bo-item-total {
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: 14px; font-weight: 800; color: #111111;
+  padding: 8px 0 0;
+}
+
+/* ── Created row ──────────────────────────────────────────────────────────── */
+.bo-created-row {
+  display: flex; gap: 24px; font-size: 13px; color: #888888;
+}
+
+/* ── Confirm panels ───────────────────────────────────────────────────────── */
+.bo-confirm-panel {
+  display: flex; flex-direction: column;
+  flex: 1; min-height: 0; overflow: hidden; background: #ffffff;
+}
+
+.bo-confirm-header {
+  position: relative; padding: 22px 24px 20px;
+  flex-shrink: 0; overflow: hidden;
+}
+.bo-confirm-header.danger  { background: #cc3333; }
+.bo-confirm-header.success { background: #16a34a; }
+
+.bo-confirm-header::before {
+  content: ""; position: absolute;
+  width: 120px; height: 120px; border-radius: 50%;
+  border: 18px solid rgba(255,255,255,0.07);
+  top: -40px; right: -24px; pointer-events: none;
+}
+
+.bo-confirm-deco {
+  position: absolute; width: 60px; height: 60px; border-radius: 50%;
+  border: 10px solid rgba(255,255,255,0.05);
+  bottom: -20px; left: -12px; pointer-events: none;
+}
+
+.bo-confirm-header-content {
+  position: relative; z-index: 1; display: flex; align-items: flex-start; gap: 14px;
+}
+
+.bo-confirm-icon {
+  width: 40px; height: 40px; border-radius: 10px;
+  background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.22);
+  display: flex; align-items: center; justify-content: center;
+  color: #ffffff; flex-shrink: 0;
+}
+
+.bo-confirm-header-text h3 { margin: 0 0 3px; font-size: 14px; font-weight: 800; color: #ffffff; }
+.bo-confirm-header-text p  { margin: 0; font-size: 12px; color: rgba(255,255,255,0.6); }
+
+.bo-confirm-body {
+  flex: 1; min-height: 0; overflow-y: auto; padding: 20px 24px;
+  display: flex; flex-direction: column; gap: 12px;
+}
+
+.bo-confirm-name {
+  padding: 12px 14px; background: #f4f4f4; border: 1px solid #e8e8e8;
+  border-radius: 10px; font-size: 14px; font-weight: 800; color: #111111;
+}
+
+.bo-confirm-warn {
+  padding: 11px 14px; border-radius: 8px;
+  background: #fef9c3; border: 1px solid #fde68a; border-left: 3px solid #f59e0b;
+  font-size: 12px; font-weight: 600; color: #854d0e; line-height: 1.5;
+}
+
+.bo-confirm-info {
+  padding: 11px 14px; border-radius: 8px;
+  background: #f0fdf4; border: 1px solid #bbf7d0; border-left: 3px solid #22c55e;
+  font-size: 12px; font-weight: 600; color: #166534; line-height: 1.5;
+}
+
+.bo-confirm-footer {
+  display: flex; justify-content: flex-end; gap: 10px;
+  padding: 14px 24px; border-top: 1px solid #e8e8e8;
+  background: #f7f7f7; flex-shrink: 0;
+}
+
+/* ── Responsive ───────────────────────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .bo-meta-grid { grid-template-columns: 1fr 1fr; }
+}
+
+/* ── Dark theme ───────────────────────────────────────────────────────────── */
+[data-theme="dark"] .bo-meta-card { background: #1e1e1e; border-color: #2a2a2a; }
+[data-theme="dark"] .bo-meta-value { color: #e0e0e0; }
+[data-theme="dark"] .bo-section { background: #1a1a1a; border-color: #2a2a2a; }
+[data-theme="dark"] .bo-section-alt { background: #1e1e1e; }
+[data-theme="dark"] .bo-section-title { color: #555555; border-bottom-color: #2a2a2a; }
+[data-theme="dark"] .bo-amount { color: #f0f0f0; }
+[data-theme="dark"] .bo-installment-note { color: #555555; }
+[data-theme="dark"] .bo-description-text { color: #cccccc; }
+[data-theme="dark"] .bo-item-row { border-bottom-color: #2a2a2a; }
+[data-theme="dark"] .bo-item-name { color: #cccccc; }
+[data-theme="dark"] .bo-item-amount { color: #e0e0e0; }
+[data-theme="dark"] .bo-item-total { color: #f0f0f0; }
+[data-theme="dark"] .bo-created-row { color: #555555; }
+[data-theme="dark"] .bo-confirm-panel { background: #1a1a1a; }
+[data-theme="dark"] .bo-confirm-body { background: #1a1a1a; }
+[data-theme="dark"] .bo-confirm-name { background: #1e1e1e; border-color: #2a2a2a; color: #f0f0f0; }
+[data-theme="dark"] .bo-confirm-warn { background: #1c1200; border-color: #3a2a00; border-left-color: #f59e0b; color: #fcd34d; }
+[data-theme="dark"] .bo-confirm-info { background: #052e16; border-color: #166534; border-left-color: #22c55e; color: #4ade80; }
+[data-theme="dark"] .bo-confirm-footer { background: #1e1e1e; border-top-color: #2a2a2a; }

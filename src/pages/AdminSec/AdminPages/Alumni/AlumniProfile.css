@@ -1,0 +1,84 @@
+.alumni-profile {
+  height: 100vh;
+  overflow: hidden;
+  background-color: #f8fafc;
+}
+
+.alumni-profile-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: #f8fafc;
+}
+
+.loading-spinner {
+  font-size: 18px;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.alumni-profile-error {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: #f8fafc;
+  text-align: center;
+  padding: 20px;
+}
+
+.alumni-profile-error h2 {
+  font-size: 24px;
+  color: #1f2937;
+  margin-bottom: 12px;
+}
+
+.alumni-profile-error p {
+  font-size: 16px;
+  color: #6b7280;
+  margin-bottom: 24px;
+}
+
+.alumni-profile-error button {
+  background-color: #111111;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+
+.alumni-profile-error button:hover {
+  background-color: #333333;
+}
+
+/* ── Dark theme ───────────────────────────────────────────────────────────── */
+[data-theme="dark"] .alumni-profile          { background-color: #141414; }
+[data-theme="dark"] .alumni-profile-loading  { background-color: #141414; }
+[data-theme="dark"] .loading-spinner         { color: #555555; }
+[data-theme="dark"] .alumni-profile-error    { background-color: #141414; }
+[data-theme="dark"] .alumni-profile-error h2 { color: #f0f0f0; }
+[data-theme="dark"] .alumni-profile-error p  { color: #555555; }
+[data-theme="dark"] .alumni-profile-error button { background-color: #f0f0f0; color: #111111; }
+[data-theme="dark"] .alumni-profile-error button:hover { background-color: #cccccc; }
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .alumni-profile-error h2 {
+    font-size: 20px;
+  }
+
+  .alumni-profile-error p {
+    font-size: 14px;
+  }
+
+  .alumni-profile-error button {
+    padding: 10px 20px;
+    font-size: 13px;
+  }
+}

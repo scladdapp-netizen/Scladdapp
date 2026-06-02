@@ -1,0 +1,206 @@
+/* ── Wrapper ──────────────────────────────────────────────────────────────── */
+.tas-wrap {
+  display: flex; flex-direction: column; gap: 14px;
+}
+
+/* ── Option grid — 2 per row, scrollable ──────────────────────────────────── */
+.tas-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+.tas-grid::-webkit-scrollbar { width: 3px; }
+.tas-grid::-webkit-scrollbar-thumb { background: #e0e0e0; border-radius: 2px; }
+
+/* ── Option card ──────────────────────────────────────────────────────────── */
+.tas-option {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px;
+  border: 1.5px solid #e8e8e8; border-radius: 10px;
+  background: #ffffff; cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  position: relative;
+}
+.tas-option:hover { border-color: #111111; background: #fafafa; }
+.tas-option.selected { border-color: #111111; background: #f4f4f4; }
+
+.tas-option-icon {
+  width: 34px; height: 34px; border-radius: 8px;
+  background: #f0f0f0; color: #555555;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; transition: background 0.15s, color 0.15s;
+}
+.tas-option.selected .tas-option-icon { background: #111111; color: #ffffff; }
+
+.tas-option-body {
+  flex: 1; min-width: 0;
+  display: flex; flex-direction: column; gap: 1px;
+}
+
+.tas-option-label {
+  font-size: 12px; font-weight: 700; color: #111111;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+.tas-option-desc {
+  font-size: 10px; color: #888888; line-height: 1.3;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+.tas-option-check {
+  width: 18px; height: 18px; border-radius: 50%;
+  background: #111111; color: #ffffff;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+
+/* ── Summary banner ───────────────────────────────────────────────────────── */
+.tas-summary {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 14px;
+  background: #f4f4f4; border: 1px solid #e8e8e8; border-radius: 8px;
+  font-size: 13px; color: #333333;
+}
+.tas-summary svg { flex-shrink: 0; color: #888888; }
+.tas-summary strong { color: #111111; }
+
+/* ── Recipients section ───────────────────────────────────────────────────── */
+.tas-recipients { display: flex; flex-direction: column; gap: 8px; }
+
+.tas-recipients-title {
+  margin: 0; font-size: 11px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.07em; color: #888888;
+}
+
+.tas-recipients-grid {
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px;
+  max-height: 240px; overflow-y: auto; padding: 2px;
+}
+.tas-recipients-grid::-webkit-scrollbar { width: 3px; }
+.tas-recipients-grid::-webkit-scrollbar-thumb { background: #e0e0e0; border-radius: 2px; }
+
+.tas-recipient-card {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  padding: 8px 10px;
+  background: #f7f7f7; border: 1px solid #e8e8e8; border-radius: 8px;
+  transition: background 0.1s;
+}
+.tas-recipient-card:hover { background: #f0f0f0; }
+
+.tas-recipient-info {
+  flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px;
+}
+
+.tas-recipient-row {
+  display: flex; align-items: center; gap: 5px;
+}
+
+.tas-recipient-name {
+  font-size: 12px; font-weight: 700; color: #111111;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+.tas-recipient-sub {
+  font-size: 10px; color: #888888;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+.tas-type-badge {
+  font-size: 9px; font-weight: 700; padding: 1px 6px; border-radius: 8px;
+  flex-shrink: 0; white-space: nowrap;
+}
+
+.tas-remove-btn {
+  background: none; border: none; color: #aaaaaa;
+  cursor: pointer; padding: 3px; border-radius: 4px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; transition: color 0.15s, background 0.15s;
+}
+.tas-remove-btn:hover { color: #cc3333; background: #fff0f0; }
+
+/* ── Loading / helper text ────────────────────────────────────────────────── */
+.tas-loading {
+  margin: 0; font-size: 12px; color: #888888; padding: 4px 0;
+}
+
+/* ── Selection interface ──────────────────────────────────────────────────── */
+.tas-selection { display: flex; flex-direction: column; gap: 12px; }
+.tas-searchable { display: flex; flex-direction: column; gap: 6px; }
+
+/* ── Year section ─────────────────────────────────────────────────────────── */
+.tas-year-section { display: flex; flex-direction: column; gap: 10px; }
+
+.tas-section-label {
+  margin: 0; font-size: 11px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.07em; color: #888888;
+}
+
+.tas-year-grid {
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px;
+}
+
+.tas-year-option {
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  padding: 12px 10px; text-align: center;
+  border: 1.5px solid #e8e8e8; border-radius: 10px;
+  background: #ffffff; cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+.tas-year-option:hover   { border-color: #111111; background: #fafafa; }
+.tas-year-option.selected { border-color: #111111; background: #f4f4f4; }
+
+.tas-year-label {
+  font-size: 13px; font-weight: 700; color: #111111;
+}
+.tas-year-option.selected .tas-year-label { color: #111111; }
+
+.tas-year-count {
+  font-size: 11px; color: #888888;
+}
+
+/* ── Responsive ───────────────────────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .tas-grid             { grid-template-columns: 1fr; max-height: none; }
+  .tas-recipients-grid  { grid-template-columns: 1fr; }
+  .tas-year-grid        { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 420px) {
+  .tas-grid             { grid-template-columns: 1fr; }
+  .tas-recipients-grid  { grid-template-columns: 1fr; }
+  .tas-year-grid        { grid-template-columns: 1fr; }
+}
+
+/* ── Dark theme ───────────────────────────────────────────────────────────── */
+[data-theme="dark"] .tas-option { background: #1e1e1e; border-color: #2a2a2a; }
+[data-theme="dark"] .tas-grid::-webkit-scrollbar-thumb { background: #2a2a2a; }
+[data-theme="dark"] .tas-option:hover { border-color: #f0f0f0; background: #252525; }
+[data-theme="dark"] .tas-option.selected { border-color: #f0f0f0; background: #252525; }
+[data-theme="dark"] .tas-option-icon { background: #2a2a2a; color: #888888; }
+[data-theme="dark"] .tas-option.selected .tas-option-icon { background: #f0f0f0; color: #111111; }
+[data-theme="dark"] .tas-option-label { color: #e0e0e0; }
+[data-theme="dark"] .tas-option-desc  { color: #555555; }
+[data-theme="dark"] .tas-option-check { background: #f0f0f0; color: #111111; }
+
+[data-theme="dark"] .tas-summary { background: #1e1e1e; border-color: #2a2a2a; color: #cccccc; }
+[data-theme="dark"] .tas-summary strong { color: #f0f0f0; }
+
+[data-theme="dark"] .tas-recipients-title { color: #555555; }
+[data-theme="dark"] .tas-recipients-grid::-webkit-scrollbar-thumb { background: #2a2a2a; }
+[data-theme="dark"] .tas-recipient-card { background: #1e1e1e; border-color: #2a2a2a; }
+[data-theme="dark"] .tas-recipient-card:hover { background: #252525; }
+[data-theme="dark"] .tas-recipient-name { color: #e0e0e0; }
+[data-theme="dark"] .tas-recipient-sub  { color: #555555; }
+[data-theme="dark"] .tas-remove-btn { color: #555555; }
+[data-theme="dark"] .tas-remove-btn:hover { color: #f87171; background: #2a1a1a; }
+
+[data-theme="dark"] .tas-loading { color: #555555; }
+[data-theme="dark"] .tas-section-label { color: #555555; }
+
+[data-theme="dark"] .tas-year-option { background: #1e1e1e; border-color: #2a2a2a; }
+[data-theme="dark"] .tas-year-option:hover   { border-color: #f0f0f0; background: #252525; }
+[data-theme="dark"] .tas-year-option.selected { border-color: #f0f0f0; background: #252525; }
+[data-theme="dark"] .tas-year-label { color: #e0e0e0; }
+[data-theme="dark"] .tas-year-count { color: #555555; }

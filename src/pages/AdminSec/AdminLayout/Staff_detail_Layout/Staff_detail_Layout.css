@@ -1,0 +1,52 @@
+/* DEPRECATED - Now using unified apt_main layout */
+/*
+.staff-detail-layout {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.staff-detail-sidebar {
+  width: 280px;
+  flex-shrink: 0;
+  background: #ffffff;
+  border-right: 1px solid #e5e7eb;
+  overflow-y: auto;
+}
+
+.staff-detail-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: #f9fafb;
+}
+
+.staff-detail-header {
+  flex: 1;
+  overflow: hidden;
+}
+
+/* Responsive design */
+@media (max-width: 1024px) {
+  .staff-detail-sidebar {
+    width: 260px;
+  }
+}
+
+@media (max-width: 768px) {
+  .staff-detail-layout {
+    flex-direction: column;
+  }
+
+  .staff-detail-sidebar {
+    width: 100%;
+    height: auto;
+    max-height: 200px;
+  }
+
+  .staff-detail-main {
+    flex: 1;
+  }
+}
+*/

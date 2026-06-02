@@ -1,0 +1,258 @@
+/* ── Main Container ───────────────────────────────────────────────────────── */
+.classStudentInfo { max-width: 100%; }
+
+/* ── Header ───────────────────────────────────────────────────────────────── */
+.classHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #e8e8e8;
+  margin-bottom: 24px;
+  gap: 16px;
+}
+
+.classHeaderLeft { flex: 1; display: flex; flex-direction: column; gap: 3px; }
+
+.classTitle {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 800;
+  color: #111111;
+  letter-spacing: -0.02em;
+}
+
+.classSubtitle {
+  margin: 0;
+  font-size: 12px;
+  color: #888888;
+  font-weight: 600;
+}
+
+.classHeaderRight {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+/* ── Overview Card ────────────────────────────────────────────────────────── */
+.classOverview { margin-bottom: 0; }
+
+.overviewCard {
+  background: #ffffff;
+  border: 1px solid #e8e8e8;
+  border-radius: 14px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: box-shadow 0.15s;
+}
+
+.overviewCard:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.07); }
+
+/* Light header band */
+.overviewCardHeader {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 20px 22px;
+  background: #f7f7f7;
+  border-bottom: 1px solid #e8e8e8;
+  position: relative;
+  overflow: hidden;
+}
+
+.overviewCardHeader::before {
+  content: "";
+  position: absolute;
+  width: 130px; height: 130px;
+  border-radius: 50%;
+  border: 22px solid rgba(0,0,0,0.04);
+  top: -50px; right: -30px;
+  pointer-events: none;
+}
+
+.overviewCardHeader::after {
+  content: "";
+  position: absolute;
+  width: 50px; height: 50px;
+  border-radius: 8px;
+  border: 1.5px solid rgba(0,0,0,0.03);
+  bottom: -16px; right: 90px;
+  transform: rotate(18deg);
+  pointer-events: none;
+}
+
+.overviewHeaderDeco {
+  position: absolute;
+  width: 70px; height: 70px;
+  border-radius: 50%;
+  border: 10px solid rgba(0,0,0,0.03);
+  bottom: -22px; left: -14px;
+  pointer-events: none;
+}
+
+.overviewHeaderIcon {
+  width: 46px; height: 46px;
+  border-radius: 12px;
+  background: #ffffff;
+  border: 1px solid #e8e8e8;
+  display: flex; align-items: center; justify-content: center;
+  color: #111111;
+  flex-shrink: 0;
+  position: relative; z-index: 1;
+}
+
+.overviewHeaderText { position: relative; z-index: 1; }
+.overviewHeaderText h3 { margin: 0 0 3px; font-size: 15px; font-weight: 800; color: #111111; letter-spacing: -0.02em; }
+.overviewHeaderText p  { margin: 0; font-size: 12px; color: #888888; }
+
+/* Card body */
+.overviewCardBody { padding: 20px 22px; }
+
+.overviewGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 14px;
+}
+
+/* Card footer */
+.overviewCardFooter {
+  padding: 12px 22px;
+  border-top: 1px solid #f0f0f0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #888888;
+  transition: color 0.15s;
+}
+
+.overviewCard:hover .overviewCardFooter { color: #111111; }
+
+/* ── State boxes ──────────────────────────────────────────────────────────── */
+.csi-state-box {
+  text-align: center;
+  padding: 60px 20px;
+  display: flex; flex-direction: column; align-items: center; gap: 10px;
+}
+.csi-state-box h3 { margin: 0; font-size: 15px; font-weight: 800; color: #111111; }
+.csi-state-box p  { margin: 0; font-size: 13px; color: #888888; }
+.csi-state-error h3 { color: #cc3333; }
+
+/* ── Slide panel (csp-) ───────────────────────────────────────────────────── */
+.csp-container {
+  display: flex; flex-direction: column;
+  height: 100%; min-height: 0; overflow: hidden; background: #ffffff;
+}
+
+.csp-header {
+  position: relative;
+  padding: 22px 24px 20px;
+  background: #111111;
+  flex-shrink: 0; overflow: hidden;
+}
+
+.csp-header::before {
+  content: ""; position: absolute;
+  width: 120px; height: 120px; border-radius: 50%;
+  border: 18px solid rgba(255,255,255,0.05);
+  top: -40px; right: -24px; pointer-events: none;
+}
+
+.csp-header-deco {
+  position: absolute;
+  width: 60px; height: 60px; border-radius: 50%;
+  border: 10px solid rgba(255,255,255,0.04);
+  bottom: -20px; left: -12px; pointer-events: none;
+}
+
+.csp-header-content { position: relative; z-index: 1; display: flex; align-items: center; gap: 14px; }
+
+.csp-header-icon {
+  width: 40px; height: 40px; border-radius: 10px;
+  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.18);
+  display: flex; align-items: center; justify-content: center;
+  color: #ffffff; flex-shrink: 0;
+}
+
+.csp-header-text h2 { margin: 0 0 3px; font-size: 14px; font-weight: 800; color: #ffffff; letter-spacing: -0.02em; }
+.csp-header-text p  { margin: 0; font-size: 12px; color: rgba(255,255,255,0.5); }
+
+.csp-body {
+  flex: 1; min-height: 0; overflow-y: auto;
+  padding: 20px 24px;
+  display: flex; flex-direction: column; gap: 16px;
+}
+.csp-body::-webkit-scrollbar { width: 3px; }
+.csp-body::-webkit-scrollbar-thumb { background: #e0e0e0; border-radius: 2px; }
+
+.csp-footer {
+  display: flex; justify-content: flex-end; gap: 10px;
+  padding: 14px 24px;
+  border-top: 1px solid #e8e8e8;
+  background: #f7f7f7; flex-shrink: 0;
+}
+
+/* ── Current class info box ───────────────────────────────────────────────── */
+.csi-current-class-box {
+  background: #f4f4f4; border: 1px solid #e8e8e8; border-radius: 10px;
+  padding: 14px 16px;
+}
+.csi-current-class-box h4 { margin: 0 0 6px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: #888888; }
+.csi-current-class-name    { margin: 0 0 2px; font-size: 14px; font-weight: 800; color: #111111; }
+.csi-current-class-session { margin: 0; font-size: 12px; color: #888888; }
+
+/* ── Warning box ──────────────────────────────────────────────────────────── */
+.csi-warn-box {
+  padding: 10px 14px;
+  background: #fef9c3; border: 1px solid #fde68a; border-left: 3px solid #f59e0b;
+  border-radius: 8px; font-size: 12px; color: #854d0e; font-weight: 600;
+  line-height: 1.5;
+}
+
+/* ── Responsive ───────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .classHeader { flex-direction: column; gap: 14px; }
+  .classHeaderRight { flex-wrap: wrap; }
+  .overviewGrid { grid-template-columns: 1fr 1fr; }
+}
+
+@media (max-width: 480px) {
+  .overviewGrid { grid-template-columns: 1fr; }
+}
+
+/* ── Dark theme ───────────────────────────────────────────────────────────── */
+[data-theme="dark"] .classTitle    { color: #f0f0f0; }
+[data-theme="dark"] .classSubtitle { color: #555555; }
+[data-theme="dark"] .classHeader   { border-bottom-color: #2a2a2a; }
+
+[data-theme="dark"] .overviewCard  { background: #1e1e1e; border-color: #2a2a2a; }
+[data-theme="dark"] .overviewCard:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.3); }
+[data-theme="dark"] .overviewCardHeader { background: #252525; border-bottom-color: #2a2a2a; }
+[data-theme="dark"] .overviewCardHeader::before { border-color: rgba(255,255,255,0.04); }
+[data-theme="dark"] .overviewCardHeader::after  { border-color: rgba(255,255,255,0.03); }
+[data-theme="dark"] .overviewHeaderDeco { border-color: rgba(255,255,255,0.03); }
+[data-theme="dark"] .overviewHeaderIcon { background: #2a2a2a; border-color: #3a3a3a; color: #e0e0e0; }
+[data-theme="dark"] .overviewHeaderText h3 { color: #f0f0f0; }
+[data-theme="dark"] .overviewHeaderText p  { color: #555555; }
+[data-theme="dark"] .overviewCardBody  { background: #1e1e1e; }
+[data-theme="dark"] .overviewCardFooter { border-top-color: #2a2a2a; color: #555555; }
+[data-theme="dark"] .overviewCard:hover .overviewCardFooter { color: #f0f0f0; }
+
+[data-theme="dark"] .csi-state-box h3 { color: #f0f0f0; }
+[data-theme="dark"] .csi-state-box p  { color: #555555; }
+
+[data-theme="dark"] .csp-container { background: #1a1a1a; }
+[data-theme="dark"] .csp-header    { background: #0a0a0a; }
+[data-theme="dark"] .csp-body      { background: #1a1a1a; }
+[data-theme="dark"] .csp-body::-webkit-scrollbar-thumb { background: #2a2a2a; }
+[data-theme="dark"] .csp-footer    { background: #1e1e1e; border-top-color: #2a2a2a; }
+
+[data-theme="dark"] .csi-current-class-box  { background: #1e1e1e; border-color: #2a2a2a; }
+[data-theme="dark"] .csi-current-class-name { color: #e0e0e0; }
+[data-theme="dark"] .csi-current-class-session { color: #555555; }
+[data-theme="dark"] .csi-warn-box { background: #1e1a0a; border-color: #3a2a00; border-left-color: #f59e0b; color: #fcd34d; }

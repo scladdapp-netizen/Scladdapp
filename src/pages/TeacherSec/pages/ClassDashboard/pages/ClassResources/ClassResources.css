@@ -1,0 +1,4 @@
+.sr-form-label { display: block; margin-bottom: 5px; font-size: 13px; font-weight: 500; color: #374151; }
+.sr-form-input { width: 100%; padding: 9px 12px; border-radius: 8px; border: 1px solid #e5e7eb; font-size: 14px; box-sizing: border-box; background: #fff; }
+.sr-form-input:focus { outline: none; border-color: #a5b4fc; }
+.sr-file-drop { border: 2px dashed; border-radius: 8px; padding: 20px; text-align: center; cursor: pointer; transition: all 0.15s; }

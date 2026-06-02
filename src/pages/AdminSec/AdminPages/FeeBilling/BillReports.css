@@ -1,0 +1,139 @@
+/* ── Wrap ─────────────────────────────────────────────────────────────────── */
+.br-wrap {
+  display: flex; flex-direction: column; gap: 16px;
+  max-width: 900px;
+}
+
+/* ── Stats grid ───────────────────────────────────────────────────────────── */
+.br-stats-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
+}
+
+.br-stat-card {
+  background: #f7f7f7; border: 1px solid #e8e8e8;
+  border-radius: 10px; padding: 12px 16px;
+  display: flex; flex-direction: column; gap: 4px;
+}
+
+.br-stat-label {
+  font-size: 10px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.07em; color: #aaaaaa;
+}
+
+.br-stat-value {
+  font-size: 18px; font-weight: 800; color: #111111;
+  letter-spacing: -0.02em;
+}
+
+.br-stat-sub {
+  font-size: 11px; color: #888888;
+}
+
+/* ── Section card ─────────────────────────────────────────────────────────── */
+.br-section {
+  background: #ffffff; border: 1px solid #e8e8e8;
+  border-radius: 10px; padding: 16px 20px;
+  display: flex; flex-direction: column; gap: 10px;
+}
+
+.br-section-alt { background: #f7f7f7; }
+
+.br-section-title {
+  font-size: 10px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.08em; color: #888888;
+  padding-bottom: 8px; border-bottom: 1px solid #f0f0f0;
+  display: block;
+}
+
+/* ── Status breakdown ─────────────────────────────────────────────────────── */
+.br-status-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
+}
+
+.br-status-card {
+  border-radius: 10px; padding: 12px 16px; text-align: center;
+  display: flex; flex-direction: column; gap: 4px;
+}
+.br-status-card.paid    { background: #dcfce7; }
+.br-status-card.partial { background: #fef3c7; }
+.br-status-card.unpaid  { background: #fee2e2; }
+
+.br-status-count {
+  font-size: 24px; font-weight: 800; margin: 0;
+}
+.br-status-card.paid .br-status-count    { color: #166634; }
+.br-status-card.partial .br-status-count { color: #92400e; }
+.br-status-card.unpaid .br-status-count  { color: #dc2626; }
+
+.br-status-label {
+  font-size: 12px; font-weight: 700;
+}
+.br-status-card.paid .br-status-label    { color: #166634; }
+.br-status-card.partial .br-status-label { color: #92400e; }
+.br-status-card.unpaid .br-status-label  { color: #dc2626; }
+
+.br-status-pct {
+  font-size: 11px; opacity: 0.8;
+}
+.br-status-card.paid .br-status-pct    { color: #166634; }
+.br-status-card.partial .br-status-pct { color: #92400e; }
+.br-status-card.unpaid .br-status-pct  { color: #dc2626; }
+
+/* ── Type list ────────────────────────────────────────────────────────────── */
+.br-type-list { display: flex; flex-direction: column; gap: 6px; }
+
+.br-type-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 8px 0; border-bottom: 1px solid #f0f0f0;
+  font-size: 13px; gap: 12px;
+}
+
+.br-type-name      { font-weight: 700; color: #111111; text-transform: capitalize; flex: 1; }
+.br-type-detail    { color: #888888; }
+.br-type-paid      { color: #166634; font-weight: 600; }
+.br-type-collected { color: #111111; font-weight: 700; }
+
+/* ── Method list ──────────────────────────────────────────────────────────── */
+.br-method-list { display: flex; flex-direction: column; gap: 6px; }
+
+.br-method-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 6px 0; border-bottom: 1px solid #f0f0f0;
+  font-size: 13px; gap: 12px;
+}
+
+.br-method-name   { color: #333333; font-weight: 600; flex: 1; }
+.br-method-count  { color: #888888; }
+.br-method-amount { font-weight: 700; color: #111111; }
+
+/* ── Empty state ──────────────────────────────────────────────────────────── */
+.br-empty {
+  background: #f7f7f7; border: 1px solid #e8e8e8; border-radius: 10px;
+  padding: 20px; text-align: center; color: #aaaaaa; font-size: 13px;
+}
+
+/* ── Responsive ───────────────────────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .br-stats-grid  { grid-template-columns: 1fr 1fr; }
+  .br-status-grid { grid-template-columns: 1fr; }
+}
+
+/* ── Dark theme ───────────────────────────────────────────────────────────── */
+[data-theme="dark"] .br-stat-card { background: #1e1e1e; border-color: #2a2a2a; }
+[data-theme="dark"] .br-stat-value { color: #e0e0e0; }
+[data-theme="dark"] .br-section { background: #1a1a1a; border-color: #2a2a2a; }
+[data-theme="dark"] .br-section-alt { background: #1e1e1e; }
+[data-theme="dark"] .br-section-title { color: #555555; border-bottom-color: #2a2a2a; }
+[data-theme="dark"] .br-status-card.paid    { background: #052e16; }
+[data-theme="dark"] .br-status-card.partial { background: #1c1200; }
+[data-theme="dark"] .br-status-card.unpaid  { background: #2a1a1a; }
+[data-theme="dark"] .br-type-row { border-bottom-color: #2a2a2a; }
+[data-theme="dark"] .br-type-name { color: #e0e0e0; }
+[data-theme="dark"] .br-type-detail { color: #555555; }
+[data-theme="dark"] .br-type-paid { color: #4ade80; }
+[data-theme="dark"] .br-type-collected { color: #e0e0e0; }
+[data-theme="dark"] .br-method-row { border-bottom-color: #2a2a2a; }
+[data-theme="dark"] .br-method-name { color: #cccccc; }
+[data-theme="dark"] .br-method-count { color: #555555; }
+[data-theme="dark"] .br-method-amount { color: #e0e0e0; }
+[data-theme="dark"] .br-empty { background: #1e1e1e; border-color: #2a2a2a; color: #555555; }

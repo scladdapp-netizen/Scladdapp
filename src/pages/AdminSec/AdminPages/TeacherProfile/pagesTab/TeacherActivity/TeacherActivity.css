@@ -1,0 +1,251 @@
+.
+/* Activity Info Styling */
+.activityInfo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.activityIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  background: #f3f4f6;
+  flex-shrink: 0;
+}
+
+.activityDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.activityTitle {
+  font-weight: 600;
+  color: #111827;
+  font-size: 14px;
+}
+
+.activityDescription {
+  font-size: 12px;
+  color: #6b7280;
+  line-height: 1.4;
+}
+
+/* Activity Type Badge */
+.activityTypeBadge {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #111827;
+  text-transform: capitalize;
+}
+
+/* Date Time Styling */
+.activityDateTime {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.activityDate {
+  font-weight: 500;
+  color: #111827;
+  font-size: 14px;
+}
+
+.activityTime {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+/* Class Subject Styling */
+.activityClassSubject {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.activityClass {
+  font-weight: 500;
+  color: #111827;
+  font-size: 14px;
+}
+
+.activitySubject {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.noClassSubject {
+  color: #9ca3af;
+  font-style: italic;
+}
+
+/* Status Badge */
+.activityStatusBadge {
+  font-weight: 600;
+  font-size: 12px;
+  text-transform: capitalize;
+}
+
+/* View Details */
+.viewDetails {
+  color: #4f46e5;
+  font-weight: 500;
+  cursor: pointer;
+  font-size: 14px;
+  transition: color 0.2s ease;
+}
+
+.viewDetails:hover {
+  color: #3730a3;
+}
+
+/* Slide Menu Styling */
+.actSlideMenuContent {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.actSlideMenuHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 24px;
+  border-bottom: 1px solid #e5e7eb;
+  background: #f9fafb;
+}
+
+.actSlideMenuHeader h2 {
+  font-size: 24px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 4px 0;
+}
+
+.actSlideMenuHeader p {
+  font-size: 14px;
+  color: #6b7280;
+  margin: 0;
+}
+
+.actCloseButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+  color: #6b7280;
+  transition: all 0.2s ease;
+}
+
+.actCloseButton:hover {
+  background: #e5e7eb;
+  color: #374151;
+}
+
+.actSlideMenuBody {
+  flex: 1;
+  padding: 24px;
+  overflow-y: auto;
+}
+
+.actSlideMenuFooter {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 24px;
+  border-top: 1px solid #e5e7eb;
+  background: #f9fafb;
+}
+
+/* Activity Detail Content */
+.actActivityDetailContent {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.actDetailSection {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.actDetailSection h3 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #111827;
+  margin: 0;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.actDetailGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.actDetailItem {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.actDetailLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.actDetailValue {
+  font-size: 14px;
+  font-weight: 500;
+  color: #111827;
+}
+
+.actDetailDescription {
+  font-size: 14px;
+  color: #374151;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .teacherActivity {
+    padding: 16px;
+  }
+
+  .actHeader {
+    flex-direction: column;
+    gap: 16px;
+    align-items: stretch;
+  }
+
+  .actDetailGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .activityInfo {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .activityDateTime,
+  .activityClassSubject {
+    align-items: flex-start;
+  }
+}

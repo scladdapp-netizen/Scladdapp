@@ -1,0 +1,180 @@
+/* ── Dashboard wrap ───────────────────────────────────────────────────────── */
+.mm-alumni-dashboard {
+  max-width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.mm-alumni-dashboard > .lkk {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* ── Year filter tabs ─────────────────────────────────────────────────────── */
+.mm-year-filter {
+  background: #ffffff;
+  border-bottom: 1px solid #e8e8e8;
+}
+
+.mm-year-filter-top {
+  padding: 20px 20px 0;
+}
+
+.mm-year-filter-text { display: flex; flex-direction: column; gap: 3px; }
+
+.mm-year-tabs {
+  display: flex; gap: 4px; flex-wrap: wrap;
+  padding: 10px 20px 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.mm-year-tabs::-webkit-scrollbar { display: none; }
+
+.mm-year-tab {
+  padding: 8px 16px 10px;
+  border-radius: 8px 8px 0 0;
+  border: 1px solid transparent;
+  border-bottom: none;
+  background: transparent;
+  font-size: 13px; font-weight: 600; color: #888888;
+  cursor: pointer; white-space: nowrap; flex-shrink: 0;
+  transition: background 0.15s, color 0.15s;
+}
+.mm-year-tab:hover { background: rgba(0,0,0,0.05); }
+.mm-year-tab.active { background: #111111; border-color: #111111; color: #ffffff; font-weight: 700; }
+
+/* ── Header ───────────────────────────────────────────────────────────────── */
+.mm-alumni-title    { margin: 0; font-size: 20px; font-weight: 800; color: #111111; letter-spacing: -0.02em; }
+.mm-alumni-subtitle { margin: 0; font-size: 12px; color: #888888; font-weight: 600; }
+
+/* ── Stats ────────────────────────────────────────────────────────────────── */
+.mm-alumni-stats {
+  display: flex; gap: 14px; margin-bottom: 20px;
+}
+
+.mm-stat-card {
+  background: #f7f7f7; border: 1px solid #e8e8e8;
+  border-radius: 10px; padding: 14px 20px;
+  display: flex; flex-direction: column; gap: 4px;
+  flex: 1; min-width: 120px;
+}
+
+.mm-stat-number { font-size: 22px; font-weight: 800; color: #111111; letter-spacing: -0.02em; }
+.mm-stat-label  { font-size: 11px; font-weight: 600; color: #888888; text-transform: uppercase; letter-spacing: 0.05em; }
+
+/* ── Table column helpers ─────────────────────────────────────────────────── */
+.mm-col-name    { font-size: 13px; font-weight: 700; color: #111111; }
+.mm-col-year    { font-size: 13px; font-weight: 700; color: #111111; }
+.mm-col-class   { font-size: 13px; font-weight: 500; color: #333333; }
+.mm-col-gender  { font-size: 13px; color: #555555; }
+
+.mm-col-contact { display: flex; flex-direction: column; gap: 2px; }
+.mm-col-contact-email { font-size: 13px; font-weight: 500; color: #111111; }
+.mm-col-contact-phone { font-size: 11px; color: #888888; }
+
+/* ── Create panel ─────────────────────────────────────────────────────────── */
+.mm-create-panel {
+  display: flex; flex-direction: column;
+  flex: 1; min-height: 0; overflow: hidden; background: #ffffff;
+}
+
+.mm-create-panel-header {
+  position: relative; padding: 22px 24px 20px;
+  background: #111111; flex-shrink: 0; overflow: hidden;
+}
+.mm-create-panel-header::before {
+  content: ""; position: absolute;
+  width: 120px; height: 120px; border-radius: 50%;
+  border: 18px solid rgba(255,255,255,0.05);
+  top: -40px; right: -24px; pointer-events: none;
+}
+.mm-create-panel-deco {
+  position: absolute; width: 60px; height: 60px; border-radius: 50%;
+  border: 10px solid rgba(255,255,255,0.04);
+  bottom: -20px; left: -12px; pointer-events: none;
+}
+.mm-create-panel-header-content {
+  position: relative; z-index: 1; display: flex; align-items: flex-start; gap: 14px;
+}
+.mm-create-panel-header-icon {
+  width: 40px; height: 40px; border-radius: 10px;
+  background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.18);
+  display: flex; align-items: center; justify-content: center;
+  color: #ffffff; flex-shrink: 0;
+}
+.mm-create-panel-header-text h2 { margin: 0 0 3px; font-size: 14px; font-weight: 800; color: #ffffff; }
+.mm-create-panel-header-text p  { margin: 0; font-size: 12px; color: rgba(255,255,255,0.55); }
+
+.mm-create-panel-body {
+  flex: 1; min-height: 0; overflow-y: auto; padding: 20px 24px;
+  display: flex; flex-direction: column; gap: 14px;
+}
+.mm-create-panel-body::-webkit-scrollbar { width: 3px; }
+.mm-create-panel-body::-webkit-scrollbar-thumb { background: #e0e0e0; border-radius: 2px; }
+
+.mm-create-panel-footer {
+  display: flex; justify-content: flex-end; gap: 10px;
+  padding: 14px 24px; border-top: 1px solid #e8e8e8;
+  background: #f7f7f7; flex-shrink: 0;
+}
+
+/* ── Selected student card ────────────────────────────────────────────────── */
+.mm-selected-student {
+  background: #f7f7f7; border: 1px solid #e8e8e8;
+  border-radius: 10px; padding: 14px 16px;
+  display: flex; flex-direction: column; gap: 8px;
+}
+
+.mm-selected-student-name {
+  margin: 0; font-size: 14px; font-weight: 800; color: #111111;
+}
+
+.mm-selected-student-details {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 4px 12px;
+}
+
+.mm-selected-student-details span {
+  font-size: 12px; color: #888888; font-weight: 500;
+}
+
+/* ── Form row ─────────────────────────────────────────────────────────────── */
+.mm-form-row {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+}
+
+/* ── Responsive ───────────────────────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .mm-alumni-stats { flex-wrap: wrap; }
+  .mm-form-row { grid-template-columns: 1fr; }
+  .mm-selected-student-details { grid-template-columns: 1fr; }
+}
+
+/* ── Dark theme ───────────────────────────────────────────────────────────── */
+[data-theme="dark"] .mm-alumni-dashboard { background: #141414; }
+[data-theme="dark"] .mm-year-filter { background: #1a1a1a; border-bottom-color: #2a2a2a; }
+[data-theme="dark"] .mm-year-tabs { background: transparent; border-bottom-color: transparent; }
+[data-theme="dark"] .mm-year-tab { color: #555555; }
+[data-theme="dark"] .mm-year-tab:hover { background: rgba(255,255,255,0.06); color: #f0f0f0; }
+[data-theme="dark"] .mm-year-tab.active { background: #f0f0f0; border-color: #f0f0f0; color: #111111; }
+[data-theme="dark"] .mm-alumni-title    { color: #f0f0f0; }
+[data-theme="dark"] .mm-alumni-subtitle { color: #555555; }
+[data-theme="dark"] .mm-stat-card { background: #1e1e1e; border-color: #2a2a2a; }
+[data-theme="dark"] .mm-stat-number { color: #f0f0f0; }
+[data-theme="dark"] .mm-stat-label  { color: #555555; }
+[data-theme="dark"] .mm-col-name    { color: #e0e0e0; }
+[data-theme="dark"] .mm-col-year    { color: #e0e0e0; }
+[data-theme="dark"] .mm-col-class   { color: #cccccc; }
+[data-theme="dark"] .mm-col-gender  { color: #888888; }
+[data-theme="dark"] .mm-col-contact-email { color: #e0e0e0; }
+[data-theme="dark"] .mm-col-contact-phone { color: #555555; }
+[data-theme="dark"] .mm-create-panel { background: #1a1a1a; }
+[data-theme="dark"] .mm-create-panel-header { background: #0a0a0a; }
+[data-theme="dark"] .mm-create-panel-body { background: #1a1a1a; }
+[data-theme="dark"] .mm-create-panel-body::-webkit-scrollbar-thumb { background: #2a2a2a; }
+[data-theme="dark"] .mm-create-panel-footer { background: #1e1e1e; border-top-color: #2a2a2a; }
+[data-theme="dark"] .mm-selected-student { background: #1e1e1e; border-color: #2a2a2a; }
+[data-theme="dark"] .mm-selected-student-name { color: #f0f0f0; }
+[data-theme="dark"] .mm-selected-student-details span { color: #555555; }

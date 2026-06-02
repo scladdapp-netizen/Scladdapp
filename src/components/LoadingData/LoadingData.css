@@ -1,0 +1,90 @@
+/* ── Container ────────────────────────────────────────────────────────────── */
+.ld-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 20px;
+  gap: 16px;
+}
+
+/* ── Spinner wrap ─────────────────────────────────────────────────────────── */
+.ld-spinner-wrap {
+  position: relative;
+  width: 52px;
+  height: 52px;
+}
+
+/* ── SVG spinner ──────────────────────────────────────────────────────────── */
+.ld-spinner {
+  width: 52px;
+  height: 52px;
+  animation: ld-rotate 2s linear infinite;
+}
+
+/* Outer ring — fast dash */
+.ld-ring-outer {
+  stroke: #111111;
+  stroke-dasharray: 80 45;
+  animation: ld-dash-outer 1.4s ease-in-out infinite;
+  transform-origin: center;
+}
+
+/* Middle ring — counter-rotate, slower dash */
+.ld-ring-mid {
+  stroke: #888888;
+  stroke-dasharray: 40 22;
+  animation: ld-dash-mid 1.8s ease-in-out infinite reverse;
+  transform-origin: center;
+}
+
+/* Inner dot — pulse */
+.ld-dot {
+  fill: #111111;
+  animation: ld-pulse 1.4s ease-in-out infinite;
+  transform-origin: center;
+}
+
+/* ── Message ──────────────────────────────────────────────────────────────── */
+.ld-message {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: #888888;
+  text-align: center;
+  letter-spacing: 0.02em;
+}
+
+/* ── Keyframes ────────────────────────────────────────────────────────────── */
+@keyframes ld-rotate {
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes ld-dash-outer {
+  0%   { stroke-dashoffset: 0; }
+  50%  { stroke-dashoffset: -60; }
+  100% { stroke-dashoffset: -125; }
+}
+
+@keyframes ld-dash-mid {
+  0%   { stroke-dashoffset: 0; }
+  50%  { stroke-dashoffset: -30; }
+  100% { stroke-dashoffset: -62; }
+}
+
+@keyframes ld-pulse {
+  0%, 100% { transform: scale(1);   opacity: 1; }
+  50%       { transform: scale(1.5); opacity: 0.6; }
+}
+
+/* ── Responsive ───────────────────────────────────────────────────────────── */
+@media (max-width: 480px) {
+  .ld-container { padding: 32px 16px; }
+  .ld-spinner-wrap, .ld-spinner { width: 42px; height: 42px; }
+}
+
+/* ── Dark theme ───────────────────────────────────────────────────────────── */
+[data-theme="dark"] .ld-ring-outer { stroke: #f0f0f0; }
+[data-theme="dark"] .ld-ring-mid   { stroke: #555555; }
+[data-theme="dark"] .ld-dot        { fill: #f0f0f0; }
+[data-theme="dark"] .ld-message    { color: #555555; }

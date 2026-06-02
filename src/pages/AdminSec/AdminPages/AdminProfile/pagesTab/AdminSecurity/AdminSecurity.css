@@ -1,0 +1,85 @@
+/* ── Wrap ─────────────────────────────────────────────────────────────────── */
+.asec-wrap { padding: 20px 24px; max-width: 560px; }
+
+.asec-empty {
+  padding: 40px; text-align: center; color: #888888; font-size: 13px;
+}
+
+/* ── Header ───────────────────────────────────────────────────────────────── */
+.asec-header {
+  display: flex; align-items: flex-start; gap: 12px;
+  margin-bottom: 24px;
+  padding-bottom: 20px; border-bottom: 1px solid #e8e8e8;
+}
+
+.asec-header-icon {
+  width: 40px; height: 40px; border-radius: 10px;
+  background: #f4f4f4; border: 1px solid #e8e8e8;
+  display: flex; align-items: center; justify-content: center;
+  color: #555555; flex-shrink: 0;
+}
+
+.asec-title {
+  margin: 0 0 3px; font-size: 18px; font-weight: 800; color: #111111; letter-spacing: -0.02em;
+}
+
+.asec-subtitle {
+  margin: 0; font-size: 13px; color: #888888;
+}
+
+/* ── 2FA Card ─────────────────────────────────────────────────────────────── */
+.asec-card {
+  display: flex; align-items: center; justify-content: space-between; gap: 20px;
+  padding: 20px; border: 1px solid #e8e8e8; border-radius: 12px;
+  background: #ffffff;
+}
+
+.asec-card-left { flex: 1; }
+
+.asec-card-title {
+  margin: 0 0 6px; font-size: 15px; font-weight: 700; color: #111111;
+}
+
+.asec-card-desc {
+  margin: 0 0 10px; font-size: 13px; color: #888888; line-height: 1.6;
+}
+
+.asec-badge {
+  display: inline-block; padding: 3px 12px; border-radius: 20px;
+  font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;
+}
+.asec-badge.enabled  { background: #dcfce7; color: #166634; }
+.asec-badge.disabled { background: #f0f0f0; color: #888888; }
+
+/* ── Toggle switch ────────────────────────────────────────────────────────── */
+.asec-toggle {
+  flex-shrink: 0;
+  width: 52px; height: 28px; border-radius: 14px; border: none;
+  cursor: pointer; position: relative; transition: background 0.2s;
+}
+.asec-toggle.on  { background: #111111; }
+.asec-toggle.off { background: #d1d5db; }
+.asec-toggle:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.asec-toggle-thumb {
+  position: absolute; top: 4px;
+  width: 20px; height: 20px; border-radius: 50%;
+  background: #ffffff; transition: left 0.2s;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+.asec-toggle-thumb.on  { left: 28px; }
+.asec-toggle-thumb.off { left: 4px; }
+
+/* ── Dark theme ───────────────────────────────────────────────────────────── */
+[data-theme="dark"] .asec-header { border-bottom-color: #2a2a2a; }
+[data-theme="dark"] .asec-header-icon { background: #252525; border-color: #3a3a3a; color: #888888; }
+[data-theme="dark"] .asec-title { color: #f0f0f0; }
+[data-theme="dark"] .asec-subtitle { color: #555555; }
+[data-theme="dark"] .asec-card { background: #1e1e1e; border-color: #2a2a2a; }
+[data-theme="dark"] .asec-card-title { color: #f0f0f0; }
+[data-theme="dark"] .asec-card-desc { color: #555555; }
+[data-theme="dark"] .asec-badge.disabled { background: #252525; color: #555555; }
+[data-theme="dark"] .asec-toggle.on { background: #f0f0f0; }
+[data-theme="dark"] .asec-toggle-thumb { background: #111111; }
+[data-theme="dark"] .asec-toggle.on .asec-toggle-thumb { background: #111111; }
+[data-theme="dark"] .asec-toggle.off .asec-toggle-thumb { background: #ffffff; }

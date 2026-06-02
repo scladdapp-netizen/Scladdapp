@@ -1,0 +1,358 @@
+/* ── Layout ── */
+.t_layout {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100vw;
+  box-sizing: border-box;
+  overflow: auto;
+  background-color: #ffffff;
+  color: #111111;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+[data-theme="dark"] .t_layout {
+  background-color: #111111;
+  color: #e0e0e0;
+}
+
+/* ── Main content area (below topbar) ── */
+.t_said_n_content {
+  display: flex;
+  flex: 1;
+  position: fixed;
+  top: 48px;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 7;
+}
+
+.t_content {
+  margin-left: -7px;
+  flex: 1;
+  overflow-y: auto;
+  transition: margin-left 0.3s ease;
+  width: 100%;
+  box-sizing: border-box;
+  height: 100%;
+}
+
+/* ── Sidebar shell ── */
+.t_al_saidbar {
+  position: relative;
+  height: calc(100vh - 48px);
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  gap: 3px;
+  z-index: 1500;
+  margin-top: 0;
+}
+
+/* ── Toggle pill ── */
+.t_al_sb_toggle {
+  background-color: #d1d5db;
+  height: 36px;
+  width: 4px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  flex-shrink: 0;
+}
+.t_al_sb_toggle:hover { background-color: #9ca3af; }
+
+/* ── Nav panel ── */
+.t_al_sb_nav {
+  width: 62px;
+  display: flex;
+  flex-direction: column;
+  z-index: 1500000;
+  background-color: #ffffff;
+  transition: width 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+  height: 100%;
+  border-right: 1px solid #e5e7eb;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+.t_al_sb_nav.expanded  { width: 210px; }
+.t_al_saidbar.expanded { min-width: 210px; }
+
+/* Collapsed: center the icon */
+.t_al_sb_nav:not(.expanded) .t_nav_link {
+  padding: 10px 0;
+  justify-content: center;
+}
+
+/* ── Nav items ── */
+.t_nav_items {
+  padding: 12px 0 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+.t_nav_link {
+  display: flex;
+  align-items: center;
+  padding: 10px 14px;
+  color: #374151;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  border: none;
+  background: none;
+  text-align: left;
+  gap: 12px;
+  border-radius: 10px;
+  position: relative;
+  box-sizing: border-box;
+  margin: 0 8px;
+  width: calc(100% - 16px);
+}
+.t_nav_link:hover { background-color: #f5f5f5; }
+.t_nav_link.active {
+  background-color: #f0f0f0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23noise)' opacity='0.1'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 120px 120px;
+  border: 1px solid #e0e0e0;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+
+/* ── Icon ── */
+.t_nav_icon {
+  min-width: 22px;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* ── Text ── */
+.t_nav_text {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-weight: 500;
+  font-size: 0.85rem;
+  color: #374151;
+  opacity: 0;
+  transform: translateX(-6px);
+  transition: opacity 0.2s ease 0.05s, transform 0.2s ease 0.05s;
+}
+.t_al_sb_nav.expanded .t_nav_text {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* ── Overlay ── */
+.t_al_overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  z-index: 30;
+  display: none;
+}
+
+/* ── Mobile ── */
+@media (max-width: 1200px) {
+  .t_al_saidbar {
+    position: fixed;
+    left: -100%;
+    transition: left 0.3s ease;
+    z-index: 200;
+    height: 100vh;
+    margin-top: 0;
+  }
+
+  .t_al_saidbar.mobile-open { left: 0; }
+
+  .t_al_sb_nav,
+  .t_al_sb_nav.expanded { width: 250px !important; }
+
+  .t_al_sb_nav .t_nav_text {
+    opacity: 1 !important;
+    transform: translateX(0) !important;
+  }
+
+  .t_al_overlay { display: block; }
+  .t_al_sb_toggle { display: none; }
+
+  .t_content {
+    margin-left: 0;
+    width: 100%;
+  }
+}
+
+/* ── Scrollbar ── */
+.t_al_sb_nav::-webkit-scrollbar       { width: 3px; }
+.t_al_sb_nav::-webkit-scrollbar-track { background: transparent; }
+.t_al_sb_nav::-webkit-scrollbar-thumb { background: #e5e7eb; border-radius: 2px; }
+
+/* ── Sidebar info card ── */
+.t_sb_info_card {
+  padding: 12px 8px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.t_sb_school_row,
+.t_sb_staff_row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 36px;
+}
+
+.t_sb_school_logo {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 1px solid #e5e7eb;
+}
+
+.t_sb_school_logo_placeholder {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: #e5e7eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.t_sb_school_text,
+.t_sb_staff_text { overflow: hidden; }
+
+.t_sb_school_name,
+.t_sb_staff_name {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: #1f2937;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.t_sb_school_motto,
+.t_sb_staff_role {
+  margin: 2px 0 0;
+  font-size: 10px;
+  color: #6b7280;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.t_sb_school_motto { font-style: italic; }
+
+.t_sb_divider {
+  height: 1px;
+  background: #e5e7eb;
+  margin: 0 4px;
+}
+
+.t_sb_avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #4f46e5, #7c3aed);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  letter-spacing: 0.5px;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   DARK THEME — staff sidebar
+   ══════════════════════════════════════════════════════════════ */
+[data-theme="dark"] .t_al_sb_nav {
+  background-color: #1a1a1a;
+  border-right-color: #2e2e2e;
+}
+
+[data-theme="dark"] .t_al_sb_toggle {
+  background-color: #3a3a3a;
+}
+[data-theme="dark"] .t_al_sb_toggle:hover {
+  background-color: #555555;
+}
+
+[data-theme="dark"] .t_sb_info_card {
+  border-bottom-color: #2e2e2e;
+}
+
+[data-theme="dark"] .t_sb_divider {
+  background: #2a2a2a;
+}
+
+[data-theme="dark"] .t_sb_school_name,
+[data-theme="dark"] .t_sb_staff_name {
+  color: #e5e7eb;
+}
+
+[data-theme="dark"] .t_sb_school_motto,
+[data-theme="dark"] .t_sb_staff_role {
+  color: #9ca3af;
+}
+
+[data-theme="dark"] .t_sb_school_logo_placeholder {
+  background: #2e2e2e;
+}
+
+[data-theme="dark"] .t_nav_link {
+  color: #cccccc;
+}
+
+[data-theme="dark"] .t_nav_link:hover {
+  background-color: #252525;
+}
+
+[data-theme="dark"] .t_nav_link.active {
+  background-color: #2a2a2a;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23noise)' opacity='0.15'/%3E%3C/svg%3E");
+  border-color: #3a3a3a;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+}
+
+[data-theme="dark"] .t_nav_text {
+  color: #cccccc;
+}
+
+/* SVG icons — invert fills/strokes */
+[data-theme="dark"] .t_nav_icon svg rect,
+[data-theme="dark"] .t_nav_icon svg path,
+[data-theme="dark"] .t_nav_icon svg circle {
+  stroke: #cccccc;
+}
+
+[data-theme="dark"] .t_nav_icon svg [fill="#111111"] {
+  fill: #cccccc;
+}
+
+[data-theme="dark"] .t_nav_icon svg [fill="#111111"][opacity] {
+  fill: #cccccc;
+}
+
+/* Scrollbar */
+[data-theme="dark"] .t_al_sb_nav::-webkit-scrollbar-thumb {
+  background: #3a3a3a;
+}

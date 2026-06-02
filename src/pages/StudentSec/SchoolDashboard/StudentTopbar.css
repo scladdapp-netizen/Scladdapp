@@ -1,0 +1,83 @@
+/* School switch buttons inside dropdown */
+.st_switch_btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: background 0.12s;
+  color: #374151;
+  text-align: left;
+}
+
+.st_switch_btn:hover { background: #f4f4f4; padding-left: 4px; }
+.st_switch_btn.active { color: #111111; }
+
+.st_switch_info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.st_switch_name {
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.st_switch_class {
+  font-size: 11px;
+  color: #888888;
+}
+
+.st_switch_dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #10b981;
+  flex-shrink: 0;
+}
+
+/* Dark theme */
+[data-theme="dark"] .st_switch_btn { color: #cccccc; }
+[data-theme="dark"] .st_switch_btn:hover { background: #2a2a2a; }
+[data-theme="dark"] .st_switch_btn.active { color: #f0f0f0; }
+[data-theme="dark"] .st_switch_class { color: #555555; }
+
+/* Breadcrumb navigation */
+.sft_breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  overflow: hidden;
+}
+
+.sft_breadcrumb_item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+  white-space: nowrap;
+}
+
+.sft_breadcrumb_item:last-child { color: #111111; font-weight: 700; }
+
+.sft_breadcrumb_sep {
+  font-size: 14px;
+  color: #9ca3af;
+  font-weight: 400;
+}
+
+[data-theme="dark"] .sft_breadcrumb_item { color: #888888; }
+[data-theme="dark"] .sft_breadcrumb_item:last-child { color: #f0f0f0; }
+[data-theme="dark"] .sft_breadcrumb_sep { color: #3a3a3a; }

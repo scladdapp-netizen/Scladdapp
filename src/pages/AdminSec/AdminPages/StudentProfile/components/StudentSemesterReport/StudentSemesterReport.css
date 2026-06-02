@@ -1,0 +1,379 @@
+.studentSemesterReport {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 20px;
+  padding: 24px;
+  margin-top: 24px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  box-sizing: border-box;
+}
+
+/* Report Header */
+.reportHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 32px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.reportTitle h2 {
+  margin: 0 0 8px 0;
+  font-size: 24px;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.reportTitle p {
+  margin: 0;
+  font-size: 14px;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.reportSummary {
+  display: flex;
+  gap: 20px;
+}
+
+.summaryCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 16px 20px;
+  background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  min-width: 100px;
+  text-align: center;
+}
+
+.summaryLabel {
+  font-size: 12px;
+  color: #6b7280;
+  margin-bottom: 8px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.summaryValue {
+  font-size: 20px;
+  font-weight: 700;
+  color: #1f2937;
+  line-height: 1;
+}
+
+/* Subjects Table - Using SmartTable approach */
+.subjectsTable {
+  margin-bottom: 24px;
+}
+
+.table-wrap {
+  overflow-x: auto;
+  border: #d6d6d6 solid 1px;
+  border-radius: 15px;
+}
+
+.smart-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 640px;
+}
+
+.smart-table thead {
+  background: #f7f9fc;
+}
+
+.smart-table th {
+  text-align: left;
+  padding: 12px 14px;
+  font-weight: 600;
+  color: #4b5563;
+  border-bottom: 1px solid #eef2f7;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.smart-table td {
+  padding: 14px;
+  border-bottom: 1px solid #f1f5f9;
+  vertical-align: middle;
+}
+
+.smart-table tr:hover {
+  background: #fbfdff;
+}
+
+/* Table Content Styling */
+.subjectName {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.teacherName {
+  font-size: 13px;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.testScore,
+.totalScore {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1f2937;
+  text-align: center;
+}
+
+.gradeValue {
+  font-size: 14px;
+  font-weight: 700;
+  padding: 6px 12px;
+  border-radius: 8px;
+  text-align: center;
+  min-width: 40px;
+  display: inline-block;
+}
+
+.remarksText {
+  font-size: 12px;
+  color: #6b7280;
+  font-style: italic;
+}
+
+/* Report Footer */
+.reportFooter {
+  padding-top: 20px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.footerStats {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.statItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.statLabel {
+  font-size: 14px;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.statValue {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .reportHeader {
+    flex-direction: column;
+    gap: 20px;
+    align-items: flex-start;
+  }
+
+  .reportSummary {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .smart-table th,
+  .smart-table td {
+    padding: 10px 12px;
+  }
+
+  .smart-table th {
+    font-size: 10px;
+  }
+
+  .subjectName {
+    font-size: 13px;
+  }
+
+  .teacherName {
+    font-size: 12px;
+  }
+
+  .testScore,
+  .totalScore {
+    font-size: 12px;
+  }
+
+  .gradeValue {
+    font-size: 12px;
+    padding: 4px 8px;
+  }
+
+  .remarksText {
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 768px) {
+  .studentSemesterReport {
+    padding: 20px;
+    margin-top: 20px;
+  }
+
+  .reportHeader {
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+  }
+
+  .reportTitle h2 {
+    font-size: 20px;
+  }
+
+  .reportSummary {
+    gap: 12px;
+  }
+
+  .summaryCard {
+    padding: 12px 16px;
+    min-width: 80px;
+  }
+
+  .summaryValue {
+    font-size: 18px;
+  }
+
+  /* Mobile table styling - stack rows as cards */
+  .smart-table {
+    min-width: 100%;
+    border: 0;
+    display: block;
+  }
+
+  .smart-table thead {
+    display: none;
+  }
+
+  .smart-table tbody {
+    display: block;
+  }
+
+  .smart-table tr {
+    display: block;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    margin-bottom: 12px;
+    padding: 16px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  }
+
+  .smart-table tr:hover {
+    background: #ffffff;
+  }
+
+  .smart-table td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid #f3f4f6;
+    border-left: none;
+    border-right: none;
+    border-top: none;
+  }
+
+  .smart-table td:last-child {
+    border-bottom: none;
+  }
+
+  .smart-table td::before {
+    content: attr(data-label);
+    font-size: 12px;
+    font-weight: 600;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    flex-shrink: 0;
+    width: 80px;
+  }
+
+  .smart-table td:nth-child(1)::before {
+    content: "Subject";
+  }
+
+  .smart-table td:nth-child(2)::before {
+    content: "Teacher";
+  }
+
+  .smart-table td:nth-child(3)::before {
+    content: "1st Test";
+  }
+
+  .smart-table td:nth-child(4)::before {
+    content: "2nd Test";
+  }
+
+  .smart-table td:nth-child(5)::before {
+    content: "Exam";
+  }
+
+  .smart-table td:nth-child(6)::before {
+    content: "Total";
+  }
+
+  .smart-table td:nth-child(7)::before {
+    content: "Grade";
+  }
+
+  .smart-table td:nth-child(8)::before {
+    content: "Remarks";
+  }
+
+  .footerStats {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .studentSemesterReport {
+    padding: 16px;
+  }
+
+  .reportSummary {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .summaryCard {
+    flex-direction: row;
+    justify-content: space-between;
+    text-align: left;
+    padding: 12px 16px;
+  }
+
+  .summaryLabel {
+    margin-bottom: 0;
+  }
+
+  .smart-table tr {
+    padding: 12px;
+  }
+
+  .smart-table td {
+    padding: 6px 0;
+  }
+
+  .smart-table td::before {
+    width: 70px;
+    font-size: 11px;
+  }
+}

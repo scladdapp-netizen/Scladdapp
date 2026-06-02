@@ -1,0 +1,92 @@
+.as-container { padding: 0; }
+
+/* Table cell helpers */
+.as-student-name { font-weight: 600; font-size: 13px; color: #111111; }
+.as-student-id   { font-size: 11px; color: #888888; margin-top: 2px; }
+.as-total        { font-weight: 700; font-size: 13px; color: #111111; }
+.as-no-score     { color: #d1d5db; }
+.as-zero         { color: #f59e0b; font-weight: 600; }
+.as-no-score-label { font-size: 12px; color: #ef4444; }
+
+/* Score form inside panel */
+.as-score-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.as-score-field { display: flex; flex-direction: column; gap: 5px; }
+
+.as-score-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #111111;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.as-score-max { font-weight: 400; color: #888888; text-transform: none; letter-spacing: 0; }
+
+.as-score-input {
+  width: 100%;
+  padding: 9px 12px;
+  border-radius: 8px;
+  border: 1px solid #e8e8e8;
+  font-size: 14px;
+  box-sizing: border-box;
+  background: #ffffff;
+  color: #111111;
+  font-family: inherit;
+}
+
+.as-score-input:focus { outline: none; border-color: #111111; }
+
+/* Scores display list */
+.as-scores-list { display: flex; flex-direction: column; gap: 6px; }
+
+.as-score-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 9px 12px;
+  background: #f7f7f7;
+  border: 1px solid #e8e8e8;
+  border-radius: 8px;
+}
+
+.as-score-row-label { font-size: 12px; font-weight: 700; color: #555555; text-transform: uppercase; letter-spacing: 0.04em; }
+.as-score-row-value { font-size: 14px; font-weight: 700; color: #111111; }
+
+.as-score-total-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  background: #111111;
+  border-radius: 8px;
+  margin-top: 4px;
+  font-size: 13px;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.as-empty-scores {
+  padding: 14px;
+  background: #f7f7f7;
+  border: 1px solid #e8e8e8;
+  border-radius: 8px;
+  font-size: 13px;
+  color: #888888;
+}
+
+/* Dark theme */
+[data-theme="dark"] .as-student-name { color: #f0f0f0; }
+[data-theme="dark"] .as-student-id   { color: #555555; }
+[data-theme="dark"] .as-total        { color: #f0f0f0; }
+[data-theme="dark"] .as-score-input  { background: #252525; border-color: #3a3a3a; color: #e0e0e0; }
+[data-theme="dark"] .as-score-input:focus { border-color: #f0f0f0; }
+[data-theme="dark"] .as-score-row    { background: #252525; border-color: #2a2a2a; }
+[data-theme="dark"] .as-score-row-label { color: #888888; }
+[data-theme="dark"] .as-score-row-value { color: #f0f0f0; }
+[data-theme="dark"] .as-score-total-row { background: #f0f0f0; color: #111111; }
+[data-theme="dark"] .as-empty-scores { background: #252525; border-color: #2a2a2a; color: #555555; }

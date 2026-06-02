@@ -1,0 +1,1306 @@
+import { useState } from "react";
+import { useNavigate, useParams, Routes, Route } from "react-router-dom";
+import StudentDetailTopTab from "../../Admin_components/StudentDetailTopTab/StudentDetailTopTab";
+import SmartTable from "../../../../components/SmartTable/SmartTable";
+import SlideInMenu from "../../../../components/SlideInMenu/SlideInMenu";
+import FormInput from "../../../../components/FormInput";
+import Button from "../../../../components/Button/Button";
+import TargetAudienceSelector from "../Communication/Announcements/CreateAnnouncement/TargetAudienceSelector/TargetAudienceSelector";
+import FeeActionDropdown from "./FeeActionDropdown";
+import SchoolAccountsTab from "./SchoolAccountsTab";
+import "./FeeBillingDashboard.css";
+import InnerTabCon from "../../../../components/InnerTabCon/InnerTabCon";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
+
+// Bills Tab Component
+const BillsTab = () => {
+  const { schoolId } = useParams();
+  const navigate = useNavigate();
+  const [isCreateMenuOpen, setIsCreateMenuOpen] = useState(false);
+
+  // Form data for creating new fees
+  const [formData, setFormData] = useState({
+    feeCode: "",
+    feeName: "",
+    category: "Academic",
+    description: "",
+    amount: "",
+    frequency: "Per Term",
+    applicableClasses: "",
+    mandatory: true,
+    status: "Active",
+    dueDate: "",
+    lateFee: "",
+    schoolAccount: "",
+    targetType: "",
+    selectedTargets: [],
+    discounts: [],
+    breakdown: [],
+    notes: "",
+  });
+
+  // Sample school accounts data for fee collection
+  const schoolAccounts = [
+    {
+      id: 1,
+      accountName: "Greenwood School Main Account",
+      accountNumber: "1234567890",
+      bankName: "First Bank Nigeria",
+      accountType: "Current",
+    },
+    {
+      id: 2,
+      accountName: "Greenwood School Savings",
+      accountNumber: "0987654321",
+      bankName: "GTBank",
+      accountType: "Savings",
+    },
+    {
+      id: 3,
+      accountName: "Greenwood School Projects",
+      accountNumber: "1122334455",
+      bankName: "Access Bank",
+      accountType: "Current",
+    },
+  ];
+
+  // Sample fee billing categories/types data
+  const billingData = [
+    {
+      id: 1,
+      feeCode: "SCH-001",
+      feeName: "School Fees",
+      category: "Academic",
+      description: "Tuition and academic fees for regular classes",
+      amount: "₦120,000",
+      frequency: "Per Term",
+      applicableClasses: "All Classes",
+      mandatory: true,
+      status: "Active",
+      createdDate: "2023-08-15",
+      lastUpdated: "2024-01-10",
+      totalStudents: 450,
+      collectionRate: "85%",
+    },
+    {
+      id: 2,
+      feeCode: "UNI-002",
+      feeName: "Uniform Fees",
+      category: "Uniform",
+      description: "School uniform and sports wear fees",
+      amount: "₦25,000",
+      frequency: "Per Session",
+      applicableClasses: "All Classes",
+      mandatory: true,
+      status: "Active",
+      createdDate: "2023-08-15",
+      lastUpdated: "2024-01-05",
+      totalStudents: 450,
+      collectionRate: "92%",
+    },
+    {
+      id: 3,
+      feeCode: "BUS-003",
+      feeName: "Transportation Fees",
+      category: "Transport",
+      description: "School bus transportation service fees",
+      amount: "₦15,000",
+      frequency: "Per Term",
+      applicableClasses: "All Classes",
+      mandatory: false,
+      status: "Active",
+      createdDate: "2023-08-15",
+      lastUpdated: "2023-12-20",
+      totalStudents: 180,
+      collectionRate: "78%",
+    },
+    {
+      id: 4,
+      feeCode: "LAB-004",
+      feeName: "Laboratory Fees",
+      category: "Academic",
+      description: "Science laboratory equipment and materials",
+      amount: "₦8,000",
+      frequency: "Per Term",
+      applicableClasses: "Grade 9-12",
+      mandatory: true,
+      status: "Active",
+      createdDate: "2023-08-15",
+      lastUpdated: "2024-01-15",
+      totalStudents: 200,
+      collectionRate: "88%",
+    },
+    {
+      id: 5,
+      feeCode: "LIB-005",
+      feeName: "Library Fees",
+      category: "Academic",
+      description: "Library maintenance and book fees",
+      amount: "₦5,000",
+      frequency: "Per Session",
+      applicableClasses: "All Classes",
+      mandatory: true,
+      status: "Active",
+      createdDate: "2023-08-15",
+      lastUpdated: "2023-11-30",
+      totalStudents: 450,
+      collectionRate: "95%",
+    },
+    {
+      id: 6,
+      feeCode: "SPT-006",
+      feeName: "Sports Fees",
+      category: "Extracurricular",
+      description: "Sports equipment and facility maintenance",
+      amount: "₦10,000",
+      frequency: "Per Session",
+      applicableClasses: "All Classes",
+      mandatory: false,
+      status: "Active",
+      createdDate: "2023-08-15",
+      lastUpdated: "2024-01-08",
+      totalStudents: 320,
+      collectionRate: "72%",
+    },
+    {
+      id: 7,
+      feeCode: "EXM-007",
+      feeName: "Examination Fees",
+      category: "Academic",
+      description: "Internal and external examination fees",
+      amount: "₦12,000",
+      frequency: "Per Term",
+      applicableClasses: "Grade 10-12",
+      mandatory: true,
+      status: "Active",
+      createdDate: "2023-08-15",
+      lastUpdated: "2024-01-12",
+      totalStudents: 180,
+      collectionRate: "90%",
+    },
+    {
+      id: 8,
+      feeCode: "ICT-008",
+      feeName: "Computer/ICT Fees",
+      category: "Technology",
+      description: "Computer lab and ICT equipment fees",
+      amount: "₦18,000",
+      frequency: "Per Session",
+      applicableClasses: "All Classes",
+      mandatory: true,
+      status: "Active",
+      createdDate: "2023-08-15",
+      lastUpdated: "2024-01-20",
+      totalStudents: 450,
+      collectionRate: "87%",
+    },
+    {
+      id: 9,
+      feeCode: "MED-009",
+      feeName: "Medical/Health Fees",
+      category: "Health",
+      description: "School clinic and health services",
+      amount: "₦6,000",
+      frequency: "Per Session",
+      applicableClasses: "All Classes",
+      mandatory: true,
+      status: "Active",
+      createdDate: "2023-08-15",
+      lastUpdated: "2023-12-15",
+      totalStudents: 450,
+      collectionRate: "93%",
+    },
+    {
+      id: 10,
+      feeCode: "EXC-010",
+      feeName: "Excursion Fees",
+      category: "Extracurricular",
+      description: "Educational trips and excursions",
+      amount: "₦20,000",
+      frequency: "Per Event",
+      applicableClasses: "Grade 7-12",
+      mandatory: false,
+      status: "Inactive",
+      createdDate: "2023-08-15",
+      lastUpdated: "2023-10-25",
+      totalStudents: 0,
+      collectionRate: "0%",
+    },
+  ];
+
+  // Columns definition for fee billing table
+  const columns = [
+    {
+      label: "Fee Code",
+      accessor: "feeCode",
+      render: (v) => (
+        <span
+          style={{
+            fontFamily: "monospace",
+            fontSize: "13px",
+            fontWeight: "600",
+          }}
+        >
+          {v}
+        </span>
+      ),
+    },
+    {
+      label: "Fee Name",
+      accessor: "feeName",
+      render: (v, row) => (
+        <div>
+          <div style={{ fontWeight: "600", fontSize: "14px" }}>{v}</div>
+          <div style={{ fontSize: "12px", color: "#6b7280" }}>
+            {row.description}
+          </div>
+        </div>
+      ),
+    },
+    {
+      label: "Category",
+      accessor: "category",
+      render: (value) => (
+        <span
+          className={`category-badge ${value.toLowerCase()}`}
+          style={{
+            padding: "4px 8px",
+            borderRadius: "12px",
+            fontSize: "11px",
+            fontWeight: "600",
+            backgroundColor: getCategoryColor(value).bg,
+            color: getCategoryColor(value).text,
+          }}
+        >
+          {value}
+        </span>
+      ),
+    },
+    {
+      label: "Amount",
+      accessor: "amount",
+      render: (v) => (
+        <span style={{ fontWeight: "600", color: "#1f2937", fontSize: "14px" }}>
+          {v}
+        </span>
+      ),
+    },
+    {
+      label: "Frequency",
+      accessor: "frequency",
+      render: (v) => (
+        <span style={{ fontSize: "13px", color: "#6b7280" }}>{v}</span>
+      ),
+    },
+    {
+      label: "Applicable Classes",
+      accessor: "applicableClasses",
+      render: (v) => (
+        <span style={{ fontSize: "13px", fontWeight: "500" }}>{v}</span>
+      ),
+    },
+    {
+      label: "Type",
+      accessor: "mandatory",
+      render: (value) => (
+        <span
+          className={`type-badge ${value ? "mandatory" : "optional"}`}
+          style={{
+            padding: "3px 8px",
+            borderRadius: "12px",
+            fontSize: "11px",
+            fontWeight: "600",
+            backgroundColor: value ? "#fef3c7" : "#e0e7ff",
+            color: value ? "#92400e" : "#3730a3",
+          }}
+        >
+          {value ? "Mandatory" : "Optional"}
+        </span>
+      ),
+    },
+    {
+      label: "Status",
+      accessor: "status",
+      render: (value) => (
+        <span
+          className={`status-badge ${value.toLowerCase()}`}
+          style={{
+            padding: "4px 8px",
+            borderRadius: "12px",
+            fontSize: "11px",
+            fontWeight: "600",
+            backgroundColor: value === "Active" ? "#dcfce7" : "#fecaca",
+            color: value === "Active" ? "#166534" : "#991b1b",
+          }}
+        >
+          {value}
+        </span>
+      ),
+    },
+    {
+      label: "Collection Rate",
+      accessor: "collectionRate",
+      render: (v, row) => {
+        const rate = parseInt(v);
+        return (
+          <div>
+            <div
+              style={{
+                fontSize: "13px",
+                fontWeight: "600",
+                color:
+                  rate >= 90 ? "#059669" : rate >= 70 ? "#d97706" : "#dc2626",
+              }}
+            >
+              {v}
+            </div>
+            <div style={{ fontSize: "11px", color: "#6b7280" }}>
+              {row.totalStudents} students
+            </div>
+          </div>
+        );
+      },
+    },
+    {
+      label: "Actions",
+      accessor: "actions",
+      searchable: false,
+      render: (val, row) => (
+        <FeeActionDropdown
+          row={row}
+          onView={handleViewFee}
+          onEdit={handleEditFee}
+          onDuplicate={handleDuplicateFee}
+          onToggleStatus={handleToggleStatus}
+        />
+      ),
+    },
+  ];
+
+  // Helper function to get category colors
+  const getCategoryColor = (category) => {
+    switch (category) {
+      case "Academic":
+        return { bg: "#dbeafe", text: "#1e40af" };
+      case "Uniform":
+        return { bg: "#f3e8ff", text: "#6b21a8" };
+      case "Transport":
+        return { bg: "#d1fae5", text: "#065f46" };
+      case "Technology":
+        return { bg: "#fef3c7", text: "#92400e" };
+      case "Health":
+        return { bg: "#fecaca", text: "#991b1b" };
+      case "Extracurricular":
+        return { bg: "#e0e7ff", text: "#3730a3" };
+      default:
+        return { bg: "#f3f4f6", text: "#374151" };
+    }
+  };
+
+  const handleBulkDelete = async (ids) => {
+    console.log("Bulk delete fees:", ids);
+  };
+
+  const handleExport = async (opts) => {
+    console.log("Export fee structure:", opts);
+  };
+
+  const handleCreate = () => {
+    console.log("Create new fee");
+    handleCreateFee();
+  };
+
+  const handleCreateFee = () => {
+    console.log("Create Fee button clicked");
+    setIsCreateMenuOpen(true);
+  };
+
+  const handleSubmitFee = async () => {
+    console.log("Create fee:", formData);
+    setIsCreateMenuOpen(false);
+    // Reset form
+    setFormData({
+      feeCode: "",
+      feeName: "",
+      category: "Academic",
+      description: "",
+      amount: "",
+      frequency: "Per Term",
+      applicableClasses: "",
+      mandatory: true,
+      status: "Active",
+      dueDate: "",
+      lateFee: "",
+      schoolAccount: "",
+      targetType: "",
+      selectedTargets: [],
+      discounts: [],
+      breakdown: [],
+      notes: "",
+    });
+  };
+
+  const handleInputChange = (field) => (value) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleTargetChange = (targetType, selectedTargets) => {
+    setFormData((prev) => ({
+      ...prev,
+      targetType,
+      selectedTargets,
+    }));
+  };
+
+  const handleClick = (row) => {
+    // Navigate to bill detail page with the bill ID
+    navigate(`/admin/${schoolId}/fee_billing/bill/${row.id}`);
+  };
+
+  const handleViewFee = (fee) => {
+    console.log("View fee:", fee.feeName);
+    // Handle view fee functionality
+  };
+
+  const handleEditFee = (fee) => {
+    console.log("Edit fee:", fee.feeName);
+    // Handle edit fee functionality
+  };
+
+  const handleDuplicateFee = (fee) => {
+    console.log("Duplicate fee:", fee.feeName);
+    // Handle duplicate fee functionality
+  };
+
+  const handleToggleStatus = (fee) => {
+    console.log(
+      "Toggle status for fee:",
+      fee.feeName,
+      "Current status:",
+      fee.status
+    );
+    // Handle toggle status functionality
+  };
+
+  return (
+    <div className="fee-billing-tab">
+      <InnerTabCon>
+        <SmartTable
+          columns={columns}
+          data={billingData}
+          onRowClick={handleClick}
+          enableSelect={true}
+          onSelectChange={(ids) => console.log("selected changed", ids)}
+          onBulkDelete={handleBulkDelete}
+          onExport={handleExport}
+          onCreate={handleCreate}
+          maxRowsPerPage={15}
+          showcreatbut={true}
+          creattext="Add New Fee"
+        />
+      </InnerTabCon>
+
+      {/* Create New Fee */}
+      <SlideInMenu
+        isShow={isCreateMenuOpen}
+        onClose={() => setIsCreateMenuOpen(false)}
+        width="600px"
+      >
+        <div className="create-fee-container">
+          <div className="create-fee-header">
+            <h2>Add New Fee</h2>
+            <p>Create a new fee structure for your school</p>
+          </div>
+
+          <div className="create-fee-form">
+            <div className="form-row">
+              <FormInput
+                label="Fee Code *"
+                type="text"
+                value={formData.feeCode}
+                onChange={handleInputChange("feeCode")}
+                placeholder="e.g., SCH-001, UNI-002"
+              />
+
+              <FormInput
+                label="Fee Name *"
+                type="text"
+                value={formData.feeName}
+                onChange={handleInputChange("feeName")}
+                placeholder="e.g., School Fees, Uniform Fees"
+              />
+            </div>
+
+            <div className="form-row">
+              <FormInput
+                label="Category"
+                type="select"
+                value={formData.category}
+                onChange={handleInputChange("category")}
+                options={[
+                  { value: "Academic", label: "Academic" },
+                  { value: "Uniform", label: "Uniform" },
+                  { value: "Transport", label: "Transport" },
+                  { value: "Technology", label: "Technology" },
+                  { value: "Health", label: "Health" },
+                  { value: "Extracurricular", label: "Extracurricular" },
+                ]}
+              />
+
+              <FormInput
+                label="Amount *"
+                type="text"
+                value={formData.amount}
+                onChange={handleInputChange("amount")}
+                placeholder="e.g., ₦120,000"
+              />
+            </div>
+
+            <FormInput
+              label="Description *"
+              type="textarea"
+              value={formData.description}
+              onChange={handleInputChange("description")}
+              placeholder="Enter fee description..."
+              height="80px"
+            />
+
+            <div className="form-row">
+              <FormInput
+                label="Frequency"
+                type="select"
+                value={formData.frequency}
+                onChange={handleInputChange("frequency")}
+                options={[
+                  { value: "Per Term", label: "Per Term" },
+                  { value: "Per Session", label: "Per Session" },
+                  { value: "Per Month", label: "Per Month" },
+                  { value: "Per Event", label: "Per Event" },
+                  { value: "One Time", label: "One Time" },
+                ]}
+              />
+
+              <FormInput
+                label="Fee Type"
+                type="select"
+                value={formData.mandatory}
+                onChange={(value) =>
+                  handleInputChange("mandatory")(value === "true")
+                }
+                options={[
+                  { value: true, label: "Mandatory" },
+                  { value: false, label: "Optional" },
+                ]}
+              />
+            </div>
+
+            <div className="form-row">
+              <FormInput
+                label="Due Date"
+                type="text"
+                value={formData.dueDate}
+                onChange={handleInputChange("dueDate")}
+                placeholder="e.g., Beginning of each term"
+              />
+
+              <FormInput
+                label="Late Fee"
+                type="text"
+                value={formData.lateFee}
+                onChange={handleInputChange("lateFee")}
+                placeholder="e.g., ₦5,000 after 30 days"
+              />
+            </div>
+
+            <FormInput
+              label="School Account *"
+              type="select"
+              value={formData.schoolAccount}
+              onChange={handleInputChange("schoolAccount")}
+              options={schoolAccounts.map((account) => ({
+                value: account.id,
+                label: `${account.accountName} (${account.bankName} - ${account.accountType})`,
+              }))}
+              placeholder="Select account to receive payments"
+            />
+
+            {/* Target Audience Selector */}
+            <div className="target-audience-section">
+              <label className="form-label">Applicable To *</label>
+              <TargetAudienceSelector
+                selectedType={formData.targetType}
+                selectedTargets={formData.selectedTargets}
+                onChange={handleTargetChange}
+              />
+            </div>
+
+            <FormInput
+              label="Status"
+              type="select"
+              value={formData.status}
+              onChange={handleInputChange("status")}
+              options={[
+                { value: "Active", label: "Active" },
+                { value: "Inactive", label: "Inactive" },
+                { value: "Draft", label: "Draft" },
+              ]}
+            />
+
+            <FormInput
+              label="Notes"
+              type="textarea"
+              value={formData.notes}
+              onChange={handleInputChange("notes")}
+              placeholder="Additional notes about this fee..."
+              height="60px"
+            />
+          </div>
+
+          <div className="create-fee-footer">
+            <Button
+              variant="secondary"
+              onClick={() => setIsCreateMenuOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleSubmitFee}
+              disabled={
+                !formData.feeCode ||
+                !formData.feeName ||
+                !formData.description ||
+                !formData.amount ||
+                !formData.schoolAccount ||
+                !formData.targetType
+              }
+            >
+              Create Fee
+            </Button>
+          </div>
+        </div>
+      </SlideInMenu>
+    </div>
+  );
+};
+
+// Main FeeBillingDashboard Component with Tabs
+const FeeBillingDashboard = () => {
+  // Define the navigation routes for the top tabs
+  const routes = [
+    { label: "Bills", link: "" },
+    { label: "School Accounts", link: "/accounts" },
+  ];
+
+  return (
+    <StudentDetailTopTab
+      title="Fee Billing Management"
+      subtitle="Manage school fees, billing, and bank accounts"
+      route={routes}
+    >
+      <Routes>
+        <Route path="/" element={<BillsTab />} />
+        <Route path="/accounts" element={<SchoolAccountsTab />} />
+      </Routes>
+    </StudentDetailTopTab>
+  );
+};
+
+export default FeeBillingDashboard;
+  const [isEditMenuOpen, setIsEditMenuOpen] = useState(false);
+  const [isDetailMenuOpen, setIsDetailMenuOpen] = useState(false);
+  const [selectedAccount, setSelectedAccount] = useState(null);
+  const [visibleAccountNumbers, setVisibleAccountNumbers] = useState({});
+  const [formData, setFormData] = useState({
+    accountName: "",
+    accountNumber: "",
+    bankName: "",
+    accountType: "Savings",
+    description: "",
+    isDefault: false,
+  });
+
+  // Sample accounts data
+  const accountsData = [
+    {
+      id: 1,
+      accountName: "Greenwood School Main Account",
+      accountNumber: "1234567890",
+      bankName: "First Bank Nigeria",
+      accountType: "Current",
+      balance: "₦5,450,000",
+      isDefault: true,
+      status: "Active",
+      description: "Primary school account for fee collections",
+      createdDate: "2023-08-15",
+      lastUpdated: "2024-01-10",
+      createdBy: "Admin User",
+      updatedBy: "Finance Manager",
+    },
+    {
+      id: 2,
+      accountName: "Greenwood School Savings",
+      accountNumber: "0987654321",
+      bankName: "GTBank",
+      accountType: "Savings",
+      balance: "₦2,100,000",
+      isDefault: false,
+      status: "Active",
+      description: "Savings account for emergency funds",
+      createdDate: "2023-09-20",
+      lastUpdated: "2024-01-05",
+      createdBy: "Finance Manager",
+      updatedBy: "Admin User",
+    },
+    {
+      id: 3,
+      accountName: "Greenwood School Projects",
+      accountNumber: "1122334455",
+      bankName: "Access Bank",
+      accountType: "Current",
+      balance: "₦850,000",
+      isDefault: false,
+      status: "Active",
+      description: "Account for infrastructure projects",
+      createdDate: "2023-10-12",
+      lastUpdated: "2023-12-18",
+      createdBy: "Admin User",
+      updatedBy: "Project Manager",
+    },
+  ];
+
+  const handleInputChange = (field) => (value) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleSubmit = () => {
+    console.log("Add account:", formData);
+    setIsAddMenuOpen(false);
+    setFormData({
+      accountName: "",
+      accountNumber: "",
+      bankName: "",
+      accountType: "Savings",
+      description: "",
+      isDefault: false,
+    });
+  };
+
+  const handleEditSubmit = () => {
+    console.log("Update account:", formData);
+    setIsEditMenuOpen(false);
+    setSelectedAccount(null);
+    setFormData({
+      accountName: "",
+      accountNumber: "",
+      bankName: "",
+      accountType: "Savings",
+      description: "",
+      isDefault: false,
+    });
+    alert("Account updated successfully!");
+  };
+
+  const handleCreate = () => {
+    setIsAddMenuOpen(true);
+  };
+
+  const handleEditAccount = (account) => {
+    setSelectedAccount(account);
+    setFormData({
+      accountName: account.accountName,
+      accountNumber: account.accountNumber,
+      bankName: account.bankName,
+      accountType: account.accountType,
+      description: account.description,
+      isDefault: account.isDefault,
+    });
+    setIsEditMenuOpen(true);
+  };
+
+  const handleDeleteAccount = (account) => {
+    if (
+      window.confirm(
+        `Are you sure you want to delete "${account.accountName}"? This action cannot be undone.`
+      )
+    ) {
+      console.log("Delete account:", account.accountName);
+      // Handle delete account functionality
+      // In a real app, you would make an API call here
+      alert(`Account "${account.accountName}" has been deleted successfully.`);
+    }
+  };
+
+  const handleCardClick = (account) => {
+    setSelectedAccount(account);
+    setIsDetailMenuOpen(true);
+  };
+
+  const toggleAccountNumberVisibility = (accountId) => {
+    setVisibleAccountNumbers((prev) => ({
+      ...prev,
+      [accountId]: !prev[accountId],
+    }));
+  };
+
+  const maskAccountNumber = (accountNumber) => {
+    return "x".repeat(accountNumber.length);
+  };
+
+  return (
+    <div className="school-accounts-tab">
+      <InnerTabCon>
+        <div className="accounts-header">
+          <div className="accounts-title-section">
+            <h3 className="accounts-title">School Bank Accounts</h3>
+            <p className="accounts-subtitle">
+              Manage your school's bank accounts and financial information
+            </p>
+          </div>
+          <button className="add-account-btn" onClick={handleCreate}>
+            Add New Account
+          </button>
+        </div>
+
+        <div className="accounts-grid">
+          {accountsData.map((account) => (
+            <div
+              key={account.id}
+              className="account-card clickable-card"
+              onClick={() => handleCardClick(account)}
+            >
+              <div className="account-card-header">
+                <div className="account-info">
+                  <h4 className="account-name">{account.accountName}</h4>
+                  <p className="account-description">{account.description}</p>
+                </div>
+                <div className="account-badges">
+                  <span
+                    className={`status-badge ${account.status.toLowerCase()}`}
+                  >
+                    {account.status}
+                  </span>
+                </div>
+              </div>
+
+              <div className="account-details">
+                <div className="account-detail-row">
+                  <span className="detail-label">Account Number:</span>
+                  <div className="account-number-container">
+                    <span className="detail-value account-number">
+                      {visibleAccountNumbers[account.id]
+                        ? account.accountNumber
+                        : maskAccountNumber(account.accountNumber)}
+                    </span>
+                    <button
+                      className="eye-button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleAccountNumberVisibility(account.id);
+                      }}
+                      title={
+                        visibleAccountNumbers[account.id]
+                          ? "Hide account number"
+                          : "Show account number"
+                      }
+                    >
+                      {visibleAccountNumbers[account.id] ? "👁️" : "👁️‍🗨️"}
+                    </button>
+                  </div>
+                </div>
+                <div className="account-detail-row">
+                  <span className="detail-label">Bank:</span>
+                  <span className="detail-value">{account.bankName}</span>
+                </div>
+                <div className="account-detail-row">
+                  <span className="detail-label">Account Type:</span>
+                  <span
+                    className={`account-type-badge ${account.accountType.toLowerCase()}`}
+                  >
+                    {account.accountType}
+                  </span>
+                </div>
+              </div>
+
+              <div className="account-actions">
+                <button
+                  className="action-btn edit-btn"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleEditAccount(account);
+                  }}
+                >
+                  <span className="btn-icon">✏️</span>
+                  Edit
+                </button>
+                <button
+                  className="action-btn delete-btn"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDeleteAccount(account);
+                  }}
+                >
+                  <span className="btn-icon">🗑️</span>
+                  Delete
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </InnerTabCon>
+
+      {/* Add Account Form */}
+      <SlideInMenu
+        isShow={isAddMenuOpen}
+        onClose={() => setIsAddMenuOpen(false)}
+        width="500px"
+      >
+        <div className="add-account-container">
+          <div className="add-account-header">
+            <h2>Add School Account</h2>
+            <p>Add a new bank account for the school</p>
+          </div>
+
+          <div className="add-account-form">
+            <FormInput
+              label="Account Name *"
+              type="text"
+              value={formData.accountName}
+              onChange={handleInputChange("accountName")}
+              placeholder="e.g., Greenwood School Main Account"
+            />
+
+            <div className="form-row">
+              <FormInput
+                label="Account Number *"
+                type="text"
+                value={formData.accountNumber}
+                onChange={handleInputChange("accountNumber")}
+                placeholder="e.g., 1234567890"
+              />
+
+              <FormInput
+                label="Bank Name *"
+                type="select"
+                value={formData.bankName}
+                onChange={handleInputChange("bankName")}
+                options={[
+                  { value: "First Bank Nigeria", label: "First Bank Nigeria" },
+                  { value: "GTBank", label: "GTBank" },
+                  { value: "Access Bank", label: "Access Bank" },
+                  { value: "Zenith Bank", label: "Zenith Bank" },
+                  { value: "UBA", label: "UBA" },
+                  { value: "Fidelity Bank", label: "Fidelity Bank" },
+                  { value: "Other", label: "Other" },
+                ]}
+              />
+            </div>
+
+            <FormInput
+              label="Account Type *"
+              type="select"
+              value={formData.accountType}
+              onChange={handleInputChange("accountType")}
+              options={[
+                { value: "Savings", label: "Savings" },
+                { value: "Current", label: "Current" },
+                { value: "Fixed Deposit", label: "Fixed Deposit" },
+              ]}
+            />
+
+            <FormInput
+              label="Description"
+              type="textarea"
+              value={formData.description}
+              onChange={handleInputChange("description")}
+              placeholder="Enter account description..."
+              height="80px"
+            />
+          </div>
+
+          <div className="add-account-footer">
+            <Button variant="secondary" onClick={() => setIsAddMenuOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleSubmit}
+              disabled={
+                !formData.accountName ||
+                !formData.accountNumber ||
+                !formData.bankName
+              }
+            >
+              Add Account
+            </Button>
+          </div>
+        </div>
+      </SlideInMenu>
+
+      {/* Edit Account Form */}
+      <SlideInMenu
+        isShow={isEditMenuOpen}
+        onClose={() => {
+          setIsEditMenuOpen(false);
+          setSelectedAccount(null);
+        }}
+        width="500px"
+      >
+        <div className="add-account-container">
+          <div className="add-account-header">
+            <h2>Edit Account</h2>
+            <p>Update bank account information</p>
+          </div>
+
+          <div className="add-account-form">
+            <FormInput
+              label="Account Name *"
+              type="text"
+              value={formData.accountName}
+              onChange={handleInputChange("accountName")}
+              placeholder="e.g., Greenwood School Main Account"
+            />
+
+            <div className="form-row">
+              <FormInput
+                label="Account Number *"
+                type="text"
+                value={formData.accountNumber}
+                onChange={handleInputChange("accountNumber")}
+                placeholder="e.g., 1234567890"
+              />
+
+              <FormInput
+                label="Bank Name *"
+                type="select"
+                value={formData.bankName}
+                onChange={handleInputChange("bankName")}
+                options={[
+                  { value: "First Bank Nigeria", label: "First Bank Nigeria" },
+                  { value: "GTBank", label: "GTBank" },
+                  { value: "Access Bank", label: "Access Bank" },
+                  { value: "Zenith Bank", label: "Zenith Bank" },
+                  { value: "UBA", label: "UBA" },
+                  { value: "Fidelity Bank", label: "Fidelity Bank" },
+                  { value: "Other", label: "Other" },
+                ]}
+              />
+            </div>
+
+            <FormInput
+              label="Account Type *"
+              type="select"
+              value={formData.accountType}
+              onChange={handleInputChange("accountType")}
+              options={[
+                { value: "Savings", label: "Savings" },
+                { value: "Current", label: "Current" },
+                { value: "Fixed Deposit", label: "Fixed Deposit" },
+              ]}
+            />
+
+            <FormInput
+              label="Description"
+              type="textarea"
+              value={formData.description}
+              onChange={handleInputChange("description")}
+              placeholder="Enter account description..."
+              height="80px"
+            />
+          </div>
+
+          <div className="add-account-footer">
+            <Button
+              variant="secondary"
+              onClick={() => {
+                setIsEditMenuOpen(false);
+                setSelectedAccount(null);
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleEditSubmit}
+              disabled={
+                !formData.accountName ||
+                !formData.accountNumber ||
+                !formData.bankName
+              }
+            >
+              Update Account
+            </Button>
+          </div>
+        </div>
+      </SlideInMenu>
+
+      {/* Account Detail View */}
+      <SlideInMenu
+        isShow={isDetailMenuOpen}
+        onClose={() => {
+          setIsDetailMenuOpen(false);
+          setSelectedAccount(null);
+        }}
+        width="600px"
+      >
+        {selectedAccount && (
+          <div className="account-detail-container">
+            <div className="account-detail-header">
+              <h2>{selectedAccount.accountName}</h2>
+              <p>Account Details and Information</p>
+            </div>
+
+            <div className="account-detail-content">
+              <div className="detail-section">
+                <h3>Basic Information</h3>
+                <div className="detail-grid">
+                  <div className="detail-item">
+                    <label>Account Name</label>
+                    <span>{selectedAccount.accountName}</span>
+                  </div>
+                  <div className="detail-item">
+                    <label>Account Number</label>
+                    <span className="account-number-display">
+                      {visibleAccountNumbers[selectedAccount.id]
+                        ? selectedAccount.accountNumber
+                        : maskAccountNumber(selectedAccount.accountNumber)}
+                      <button
+                        className="eye-button-small"
+                        onClick={() =>
+                          toggleAccountNumberVisibility(selectedAccount.id)
+                        }
+                      >
+                        {visibleAccountNumbers[selectedAccount.id]
+                          ? "👁️"
+                          : "👁️‍🗨️"}
+                      </button>
+                    </span>
+                  </div>
+                  <div className="detail-item">
+                    <label>Bank Name</label>
+                    <span>{selectedAccount.bankName}</span>
+                  </div>
+                  <div className="detail-item">
+                    <label>Account Type</label>
+                    <span
+                      className={`account-type-badge ${selectedAccount.accountType.toLowerCase()}`}
+                    >
+                      {selectedAccount.accountType}
+                    </span>
+                  </div>
+                  <div className="detail-item">
+                    <label>Status</label>
+                    <span
+                      className={`status-badge ${selectedAccount.status.toLowerCase()}`}
+                    >
+                      {selectedAccount.status}
+                    </span>
+                  </div>
+                  <div className="detail-item full-width">
+                    <label>Description</label>
+                    <span>{selectedAccount.description}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="detail-section">
+                <h3>Account History</h3>
+                <div className="detail-grid">
+                  <div className="detail-item">
+                    <label>Created Date</label>
+                    <span>
+                      {new Date(selectedAccount.createdDate).toLocaleDateString(
+                        "en-US",
+                        {
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                        }
+                      )}
+                    </span>
+                  </div>
+                  <div className="detail-item">
+                    <label>Last Updated</label>
+                    <span>
+                      {new Date(selectedAccount.lastUpdated).toLocaleDateString(
+                        "en-US",
+                        {
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                        }
+                      )}
+                    </span>
+                  </div>
+                  <div className="detail-item">
+                    <label>Created By</label>
+                    <span>{selectedAccount.createdBy}</span>
+                  </div>
+                  <div className="detail-item">
+                    <label>Updated By</label>
+                    <span>{selectedAccount.updatedBy}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="detail-section">
+                <h3>Account Actions</h3>
+                <div className="detail-actions">
+                  <button
+                    className="detail-action-btn edit-btn"
+                    onClick={() => {
+                      setIsDetailMenuOpen(false);
+                      handleEditAccount(selectedAccount);
+                    }}
+                  >
+                    <span className="btn-icon">✏️</span>
+                    Edit Account
+                  </button>
+                  <button
+                    className="detail-action-btn delete-btn"
+                    onClick={() => {
+                      setIsDetailMenuOpen(false);
+                      handleDeleteAccount(selectedAccount);
+                    }}
+                  >
+                    <span className="btn-icon">🗑️</span>
+                    Delete Account
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </SlideInMenu>
+    </div>
+  );
+};
+
+// Main FeeBillingDashboard Component with Tabs
+const FeeBillingDashboard = () => {
+  // Define the navigation routes for the top tabs
+  const routes = [
+    { label: "Bills", link: "" },
+    { label: "School Accounts", link: "/accounts" },
+  ];
+
+  return (
+    <StudentDetailTopTab
+      title="Fee Billing Management"
+      subtitle="Manage school fees, billing, and bank accounts"
+      route={routes}
+    >
+      <Routes>
+        <Route path="/" element={<BillsTab />} />
+        <Route path="/accounts" element={<SchoolAccountsTab />} />
+      </Routes>
+    </StudentDetailTopTab>
+  );
+};
+
+export default FeeBillingDashboard;

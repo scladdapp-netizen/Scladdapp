@@ -1,0 +1,303 @@
+.behaviorAssessment {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 20px;
+  padding: 24px;
+  margin-top: 24px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  box-sizing: border-box;
+}
+
+/* Behavior Header */
+.behaviorHeader {
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.behaviorTitle h2 {
+  margin: 0 0 8px 0;
+  font-size: 24px;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.behaviorTitle p {
+  margin: 0;
+  font-size: 14px;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+/* Behavior Graph */
+.behaviorGraph {
+  margin-bottom: 20px;
+}
+
+.graphContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.graphWrapper {
+  overflow-x: auto;
+  border-radius: 12px;
+}
+
+.behaviorChart {
+  width: 100%;
+  min-width: 600px;
+  height: 200px;
+  display: block;
+}
+
+.graphPoint {
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.graphPoint:hover {
+  r: 8;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+}
+
+.behaviorLabel {
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.behaviorLabel:hover {
+  fill: #1f2937;
+  font-weight: 600;
+}
+
+/* Simple Legend */
+.simpleLegend {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 20px;
+  padding: 10px;
+  background: #ffffff;
+  border-radius: 12px;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.legendDot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.legendText {
+  font-size: 13px;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+/* Simple Footer Stats */
+.behaviorFooter {
+  padding-top: 16px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.simpleStats {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.statCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px 16px;
+  background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  min-width: 80px;
+  text-align: center;
+  transition: all 0.2s ease;
+}
+
+.statCard:hover {
+  background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.statLabel {
+  font-size: 12px;
+  color: #6b7280;
+  font-weight: 500;
+  margin-bottom: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.statValue {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+/* Scrollbar styling */
+.graphWrapper::-webkit-scrollbar {
+  height: 6px;
+}
+
+.graphWrapper::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.graphWrapper::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+.graphWrapper::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .behaviorAssessment {
+    padding: 20px;
+  }
+
+  .behaviorTitle h2 {
+    font-size: 22px;
+  }
+
+  .graphWrapper {
+    padding: 12px;
+  }
+
+  .behaviorChart {
+    min-width: 500px;
+    height: 180px;
+  }
+
+  .simpleLegend {
+    gap: 16px;
+    padding: 12px;
+  }
+
+  .simpleStats {
+    gap: 12px;
+  }
+
+  .statCard {
+    padding: 10px 12px;
+    min-width: 70px;
+  }
+
+  .statValue {
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 768px) {
+  .behaviorAssessment {
+    padding: 16px;
+    margin-top: 20px;
+  }
+
+  .behaviorHeader {
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+  }
+
+  .behaviorTitle h2 {
+    font-size: 20px;
+  }
+
+  .graphWrapper {
+    padding: 10px;
+  }
+
+  .behaviorChart {
+    min-width: 450px;
+    height: 160px;
+  }
+
+  .simpleLegend {
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 12px;
+  }
+
+  .legendItem {
+    gap: 6px;
+  }
+
+  .legendText {
+    font-size: 12px;
+  }
+
+  .simpleStats {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .statCard {
+    flex-direction: row;
+    justify-content: space-between;
+    text-align: left;
+    padding: 8px 12px;
+    min-width: auto;
+  }
+
+  .statLabel {
+    margin-bottom: 0;
+  }
+
+  .statValue {
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .behaviorAssessment {
+    padding: 12px;
+  }
+
+  .behaviorTitle h2 {
+    font-size: 18px;
+  }
+
+  .graphWrapper {
+    padding: 8px;
+  }
+
+  .behaviorChart {
+    min-width: 400px;
+    height: 140px;
+  }
+
+  .legendText {
+    font-size: 11px;
+  }
+
+  .statCard {
+    padding: 6px 10px;
+  }
+
+  .statLabel {
+    font-size: 11px;
+  }
+
+  .statValue {
+    font-size: 14px;
+  }
+}

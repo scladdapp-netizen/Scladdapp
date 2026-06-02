@@ -1,0 +1,153 @@
+.attendanceOverview {
+  background: #ffffff;
+  border: 1px solid #e6e6e6;
+  border-radius: 22px;
+  padding: 18px;
+  overflow: hidden;
+  position: relative;
+  /* width: 100%; */
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.title_con {
+  display: flex;
+  flex-direction: column;
+  border-bottom: 1px solid #e2e2e2;
+  padding-bottom: 15px;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.title_con p {
+  margin: 0;
+}
+
+.title {
+  font-weight: 600;
+}
+
+.title_sem {
+  font-size: 11px;
+  background-color: #eeeeee;
+  width: fit-content;
+  padding: 5px 8px;
+  border-radius: 6px;
+}
+
+.chartContainer {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  justify-content: space-around;
+  border-bottom: 1px solid #e2e2e2;
+  padding-bottom: 10px;
+}
+
+.circularChart {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.donut {
+  transform: rotate(-90deg);
+}
+
+.donut-segment {
+  transition: all 0.3s ease;
+}
+
+.donut-segment:hover {
+  stroke-width: 4;
+}
+
+.donut-segment.present {
+  stroke: #10b981;
+  filter: drop-shadow(0 0 4px rgba(16, 185, 129, 0.3));
+}
+
+.donut-segment.absent {
+  stroke: #ef4444;
+  filter: drop-shadow(0 0 4px rgba(239, 68, 68, 0.3));
+}
+
+.donut-segment.excused {
+  stroke: #f59e0b;
+  filter: drop-shadow(0 0 4px rgba(245, 158, 11, 0.3));
+}
+
+.chartCenter {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.totalDays {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1e293b;
+  line-height: 1;
+}
+
+.totalLabel {
+  font-size: 12px;
+  color: #64748b;
+  font-weight: 500;
+  margin-top: 2px;
+}
+
+.chartLegend {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  justify-content: space-around;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+}
+
+.legendDot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.legendDot.present {
+  background: linear-gradient(135deg, #10b981, #059669);
+}
+
+.legendDot.absent {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+}
+
+.legendDot.excused {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+}
+
+.legendLabel {
+  font-size: 14px;
+  color: #374151;
+  font-weight: 500;
+  flex: 1;
+}
+
+.legendValue {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1e293b;
+  background: #f8fafc;
+  padding: 2px 8px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}

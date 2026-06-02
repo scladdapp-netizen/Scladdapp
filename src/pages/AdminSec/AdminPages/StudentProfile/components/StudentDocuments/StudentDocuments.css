@@ -1,0 +1,418 @@
+/* Main Component */
+.studentDocuments {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 20px;
+  padding: 24px;
+  width: 100%;
+  margin-top: 20px;
+  box-sizing: border-box;
+}
+
+.documentsHeader {
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.documentsTitle {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.documentsList {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
+  justify-content: start;
+  max-width: 100%;
+}
+
+.documentCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px 16px;
+  background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  aspect-ratio: 1;
+  position: relative;
+  cursor: pointer;
+  min-width: 140px;
+  max-width: 180px;
+  justify-content: center;
+}
+
+.documentCard:hover {
+  background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
+  border-color: #d1d5db;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.documentIcon {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 12px;
+}
+
+.documentInfo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.documentName {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1f2937;
+  line-height: 1.3;
+  text-align: center;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.documentMeta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  font-size: 11px;
+  color: #6b7280;
+}
+
+.documentSize {
+  font-weight: 500;
+}
+
+.downloadButton {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: linear-gradient(135deg, #4f46e5, #7c3aed);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  opacity: 0;
+}
+
+.documentCard:hover .downloadButton {
+  opacity: 1;
+}
+
+.downloadButton:hover {
+  background: linear-gradient(135deg, #4338ca, #6d28d9);
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+}
+
+/* See More Button */
+.seeMoreButton {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 20px;
+  background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #4f46e5;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.seeMoreButton:hover {
+  background: linear-gradient(135deg, #eef2ff, #e0e7ff);
+  border-color: #c7d2fe;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.15);
+}
+
+/* Modal Styles */
+.allDocumentsModal {
+  max-width: 100%;
+}
+
+.modalHeader {
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.modalTitle {
+  margin: 0 0 4px 0;
+  font-size: 24px;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.modalSubtitle {
+  margin: 0;
+  font-size: 14px;
+  color: #6b7280;
+}
+
+.modalDocumentsList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.modalDocumentItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  transition: all 0.2s ease;
+}
+
+.modalDocumentItem:hover {
+  border-color: #d1d5db;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transform: translateY(-1px);
+}
+
+.modalDocumentLeft {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex: 1;
+}
+
+.modalDocumentIcon {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  background: #f8fafc;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+}
+
+.modalDocumentInfo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.modalDocumentName {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1f2937;
+  line-height: 1.2;
+}
+
+.modalDocumentMeta {
+  display: flex;
+  gap: 12px;
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.modalDocumentType {
+  background: #f3f4f6;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.modalDocumentSize {
+  font-weight: 500;
+}
+
+.modalDocumentDate {
+  font-weight: 400;
+}
+
+.modalDownloadButton {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  background: linear-gradient(135deg, #4f46e5, #7c3aed);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.modalDownloadButton:hover {
+  background: linear-gradient(135deg, #4338ca, #6d28d9);
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+}
+
+/* Scrollbar styling for modal */
+.modalDocumentsList::-webkit-scrollbar {
+  width: 6px;
+}
+
+.modalDocumentsList::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.modalDocumentsList::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+.modalDocumentsList::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .studentDocuments {
+    padding: 20px;
+    margin-top: 16px;
+  }
+
+  .documentsList {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    justify-content: center;
+  }
+
+  .documentCard {
+    padding: 16px 12px;
+    min-width: 110px;
+    max-width: 140px;
+  }
+
+  .documentIcon {
+    width: 36px;
+    height: 36px;
+    margin-bottom: 8px;
+  }
+
+  .documentName {
+    font-size: 12px;
+  }
+
+  .documentMeta {
+    font-size: 10px;
+  }
+
+  .downloadButton {
+    width: 24px;
+    height: 24px;
+    top: 4px;
+    right: 4px;
+  }
+
+  .modalDocumentItem {
+    padding: 12px;
+    gap: 12px;
+  }
+
+  .modalDocumentLeft {
+    gap: 12px;
+  }
+
+  .modalDocumentIcon {
+    width: 40px;
+    height: 40px;
+  }
+
+  .modalDocumentName {
+    font-size: 15px;
+  }
+
+  .modalDocumentMeta {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .modalDownloadButton {
+    width: 40px;
+    height: 40px;
+  }
+}
+
+@media (max-width: 480px) {
+  .documentsList {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  .documentCard {
+    padding: 12px 8px;
+    min-width: 90px;
+    max-width: 110px;
+  }
+
+  .documentIcon {
+    width: 32px;
+    height: 32px;
+    margin-bottom: 6px;
+  }
+
+  .documentName {
+    font-size: 11px;
+  }
+
+  .downloadButton {
+    width: 20px;
+    height: 20px;
+    top: 3px;
+    right: 3px;
+  }
+
+  .modalDocumentItem {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .modalDocumentLeft {
+    width: 100%;
+  }
+
+  .modalDownloadButton {
+    align-self: flex-end;
+  }
+}

@@ -1,0 +1,97 @@
+/* Form field styles used in upload panel */
+.sr-form-label {
+  display: block;
+  margin-bottom: 5px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+}
+
+.sr-form-input {
+  width: 100%;
+  padding: 9px 12px;
+  border-radius: 8px;
+  border: 1px solid #e8e8e8;
+  font-size: 13px;
+  box-sizing: border-box;
+  background: #ffffff;
+  color: #111111;
+  font-family: inherit;
+}
+
+.sr-form-input:focus {
+  outline: none;
+  border-color: #111111;
+}
+
+[data-theme="dark"] .sr-form-input {
+  background: #252525;
+  border-color: #3a3a3a;
+  color: #e0e0e0;
+}
+
+[data-theme="dark"] .sr-form-input:focus {
+  border-color: #f0f0f0;
+}
+
+/* ── Themed upload panel (srp-*) ──────────────────────────────────────────── */
+.srp-panel { display:flex; flex-direction:column; flex:1; min-height:0; overflow:hidden; background:#ffffff; }
+
+.srp-header { position:relative; padding:22px 24px 20px; background:#111111; flex-shrink:0; overflow:hidden; }
+.srp-header::before { content:""; position:absolute; width:120px; height:120px; border-radius:50%; border:18px solid rgba(255,255,255,0.05); top:-40px; right:-24px; pointer-events:none; }
+.srp-deco  { position:absolute; width:60px; height:60px; border-radius:50%; border:10px solid rgba(255,255,255,0.04); bottom:-20px; left:-12px; pointer-events:none; }
+.srp-deco2 { position:absolute; width:40px; height:40px; border-radius:8px; border:1.5px solid rgba(255,255,255,0.07); top:14px; right:80px; transform:rotate(18deg); pointer-events:none; }
+.srp-header-content { position:relative; z-index:1; display:flex; align-items:center; gap:14px; }
+.srp-header-icon { width:40px; height:40px; border-radius:10px; background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.18); display:flex; align-items:center; justify-content:center; color:#fff; flex-shrink:0; }
+.srp-header-title { margin:0 0 3px; font-size:14px; font-weight:800; color:#fff; letter-spacing:-0.01em; }
+.srp-header-sub   { margin:0; font-size:12px; color:rgba(255,255,255,0.5); }
+
+.srp-body { flex:1; min-height:0; overflow-y:auto; padding:20px 24px; display:flex; flex-direction:column; gap:16px; }
+.srp-body::-webkit-scrollbar { width:3px; }
+.srp-body::-webkit-scrollbar-thumb { background:#e0e0e0; border-radius:2px; }
+
+.srp-section { display:flex; flex-direction:column; gap:6px; }
+.srp-label { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.07em; color:#888888; }
+
+.srp-dropzone { border:1.5px dashed #e0e0e0; border-radius:12px; padding:20px; cursor:pointer; transition:border-color .15s,background .15s; background:#fafafa; }
+.srp-dropzone:hover, .srp-dropzone.drag-over { border-color:#111111; background:#f5f5f5; }
+.srp-dropzone.has-file { border-style:solid; border-color:#111111; background:#f5f5f5; }
+
+.srp-dropzone-empty { display:flex; flex-direction:column; align-items:center; gap:10px; }
+.srp-dropzone-icon  { width:44px; height:44px; border-radius:11px; background:#111111; display:flex; align-items:center; justify-content:center; color:#fff; }
+.srp-dropzone-text  { display:flex; flex-direction:column; align-items:center; gap:3px; }
+.srp-dropzone-main  { font-size:13px; font-weight:700; color:#111111; }
+.srp-dropzone-hint  { font-size:11px; color:#aaaaaa; }
+
+.srp-file-selected { display:flex; align-items:center; gap:12px; }
+.srp-file-icon  { width:38px; height:38px; border-radius:9px; background:#111111; display:flex; align-items:center; justify-content:center; color:#fff; flex-shrink:0; }
+.srp-file-info  { flex:1; min-width:0; }
+.srp-file-name  { font-size:13px; font-weight:700; color:#111111; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.srp-file-size  { font-size:11px; color:#888888; margin-top:2px; }
+.srp-file-remove { width:26px; height:26px; border-radius:6px; border:1.5px solid #e0e0e0; background:#fff; display:flex; align-items:center; justify-content:center; cursor:pointer; color:#888888; flex-shrink:0; transition:border-color .15s,color .15s; }
+.srp-file-remove:hover { border-color:#111111; color:#111111; }
+
+.srp-input, .srp-textarea { width:100%; padding:10px 13px; border:1.5px solid #e8e8e8; border-radius:10px; font-size:13px; color:#111111; background:#ffffff; outline:none; transition:border-color .15s; font-family:inherit; }
+.srp-input:focus, .srp-textarea:focus { border-color:#111111; }
+.srp-textarea { resize:vertical; min-height:80px; }
+
+.srp-footer { display:flex; justify-content:flex-end; gap:10px; padding:14px 24px; border-top:1px solid #e8e8e8; background:#f7f7f7; flex-shrink:0; }
+
+/* dark */
+[data-theme="dark"] .srp-panel   { background:#1a1a1a; }
+[data-theme="dark"] .srp-header  { background:#0a0a0a; }
+[data-theme="dark"] .srp-body    { background:#1a1a1a; }
+[data-theme="dark"] .srp-body::-webkit-scrollbar-thumb { background:#2a2a2a; }
+[data-theme="dark"] .srp-footer  { background:#1e1e1e; border-top-color:#2a2a2a; }
+[data-theme="dark"] .srp-label   { color:#555555; }
+[data-theme="dark"] .srp-dropzone { background:#252525; border-color:#3a3a3a; }
+[data-theme="dark"] .srp-dropzone:hover, [data-theme="dark"] .srp-dropzone.drag-over { background:#2a2a2a; border-color:#f0f0f0; }
+[data-theme="dark"] .srp-dropzone.has-file { background:#2a2a2a; border-color:#f0f0f0; }
+[data-theme="dark"] .srp-dropzone-main { color:#f0f0f0; }
+[data-theme="dark"] .srp-dropzone-hint { color:#555555; }
+[data-theme="dark"] .srp-file-name { color:#f0f0f0; }
+[data-theme="dark"] .srp-file-size { color:#555555; }
+[data-theme="dark"] .srp-file-remove { background:#252525; border-color:#3a3a3a; color:#555555; }
+[data-theme="dark"] .srp-file-remove:hover { border-color:#f0f0f0; color:#f0f0f0; }
+[data-theme="dark"] .srp-input, [data-theme="dark"] .srp-textarea { background:#252525; border-color:#3a3a3a; color:#e0e0e0; }
+[data-theme="dark"] .srp-input:focus, [data-theme="dark"] .srp-textarea:focus { border-color:#f0f0f0; }

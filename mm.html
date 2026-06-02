@@ -1,0 +1,239 @@
+// CLASS OVERVIEW COMPONENT
+<div className="class-overview">
+  
+  <!-- MAIN HEADER & BASIC INFO -->
+  <div className="overview-header">
+    <div className="class-basic-info">
+      <h1>🏫 Science 1A</h1>
+      <div className="class-details">
+        <div className="detail-item">
+          <span className="label">Class Level:</span>
+          <span className="value">Primary 1</span>
+        </div>
+        <div className="detail-item">
+          <span className="label">Headmaster:</span>
+          <span className="value">Mr. Johnson</span>
+        </div>
+        <div className="detail-item">
+          <span className="label">Academic Year:</span>
+          <span className="value">2024/2025</span>
+        </div>
+        <div className="detail-item">
+          <span className="label">Status:</span>
+          <span className="status-badge active">✅ Active</span>
+        </div>
+      </div>
+    </div>
+    
+    <div className="class-actions">
+      <button className="btn-secondary">✏️ Edit Class</button>
+      <button className="btn-primary">📊 Generate Report</button>
+    </div>
+  </div>
+
+  <!-- KEY METRICS GRID -->
+  <div className="metrics-grid">
+    
+    <!-- STUDENT METRICS -->
+    <div className="metric-card students">
+      <div className="metric-icon">👥</div>
+      <div className="metric-content">
+        <div className="metric-value">25/30</div>
+        <div className="metric-label">Students Enrolled</div>
+        <div className="metric-progress">
+          <div className="progress-bar">
+            <div className="progress-fill" style={{width: '83%'}}></div>
+          </div>
+          <span className="progress-text">83% capacity</span>
+        </div>
+        <div className="metric-breakdown">
+          <span className="breakdown-item">♂️ 13 Boys</span>
+          <span className="breakdown-item">♀️ 12 Girls</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ATTENDANCE METRICS -->
+    <div className="metric-card attendance">
+      <div className="metric-icon">✅</div>
+      <div className="metric-content">
+        <div className="metric-value">85%</div>
+        <div className="metric-label">Today's Attendance</div>
+        <div className="metric-details">
+          <div className="detail-row">
+            <span className="detail-label">Present:</span>
+            <span className="detail-value">21 students</span>
+          </div>
+          <div className="detail-row">
+            <span className="detail-label">Absent:</span>
+            <span className="detail-value">3 students</span>
+          </div>
+          <div className="detail-row">
+            <span className="detail-label">Late:</span>
+            <span className="detail-value">1 student</span>
+          </div>
+        </div>
+        <div className="metric-action">
+          <button className="btn-sm">📅 Mark Attendance</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ACADEMIC PERFORMANCE -->
+    <div className="metric-card performance">
+      <div className="metric-icon">📊</div>
+      <div className="metric-content">
+        <div className="metric-value">75.5%</div>
+        <div className="metric-label">Average Performance</div>
+        <div className="performance-breakdown">
+          <div className="subject-score">
+            <span>Math:</span>
+            <span className="score">78%</span>
+          </div>
+          <div className="subject-score">
+            <span>Science:</span>
+            <span className="score">72%</span>
+          </div>
+          <div className="subject-score">
+            <span>English:</span>
+            <span className="score">76%</span>
+          </div>
+        </div>
+        <div className="top-performer">
+          🏆 Top Student: <strong>Jane Smith (92%)</strong>
+        </div>
+      </div>
+    </div>
+
+    <!-- FEE STATUS -->
+    <div className="metric-card fees">
+      <div className="metric-icon">💰</div>
+      <div className="metric-content">
+        <div className="metric-value">$1,200/$1,500</div>
+        <div className="metric-label">Fee Collection</div>
+        <div className="metric-progress">
+          <div className="progress-bar">
+            <div className="progress-fill" style={{width: '80%' }} ></div>
+          </div>
+          <span className="progress-text">80% collected</span>
+        </div>
+        <div className="fee-breakdown">
+          <div className="fee-status paid">
+            <span>Paid:</span>
+            <span>$1,200</span>
+          </div>
+          <div className="fee-status pending">
+            <span>Pending:</span>
+            <span>$300</span>
+          </div>
+          <div className="fee-status overdue">
+            <span>Overdue:</span>
+            <span>$50</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- QUICK STATS & UPCOMING EVENTS -->
+  <div className="overview-bottom">
+    
+    <!-- QUICK STATS -->
+    <div className="quick-stats">
+      <h3>📈 Quick Statistics</h3>
+      <div className="stats-grid">
+        <div className="stat-item">
+          <div className="stat-icon">📚</div>
+          <div className="stat-info">
+            <div className="stat-number">5</div>
+            <div className="stat-label">Subjects</div>
+          </div>
+        </div>
+        <div className="stat-item">
+          <div className="stat-icon">👨‍🏫</div>
+          <div className="stat-info">
+            <div className="stat-number">3</div>
+            <div className="stat-label">Teachers</div>
+          </div>
+        </div>
+        <div className="stat-item">
+          <div className="stat-icon">📅</div>
+          <div className="stat-info">
+            <div className="stat-number">12</div>
+            <div className="stat-label">Upcoming Events</div>
+          </div>
+        </div>
+        <div className="stat-item">
+          <div className="stat-icon">📝</div>
+          <div className="stat-info">
+            <div className="stat-number">8</div>
+            <div className="stat-label">Assignments Due</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TODAY'S SCHEDULE -->
+    <div className="todays-schedule">
+      <h3>🕒 Today's Schedule</h3>
+      <div className="schedule-list">
+        <div className="schedule-item current">
+          <div className="time">9:00 - 10:00</div>
+          <div className="subject">Mathematics</div>
+          <div className="teacher">Mrs. Smith</div>
+          <div className="status current">● Current</div>
+        </div>
+        <div className="schedule-item">
+          <div className="time">10:00 - 11:00</div>
+          <div className="subject">Science</div>
+          <div className="teacher">Mr. Brown</div>
+          <div className="status upcoming">↑ Next</div>
+        </div>
+        <div className="schedule-item">
+          <div className="time">11:00 - 12:00</div>
+          <div className="subject">English</div>
+          <div className="teacher">Ms. Davis</div>
+          <div className="status">Later</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RECENT ANNOUNCEMENTS -->
+    <div className="recent-announcements">
+      <h3>📢 Recent Announcements</h3>
+      <div className="announcements-list">
+        <div className="announcement-item important">
+          <div className="announcement-title">Parent-Teacher Meeting</div>
+          <div className="announcement-date">Jan 20, 2024 • 2:00 PM</div>
+          <div className="announcement-preview">
+            Scheduled for next Friday in the main hall...
+          </div>
+        </div>
+        <div className="announcement-item">
+          <div className="announcement-title">Science Fair Registration</div>
+          <div className="announcement-date">Jan 25, 2024</div>
+          <div className="announcement-preview">
+            Annual science fair registration opens next week...
+          </div>
+        </div>
+      </div>
+      <button className="btn-text">View All Announcements →</button>
+    </div>
+
+  </div>
+
+  <!-- QUICK ACTIONS -->
+  <div className="quick-actions">
+    <h3>🚀 Quick Actions</h3>
+    <div className="action-buttons">
+      <button className="action-btn">➕ Add Student</button>
+      <button className="action-btn">📅 Mark Attendance</button>
+      <button className="action-btn">📝 Create Assignment</button>
+      <button className="action-btn">💳 Collect Fees</button>
+      <button className="action-btn">📊 Generate Report</button>
+      <button className="action-btn">📢 Post Announcement</button>
+    </div>
+  </div>
+
+</div>

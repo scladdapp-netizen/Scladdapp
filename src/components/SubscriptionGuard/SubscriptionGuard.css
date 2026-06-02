@@ -1,0 +1,216 @@
+/* SubscriptionGuard.css */
+
+.sg-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 80vh;
+  padding: 24px;
+}
+
+.sg-card {
+  max-width: 480px;
+  width: 100%;
+  text-align: center;
+}
+
+/* Icon circle */
+.sg-icon-wrap {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: #f5f5f5;
+  border: 1px solid #e0e0e0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 18px;
+}
+
+.sg-icon-wrap svg {
+  font-size: 22px;
+  color: #aaaaaa;
+}
+
+.sg-title {
+  margin: 0 0 6px;
+  font-size: 18px;
+  font-weight: 700;
+  color: #111111;
+  letter-spacing: -0.01em;
+}
+
+.sg-school-name {
+  margin: 0 0 12px;
+  font-size: 12px;
+  color: #aaaaaa;
+  font-weight: 500;
+}
+
+/* Expiry badge */
+.sg-expiry-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: #f5f5f5;
+  border: 1px solid #e0e0e0;
+  border-radius: 20px;
+  padding: 3px 12px;
+  margin: 0 0 16px;
+  font-size: 12px;
+  color: #555555;
+  font-weight: 600;
+}
+
+.sg-desc {
+  margin: 0 0 24px;
+  font-size: 13px;
+  color: #777777;
+  line-height: 1.75;
+  max-width: 400px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* After renewal box */
+.sg-renewal-box {
+  background: #fafafa;
+  border: 1px solid #e5e5e5;
+  border-radius: 10px;
+  padding: 14px 18px;
+  margin-bottom: 22px;
+  text-align: left;
+}
+
+.sg-renewal-title {
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #aaaaaa;
+  margin: 0 0 10px;
+}
+
+.sg-renewal-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+  color: #444444;
+  margin-bottom: 6px;
+}
+
+.sg-renewal-item:last-child {
+  margin-bottom: 0;
+}
+
+.sg-renewal-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #cccccc;
+  flex-shrink: 0;
+}
+
+/* Contact box (non-super-admin) */
+.sg-contact-box {
+  background: #fafafa;
+  border: 1px solid #e5e5e5;
+  border-radius: 10px;
+  padding: 14px 18px;
+  text-align: left;
+}
+
+.sg-contact-title {
+  margin: 0 0 5px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #222222;
+}
+
+.sg-contact-desc {
+  margin: 0;
+  font-size: 12.5px;
+  color: #777777;
+  line-height: 1.65;
+}
+
+/* Settings link */
+.sg-settings-link {
+  margin-top: 12px;
+  font-size: 12px;
+  color: #aaaaaa;
+}
+
+.sg-settings-link span {
+  color: #333333;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* ── DARK THEME ─────────────────────────────────────────────────────────── */
+[data-theme="dark"] .sg-icon-wrap {
+  background: #252525;
+  border-color: #3a3a3a;
+}
+
+[data-theme="dark"] .sg-icon-wrap svg {
+  color: #555555;
+}
+
+[data-theme="dark"] .sg-title {
+  color: #e0e0e0;
+}
+
+[data-theme="dark"] .sg-school-name {
+  color: #555555;
+}
+
+[data-theme="dark"] .sg-expiry-badge {
+  background: #252525;
+  border-color: #3a3a3a;
+  color: #777777;
+}
+
+[data-theme="dark"] .sg-desc {
+  color: #777777;
+}
+
+[data-theme="dark"] .sg-renewal-box {
+  background: #1e1e1e;
+  border-color: #2e2e2e;
+}
+
+[data-theme="dark"] .sg-renewal-title {
+  color: #555555;
+}
+
+[data-theme="dark"] .sg-renewal-item {
+  color: #aaaaaa;
+}
+
+[data-theme="dark"] .sg-renewal-dot {
+  background: #444444;
+}
+
+[data-theme="dark"] .sg-contact-box {
+  background: #1e1e1e;
+  border-color: #2e2e2e;
+}
+
+[data-theme="dark"] .sg-contact-title {
+  color: #cccccc;
+}
+
+[data-theme="dark"] .sg-contact-desc {
+  color: #777777;
+}
+
+[data-theme="dark"] .sg-settings-link {
+  color: #555555;
+}
+
+[data-theme="dark"] .sg-settings-link span {
+  color: #aaaaaa;
+}

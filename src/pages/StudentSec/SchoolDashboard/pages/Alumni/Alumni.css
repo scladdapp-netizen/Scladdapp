@@ -1,0 +1,155 @@
+/* Section card inside si-card body */
+.al-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Graduation banner color */
+.si-banner--grad {
+  background: linear-gradient(135deg, #92400e 0%, #b45309 50%, #d97706 100%);
+}
+
+.si-banner--grad::before { border-color: rgba(255,255,255,0.08); }
+.si-banner--grad::after  { border-color: rgba(255,255,255,0.1); }
+.si-banner--grad .si-banner-deco { border-color: rgba(255,255,255,0.06); }
+
+/* Graduation badge */
+.al-grad-badge {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+/* ── Admission history cards ──────────────────────────────────────────────── */
+.al-admission-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.al-admission-card {
+  background: #ffffff;
+  border: 1px solid #e8e8e8;
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.al-admission-card.active { border-color: #888888; }
+
+.al-admission-card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  background: #f7f7f7;
+  border-bottom: 1px solid #e8e8e8;
+}
+
+.al-admission-card-icon {
+  width: 36px; height: 36px; border-radius: 8px;
+  background: #111111; color: #ffffff;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+
+.al-admission-card-info { flex: 1; min-width: 0; }
+
+.al-admission-school {
+  margin: 0 0 2px;
+  font-size: 14px; font-weight: 800; color: #111111;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+.al-admission-class { margin: 0; font-size: 12px; color: #888888; font-weight: 600; }
+
+.al-admission-card-body { padding: 14px 16px; }
+
+/* Dark theme */
+[data-theme="dark"] .al-admission-card { background: #1e1e1e; border-color: #2a2a2a; }
+[data-theme="dark"] .al-admission-card.active { border-color: #555555; }
+[data-theme="dark"] .al-admission-card-header { background: #252525; border-bottom-color: #2a2a2a; }
+[data-theme="dark"] .al-admission-card-icon { background: #f0f0f0; color: #111111; }
+[data-theme="dark"] .al-admission-school { color: #f0f0f0; }
+[data-theme="dark"] .al-admission-class  { color: #555555; }
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+@media (max-width: 640px) {
+  .al-resource-grid { grid-template-columns: 1fr; }
+}
+
+/* Dark theme */
+[data-theme="dark"] .al-grad-badge { background: #1c1200; color: #fcd34d; }
+
+/* ── Guardian cards ───────────────────────────────────────────────────────── */
+.al-guardian-grid { display: flex; flex-direction: column; gap: 14px; }
+
+.al-guardian-card {
+  background: #ffffff;
+  border: 1px solid #e8e8e8;
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.al-guardian-card.primary { border-color: #888888; }
+
+.al-guardian-card-header {
+  display: flex; align-items: center; gap: 12px;
+  padding: 14px 16px;
+  background: #f7f7f7;
+  border-bottom: 1px solid #e8e8e8;
+}
+
+.al-guardian-icon {
+  width: 36px; height: 36px; border-radius: 8px;
+  background: #111111; color: #ffffff;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+
+.al-guardian-name  { margin: 0 0 2px; font-size: 14px; font-weight: 800; color: #111111; }
+.al-guardian-rel   { margin: 0; font-size: 12px; color: #888888; font-weight: 600; }
+.al-guardian-body  { padding: 14px 16px; }
+
+/* ── Health cards ─────────────────────────────────────────────────────────── */
+.al-health-grid { display: flex; flex-direction: column; gap: 14px; }
+
+.al-health-card {
+  background: #ffffff;
+  border: 1px solid #e8e8e8;
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.al-health-card-header {
+  display: flex; align-items: center; gap: 12px;
+  padding: 14px 16px;
+  background: #f7f7f7;
+  border-bottom: 1px solid #e8e8e8;
+}
+
+.al-health-icon {
+  width: 36px; height: 36px; border-radius: 8px;
+  background: #111111; color: #ffffff;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+
+.al-health-title { margin: 0 0 2px; font-size: 14px; font-weight: 800; color: #111111; }
+.al-health-date  { margin: 0; font-size: 12px; color: #888888; font-weight: 600; }
+.al-health-body  { padding: 14px 16px; }
+
+/* Dark theme */
+[data-theme="dark"] .al-guardian-card,
+[data-theme="dark"] .al-health-card { background: #1e1e1e; border-color: #2a2a2a; }
+[data-theme="dark"] .al-guardian-card.primary { border-color: #555555; }
+[data-theme="dark"] .al-guardian-card-header,
+[data-theme="dark"] .al-health-card-header { background: #252525; border-bottom-color: #2a2a2a; }
+[data-theme="dark"] .al-guardian-icon,
+[data-theme="dark"] .al-health-icon { background: #f0f0f0; color: #111111; }
+[data-theme="dark"] .al-guardian-name,
+[data-theme="dark"] .al-health-title { color: #f0f0f0; }
+[data-theme="dark"] .al-guardian-rel,
+[data-theme="dark"] .al-health-date { color: #555555; }

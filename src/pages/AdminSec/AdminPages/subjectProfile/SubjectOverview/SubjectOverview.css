@@ -1,0 +1,274 @@
+/* ── Wrap ─────────────────────────────────────────────────────────────────── */
+.subject-overview { padding: 0; }
+
+/* ── Info Card ────────────────────────────────────────────────────────────── */
+.so-card {
+  background: #ffffff;
+  border: 1px solid #e8e8e8;
+  border-radius: 16px;
+  overflow: hidden;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* ── Banner ───────────────────────────────────────────────────────────────── */
+.so-banner {
+  position: relative;
+  height: 80px;
+  background: #111111;
+  overflow: hidden;
+}
+
+.so-banner::before {
+  content: ""; position: absolute;
+  width: 160px; height: 160px; border-radius: 50%;
+  border: 28px solid rgba(255,255,255,0.05);
+  top: -70px; right: -40px; pointer-events: none;
+}
+
+.so-banner::after {
+  content: ""; position: absolute;
+  width: 50px; height: 50px; border-radius: 8px;
+  border: 1.5px solid rgba(255,255,255,0.07);
+  bottom: -18px; right: 100px; transform: rotate(18deg); pointer-events: none;
+}
+
+.so-banner-deco {
+  position: absolute; width: 80px; height: 80px; border-radius: 50%;
+  border: 12px solid rgba(255,255,255,0.04);
+  bottom: -30px; left: -20px; pointer-events: none;
+}
+
+/* ── Header (icon + name + actions) ──────────────────────────────────────── */
+.so-header {
+  padding: 0 20px 16px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.so-header-left {
+  display: flex;
+  align-items: flex-end;
+  gap: 14px;
+  flex: 1;
+  min-width: 0;
+}
+
+.so-icon-wrap {
+  position: relative;
+  margin-top: -40px;
+  flex-shrink: 0;
+  width: 80px; height: 80px;
+  border-radius: 20px;
+  background: #f4f4f4;
+  border: 3px solid #ffffff;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+  display: flex; align-items: center; justify-content: center;
+  color: #888888;
+}
+
+.so-header-text { flex: 1; min-width: 0; padding-top: 8px; }
+
+.so-header-text h3 {
+  margin: 0 0 4px;
+  font-size: 17px; font-weight: 800; color: #111111; letter-spacing: -0.02em;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+.so-subtitle {
+  margin: 0 0 6px;
+  font-size: 12px; color: #888888; font-weight: 600;
+}
+
+.so-badges { display: flex; gap: 6px; flex-wrap: wrap; }
+
+.so-badge {
+  display: inline-flex; align-items: center;
+  padding: 3px 10px; border-radius: 20px;
+  font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;
+  background: #f0f0f0; color: #555555;
+}
+
+.so-badge.active   { background: #dcfce7; color: #166534; }
+.so-badge.inactive { background: #fecaca; color: #991b1b; }
+
+.so-header-actions { flex-shrink: 0; padding-top: 8px; }
+
+/* ── Actions dropdown ─────────────────────────────────────────────────────── */
+.so-actions-wrap { position: relative; display: inline-block; }
+
+.so-actions-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 14px; border-radius: 8px;
+  border: 1px solid #e8e8e8; background: #f4f4f4;
+  font-size: 12px; font-weight: 700; color: #111111;
+  cursor: pointer; transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.so-actions-btn:hover { background: #111111; color: #ffffff; border-color: #111111; }
+
+.so-dropdown {
+  position: absolute; top: calc(100% + 6px); right: 0;
+  background: #ffffff; border: 1px solid #e8e8e8;
+  border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  min-width: 200px; z-index: 9999; overflow: hidden;
+  animation: so-fade 0.15s ease-out;
+}
+
+@keyframes so-fade {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.so-dropdown-item {
+  display: flex; align-items: center; gap: 10px;
+  width: 100%; padding: 11px 16px;
+  border: none; background: transparent;
+  font-size: 13px; font-weight: 600; color: #111111;
+  cursor: pointer; transition: background 0.15s; text-align: left;
+}
+.so-dropdown-item:hover { background: #f4f4f4; }
+.so-dropdown-item.danger  { color: #cc3333; }
+.so-dropdown-item.danger:hover  { background: #fff0f0; }
+.so-dropdown-item.success { color: #16a34a; }
+.so-dropdown-item.success:hover { background: #f0fdf4; }
+.so-dropdown-divider { height: 1px; background: #f0f0f0; margin: 4px 0; }
+
+/* ── Card body ────────────────────────────────────────────────────────────── */
+.so-body { padding: 0 20px 20px; display: flex; flex-direction: column; gap: 20px; }
+
+.so-section-title {
+  font-size: 10px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.08em; color: #888888;
+  padding-bottom: 8px; border-bottom: 1px solid #f0f0f0;
+  margin: 0 0 12px; display: block;
+}
+
+.so-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 10px 14px;
+}
+
+/* ── Description ──────────────────────────────────────────────────────────── */
+.so-description {
+  padding: 12px 14px;
+  background: #f7f7f7; border: 1px solid #e8e8e8; border-radius: 8px;
+  font-size: 13px; color: #555555; line-height: 1.6; margin: 0;
+}
+
+/* ── Confirm panels ───────────────────────────────────────────────────────── */
+.so-confirm-container {
+  display: flex; flex-direction: column;
+  flex: 1; min-height: 0; overflow: hidden; background: #ffffff;
+}
+
+.so-confirm-header {
+  position: relative; padding: 22px 24px 20px;
+  flex-shrink: 0; overflow: hidden;
+}
+
+.so-confirm-header.danger  { background: #cc3333; }
+.so-confirm-header.success { background: #16a34a; }
+
+.so-confirm-header::before {
+  content: ""; position: absolute;
+  width: 120px; height: 120px; border-radius: 50%;
+  border: 18px solid rgba(255,255,255,0.07);
+  top: -40px; right: -24px; pointer-events: none;
+}
+
+.so-confirm-header-deco {
+  position: absolute; width: 60px; height: 60px; border-radius: 50%;
+  border: 10px solid rgba(255,255,255,0.05);
+  bottom: -20px; left: -12px; pointer-events: none;
+}
+
+.so-confirm-header-content {
+  position: relative; z-index: 1; display: flex; align-items: center; gap: 14px;
+}
+
+.so-confirm-header-icon {
+  width: 40px; height: 40px; border-radius: 10px;
+  background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.22);
+  display: flex; align-items: center; justify-content: center;
+  color: #ffffff; flex-shrink: 0;
+}
+
+.so-confirm-header-text h3 { margin: 0 0 3px; font-size: 14px; font-weight: 800; color: #ffffff; letter-spacing: -0.01em; }
+.so-confirm-header-text p  { margin: 0; font-size: 12px; color: rgba(255,255,255,0.6); }
+
+.so-confirm-body {
+  flex: 1; overflow-y: auto; padding: 20px 24px;
+  display: flex; flex-direction: column; gap: 14px;
+}
+.so-confirm-body::-webkit-scrollbar { width: 3px; }
+.so-confirm-body::-webkit-scrollbar-thumb { background: #e0e0e0; border-radius: 2px; }
+
+.so-confirm-name {
+  padding: 12px 14px; background: #f4f4f4; border: 1px solid #e8e8e8;
+  border-radius: 10px; font-size: 14px; font-weight: 800; color: #111111;
+}
+
+.so-confirm-warn {
+  padding: 11px 14px; border-radius: 8px;
+  background: #fef9c3; border: 1px solid #fde68a; border-left: 3px solid #f59e0b;
+  font-size: 12px; font-weight: 600; color: #854d0e; line-height: 1.5;
+}
+
+.so-confirm-info {
+  padding: 11px 14px; border-radius: 8px;
+  background: #f0fdf4; border: 1px solid #bbf7d0; border-left: 3px solid #22c55e;
+  font-size: 12px; font-weight: 600; color: #166534; line-height: 1.5;
+}
+
+.so-confirm-effects-title { margin: 0 0 6px; font-size: 12px; font-weight: 700; color: #555555; }
+.so-confirm-effects { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 4px; }
+.so-confirm-effects li { font-size: 12px; color: #888888; line-height: 1.5; }
+
+.so-confirm-footer {
+  display: flex; justify-content: flex-end; gap: 10px;
+  padding: 14px 24px; border-top: 1px solid #e8e8e8;
+  background: #f7f7f7; flex-shrink: 0;
+}
+
+/* ── Responsive ───────────────────────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .so-header { flex-direction: column; align-items: flex-start; }
+  .so-header-actions { padding-top: 0; }
+  .so-grid { grid-template-columns: 1fr 1fr; }
+}
+
+@media (max-width: 400px) {
+  .so-grid { grid-template-columns: 1fr; }
+}
+
+/* ── Dark theme ───────────────────────────────────────────────────────────── */
+[data-theme="dark"] .so-card { background: #1a1a1a; border-color: #2a2a2a; }
+[data-theme="dark"] .so-banner { background: #0a0a0a; }
+[data-theme="dark"] .so-icon-wrap { background: #252525; border-color: #1a1a1a; color: #555555; }
+[data-theme="dark"] .so-header-text h3 { color: #f0f0f0; }
+[data-theme="dark"] .so-subtitle { color: #555555; }
+[data-theme="dark"] .so-badge { background: #252525; color: #888888; }
+[data-theme="dark"] .so-actions-btn { background: #252525; border-color: #3a3a3a; color: #e0e0e0; }
+[data-theme="dark"] .so-actions-btn:hover { background: #f0f0f0; color: #111111; border-color: #f0f0f0; }
+[data-theme="dark"] .so-dropdown { background: #1e1e1e; border-color: #2a2a2a; box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
+[data-theme="dark"] .so-dropdown-item { color: #e0e0e0; }
+[data-theme="dark"] .so-dropdown-item:hover { background: #252525; }
+[data-theme="dark"] .so-dropdown-item.danger { color: #f87171; }
+[data-theme="dark"] .so-dropdown-item.danger:hover { background: #2a1a1a; }
+[data-theme="dark"] .so-dropdown-item.success { color: #4ade80; }
+[data-theme="dark"] .so-dropdown-item.success:hover { background: #052e16; }
+[data-theme="dark"] .so-dropdown-divider { background: #2a2a2a; }
+[data-theme="dark"] .so-section-title { color: #555555; border-bottom-color: #2a2a2a; }
+[data-theme="dark"] .so-description { background: #252525; border-color: #2a2a2a; color: #888888; }
+[data-theme="dark"] .so-confirm-container { background: #1a1a1a; }
+[data-theme="dark"] .so-confirm-body { background: #1a1a1a; }
+[data-theme="dark"] .so-confirm-body::-webkit-scrollbar-thumb { background: #2a2a2a; }
+[data-theme="dark"] .so-confirm-name { background: #1e1e1e; border-color: #2a2a2a; color: #f0f0f0; }
+[data-theme="dark"] .so-confirm-warn { background: #1c1200; border-color: #3a2a00; border-left-color: #f59e0b; color: #fcd34d; }
+[data-theme="dark"] .so-confirm-info { background: #052e16; border-color: #166534; border-left-color: #22c55e; color: #4ade80; }
+[data-theme="dark"] .so-confirm-effects-title { color: #888888; }
+[data-theme="dark"] .so-confirm-effects li { color: #555555; }
+[data-theme="dark"] .so-confirm-footer { background: #1e1e1e; border-top-color: #2a2a2a; }

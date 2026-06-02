@@ -1,0 +1,30 @@
+.notif-content {
+  font-size: 14px;
+  color: #374151;
+  line-height: 1.7;
+  word-break: break-word;
+}
+
+/* Strip all highlight colors from template placeholder spans */
+.notif-content span {
+  background: none !important;
+  color: inherit !important;
+  padding: 0 !important;
+  border-radius: 0 !important;
+  font-weight: inherit;
+}
+
+.notif-content ul,
+.notif-content ol {
+  padding-left: 20px;
+  margin: 8px 0;
+}
+
+.notif-content li { margin: 4px 0; }
+.notif-content p  { margin: 6px 0; }
+.notif-content strong, .notif-content b { font-weight: 700; color: #111111; }
+.notif-content em, .notif-content i { font-style: italic; }
+
+[data-theme="dark"] .notif-content { color: #cccccc; }
+[data-theme="dark"] .notif-content strong,
+[data-theme="dark"] .notif-content b { color: #f0f0f0; }

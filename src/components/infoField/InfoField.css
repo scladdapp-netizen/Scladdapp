@@ -1,0 +1,69 @@
+/* ── InfoField ────────────────────────────────────────────────────────────── */
+.ssp-info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 10px 14px;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+  transition: border-color 0.15s;
+}
+
+.ssp-info-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: #9ca3af;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ssp-info-value {
+  font-size: 13px;
+  font-weight: 600;
+  color: #111111;
+  word-break: break-word;
+  line-height: 1.4;
+}
+
+/* ── Link variant ─────────────────────────────────────────────────────────── */
+.ssp-info-link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  cursor: pointer;
+  transition: color 0.15s;
+}
+
+.ssp-info-item:has(.ssp-info-link):hover { border-color: #111111; }
+.ssp-info-link:hover { color: #333333; }
+
+.ssp-link-text {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ssp-chev {
+  font-size: 16px;
+  font-weight: 400;
+  color: #aaaaaa;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+/* ── Dark theme ───────────────────────────────────────────────────────────── */
+[data-theme="dark"] .ssp-info-item { background: #1e1e1e; border-color: #2a2a2a; }
+[data-theme="dark"] .ssp-info-label { color: #555555; }
+[data-theme="dark"] .ssp-info-value { color: #e0e0e0; }
+[data-theme="dark"] .ssp-info-item:has(.ssp-info-link):hover { border-color: #f0f0f0; }
+[data-theme="dark"] .ssp-chev { color: #555555; }

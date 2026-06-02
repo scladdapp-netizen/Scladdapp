@@ -1,0 +1,558 @@
+.subjectBooks {
+  padding: 0;
+}
+
+/* Header - matching other subject components */
+.sbHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 15px;
+  gap: 16px;
+  padding: 20px 20px;
+  padding-bottom: 0;
+}
+
+.sbHeaderLeft {
+  flex: 1;
+}
+
+.sbTitle {
+  font-size: 24px;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0 0 4px 0;
+}
+
+.sbSubtitle {
+  font-size: 14px;
+  color: #6b7280;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.sbHeaderRight {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+/* Search Container */
+.sbSearchContainer {
+  padding: 0 20px 20px 20px;
+}
+
+.sbSearchInputWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 12px 16px;
+  gap: 12px;
+  transition: all 0.2s ease;
+}
+
+.sbSearchInputWrapper:focus-within {
+  border-color: #3b82f6;
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.sbSearchInput {
+  flex: 1;
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 14px;
+  color: #1f2937;
+}
+
+.sbSearchInput::placeholder {
+  color: #9ca3af;
+}
+
+.sbClearSearch {
+  background: none;
+  border: none;
+  color: #6b7280;
+  cursor: pointer;
+  padding: 2px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.sbClearSearch:hover {
+  color: #374151;
+  background: #f3f4f6;
+}
+
+/* Filter Tabs */
+.sbFilterTabs {
+  display: flex;
+  gap: 8px;
+  padding: 0 20px 20px 20px;
+  border-bottom: 1px solid #e5e7eb;
+  margin-bottom: 20px;
+  overflow-x: auto;
+}
+
+.sbFilterTab {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 20px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #6b7280;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.sbFilterTab:hover {
+  background: #f3f4f6;
+  border-color: #d1d5db;
+}
+
+.sbFilterTab.active {
+  background: #3b82f6;
+  border-color: #3b82f6;
+  color: #ffffff;
+}
+
+/* Books List */
+.sbBooksList {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 20px;
+  padding: 0 20px 20px 20px;
+}
+
+.sbBookCard {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.sbBookCard:hover {
+  border-color: #3b82f6;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+  transform: translateY(-2px);
+}
+
+/* Book Header */
+.sbBookHeader {
+  margin-bottom: 16px;
+}
+
+.sbBookTitleRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.sbBookType {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.sbBookIcon {
+  font-size: 16px;
+}
+
+.sbBookBadges {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.sbAvailabilityBadge,
+.sbConditionBadge {
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.sbBookTitle {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0 0 4px 0;
+  line-height: 1.3;
+}
+
+.sbBookAuthor {
+  font-size: 14px;
+  color: #6b7280;
+  margin: 0;
+  font-style: italic;
+}
+
+/* Book Body */
+.sbBookBody {
+  margin-bottom: 16px;
+}
+
+.sbBookDetails {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.sbDetailItem {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.sbDetailLabel {
+  font-size: 12px;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.sbDetailValue {
+  font-size: 14px;
+  color: #1f2937;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Book Footer */
+.sbBookFooter {
+  border-top: 1px solid #f3f4f6;
+  padding-top: 12px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.sbViewDetails {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #3b82f6;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.sbViewDetails:hover {
+  color: #1d4ed8;
+}
+
+/* Empty State */
+.sbEmptyState {
+  text-align: center;
+  padding: 60px 20px;
+  color: #6b7280;
+}
+
+.sbEmptyState h3 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #374151;
+  margin: 16px 0 8px 0;
+}
+
+.sbEmptyState p {
+  font-size: 14px;
+  line-height: 1.5;
+  margin: 0 0 16px 0;
+}
+
+.sbClearSearchButton {
+  background: #3b82f6;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.sbClearSearchButton:hover {
+  background: #2563eb;
+}
+
+/* SlideInMenu Styles */
+.sbSlideMenuContent {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.sbSlideMenuHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 24px 24px 0 24px;
+  border-bottom: 1px solid #e5e7eb;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+}
+
+.sbSlideMenuHeader h2 {
+  font-size: 20px;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0 0 4px 0;
+  line-height: 1.3;
+}
+
+.sbSlideMenuHeader p {
+  font-size: 14px;
+  color: #6b7280;
+  margin: 0;
+}
+
+.sbCloseButton {
+  background: none;
+  border: none;
+  color: #6b7280;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.sbCloseButton:hover {
+  color: #374151;
+  background: #f3f4f6;
+}
+
+.sbSlideMenuBody {
+  flex: 1;
+  padding: 0 24px;
+  overflow-y: auto;
+}
+
+.sbBookDetailContent {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.sbDetailSection {
+  border-bottom: 1px solid #f3f4f6;
+  padding-bottom: 20px;
+}
+
+.sbDetailSection:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.sbDetailSection h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0 0 16px 0;
+}
+
+.sbDetailGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.sbFullWidth {
+  grid-column: 1 / -1;
+}
+
+.sbFullWidth .sbDetailValue {
+  white-space: normal;
+  line-height: 1.5;
+}
+
+/* Chapters List */
+.sbChaptersList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sbChapterItem {
+  display: flex;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.sbChapterItem:last-child {
+  border-bottom: none;
+}
+
+.sbChapterNumber {
+  font-size: 14px;
+  font-weight: 600;
+  color: #3b82f6;
+  min-width: 24px;
+}
+
+.sbChapterTitle {
+  font-size: 14px;
+  color: #1f2937;
+  line-height: 1.4;
+}
+
+.sbSlideMenuFooter {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 16px 24px 24px 24px;
+  border-top: 1px solid #e5e7eb;
+  margin-top: auto;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .sbHeader {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+  }
+
+  .sbHeaderRight {
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .sbTitle {
+    font-size: 20px;
+  }
+
+  .sbSubtitle {
+    font-size: 13px;
+  }
+
+  .sbBooksList {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .sbBookCard {
+    padding: 16px;
+  }
+
+  .sbBookTitle {
+    font-size: 16px;
+  }
+
+  .sbBookDetails {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .sbFilterTabs {
+    padding-bottom: 16px;
+  }
+
+  .sbFilterTab {
+    font-size: 13px;
+    padding: 6px 12px;
+  }
+
+  .sbDetailGrid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .sbSlideMenuHeader {
+    padding: 20px 20px 0 20px;
+  }
+
+  .sbSlideMenuBody {
+    padding: 0 20px;
+  }
+
+  .sbSlideMenuFooter {
+    padding: 16px 20px 20px 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .sbTitle {
+    font-size: 18px;
+  }
+
+  .sbSubtitle {
+    font-size: 12px;
+  }
+
+  .sbSearchContainer {
+    padding: 0 16px 16px 16px;
+  }
+
+  .sbFilterTabs {
+    padding: 0 16px 16px 16px;
+  }
+
+  .sbBooksList {
+    padding: 0 16px 16px 16px;
+    gap: 12px;
+  }
+
+  .sbBookCard {
+    padding: 12px;
+  }
+
+  .sbBookTitle {
+    font-size: 15px;
+  }
+
+  .sbBookBadges {
+    flex-direction: column;
+    gap: 4px;
+    align-items: flex-end;
+  }
+
+  .sbBookTitleRow {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .sbBookBadges {
+    align-items: flex-start;
+  }
+
+  .sbSlideMenuHeader {
+    padding: 16px 16px 0 16px;
+  }
+
+  .sbSlideMenuHeader h2 {
+    font-size: 18px;
+  }
+
+  .sbSlideMenuBody {
+    padding: 0 16px;
+  }
+
+  .sbSlideMenuFooter {
+    padding: 16px 16px 16px 16px;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .sbDetailSection h3 {
+    font-size: 15px;
+  }
+}

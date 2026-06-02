@@ -1,0 +1,100 @@
+/* ── Container ────────────────────────────────────────────────────────────── */
+.teacherResources { max-width: 100%; }
+
+/* ── Header ───────────────────────────────────────────────────────────────── */
+.tr-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #e8e8e8;
+  margin-bottom: 20px;
+}
+
+.tr-header-left { flex: 1; display: flex; flex-direction: column; gap: 3px; }
+.tr-title    { margin: 0; font-size: 20px; font-weight: 800; color: #111111; letter-spacing: -0.02em; }
+.tr-subtitle { margin: 0; font-size: 12px; color: #888888; font-weight: 600; }
+
+.tr-header-right { display: flex; gap: 8px; align-items: center; flex-shrink: 0; }
+
+/* ── Search ───────────────────────────────────────────────────────────────── */
+.tr-search-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border: 1px solid #e8e8e8;
+  border-radius: 10px;
+  background: #ffffff;
+  margin-bottom: 16px;
+  max-width: 480px;
+  color: #888888;
+}
+
+.tr-search {
+  flex: 1; border: none; outline: none;
+  font-size: 13px; color: #111111; background: transparent;
+}
+.tr-search::placeholder { color: #aaaaaa; }
+
+.tr-clear {
+  background: none; border: none; color: #888888;
+  cursor: pointer; display: flex; align-items: center;
+  padding: 2px; border-radius: 4px; transition: color 0.15s;
+}
+.tr-clear:hover { color: #111111; }
+
+/* ── Filter Tabs ──────────────────────────────────────────────────────────── */
+.tr-tabs {
+  display: flex; gap: 4px; margin-bottom: 20px; flex-wrap: wrap;
+}
+
+.tr-tab {
+  padding: 6px 14px; border: 1px solid #e8e8e8; border-radius: 20px;
+  background: #f4f4f4; font-size: 12px; font-weight: 700; color: #888888;
+  cursor: pointer; transition: background 0.15s, color 0.15s, border-color 0.15s;
+  white-space: nowrap;
+}
+.tr-tab:hover  { border-color: #111111; color: #111111; }
+.tr-tab.active { background: #111111; color: #ffffff; border-color: #111111; }
+
+/* ── Grid ─────────────────────────────────────────────────────────────────── */
+.tr-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+/* ── Empty ────────────────────────────────────────────────────────────────── */
+.tr-empty {
+  text-align: center; padding: 60px 20px;
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+}
+.tr-empty h3 { margin: 0; font-size: 15px; font-weight: 800; color: #111111; }
+.tr-empty p  { margin: 0; font-size: 13px; color: #888888; }
+
+.tr-clear-btn {
+  margin-top: 4px; padding: 6px 16px;
+  border: 1px solid #e8e8e8; border-radius: 8px;
+  background: #f4f4f4; font-size: 12px; font-weight: 700; color: #111111;
+  cursor: pointer; transition: background 0.15s;
+}
+.tr-clear-btn:hover { background: #111111; color: #ffffff; border-color: #111111; }
+
+/* ── Responsive ───────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .tr-header { flex-direction: column; gap: 14px; }
+  .tr-grid   { grid-template-columns: 1fr; }
+}
+
+/* ── Dark theme ───────────────────────────────────────────────────────────── */
+[data-theme="dark"] .tr-title    { color: #f0f0f0; }
+[data-theme="dark"] .tr-subtitle { color: #555555; }
+[data-theme="dark"] .tr-header   { border-bottom-color: #2a2a2a; }
+[data-theme="dark"] .tr-search-wrap { background: #1e1e1e; border-color: #2a2a2a; color: #555555; }
+[data-theme="dark"] .tr-search   { color: #e0e0e0; }
+[data-theme="dark"] .tr-tab      { background: #1e1e1e; border-color: #2a2a2a; color: #555555; }
+[data-theme="dark"] .tr-tab:hover  { border-color: #f0f0f0; color: #f0f0f0; }
+[data-theme="dark"] .tr-tab.active { background: #f0f0f0; color: #111111; border-color: #f0f0f0; }
+[data-theme="dark"] .tr-empty h3 { color: #f0f0f0; }
+[data-theme="dark"] .tr-empty p  { color: #555555; }

@@ -1,0 +1,224 @@
+/* ── Main Container ───────────────────────────────────────────────────────── */
+.unified-detail-sidebar {
+  width: 100%;
+  height: 100%;
+  background: #ffffff;
+  border-right: 1px solid #e8e8e8;
+  overflow-y: auto;
+  padding: 12px 0;
+  box-sizing: border-box;
+}
+
+/* ── Profile Section ──────────────────────────────────────────────────────── */
+.profile-info-section {
+  margin-bottom: 8px;
+}
+
+/* ── Sessions Section ─────────────────────────────────────────────────────── */
+.sessions-section {
+  margin-top: 4px;
+}
+
+/* ── Session Folder ───────────────────────────────────────────────────────── */
+.session-folder {
+  margin-bottom: 2px;
+}
+
+/* ── Sidebar Item (folder header) ─────────────────────────────────────────── */
+.sidebar-item {
+  display: flex;
+  align-items: center;
+  padding: 10px 14px;
+  cursor: pointer;
+  transition: background 0.15s;
+  position: relative;
+  border-radius: 8px;
+  margin: 0 8px;
+}
+
+.sidebar-item:hover {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+/* ── Active Indicator ─────────────────────────────────────────────────────── */
+.indicator {
+  position: absolute;
+  left: -8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 20px;
+  background: #111111;
+  border-radius: 2px;
+}
+
+/* ── Session Content ──────────────────────────────────────────────────────── */
+.session-content {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+}
+
+/* ── Session Text ─────────────────────────────────────────────────────────── */
+.session-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.session-name {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #111111;
+  margin: 0;
+  transition: color 0.15s;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.session-name.active-session {
+  color: #111111;
+}
+
+.subsession-name {
+  font-size: 15.5px;
+  color: #818181;
+  margin: 2px 0 0 0;
+  font-weight: 500;
+  transition: color 0.15s;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.subsession-name.active-subsession {
+  color: #555555;
+  font-weight: 600;
+}
+
+/* ── Session Navigation (expanded items) ─────────────────────────────────── */
+.session-navigation {
+  margin-left: 24px;
+  margin-top: 2px;
+  border-left: 1px solid #e8e8e8;
+  padding-left: 12px;
+  padding-bottom: 4px;
+}
+
+/* ── Nav Item ─────────────────────────────────────────────────────────────── */
+.nav-item {
+  display: flex;
+  align-items: center;
+  flex-direction: row;
+  gap: 10px;
+  padding: 9px 12px;
+  cursor: pointer;
+  border-radius: 6px;
+  margin: 1px 0;
+  transition: background 0.15s;
+  position: relative;
+  border: 1px solid transparent;
+}
+
+.nav-item:hover {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.nav-item.active {
+  background: #111111;
+  border-color: #111111;
+}
+
+.nav-item.active::before {
+  content: "";
+  position: absolute;
+  left: -13px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 14px;
+  background: #111111;
+  border-radius: 2px;
+}
+
+.nav-item p {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #888888;
+  margin: 0;
+  white-space: nowrap;
+  transition: color 0.15s;
+}
+
+.nav-item svg {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  display: block;
+  color: #888888;
+  transition: color 0.15s;
+}
+
+.nav-item.active p,
+.nav-item.active svg {
+  color: #ffffff;
+  font-weight: 700;
+}
+
+/* ── Scrollbar ────────────────────────────────────────────────────────────── */
+.unified-detail-sidebar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.unified-detail-sidebar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.unified-detail-sidebar::-webkit-scrollbar-thumb {
+  background: #e0e0e0;
+  border-radius: 2px;
+}
+
+.unified-detail-sidebar::-webkit-scrollbar-thumb:hover {
+  background: #bbbbbb;
+}
+
+/* ── Responsive ───────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .unified-detail-sidebar { padding: 8px 0; }
+  .sidebar-item { padding: 9px 12px; margin: 0 4px; }
+  .session-navigation { margin-left: 20px; padding-left: 10px; }
+  .nav-item { padding: 8px 10px; gap: 8px; }
+  .session-name { font-size: 12px; }
+  .subsession-name { font-size: 11px; }
+  .nav-item p { font-size: 12px; }
+}
+
+/* ── Dark Theme ───────────────────────────────────────────────────────────── */
+[data-theme="dark"] .unified-detail-sidebar {
+  background: #1a1a1a;
+  border-right-color: #2a2a2a;
+}
+
+[data-theme="dark"] .sidebar-item:hover { background: rgba(255, 255, 255, 0.05); }
+
+[data-theme="dark"] .indicator { background: #f0f0f0; }
+
+[data-theme="dark"] .session-name { color: #f0f0f0; }
+[data-theme="dark"] .session-name.active-session { color: #f0f0f0; }
+[data-theme="dark"] .subsession-name { color: #555555; }
+[data-theme="dark"] .subsession-name.active-subsession { color: #888888; }
+
+[data-theme="dark"] .session-navigation { border-left-color: #2a2a2a; }
+
+[data-theme="dark"] .nav-item:hover { background: rgba(255, 255, 255, 0.05); }
+[data-theme="dark"] .nav-item p { color: #555555; }
+
+[data-theme="dark"] .nav-item.active { background: #f0f0f0; border-color: #f0f0f0; }
+[data-theme="dark"] .nav-item.active p,
+[data-theme="dark"] .nav-item.active svg { color: #111111; }
+[data-theme="dark"] .nav-item.active::before { background: #f0f0f0; }
+
+[data-theme="dark"] .unified-detail-sidebar::-webkit-scrollbar-thumb { background: #2a2a2a; }
+[data-theme="dark"] .unified-detail-sidebar::-webkit-scrollbar-thumb:hover { background: #3a3a3a; }

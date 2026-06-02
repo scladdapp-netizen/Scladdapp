@@ -1,0 +1,131 @@
+body {
+  margin: 0;
+  padding: 0;
+}
+
+/* ── FormInput label ──────────────────────────────────────────────────────── */
+.fi-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: #555555;
+  margin-bottom: 6px;
+}
+
+[data-theme="dark"] .fi-label { color: #888888; }
+
+/* ── FormInput image drop zone ────────────────────────────────────────────── */
+.fi-image-drop {
+  border: 2px dashed #d0d0d0;
+  border-radius: 12px;
+  cursor: pointer;
+  background: #fafafa;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  overflow: hidden;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.fi-image-drop:hover {
+  border-color: #6c5ce7;
+  background: #f5f4ff;
+}
+
+[data-theme="dark"] .fi-image-drop {
+  border-color: #333;
+  background: #1a1a1a;
+}
+
+[data-theme="dark"] .fi-image-drop:hover {
+  border-color: #a29bfe;
+  background: #1e1e2e;
+}
+
+.fi-image-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 16px;
+  pointer-events: none;
+}
+
+.fi-image-icon {
+  color: #bbb;
+  transition: color 0.2s;
+}
+
+.fi-image-drop:hover .fi-image-icon {
+  color: #6c5ce7;
+}
+
+[data-theme="dark"] .fi-image-icon { color: #444; }
+[data-theme="dark"] .fi-image-drop:hover .fi-image-icon { color: #a29bfe; }
+
+.fi-image-text {
+  font-size: 13px;
+  font-weight: 600;
+  color: #888;
+  text-align: center;
+}
+
+[data-theme="dark"] .fi-image-text { color: #555; }
+
+.fi-image-hint {
+  font-size: 11px;
+  color: #bbb;
+  text-align: center;
+}
+
+[data-theme="dark"] .fi-image-hint { color: #444; }
+
+/* ══════════════════════════════════════════════════════════════
+   DARK THEME — FormInput (inline-styled component override)
+   ══════════════════════════════════════════════════════════════ */
+[data-theme="dark"] input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+[data-theme="dark"] select,
+[data-theme="dark"] textarea {
+  background: #252525 !important;
+  color: #e0e0e0 !important;
+  border-color: #3a3a3a !important;
+}
+
+[data-theme="dark"] input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):focus,
+[data-theme="dark"] select:focus,
+[data-theme="dark"] textarea:focus {
+  border-color: #f0f0f0 !important;
+  box-shadow: 0 0 0 3px rgba(255,255,255,0.06) !important;
+  outline: none !important;
+}
+
+[data-theme="dark"] input::placeholder,
+[data-theme="dark"] textarea::placeholder {
+  color: #555555 !important;
+}
+
+[data-theme="dark"] select option {
+  background: #252525;
+  color: #e0e0e0;
+}
+
+[data-theme="dark"] label {
+  color: #cccccc !important;
+}
+
+/* inputs adjacent to error boxes get red border */
+.wizard-error-box ~ * input,
+.wizard-error-box ~ * select,
+.wizard-error-box ~ * textarea {
+  border-color: #cc3333 !important;
+}
+
+[data-theme="dark"] .wizard-error-box ~ * input,
+[data-theme="dark"] .wizard-error-box ~ * select,
+[data-theme="dark"] .wizard-error-box ~ * textarea {
+  border-color: #f87171 !important;
+}

@@ -1,0 +1,35 @@
+.subjectDetailLayout {
+  display: flex;
+  height: 100vh;
+  background: #f8fafc;
+  box-sizing: border-box;
+}
+
+.subjectDetailSidebar {
+  width: 280px;
+  background: white;
+  border-right: 1px solid #e5e7eb;
+  flex-shrink: 0;
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
+.subjectDetailMain {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .subjectDetailLayout {
+    flex-direction: column;
+  }
+
+  .subjectDetailSidebar {
+    width: 100%;
+    height: auto;
+    max-height: 300px;
+  }
+}

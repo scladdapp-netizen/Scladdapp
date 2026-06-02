@@ -1,0 +1,95 @@
+1. assign staff as multiple subject teacher for defrent class
+2. assign as teacher
+3. assign as class headmaster
+
+
+staff info
+
+teacher
+  -class headmaster
+  -subject teacher
+
+class headmaster
+  - class info
+  - class subject
+  - class resources
+  - seasion students
+  - seasion timetable
+  - seasion atendance
+  - student detail identity gurdian health read only
+  - seasion student report, attendance
+  - subjects
+  - subjects detail teacher book
+
+subject teacher
+  - subject info
+  - subject books
+  - subject resources
+  - seasion subjects assessment
+
+school notification
+school seasion event 
+school seasion  calender
+
+school info
+
+┌─────────────────────────────┐
+│  [Staff Photo]              │
+│  John Anderson              │
+│  Science Dept • Active      │
+├─────────────────────────────┤
+│  📋 Staff Info              │  ← always visible (permanent section)
+│    Identity                 │
+│    Credentials              │
+│    Resources                │
+│    Activity                 │
+│    Performance              │
+├─────────────────────────────┤
+│  🎓 Teacher                 │  ← only if assigned as teacher
+│    Assigned Subjects        │
+│                             │
+│  ▼ 2025/2026 • Term 1       │  ← session folders (like student sidebar)
+│      Activity               │
+│                             │
+│  ▼ 2024/2025 • Term 3       │
+│      Activity               │
+├─────────────────────────────┤
+│  🏫 Class Headmaster        │  ← only if assigned as headmaster
+│                             │
+│  ▼ JSS 1A • 2025/2026 T1   │  ← per class+subsession folder
+│      Class Info             │
+│      Class Subjects         │
+│      Class Resources        │
+│      Students               │
+│      Timetable              │
+│      Attendance             │
+│      Student Reports        │
+│      Subjects               │
+│                             │
+│  ▼ JSS 1A • 2024/2025 T3   │
+│      ...                    │
+├─────────────────────────────┤
+│  📚 Subject Teacher         │  ← per subject they teach
+│                             │
+│  ▼ Mathematics              │  ← subject folder
+│      Subject Info           │
+│      Books                  │
+│      Resources              │
+│    ▼ 2025/2026 • Term 1     │  ← session inside subject
+│        Assessment           │
+│    ▼ 2024/2025 • Term 3     │
+│        Assessment           │
+│                             │
+│  ▼ English Language         │
+│      Subject Info           │
+│      Books                  │
+│      Resources              │
+│    ▼ 2025/2026 • Term 1     │
+│        Assessment           │
+├─────────────────────────────┤
+│  🔔 School                  │  ← always visible
+│    Notifications            │
+│    Events                   │
+│    Calendar                 │
+│    School Info              │
+└─────────────────────────────┘

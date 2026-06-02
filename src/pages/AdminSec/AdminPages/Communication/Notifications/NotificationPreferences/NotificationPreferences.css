@@ -1,0 +1,277 @@
+.preferences-container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+}
+
+.preferences-header {
+  padding: 24px;
+  border-bottom: 1px solid #e5e7eb;
+  flex-shrink: 0;
+}
+
+.preferences-header h2 {
+  font-size: 20px;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0 0 4px 0;
+}
+
+.preferences-header p {
+  font-size: 14px;
+  color: #6b7280;
+  margin: 0;
+}
+
+.preferences-body {
+  flex: 1;
+  padding: 24px;
+  overflow-y: auto;
+}
+
+.preferences-section {
+  margin-bottom: 32px;
+}
+
+.preferences-section:last-child {
+  margin-bottom: 0;
+}
+
+.preferences-section h3 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0 0 16px 0;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+/* Global Channel Settings */
+.global-channels {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.channel-setting {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+}
+
+.channel-info {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.channel-icon {
+  font-size: 20px;
+}
+
+.channel-icon.email {
+  color: #3b82f6;
+}
+
+.channel-icon.sms {
+  color: #10b981;
+}
+
+.channel-icon.push {
+  color: #f59e0b;
+}
+
+.channel-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 2px;
+}
+
+.channel-desc {
+  font-size: 14px;
+  color: #6b7280;
+}
+
+/* Category Preferences */
+.category-preferences {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.category-item {
+  padding: 20px;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+}
+
+.category-header {
+  margin-bottom: 16px;
+}
+
+.category-info {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.category-info svg {
+  font-size: 18px;
+  color: #6b7280;
+  margin-top: 2px;
+}
+
+.category-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 4px;
+}
+
+.category-desc {
+  font-size: 14px;
+  color: #6b7280;
+  line-height: 1.4;
+}
+
+.category-channels {
+  display: flex;
+  gap: 24px;
+  padding-left: 34px;
+}
+
+.channel-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.channel-label {
+  font-size: 14px;
+  color: #374151;
+  font-weight: 500;
+  min-width: 50px;
+}
+
+/* Timing Preferences */
+.timing-setting {
+  padding: 20px;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  margin-bottom: 16px;
+}
+
+.setting-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.setting-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 4px;
+}
+
+.setting-desc {
+  font-size: 14px;
+  color: #6b7280;
+  line-height: 1.4;
+}
+
+.time-range {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-left: 32px;
+}
+
+.digest-time {
+  margin-left: 32px;
+  max-width: 200px;
+}
+
+.preferences-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 24px;
+  border-top: 1px solid #e5e7eb;
+  flex-shrink: 0;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .channel-setting {
+    flex-direction: column;
+    gap: 12px;
+    align-items: stretch;
+  }
+
+  .channel-info {
+    justify-content: center;
+    text-align: center;
+  }
+
+  .category-channels {
+    flex-direction: column;
+    gap: 12px;
+    padding-left: 0;
+  }
+
+  .channel-option {
+    justify-content: space-between;
+    padding: 8px 12px;
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+  }
+
+  .time-range {
+    grid-template-columns: 1fr;
+    margin-left: 0;
+  }
+
+  .digest-time {
+    margin-left: 0;
+    max-width: none;
+  }
+
+  .preferences-header,
+  .preferences-body,
+  .preferences-footer {
+    padding: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .channel-info {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .category-info {
+    flex-direction: column;
+    gap: 8px;
+    text-align: center;
+  }
+
+  .setting-header {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .preferences-footer {
+    flex-direction: column;
+  }
+}

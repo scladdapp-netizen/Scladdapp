@@ -1,0 +1,275 @@
+/* ── Wrap ─────────────────────────────────────────────────────────────────── */
+.classStudents { max-width: 100%; }
+
+/* ── Header ───────────────────────────────────────────────────────────────── */
+.cls-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #e8e8e8;
+  margin-bottom: 20px;
+  gap: 16px;
+}
+
+.cls-header-left { flex: 1; display: flex; flex-direction: column; gap: 3px; }
+.cls-title    { margin: 0; font-size: 20px; font-weight: 800; color: #111111; letter-spacing: -0.02em; }
+.cls-subtitle { margin: 0; font-size: 12px; color: #888888; font-weight: 600; }
+
+/* ── Table container ──────────────────────────────────────────────────────── */
+.cls-table-container { border-radius: 12px; overflow: hidden; }
+
+/* ── Student name cell ────────────────────────────────────────────────────── */
+.cls-name-cell { display: flex; align-items: center; gap: 10px; }
+
+.cls-avatar {
+  width: 32px; height: 32px; border-radius: 8px;
+  background: #f0f0f0; color: #888888;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 800; text-transform: uppercase;
+  flex-shrink: 0; overflow: hidden;
+}
+
+.cls-avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+.cls-student-name { font-weight: 700; font-size: 13.5px; color: #111111; }
+
+/* ── Status badge ─────────────────────────────────────────────────────────── */
+.cls-status {
+  display: inline-flex; align-items: center;
+  padding: 3px 10px; border-radius: 20px;
+  font-size: 11px; font-weight: 700; text-transform: capitalize; letter-spacing: 0.03em;
+}
+.cls-status.active   { background: #dcfce7; color: #166534; }
+.cls-status.inactive { background: #fecaca; color: #991b1b; }
+
+/* ── View profile link ────────────────────────────────────────────────────── */
+.cls-action-link {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 12px; font-weight: 700; color: #888888;
+  cursor: pointer; transition: color 0.15s, gap 0.15s;
+  white-space: nowrap;
+}
+.cls-action-link:hover { color: #111111; gap: 8px; }
+
+/* ── Responsive ───────────────────────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .cls-header { flex-direction: column; gap: 14px; }
+}
+
+/* ── Dark theme ───────────────────────────────────────────────────────────── */
+
+/* ── Student Detail Tab Bar (ss-tabs) ───────────────────────────────────────────── */
+
+/* Detail cards — guardian & health (SessionStudents slide-in) */
+.ss-guardian-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.ss-guardian-card {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  transition: box-shadow 0.15s, border-color 0.15s;
+}
+
+.ss-guardian-card:hover {
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+  border-color: #d1d5db;
+}
+
+.ss-guardian-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  background: linear-gradient(180deg, #fafafa 0%, #f4f4f5 100%);
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.ss-guardian-name {
+  min-width: 0;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: #111111;
+  line-height: 1.25;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ss-primary-badge {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  background: #dcfce7;
+  color: #166534;
+  border: 1px solid #bbf7d0;
+}
+
+.ss-guardian-card .ss-guardian-grid {
+  padding: 14px 16px 16px;
+  gap: 10px;
+}
+
+[data-theme="dark"] .ss-guardian-card {
+  background: #1e1e1e;
+  border-color: #2a2a2a;
+  box-shadow: none;
+}
+
+[data-theme="dark"] .ss-guardian-card:hover {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+  border-color: #3a3a3a;
+}
+
+[data-theme="dark"] .ss-guardian-top {
+  background: linear-gradient(180deg, #252525 0%, #1e1e1e 100%);
+  border-bottom-color: #2a2a2a;
+}
+
+[data-theme="dark"] .ss-guardian-name {
+  color: #f0f0f0;
+}
+
+[data-theme="dark"] .ss-primary-badge {
+  background: #052e16;
+  color: #4ade80;
+  border-color: #14532d;
+}
+
+/* Health tab — medical record rows (same shell as guardian cards) */
+.ss-health-record-date {
+  flex-shrink: 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: #6b7280;
+  white-space: nowrap;
+}
+
+.ss-guardian-name--multiline {
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+}
+
+.ss-health-record-notes {
+  padding: 14px 16px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.5;
+  color: #374151;
+}
+
+.ss-health-record-notes p {
+  margin: 0;
+}
+
+[data-theme="dark"] .ss-health-record-date {
+  color: #9ca3af;
+}
+
+[data-theme="dark"] .ss-health-record-notes {
+  color: #c4c4c4;
+}
+
+.ss-health-records-loading {
+  min-height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ss-health-empty {
+  margin: 0;
+  padding: 20px 16px;
+  border: 1px dashed #e5e7eb;
+  border-radius: 12px;
+  background: #fafafa;
+}
+
+[data-theme="dark"] .ss-health-empty {
+  border-color: #2a2a2a;
+  background: #1a1a1a;
+}
+
+.ss-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+  padding: 12px;
+  border-radius: 10px;
+}
+
+.ss-tab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  background: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #555555;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+
+.ss-tab:hover {
+  background: #f4f4f4;
+  border-color: #aaaaaa;
+  color: #111111;
+}
+
+.ss-tab.active {
+  background: #f7f7f7;
+  border-color: #111111;
+  color: #111111;
+}
+
+/* Dark mode for ss-tabs */
+[data-theme="dark"] .ss-tabs {
+  background: #1e1e1e;
+  border-color: #2a2a2a;
+}
+[data-theme="dark"] .ss-tab {
+  background: #252525;
+  border-color: #333333;
+  color: #888888;
+}
+[data-theme="dark"] .ss-tab:hover {
+  background: #2a2a2a;
+  color: #f0f0f0;
+}
+[data-theme="dark"] .ss-tab.active {
+  background: #f0f0f0;
+  border-color: #f0f0f0;
+  color: #111111;
+}
+[data-theme="dark"] .cls-title    { color: #f0f0f0; }
+[data-theme="dark"] .cls-subtitle { color: #555555; }
+[data-theme="dark"] .cls-header   { border-bottom-color: #2a2a2a; }
+[data-theme="dark"] .cls-avatar   { background: #2a2a2a; color: #555555; }
+[data-theme="dark"] .cls-student-name { color: #f0f0f0; }
+[data-theme="dark"] .cls-status.active   { background: #052e16; color: #4ade80; }
+[data-theme="dark"] .cls-status.inactive { background: #2d0a0a; color: #f87171; }
+[data-theme="dark"] .cls-action-link { color: #555555; }
+[data-theme="dark"] .cls-action-link:hover { color: #f0f0f0; }

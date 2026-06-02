@@ -1,0 +1,339 @@
+/* ── Shared styles for SubjectClasses, SubjectTeachers, SubjectBooks ──────── */
+
+/* ── Wrap ─────────────────────────────────────────────────────────────────── */
+.subjectClasses { max-width: 100%; }
+
+/* ── Header ───────────────────────────────────────────────────────────────── */
+.scHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #e8e8e8;
+  margin-bottom: 20px;
+  gap: 16px;
+}
+
+.scHeaderLeft { flex: 1; display: flex; flex-direction: column; gap: 3px; }
+.scTitle    { margin: 0; font-size: 20px; font-weight: 800; color: #111111; letter-spacing: -0.02em; }
+.scSubtitle { margin: 0; font-size: 12px; color: #888888; font-weight: 600; }
+.scHeaderRight { flex-shrink: 0; }
+
+/* ── Search ───────────────────────────────────────────────────────────────── */
+.scSearchContainer { margin-bottom: 16px; }
+
+.scSearchInputWrapper {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 14px; border: 1px solid #e8e8e8; border-radius: 10px;
+  background: #ffffff; max-width: 480px; color: #888888;
+}
+
+.scSearchInput {
+  flex: 1; border: none; outline: none;
+  font-size: 13px; color: #111111; background: transparent;
+}
+.scSearchInput::placeholder { color: #aaaaaa; }
+
+.scClearSearch {
+  background: none; border: none; color: #888888;
+  cursor: pointer; font-size: 16px; line-height: 1;
+  padding: 2px 4px; border-radius: 4px; transition: color 0.15s;
+}
+.scClearSearch:hover { color: #111111; }
+
+/* ── Filter Tabs ──────────────────────────────────────────────────────────── */
+.scFilterTabs {
+  display: flex; gap: 4px; margin-bottom: 20px; flex-wrap: wrap;
+}
+
+.scFilterTab {
+  padding: 6px 14px; border: 1px solid #e8e8e8; border-radius: 20px;
+  background: #f4f4f4; font-size: 12px; font-weight: 700; color: #888888;
+  cursor: pointer; transition: background 0.15s, color 0.15s, border-color 0.15s;
+  white-space: nowrap;
+}
+.scFilterTab:hover  { border-color: #111111; color: #111111; }
+.scFilterTab.active { background: #111111; color: #ffffff; border-color: #111111; }
+
+/* ── Warning banners ──────────────────────────────────────────────────────── */
+.sc-warn-banner {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 14px; border-radius: 8px;
+  font-size: 12px; font-weight: 600; line-height: 1.5;
+  margin-bottom: 12px;
+}
+.sc-warn-banner.danger { background: #fef2f2; border: 1px solid #fca5a5; color: #cc3333; }
+.sc-warn-banner.warn   { background: #fffbeb; border: 1px solid #fcd34d; color: #d97706; }
+
+/* ── Cards grid ───────────────────────────────────────────────────────────── */
+.scClassesList {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+/* ── Card ─────────────────────────────────────────────────────────────────── */
+.scClassCard {
+  background: #ffffff;
+  border: 1px solid #e8e8e8;
+  border-radius: 14px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: box-shadow 0.15s;
+  display: flex; flex-direction: column;
+}
+.scClassCard:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.07); }
+.scClassCard.inactive { border-color: #fca5a5; }
+
+/* Card header */
+.scClassHeader {
+  padding: 14px 16px;
+  background: #f7f7f7;
+  border-bottom: 1px solid #e8e8e8;
+}
+
+.scClassTitleRow {
+  display: flex; justify-content: space-between; align-items: center;
+  gap: 10px; margin-bottom: 4px;
+}
+
+.scClassName {
+  margin: 0; font-size: 14px; font-weight: 800; color: #111111;
+  letter-spacing: -0.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+.scClassId {
+  margin: 0; font-size: 11px; color: #888888; font-family: monospace;
+}
+
+/* Status badge */
+.sc-status-badge {
+  display: inline-flex; align-items: center;
+  padding: 3px 10px; border-radius: 20px;
+  font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;
+  flex-shrink: 0;
+}
+.sc-status-badge.active   { background: #dcfce7; color: #166634; }
+.sc-status-badge.inactive { background: #f0f0f0; color: #888888; }
+
+/* Teacher avatar */
+.sc-teacher-avatar {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: #f0f0f0; color: #888888;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; font-weight: 800; text-transform: uppercase;
+  border: 2px solid #e8e8e8; flex-shrink: 0; overflow: hidden;
+}
+.sc-teacher-avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+/* Card body */
+.scClassBody { padding: 12px 16px; flex: 1; }
+
+.scClassDetails {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+}
+
+.scDetailItem { display: flex; flex-direction: column; gap: 1px; }
+.scDetailLabel { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: #aaaaaa; }
+.scDetailValue { font-size: 12px; font-weight: 700; color: #333333; }
+
+/* Per-class assignment row (teachers tab) */
+.sc-class-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 10px; border-radius: 8px; margin-top: 6px;
+  font-size: 12px;
+}
+.sc-class-row.active   { background: rgba(16,185,129,0.06); border: 1px solid #86efac; }
+.sc-class-row.inactive { background: rgba(156,163,175,0.08); border: 1px solid #e8e8e8; }
+
+.sc-class-row-left { display: flex; align-items: center; gap: 8px; }
+.sc-class-row-name { font-weight: 700; color: #111111; }
+.sc-class-row-date { font-size: 10px; color: #aaaaaa; }
+.sc-class-row-actions { display: flex; gap: 6px; }
+
+/* Card footer */
+.scClassFooter {
+  padding: 10px 16px;
+  border-top: 1px solid #f0f0f0;
+  display: flex; justify-content: space-between; align-items: center;
+}
+
+.scViewDetails {
+  display: flex; align-items: center; gap: 5px;
+  font-size: 11.5px; font-weight: 700; color: #888888;
+  transition: color 0.15s, gap 0.15s;
+}
+.scClassCard:hover .scViewDetails { color: #111111; gap: 8px; }
+
+/* ── Action buttons on cards ──────────────────────────────────────────────── */
+.sc-action-btn {
+  padding: 4px 10px; border-radius: 6px;
+  font-size: 11px; font-weight: 700; cursor: pointer;
+  transition: background 0.15s; border: 1px solid transparent;
+  display: inline-flex; align-items: center; gap: 4px;
+}
+.sc-action-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.sc-action-btn.deactivate { background: none; border-color: #fca5a5; color: #cc3333; }
+.sc-action-btn.deactivate:hover:not(:disabled) { background: #fef2f2; }
+
+.sc-action-btn.reactivate { background: rgba(16,185,129,0.08); border-color: #86efac; color: #16a34a; }
+.sc-action-btn.reactivate:hover:not(:disabled) { background: #dcfce7; }
+
+.sc-action-btn.delete { background: #fff0f0; border-color: #fca5a5; color: #cc3333; }
+.sc-action-btn.delete:hover:not(:disabled) { background: #fecaca; }
+
+.sc-action-btn.edit { background: #f4f4f4; border-color: #e8e8e8; color: #111111; }
+.sc-action-btn.edit:hover:not(:disabled) { background: #111111; color: #ffffff; border-color: #111111; }
+
+/* ── Empty state ──────────────────────────────────────────────────────────── */
+.scEmptyState {
+  text-align: center; padding: 60px 20px;
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+}
+.scEmptyState h3 { margin: 0; font-size: 15px; font-weight: 800; color: #111111; }
+.scEmptyState p  { margin: 0; font-size: 13px; color: #888888; }
+
+/* ── Slide panels ─────────────────────────────────────────────────────────── */
+.sc-panel {
+  display: flex; flex-direction: column;
+  flex: 1; min-height: 0; overflow: hidden; background: #ffffff;
+}
+
+.sc-panel-header {
+  position: relative; padding: 22px 24px 20px;
+  flex-shrink: 0; overflow: hidden;
+}
+.sc-panel-header.default { background: #111111; }
+.sc-panel-header.danger  { background: #cc3333; }
+
+.sc-panel-header::before {
+  content: ""; position: absolute;
+  width: 120px; height: 120px; border-radius: 50%;
+  border: 18px solid rgba(255,255,255,0.06);
+  top: -40px; right: -24px; pointer-events: none;
+}
+
+.sc-panel-header-deco {
+  position: absolute; width: 60px; height: 60px; border-radius: 50%;
+  border: 10px solid rgba(255,255,255,0.04);
+  bottom: -20px; left: -12px; pointer-events: none;
+}
+
+.sc-panel-header-content {
+  position: relative; z-index: 1; display: flex; align-items: flex-start; gap: 14px;
+}
+
+.sc-panel-header-icon {
+  width: 40px; height: 40px; border-radius: 10px;
+  background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.18);
+  display: flex; align-items: center; justify-content: center;
+  color: #ffffff; flex-shrink: 0;
+}
+
+.sc-panel-header-text h2 { margin: 0 0 3px; font-size: 14px; font-weight: 800; color: #ffffff; letter-spacing: -0.01em; }
+.sc-panel-header-text p  { margin: 0; font-size: 12px; color: rgba(255,255,255,0.55); }
+
+.sc-panel-body {
+  flex: 1; min-height: 0; overflow-y: auto; padding: 20px 24px;
+  display: flex; flex-direction: column; gap: 14px;
+}
+.sc-panel-body::-webkit-scrollbar { width: 3px; }
+.sc-panel-body::-webkit-scrollbar-thumb { background: #e0e0e0; border-radius: 2px; }
+
+.sc-panel-footer {
+  display: flex; justify-content: flex-end; gap: 10px;
+  padding: 14px 24px; border-top: 1px solid #e8e8e8;
+  background: #f7f7f7; flex-shrink: 0;
+}
+
+/* ── Panel form fields ────────────────────────────────────────────────────── */
+.sc-field { display: flex; flex-direction: column; gap: 5px; }
+
+.sc-field-label {
+  font-size: 10px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.07em; color: #888888;
+}
+
+.sc-field-input, .sc-field-select, .sc-field-textarea {
+  padding: 9px 12px; border-radius: 8px; border: 1px solid #e8e8e8;
+  font-size: 13px; font-weight: 500; color: #111111; background: #fafafa;
+  outline: none; transition: border-color 0.15s; box-sizing: border-box;
+  width: 100%; font-family: inherit;
+}
+.sc-field-input:focus,
+.sc-field-select:focus,
+.sc-field-textarea:focus { border-color: #111111; background: #ffffff; }
+.sc-field-textarea { resize: vertical; }
+
+.sc-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+.sc-panel-desc { margin: 0; font-size: 12px; font-weight: 600; color: #888888; line-height: 1.5; }
+.sc-panel-warn { padding: 11px 14px; border-radius: 8px; background: #fef9c3; border: 1px solid #fde68a; border-left: 3px solid #f59e0b; font-size: 12px; font-weight: 600; color: #854d0e; line-height: 1.5; }
+.sc-panel-danger { padding: 11px 14px; border-radius: 8px; background: #fff0f0; border: 1px solid #fca5a5; border-left: 3px solid #cc3333; font-size: 12px; font-weight: 600; color: #cc3333; line-height: 1.5; }
+.sc-panel-error { font-size: 12px; font-weight: 700; color: #cc3333; margin: 0; }
+
+.sc-panel-name {
+  padding: 12px 14px; background: #f4f4f4; border: 1px solid #e8e8e8;
+  border-radius: 10px; font-size: 14px; font-weight: 800; color: #111111;
+}
+
+.sc-section-label {
+  font-size: 10px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.08em; color: #888888;
+  padding-bottom: 8px; border-bottom: 1px solid #f0f0f0;
+  margin: 0 0 12px; display: block;
+}
+
+.sc-detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+/* ── Responsive ───────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .scHeader { flex-direction: column; gap: 14px; }
+  .scClassesList { grid-template-columns: 1fr; }
+  .sc-form-grid { grid-template-columns: 1fr; }
+  .sc-detail-grid { grid-template-columns: 1fr; }
+}
+
+/* ── Dark theme ───────────────────────────────────────────────────────────── */
+[data-theme="dark"] .scTitle    { color: #f0f0f0; }
+[data-theme="dark"] .scSubtitle { color: #555555; }
+[data-theme="dark"] .scHeader   { border-bottom-color: #2a2a2a; }
+[data-theme="dark"] .scSearchInputWrapper { background: #1e1e1e; border-color: #2a2a2a; color: #555555; }
+[data-theme="dark"] .scSearchInput { color: #e0e0e0; }
+[data-theme="dark"] .scFilterTab { background: #1e1e1e; border-color: #2a2a2a; color: #555555; }
+[data-theme="dark"] .scFilterTab:hover  { border-color: #f0f0f0; color: #f0f0f0; }
+[data-theme="dark"] .scFilterTab.active { background: #f0f0f0; color: #111111; border-color: #f0f0f0; }
+[data-theme="dark"] .scClassCard { background: #1e1e1e; border-color: #2a2a2a; }
+[data-theme="dark"] .scClassCard:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.3); }
+[data-theme="dark"] .scClassHeader { background: #252525; border-bottom-color: #2a2a2a; }
+[data-theme="dark"] .scClassName { color: #f0f0f0; }
+[data-theme="dark"] .scClassId { color: #555555; }
+[data-theme="dark"] .sc-status-badge.inactive { background: #252525; color: #555555; }
+[data-theme="dark"] .sc-teacher-avatar { background: #2a2a2a; color: #555555; }
+[data-theme="dark"] .scDetailValue { color: #cccccc; }
+[data-theme="dark"] .scClassFooter { border-top-color: #2a2a2a; }
+[data-theme="dark"] .scViewDetails { color: #555555; }
+[data-theme="dark"] .scClassCard:hover .scViewDetails { color: #f0f0f0; }
+[data-theme="dark"] .scEmptyState h3 { color: #f0f0f0; }
+[data-theme="dark"] .scEmptyState p  { color: #555555; }
+[data-theme="dark"] .sc-panel { background: #1a1a1a; }
+[data-theme="dark"] .sc-panel-header.default { background: #0a0a0a; }
+[data-theme="dark"] .sc-panel-body { background: #1a1a1a; }
+[data-theme="dark"] .sc-panel-body::-webkit-scrollbar-thumb { background: #2a2a2a; }
+[data-theme="dark"] .sc-panel-footer { background: #1e1e1e; border-top-color: #2a2a2a; }
+[data-theme="dark"] .sc-field-input,
+[data-theme="dark"] .sc-field-select,
+[data-theme="dark"] .sc-field-textarea { background: #252525; border-color: #3a3a3a; color: #e0e0e0; }
+[data-theme="dark"] .sc-field-input:focus,
+[data-theme="dark"] .sc-field-select:focus,
+[data-theme="dark"] .sc-field-textarea:focus { border-color: #f0f0f0; background: #2a2a2a; }
+[data-theme="dark"] .sc-panel-name { background: #1e1e1e; border-color: #2a2a2a; color: #f0f0f0; }
+[data-theme="dark"] .sc-panel-warn { background: #1c1200; border-color: #3a2a00; border-left-color: #f59e0b; color: #fcd34d; }
+[data-theme="dark"] .sc-panel-danger { background: #2a1a1a; border-color: #3a2a2a; border-left-color: #cc3333; color: #f87171; }
+[data-theme="dark"] .sc-section-label { color: #555555; border-bottom-color: #2a2a2a; }
+[data-theme="dark"] .sc-warn-banner.danger { background: #2a1a1a; border-color: #3a2a2a; color: #f87171; }
+[data-theme="dark"] .sc-warn-banner.warn { background: #1c1200; border-color: #3a2a00; color: #fcd34d; }
+
+/* ── Per-class assignment rows (teachers tab) ─────────────────────────────── */
+.sc-class-rows { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; }

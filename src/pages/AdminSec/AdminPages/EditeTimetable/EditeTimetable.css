@@ -1,0 +1,242 @@
+/* ── Container ────────────────────────────────────────────────────────────── */
+.ett-container {
+  display: flex; flex-direction: column;
+  height: 100%; min-height: 0; overflow: hidden;
+  background: #ffffff; box-sizing: border-box;
+}
+
+/* ── Header ───────────────────────────────────────────────────────────────── */
+.ett-header {
+  position: relative; padding: 22px 24px 20px;
+  background: #111111; flex-shrink: 0; overflow: hidden;
+}
+
+.ett-header::before {
+  content: ""; position: absolute;
+  width: 160px; height: 160px; border-radius: 50%;
+  border: 24px solid rgba(255,255,255,0.05);
+  top: -60px; right: -40px; pointer-events: none;
+}
+
+.ett-header::after {
+  content: ""; position: absolute;
+  width: 44px; height: 44px; border-radius: 8px;
+  border: 1.5px solid rgba(255,255,255,0.07);
+  bottom: -14px; right: 100px; transform: rotate(18deg); pointer-events: none;
+}
+
+.ett-header-deco {
+  position: absolute; width: 70px; height: 70px; border-radius: 50%;
+  border: 10px solid rgba(255,255,255,0.04);
+  bottom: -22px; left: -14px; pointer-events: none;
+}
+
+.ett-header-deco2 {
+  position: absolute; width: 24px; height: 24px; border-radius: 4px;
+  border: 1.5px solid rgba(255,255,255,0.06);
+  top: 12px; left: 200px; transform: rotate(12deg); pointer-events: none;
+}
+
+.ett-header-content {
+  position: relative; z-index: 1;
+  display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+}
+
+.ett-back-btn {
+  width: 38px; height: 38px; border-radius: 10px; flex-shrink: 0;
+  background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.18);
+  color: #ffffff; display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: background 0.15s;
+}
+
+.ett-back-btn:hover { background: rgba(255,255,255,0.22); }
+
+.ett-header-text { flex: 1; min-width: 0; }
+
+.ett-header-text h2 {
+  margin: 0 0 3px; font-size: 15px; font-weight: 800;
+  color: #ffffff; letter-spacing: -0.02em;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+.ett-header-text p { margin: 0; font-size: 12px; color: rgba(255,255,255,0.5); }
+
+.ett-header-actions { flex-shrink: 0; }
+
+/* ── Toolbar ──────────────────────────────────────────────────────────────── */
+.ett-toolbar {
+  display: flex; justify-content: flex-end; gap: 10px;
+  padding: 12px 20px; border-bottom: 1px solid #f0f0f0;
+  background: #fafafa; flex-shrink: 0;
+}
+
+/* ── Mobile tabs ──────────────────────────────────────────────────────────── */
+.ett-mobile-tabs { display: none; }
+
+/* ── Body layout ──────────────────────────────────────────────────────────── */
+.ett-body {
+  display: grid; grid-template-columns: 1.3fr 1fr;
+  gap: 0; flex: 1; min-height: 0; overflow: hidden;
+}
+
+/* ── Preview panel ────────────────────────────────────────────────────────── */
+.ett-preview-panel {
+  border-right: 1px solid #f0f0f0;
+  overflow: auto; padding: 16px;
+}
+
+.ett-preview-panel::-webkit-scrollbar { width: 3px; }
+.ett-preview-panel::-webkit-scrollbar-thumb { background: #e0e0e0; border-radius: 2px; }
+
+/* ── Edit panel ───────────────────────────────────────────────────────────── */
+.ett-edit-panel {
+  display: flex; flex-direction: column; gap: 0;
+  overflow: hidden; background: #ffffff;
+}
+
+/* ── Form ─────────────────────────────────────────────────────────────────── */
+.ett-form {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 8px; padding: 16px; border-bottom: 1px solid #f0f0f0;
+  flex-shrink: 0;
+}
+
+.ett-form select,
+.ett-form input {
+  padding: 9px 12px; border-radius: 8px;
+  border: 1px solid #e8e8e8; font-size: 13px; font-weight: 500;
+  color: #111111; background: #fafafa; outline: none;
+  transition: border-color 0.2s; box-sizing: border-box; width: 100%;
+}
+
+.ett-form select:focus,
+.ett-form input:focus { border-color: #111111; background: #ffffff; }
+
+.ett-form-submit {
+  grid-column: span 2;
+  display: flex; align-items: center; justify-content: center; gap: 7px;
+  padding: 10px; border-radius: 10px; border: none;
+  background: #111111; color: #ffffff;
+  font-size: 13px; font-weight: 700; cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.ett-form-submit:hover:not(.disabled) { opacity: 0.85; }
+.ett-form-submit.disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* ── Entry list ───────────────────────────────────────────────────────────── */
+.ett-entry-list {
+  flex: 1; overflow-y: auto; padding: 12px 16px;
+  display: flex; flex-direction: column; gap: 8px;
+}
+
+.ett-entry-list::-webkit-scrollbar { width: 3px; }
+.ett-entry-list::-webkit-scrollbar-thumb { background: #e0e0e0; border-radius: 2px; }
+
+.ett-empty {
+  display: flex; align-items: center; justify-content: center;
+  padding: 32px 16px;
+}
+
+.ett-empty p { font-size: 13px; color: #888888; margin: 0; text-align: center; }
+
+.ett-entry {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 11px 14px; border-radius: 10px;
+  background: #fafafa; border: 1px solid #e8e8e8;
+  transition: box-shadow 0.15s, transform 0.15s; cursor: default;
+}
+
+.ett-entry:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.07);
+}
+
+.ett-entry-meta { display: flex; flex-direction: column; gap: 3px; }
+
+.ett-entry-day  { font-size: 11px; font-weight: 700; color: #888888; text-transform: uppercase; letter-spacing: 0.05em; }
+.ett-entry-subject { font-size: 13px; font-weight: 700; color: #111111; }
+.ett-entry-time { font-size: 12px; color: #555555; font-weight: 500; }
+
+.ett-entry-actions { display: flex; gap: 6px; flex-shrink: 0; }
+
+.ett-entry-edit-btn,
+.ett-entry-delete-btn {
+  width: 28px; height: 28px; border-radius: 7px;
+  border: 1px solid #e8e8e8; background: #f4f4f4;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: background 0.15s, color 0.15s;
+  color: #888888;
+}
+
+.ett-entry-edit-btn:hover { background: #111111; color: #ffffff; border-color: #111111; }
+.ett-entry-delete-btn:hover { background: #cc3333; color: #ffffff; border-color: #cc3333; }
+
+/* ── Responsive ───────────────────────────────────────────────────────────── */
+@media (max-width: 900px) {
+  .ett-header-content { flex-wrap: wrap; }
+  .ett-header-text h2 { font-size: 14px; }
+
+  .ett-body { grid-template-columns: 1fr; }
+
+  .ett-preview-panel,
+  .ett-edit-panel { display: none; }
+
+  .ett-preview-panel.show,
+  .ett-edit-panel.show { display: flex; flex-direction: column; }
+
+  .ett-preview-panel.show { display: block; }
+
+  .ett-mobile-tabs {
+    display: flex; gap: 8px;
+    padding: 10px 16px 0; flex-shrink: 0;
+  }
+
+  .ett-mobile-tabs button {
+    flex: 1; padding: 9px; border-radius: 10px;
+    border: 1px solid #e8e8e8; background: #f4f4f4;
+    font-size: 13px; font-weight: 700; color: #555555; cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+  }
+
+  .ett-mobile-tabs button.active {
+    background: #111111; color: #ffffff; border-color: #111111;
+  }
+}
+
+@media (max-width: 480px) {
+  .ett-header { padding: 16px 16px 14px; }
+  .ett-header-text h2 { font-size: 13px; }
+  .ett-toolbar { padding: 10px 12px; }
+  .ett-form { padding: 12px; }
+  .ett-entry-list { padding: 10px 12px; }
+}
+
+/* ── Dark theme ───────────────────────────────────────────────────────────── */
+[data-theme="dark"] .ett-container { background: #1a1a1a; }
+[data-theme="dark"] .ett-header { background: #0a0a0a; }
+[data-theme="dark"] .ett-toolbar { background: #141414; border-bottom-color: #2a2a2a; }
+[data-theme="dark"] .ett-body { background: #1a1a1a; }
+[data-theme="dark"] .ett-preview-panel { border-right-color: #2a2a2a; background: #1a1a1a; }
+[data-theme="dark"] .ett-preview-panel::-webkit-scrollbar-thumb { background: #2a2a2a; }
+[data-theme="dark"] .ett-edit-panel { background: #1a1a1a; }
+[data-theme="dark"] .ett-form { border-bottom-color: #2a2a2a; }
+[data-theme="dark"] .ett-form select,
+[data-theme="dark"] .ett-form input { background: #252525; border-color: #3a3a3a; color: #e0e0e0; }
+[data-theme="dark"] .ett-form select:focus,
+[data-theme="dark"] .ett-form input:focus { border-color: #f0f0f0; background: #2a2a2a; }
+[data-theme="dark"] .ett-form-submit { background: #f0f0f0; color: #111111; }
+[data-theme="dark"] .ett-form-submit:hover:not(.disabled) { background: #ffffff; }
+[data-theme="dark"] .ett-entry-list::-webkit-scrollbar-thumb { background: #2a2a2a; }
+[data-theme="dark"] .ett-empty p { color: #555555; }
+[data-theme="dark"] .ett-entry { background: #1e1e1e; border-color: #2a2a2a; }
+[data-theme="dark"] .ett-entry:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+[data-theme="dark"] .ett-entry-day { color: #555555; }
+[data-theme="dark"] .ett-entry-subject { color: #e0e0e0; }
+[data-theme="dark"] .ett-entry-time { color: #888888; }
+[data-theme="dark"] .ett-entry-edit-btn,
+[data-theme="dark"] .ett-entry-delete-btn { background: #252525; border-color: #3a3a3a; color: #555555; }
+[data-theme="dark"] .ett-entry-edit-btn:hover { background: #f0f0f0; color: #111111; border-color: #f0f0f0; }
+[data-theme="dark"] .ett-entry-delete-btn:hover { background: #cc3333; color: #ffffff; border-color: #cc3333; }
+[data-theme="dark"] .ett-mobile-tabs button { background: #252525; border-color: #3a3a3a; color: #888888; }
+[data-theme="dark"] .ett-mobile-tabs button.active { background: #f0f0f0; color: #111111; border-color: #f0f0f0; }

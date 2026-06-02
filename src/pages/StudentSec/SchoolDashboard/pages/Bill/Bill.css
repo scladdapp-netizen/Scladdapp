@@ -1,0 +1,287 @@
+/* ── Summary row ──────────────────────────────────────────────────────────── */
+.bill-summary-row {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.bill-summary-card {
+  flex: 1;
+  min-width: 120px;
+  border-radius: 12px;
+  padding: 14px 16px;
+  border: 1px solid transparent;
+}
+
+.bill-sum-blue  { background: #eff6ff; border-color: #bfdbfe; }
+.bill-sum-green { background: #dcfce7; border-color: #bbf7d0; }
+.bill-sum-red   { background: #fecaca; border-color: #fca5a5; }
+
+.bill-sum-value {
+  margin: 0 0 2px;
+  font-size: 18px;
+  font-weight: 800;
+  color: #111111;
+}
+
+.bill-sum-label {
+  margin: 0;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #888888;
+}
+
+/* ── Bill cards grid ──────────────────────────────────────────────────────── */
+.bill-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 14px;
+}
+
+.bill-card {
+  background: #ffffff;
+  border: 1px solid #e8e8e8;
+  border-radius: 14px;
+  padding: 16px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: box-shadow 0.15s, border-color 0.15s;
+}
+
+.bill-card:hover { box-shadow: 0 4px 14px rgba(0,0,0,0.07); border-color: #cccccc; }
+
+.bill-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.bill-card-icon {
+  width: 40px; height: 40px; border-radius: 10px;
+  background: #f4f4f4; color: #888888;
+  display: flex; align-items: center; justify-content: center;
+}
+
+.bill-card-name {
+  margin: 0 0 2px;
+  font-size: 14px; font-weight: 800; color: #111111;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+.bill-card-cat { margin: 0; font-size: 12px; color: #888888; }
+
+.bill-card-amounts {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  padding-top: 10px;
+  border-top: 1px solid #f0f0f0;
+}
+
+.bill-amount-label { margin: 0 0 2px; font-size: 10px; color: #aaaaaa; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
+.bill-amount-due   { margin: 0; font-size: 16px; font-weight: 800; color: #111111; }
+.bill-amount-paid  { margin: 0; font-size: 14px; font-weight: 700; color: #166534; }
+.bill-due-date     { margin: 0; font-size: 11px; color: #aaaaaa; }
+
+/* ── Status badges ────────────────────────────────────────────────────────── */
+.bill-badge {
+  display: inline-flex; align-items: center;
+  padding: 3px 10px; border-radius: 20px;
+  font-size: 11px; font-weight: 700; text-transform: capitalize;
+}
+
+.bill-badge-paid    { background: #dcfce7; color: #166534; }
+.bill-badge-partial { background: #fef3c7; color: #92400e; }
+.bill-badge-unpaid  { background: #fecaca; color: #991b1b; }
+
+/* ── Detail panel ─────────────────────────────────────────────────────────── */
+.bill-detail-amounts {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.bill-detail-amounts .bill-summary-card {
+  flex: 1;
+  min-width: 0;
+  padding: 10px 10px;
+}
+
+.bill-detail-amounts .bill-sum-value {
+  font-size: 13px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bill-desc {
+  margin: 0 0 14px;
+  font-size: 13px; color: #555555; line-height: 1.5;
+}
+
+/* Bill items table */
+.bill-items-table {
+  border: 1px solid #e8e8e8;
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 14px;
+}
+
+.bill-item-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 10px 14px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.bill-item-row.alt { background: #fafafa; }
+.bill-item-row:last-child { border-bottom: none; }
+
+.bill-item-name { margin: 0 0 2px; font-size: 13px; font-weight: 700; color: #111111; }
+.bill-item-desc { margin: 0; font-size: 11px; color: #888888; }
+.bill-item-amount { font-size: 13px; font-weight: 700; color: #111111; flex-shrink: 0; margin-left: 12px; }
+
+.bill-item-total {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: #f7f7f7;
+  border-top: 2px solid #e8e8e8;
+  font-size: 13px; font-weight: 800; color: #111111;
+}
+
+/* Installment */
+.bill-installment-info {
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 10px;
+  padding: 12px 16px;
+  margin-bottom: 14px;
+}
+
+.bill-installment-title {
+  margin: 0 0 8px;
+  font-size: 11px; font-weight: 800; color: #1d4ed8;
+  text-transform: uppercase; letter-spacing: 0.05em;
+}
+
+.bill-installment-val { margin: 0; font-size: 14px; font-weight: 700; color: #1d4ed8; }
+
+/* Pay form */
+.bill-pay-form {
+  background: #f7f7f7;
+  border: 1px solid #e8e8e8;
+  border-radius: 10px;
+  padding: 16px;
+  margin-bottom: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.bill-pay-title { margin: 0; font-size: 13px; font-weight: 700; color: #111111; }
+.bill-pay-error { margin: 0; font-size: 12px; font-weight: 600; color: #cc3333; }
+
+/* Payment history row */
+.bill-payment-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px;
+  background: #f7f7f7;
+  border: 1px solid #e8e8e8;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.12s;
+}
+
+.bill-payment-row:hover { background: #f0f0f0; }
+
+/* ── Receipt ──────────────────────────────────────────────────────────────── */
+.bill-receipt {
+  border: 2px solid #e8e8e8;
+  border-radius: 12px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.bill-receipt-school { text-align: center; padding-bottom: 14px; border-bottom: 1px dashed #e8e8e8; }
+
+.bill-receipt-logo {
+  width: 52px; height: 52px; border-radius: 10px;
+  object-fit: cover; border: 1px solid #e8e8e8;
+  margin-bottom: 8px;
+}
+
+.bill-receipt-logo-ph {
+  width: 52px; height: 52px; border-radius: 10px;
+  background: #f4f4f4; color: #888888;
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 8px;
+}
+
+.bill-receipt-school-name { margin: 0 0 2px; font-size: 15px; font-weight: 800; color: #111111; }
+.bill-receipt-school-addr { margin: 0 0 6px; font-size: 11px; color: #888888; }
+.bill-receipt-title { margin: 4px 0 0; font-size: 13px; font-weight: 700; color: #374151; }
+
+.bill-receipt-section { padding-bottom: 12px; border-bottom: 1px dashed #e8e8e8; }
+.bill-receipt-section-label { margin: 0 0 3px; font-size: 10px; font-weight: 700; color: #aaaaaa; text-transform: uppercase; letter-spacing: 0.05em; }
+.bill-receipt-section-value { margin: 0; font-size: 14px; font-weight: 700; color: #111111; }
+
+.bill-receipt-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 5px 0;
+  border-bottom: 1px solid #f7f7f7;
+}
+
+.bill-receipt-row-label { font-size: 12px; color: #888888; }
+.bill-receipt-row-value { font-size: 12px; font-weight: 700; color: #111111; }
+
+.bill-receipt-status { text-align: center; padding-top: 8px; }
+.bill-receipt-thanks { margin: 0; font-size: 11px; color: #aaaaaa; text-align: center; }
+
+/* ── Responsive ───────────────────────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .bill-grid { grid-template-columns: 1fr; }
+  .bill-summary-row { flex-direction: column; }
+}
+
+/* ── Dark theme ───────────────────────────────────────────────────────────── */
+[data-theme="dark"] .bill-sum-blue  { background: #0f1e3a; border-color: #1e3a6e; }
+[data-theme="dark"] .bill-sum-green { background: #052e16; border-color: #166534; }
+[data-theme="dark"] .bill-sum-red   { background: #2d0a0a; border-color: #991b1b; }
+[data-theme="dark"] .bill-sum-value { color: #f0f0f0; }
+[data-theme="dark"] .bill-card { background: #1e1e1e; border-color: #2a2a2a; }
+[data-theme="dark"] .bill-card:hover { box-shadow: 0 4px 14px rgba(0,0,0,0.3); border-color: #3a3a3a; }
+[data-theme="dark"] .bill-card-icon { background: #252525; color: #555555; }
+[data-theme="dark"] .bill-card-name { color: #f0f0f0; }
+[data-theme="dark"] .bill-card-cat  { color: #555555; }
+[data-theme="dark"] .bill-card-amounts { border-top-color: #2a2a2a; }
+[data-theme="dark"] .bill-amount-due  { color: #f0f0f0; }
+[data-theme="dark"] .bill-items-table { border-color: #2a2a2a; }
+[data-theme="dark"] .bill-item-row { border-bottom-color: #2a2a2a; }
+[data-theme="dark"] .bill-item-row.alt { background: #1a1a1a; }
+[data-theme="dark"] .bill-item-name   { color: #f0f0f0; }
+[data-theme="dark"] .bill-item-total  { background: #252525; border-top-color: #2a2a2a; color: #f0f0f0; }
+[data-theme="dark"] .bill-installment-info { background: #0f1e3a; border-color: #1e3a6e; }
+[data-theme="dark"] .bill-pay-form { background: #252525; border-color: #2a2a2a; }
+[data-theme="dark"] .bill-pay-title { color: #f0f0f0; }
+[data-theme="dark"] .bill-payment-row { background: #252525; border-color: #2a2a2a; }
+[data-theme="dark"] .bill-payment-row:hover { background: #2a2a2a; }
+[data-theme="dark"] .bill-receipt { border-color: #2a2a2a; }
+[data-theme="dark"] .bill-receipt-school { border-bottom-color: #2a2a2a; }
+[data-theme="dark"] .bill-receipt-logo-ph { background: #252525; color: #555555; }
+[data-theme="dark"] .bill-receipt-school-name { color: #f0f0f0; }
+[data-theme="dark"] .bill-receipt-section { border-bottom-color: #2a2a2a; }
+[data-theme="dark"] .bill-receipt-section-value { color: #f0f0f0; }
+[data-theme="dark"] .bill-receipt-row { border-bottom-color: #2a2a2a; }
+[data-theme="dark"] .bill-receipt-row-value { color: #f0f0f0; }

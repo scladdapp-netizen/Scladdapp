@@ -1,0 +1,95 @@
+.apt_main {
+  display: flex;
+  height: 100%;
+  width: 100%;
+  box-sizing: border-box;
+  position: relative;
+  overflow: hidden;
+}
+
+.apt_main.no-sidebar .apt_right {
+  width: 100%;
+  margin-left: 0;
+}
+
+.apt_left {
+  width: 220px;
+  height: 100%;
+  box-sizing: border-box;
+  position: relative;
+  transition: transform 0.3s ease;
+  border-right: 1px solid #a6a6a6;
+}
+
+.apt_right {
+  height: 100%;
+  box-sizing: border-box;
+  width: 100%;
+  overflow-x: scroll;
+  background: #ffffff;
+}
+
+/* ========= Mobile ========= */
+@media (max-width: 768px) {
+  .apt_left {
+    position: fixed;
+    top: 52px;
+    left: 0;
+    height: calc(100% - 52px);
+    z-index: 50;
+    transform: translateX(-100%);
+    box-shadow: 2px 0 16px rgba(0, 0, 0, 0.12);
+    background: #fff;
+  }
+
+  .apt_left.open {
+    transform: translateX(0);
+  }
+
+  /* Overlay behind the sidebar */
+  .apt_overlay {
+    display: none;
+    position: fixed;
+    top: 52px;
+    left: 0;
+    width: 100%;
+    height: calc(100% - 52px);
+    background: rgba(0, 0, 0, 0.35);
+    z-index: 49;
+  }
+
+  .apt_overlay.open {
+    display: block;
+  }
+
+  /* Drag / Handle */
+  .apt_drag_handle {
+    position: fixed;
+    top: 52px;
+    left: 0;
+    width: 12px;
+    height: calc(100% - 52px);
+    cursor: ew-resize;
+    z-index: 9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .apt_mb {
+    height: 100px;
+    width: 4px;
+    background-color: #000000;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   DARK THEME — AdminPageTabs layout
+   ══════════════════════════════════════════════════════════════ */
+[data-theme="dark"] .apt_left {
+  border-right-color: #2a2a2a;
+  background: #1a1a1a;
+}
+[data-theme="dark"] .apt_mb { background-color: #3a3a3a; }
+[data-theme="dark"] .apt_right { background: #141414; }
+[data-theme="dark"] .apt_overlay { background: rgba(0, 0, 0, 0.55); }

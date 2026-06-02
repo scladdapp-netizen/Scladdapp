@@ -1,0 +1,36 @@
+.admin-history {
+  padding: 24px;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.history-header {
+  margin-bottom: 32px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.history-header h2 {
+  font-size: 28px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 8px 0;
+}
+
+.history-header p {
+  font-size: 16px;
+  color: #6b7280;
+  margin: 0;
+}
+
+.history-content {
+  padding: 40px 20px;
+  text-align: center;
+}
+
+.history-content p {
+  font-size: 16px;
+  color: #6b7280;
+  margin: 0;
+}

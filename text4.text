@@ -1,0 +1,36 @@
+Assignment
+
+- Classes & Headmasters
+- Subjects & Teachers
+- student & class 
+
+
+
+O1zAjrUzVJFeeF2x
+ibrahim2562003_db_user
+
+mongodb+srv://ibrahim2562003_db_user:O1zAjrUzVJFeeF2x@cluster0.8t3awod.mongodb.net/?appName=Cluster0
+
+dashboard
+Academic Sessions
+school event
+school calender
+student report
+student 
+class
+Teachers
+staff 
+subject
+communication
+bill 
+income and expences
+school account
+report template 
+feebilling template
+time table template
+anousment template
+class promotion template
+graduate
+
+
+read notification page in  http://localhost:5173/admin/1773236295692/communication and http://localhost:5173/admin/1773236295692/communication/notifications/1774786246203 so in notification tab in alumny the one u just edit fatch the notification of that alumny use server smart table and when click insted of opening a panel navigate to that notification detail page

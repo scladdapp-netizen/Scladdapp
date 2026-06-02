@@ -1,0 +1,88 @@
+seasion
+X 1- add a new tab for graduat that will show the graduate of that seasion  _______
+
+
+seasion overview
+
+>1- when chenge activition sunseasion show a pop up to disactivete the previuse activation
+
+student and promotion 
+X 1- one can edit and change  the promotion statuse
+X 2-  one can view detail
+X 3- in the table it show last class current class
+
+class headmaster
+x 1- one cand edith asignment
+x 2- if a staf was asign as headmaster to two class the color change to yellow
+x 3- one can view the assignment
+
+subject teacher
+x 1- one can view and edith
+x 2- if two teacher is assign to the subject change the color to yellow
+
+income and expencies
+x 1- add show data last soso days
+x 2- show transaction detail when click
+
+add transaction
+x 1- transaction type is a button not select input
+
+school event
+x 1- in add newevent category shold be an input
+
+student detail page
+X 1. in Change Student Class also change to graduate
+x 2- in student atendance in the calender one can edit it to change from present to absent to excuse absents
+
+
+creat seasion wizard
+x 1- in Subject Teacher Assignments if subject as a steam show it as subject / stream
+x 2- in Session Creation Review when click on Student Promotion Summary item it use slde in menu to show the student
+x 3 in the Students to be Promoted pannel it shold show all the student whit filter promoted demoted and reduate pass a prop for the card click
+
+
+
+class detail
+x 1- under subject i want a add subject button in there one can select existing subject or creat new subject
+x 2- when click on subject take to the subject detail
+x 3- in create or edith timetable the con for adding subject shold be in slide in menu
+x 4- remove desiplenary tab not needed
+x 5- in Class Headmaster Assignment there shold be a place to change headmaster assign
+x 6- in resource there is no add resources button
+x 7- in the overview there shold be an edith button to edith class info also a button to print and deactivate
+
+Teacher Profile
+x 1- in the identity a button to show previos asignment slide in menu will show
+x 2- also a button to diactivate
+x 3- create teacher one enter teacher information and then pick a staff
+x4- remove perfomance
+x 5- change asignment panel shold show when click
+
+Staff Profile
+x 1- a button to set sta to active or deactivate and also an edit button
+x 2- insted of credential of upload document add credentials and also add delet or remove
+x 3- also aply 2 changes to resources
+x 4- fix the add or edit assignment to use slide in menu
+x 5- Performance Evaluations add delet and update
+
+in seasion add admission tab and also in create seasion wezard
+
+Subject detail
+1- in the overview add activate deactiver also edit 
+2- resources add delet and update use smart table like material and remove material
+3- classes shold be smart table
+4- teacher add or remove
+5- curriculum shold be document add delet or update
+
+Admin Profile
+1- identity shold show staff info that is assign as admin show change asignment deactivate or activate 
+
+2- remove credentials and add permision tab where it show all the permision with edith button to add or remove permission
+3- fixe the security to only change password or allow two factor auth
+
+
+fees detail
+1- the top tab is not working
+
+graduation
+1- in detail cartificate add discription to upload sertificate

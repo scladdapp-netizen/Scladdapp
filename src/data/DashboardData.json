@@ -1,0 +1,91 @@
+{
+  "schoolInfo": {
+    "name": "Greenwood International School",
+    "logo": "/api/placeholder/80/80",
+    "address": "123 Education Street, Learning City",
+    "phone": "+1 (555) 123-4567",
+    "email": "info@greenwoodschool.edu",
+    "website": "www.greenwoodschool.edu",
+    "established": "1995"
+  },
+  "statistics": {
+    "students": 1247,
+    "staff": 89,
+    "graduates": 234,
+    "admins": 12,
+    "maleStudents": 687,
+    "femaleStudents": 560
+  },
+  "enrollmentTrend": [
+    { "session": "2020/21", "students": 890 },
+    { "session": "2021/22", "students": 1020 },
+    { "session": "2022/23", "students": 1150 },
+    { "session": "2023/24", "students": 1200 },
+    { "session": "2024/25", "students": 1247 }
+  ],
+  "financialData": [
+    { "month": "Jan", "income": 45000, "expenses": 32000 },
+    { "month": "Feb", "income": 48000, "expenses": 35000 },
+    { "month": "Mar", "income": 52000, "expenses": 38000 },
+    { "month": "Apr", "income": 49000, "expenses": 36000 },
+    { "month": "May", "income": 55000, "expenses": 40000 },
+    { "month": "Jun", "income": 58000, "expenses": 42000 },
+    { "month": "Jul", "income": 62000, "expenses": 45000 },
+    { "month": "Aug", "income": 59000, "expenses": 43000 },
+    { "month": "Sep", "income": 61000, "expenses": 44000 },
+    { "month": "Oct", "income": 57000, "expenses": 41000 },
+    { "month": "Nov", "income": 54000, "expenses": 39000 },
+    { "month": "Dec", "income": 56000, "expenses": 40000 }
+  ],
+  "recentActivities": [
+    {
+      "id": 1,
+      "admin": "John Smith",
+      "action": "Created new academic session 2025/26",
+      "time": "2 hours ago",
+      "type": "session",
+      "avatar": "/api/placeholder/40/40"
+    },
+    {
+      "id": 2,
+      "admin": "Sarah Johnson",
+      "action": "Updated fee structure for Grade 10",
+      "time": "4 hours ago",
+      "type": "fee",
+      "avatar": "/api/placeholder/40/40"
+    },
+    {
+      "id": 3,
+      "admin": "Mike Davis",
+      "action": "Added 25 new students to Grade 7A",
+      "time": "6 hours ago",
+      "type": "student",
+      "avatar": "/api/placeholder/40/40"
+    },
+    {
+      "id": 4,
+      "admin": "Emily Wilson",
+      "action": "Generated monthly report",
+      "time": "8 hours ago",
+      "type": "report",
+      "avatar": "/api/placeholder/40/40"
+    },
+    {
+      "id": 5,
+      "admin": "David Brown",
+      "action": "Updated timetable for Science Department",
+      "time": "1 day ago",
+      "type": "timetable",
+      "avatar": "/api/placeholder/40/40"
+    }
+  ],
+  "setupProgress": 50,
+  "setupTasks": {
+    "completed": [
+      "School Information",
+      "Academic Sessions",
+      "Classes & Subjects"
+    ],
+    "pending": ["Staff Registration", "Student Enrollment", "Fee Structure"]
+  }
+}

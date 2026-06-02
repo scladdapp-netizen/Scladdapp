@@ -1,0 +1,281 @@
+/* AdminSubSeasionPages.css - normal CSS */
+:root {
+  --bg: #fbfdff;
+  --card: #ffffff;
+  --muted: #6b7280;
+  --accent: #5b21b6;
+  --accent-2: #7c3aed;
+  --border: #e6e9ee;
+  --radius: 12px;
+  --gap: 18px;
+  font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial;
+}
+
+.page-wrap {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+  background: var(--bg);
+  color: #111827;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.page-header h2 {
+  font-size: 1.1rem;
+  margin: 0;
+  font-weight: 600;
+}
+.header-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.btn {
+  background: var(--accent);
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 600;
+}
+.btn.ghost {
+  background: linear-gradient(90deg, var(--accent-2), var(--accent));
+}
+.btn.small {
+  padding: 6px 8px;
+  font-size: 0.9rem;
+  border-radius: 8px;
+}
+.btn.outline {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--muted);
+}
+
+/* grid */
+.page-grid {
+  display: flex;
+  gap: var(--gap);
+  align-items: flex-start;
+}
+
+/* sidebar */
+.sidebar {
+  width: 170px;
+  min-width: 160px;
+  position: sticky;
+  top: 20px;
+  height: calc(100vh - 120px);
+  align-self: flex-start;
+  background: transparent;
+  overflow: auto;
+  padding-right: 8px;
+}
+.sidebar-inner {
+  border: solid #dadada 1px;
+  border-radius: 12px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow: hidden;
+}
+.side-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.18s;
+  background-color: #ffffff00;
+}
+.side-item:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
+}
+.side-item.active {
+  border-color: rgba(124, 58, 237, 0.18);
+  box-shadow: 0 8px 28px rgba(124, 58, 237, 0.06);
+  background: linear-gradient(180deg, #fff, #fbf7fe);
+}
+.class-name {
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+.mini-meta {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+/* content area */
+.content {
+  flex: 1;
+  max-height: calc(100vh - 120px);
+  overflow: auto;
+  padding-right: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  width: 100%;
+}
+
+/* timetable card */
+.timetable-card {
+  background: var(--card);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  padding: 14px;
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.03);
+  scroll-margin-top: 24px; /* for nicer scroll position */
+}
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+.card-header h3 {
+  margin: 0;
+  font-size: 1rem;
+}
+.card-header .subtle {
+  color: var(--muted);
+  font-size: 0.875rem;
+  margin-top: 4px;
+}
+
+.card-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.card-body {
+  padding-top: 8px;
+  width: 100%;
+}
+
+/* no-data */
+.no-data {
+  padding: 16px;
+  border-radius: 10px;
+  background: #f8fafc;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-start;
+  color: var(--muted);
+}
+
+/* small screens - make sidebar horizontal at top */
+@media (max-width: 1130px) {
+  .page-grid {
+    flex-direction: column;
+  }
+  .sidebar {
+    position: relative;
+    width: 100%;
+    height: auto;
+    order: 0;
+    margin-bottom: 8px;
+  }
+  .sidebar-inner {
+    flex-direction: row;
+    gap: 8px;
+    overflow: auto;
+    padding-bottom: 6px;
+  }
+  .side-item {
+    min-width: 140px;
+    flex: 0 0 auto;
+  }
+  .content {
+    max-height: none;
+  }
+}
+
+.dropdown {
+  position: relative;
+  display: inline-block;
+}
+.dropdown-toggle {
+  cursor: pointer;
+}
+.dropdown-menu {
+  display: none;
+  position: absolute;
+  right: 0;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  z-index: 1000000;
+  min-width: 120px;
+}
+.dropdown-menu button {
+  display: block;
+  width: 100%;
+  padding: 8px 12px;
+  border: none;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+.dropdown-menu button:hover {
+  background: #f3f4f6;
+}
+
+/* show menu on hover */
+.dropdown:hover .dropdown-menu {
+  display: block;
+}
+
+.btnn {
+  border: none;
+  background-color: #ffffff00;
+}
+
+.llm {
+  margin-bottom: 0;
+}
+
+/* Hide desktop buttons on mobile, show mobile dropdown */
+.desktop-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.mobile-dropdown {
+  display: none;
+}
+
+/* On mobile/small screens: hide desktop buttons, show dropdown */
+@media (max-width: 768px) {
+  .desktop-actions {
+    display: none;
+  }
+  .mobile-dropdown {
+    display: block;
+  }
+}
+
+/* Optional: On very large screens, more space */
+@media (min-width: 1024px) {
+  .desktop-actions {
+    gap: 10px;
+  }
+}

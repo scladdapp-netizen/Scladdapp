@@ -1,0 +1,362 @@
+/* ── Bio preview images ───────────────────────────────────────────────────── */
+.bio-preview img {
+  max-width: 400px; max-height: 300px; width: auto; height: auto;
+  object-fit: contain; border-radius: 6px; margin: 8px 0; display: block;
+}
+.ProseMirror img {
+  max-width: 400px; max-height: 300px; width: auto; height: auto;
+  object-fit: contain; border-radius: 6px; margin: 8px 0;
+}
+
+/* ── Wrap ─────────────────────────────────────────────────────────────────── */
+.sd-wrap { max-width: 100%; }
+
+/* ── Tab section ──────────────────────────────────────────────────────────── */
+.sd-tab-section { display: flex; flex-direction: column; gap: 20px; }
+
+/* ── Tab header ───────────────────────────────────────────────────────────── */
+.sd-tab-header {
+  display: flex; justify-content: space-between; align-items: flex-start;
+  padding-bottom: 20px; border-bottom: 1px solid #e8e8e8; gap: 16px;
+}
+.sd-tab-title    { margin: 0; font-size: 20px; font-weight: 800; color: #111111; letter-spacing: -0.02em; }
+.sd-tab-subtitle { margin: 0; font-size: 12px; color: #888888; font-weight: 600; }
+
+/* ── Profile hero ─────────────────────────────────────────────────────────── */
+.sd-profile-hero {
+  display: flex; align-items: center; gap: 16px;
+  padding: 20px; background: #f7f7f7; border: 1px solid #e8e8e8;
+  border-radius: 14px;
+}
+
+.sd-logo-wrap { flex-shrink: 0; }
+
+.sd-logo-img {
+  width: 72px; height: 72px; border-radius: 14px;
+  object-fit: cover; border: 1px solid #e8e8e8;
+}
+
+.sd-logo-placeholder {
+  width: 72px; height: 72px; border-radius: 14px;
+  background: #f0f0f0; border: 1px solid #e8e8e8;
+  display: flex; align-items: center; justify-content: center;
+  color: #aaaaaa;
+}
+
+.sd-profile-hero-text { flex: 1; min-width: 0; }
+.sd-school-name   { margin: 0 0 4px; font-size: 18px; font-weight: 800; color: #111111; letter-spacing: -0.01em; }
+.sd-school-slogan { margin: 0; font-size: 13px; color: #888888; }
+
+/* ── Info grid ────────────────────────────────────────────────────────────── */
+.sd-info-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px;
+}
+
+.sd-info-card {
+  background: #f7f7f7; border: 1px solid #e8e8e8; border-radius: 10px;
+  padding: 12px 14px; display: flex; flex-direction: column; gap: 4px;
+}
+
+.sd-info-label {
+  font-size: 10px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.07em; color: #aaaaaa;
+}
+
+.sd-info-value { font-size: 13px; font-weight: 600; color: #111111; }
+
+/* ── Edit form ────────────────────────────────────────────────────────────── */
+.sd-edit-form { display: flex; flex-direction: column; gap: 14px; }
+
+.sd-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+.sd-form-actions {
+  display: flex; justify-content: flex-end; gap: 10px; padding-top: 4px;
+}
+
+/* ── Bio preview ──────────────────────────────────────────────────────────── */
+.sd-bio-preview {
+  padding: 16px 20px; border: 1px solid #e8e8e8; border-radius: 10px;
+  background: #ffffff; min-height: 80px; font-size: 14px; line-height: 1.8; color: #333333;
+}
+
+.sd-bio-empty { color: #aaaaaa; font-style: italic; }
+
+/* ── Editor ───────────────────────────────────────────────────────────────── */
+.sd-editor-wrap {
+  border: 1px solid #e8e8e8; border-radius: 10px; overflow: hidden;
+}
+
+.sd-editor-toolbar {
+  display: flex; flex-wrap: wrap; gap: 4px;
+  padding: 8px 10px; border-bottom: 1px solid #e8e8e8; background: #f7f7f7;
+}
+
+.sd-toolbar-btn {
+  padding: 5px 9px; border-radius: 5px; border: 1px solid #e8e8e8;
+  background: #ffffff; color: #555555; cursor: pointer; font-size: 13px;
+  display: flex; align-items: center; transition: background 0.1s, color 0.1s;
+}
+.sd-toolbar-btn:hover { background: #f0f0f0; color: #111111; }
+.sd-toolbar-btn.active { background: #dbeafe; border-color: #93c5fd; color: #1d4ed8; }
+
+.sd-toolbar-sep { width: 1px; background: #e8e8e8; margin: 0 2px; }
+
+.sd-editor-content { padding: 16px; min-height: 280px; font-size: 14px; line-height: 1.7; }
+.sd-editor-content:focus-within { outline: none; }
+
+/* ── Search ───────────────────────────────────────────────────────────────── */
+.sd-search-wrap {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 14px; border: 1px solid #e8e8e8; border-radius: 10px;
+  background: #ffffff; color: #888888;
+}
+
+.sd-search-input {
+  flex: 1; border: none; outline: none;
+  font-size: 13px; color: #111111; background: transparent;
+}
+.sd-search-input::placeholder { color: #aaaaaa; }
+
+.sd-search-clear {
+  background: none; border: none; color: #888888;
+  cursor: pointer; display: flex; align-items: center;
+  padding: 2px; border-radius: 4px; transition: color 0.15s;
+}
+.sd-search-clear:hover { color: #111111; }
+
+/* ── Filter tabs ──────────────────────────────────────────────────────────── */
+.sd-filter-tabs { display: flex; gap: 4px; flex-wrap: wrap; }
+
+.sd-filter-tab {
+  padding: 6px 14px; border: 1px solid #e8e8e8; border-radius: 20px;
+  background: #f4f4f4; font-size: 12px; font-weight: 700; color: #888888;
+  cursor: pointer; transition: background 0.15s, color 0.15s, border-color 0.15s;
+  white-space: nowrap;
+}
+.sd-filter-tab:hover  { border-color: #111111; color: #111111; }
+.sd-filter-tab.active { background: #111111; color: #ffffff; border-color: #111111; }
+
+/* ── Resources grid ───────────────────────────────────────────────────────── */
+.sd-resources-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+/* ── Loading / empty ──────────────────────────────────────────────────────── */
+.sd-loading { padding: 40px; text-align: center; color: #888888; font-size: 13px; }
+
+.sd-empty {
+  text-align: center; padding: 60px 20px;
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+}
+.sd-empty h3 { margin: 0; font-size: 15px; font-weight: 800; color: #111111; }
+.sd-empty p  { margin: 0; font-size: 13px; color: #888888; }
+
+/* ── Gallery ──────────────────────────────────────────────────────────────── */
+.sd-gallery-filters { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.sd-gallery-cats    { display: flex; gap: 6px; flex-wrap: wrap; }
+
+.sd-gallery-grid {
+  columns: 4 180px; gap: 10px;
+}
+
+.sd-gallery-item {
+  break-inside: avoid; margin-bottom: 10px;
+  border-radius: 10px; overflow: hidden; cursor: pointer;
+  position: relative; background: #f0f0f0;
+}
+
+.sd-gallery-img { width: 100%; display: block; transition: transform 0.2s; }
+.sd-gallery-item:hover .sd-gallery-img { transform: scale(1.03); }
+
+.sd-gallery-overlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.65) 0%, transparent 55%);
+  opacity: 0; transition: opacity 0.2s;
+  display: flex; flex-direction: column; justify-content: flex-end; padding: 10px;
+}
+.sd-gallery-item:hover .sd-gallery-overlay { opacity: 1; }
+
+.sd-gallery-caption { margin: 0; font-size: 12px; font-weight: 700; color: #ffffff; }
+.sd-gallery-cat     { margin: 0; font-size: 11px; color: rgba(255,255,255,0.7); }
+
+.sd-gallery-empty { color: #888888; }
+.sd-gallery-empty svg { color: #cccccc; }
+
+.sd-gallery-pagination {
+  display: flex; justify-content: center; align-items: center; gap: 10px; padding-top: 8px;
+}
+.sd-gallery-page { font-size: 13px; color: #888888; }
+
+/* ── Panel (SlideInMenu content) ──────────────────────────────────────────── */
+.sd-panel {
+  display: flex; flex-direction: column;
+  flex: 1; min-height: 0; overflow: hidden; background: #ffffff;
+}
+
+.sd-panel-header {
+  position: relative; padding: 22px 24px 20px;
+  background: #111111; flex-shrink: 0; overflow: hidden;
+}
+.sd-panel-header::before {
+  content: ""; position: absolute;
+  width: 120px; height: 120px; border-radius: 50%;
+  border: 18px solid rgba(255,255,255,0.05);
+  top: -40px; right: -24px; pointer-events: none;
+}
+.sd-panel-deco {
+  position: absolute; width: 60px; height: 60px; border-radius: 50%;
+  border: 10px solid rgba(255,255,255,0.04);
+  bottom: -20px; left: -12px; pointer-events: none;
+}
+.sd-panel-header-content {
+  position: relative; z-index: 1; display: flex; align-items: flex-start; gap: 14px;
+}
+.sd-panel-header-icon {
+  width: 40px; height: 40px; border-radius: 10px;
+  background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.18);
+  display: flex; align-items: center; justify-content: center;
+  color: #ffffff; flex-shrink: 0;
+}
+.sd-panel-header-text h2 { margin: 0 0 3px; font-size: 14px; font-weight: 800; color: #ffffff; }
+.sd-panel-header-text p  { margin: 0; font-size: 12px; color: rgba(255,255,255,0.55); }
+
+.sd-panel-body {
+  flex: 1; min-height: 0; overflow-y: auto; padding: 20px 24px;
+  display: flex; flex-direction: column; gap: 14px;
+}
+.sd-panel-body::-webkit-scrollbar { width: 3px; }
+.sd-panel-body::-webkit-scrollbar-thumb { background: #e0e0e0; border-radius: 2px; }
+
+.sd-panel-footer {
+  display: flex; justify-content: flex-end; gap: 10px;
+  padding: 14px 24px; border-top: 1px solid #e8e8e8;
+  background: #f7f7f7; flex-shrink: 0;
+}
+
+/* ── Drop zone ────────────────────────────────────────────────────────────── */
+.sd-drop-zone {
+  border: 2px dashed #e8e8e8; border-radius: 10px;
+  padding: 24px; text-align: center; cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+}
+.sd-drop-zone:hover { border-color: #111111; background: #f7f7f7; }
+.sd-drop-zone.has-files { border-color: #86efac; background: #f0fdf4; }
+
+.sd-drop-icon { font-size: 28px; color: #888888; }
+.sd-drop-text { margin: 0; font-size: 13px; font-weight: 700; color: #111111; }
+.sd-drop-hint { margin: 0; font-size: 11px; color: #888888; }
+.sd-drop-filename { margin: 0; font-size: 13px; font-weight: 700; color: #111111; }
+.sd-drop-size { margin: 0; font-size: 11px; color: #888888; }
+
+/* ── Visibility toggle ────────────────────────────────────────────────────── */
+.sd-field-label {
+  font-size: 10px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.07em; color: #888888; display: block; margin-bottom: 6px;
+}
+
+.sd-visibility-row { display: flex; gap: 8px; }
+
+.sd-visibility-btn {
+  flex: 1; padding: 9px 0; border-radius: 8px;
+  border: 1.5px solid #e8e8e8; background: #f4f4f4;
+  color: #888888; font-size: 13px; font-weight: 700; cursor: pointer;
+  transition: all 0.15s;
+}
+.sd-visibility-btn:hover { border-color: #111111; color: #111111; }
+.sd-visibility-btn.active-public  { border-color: #86efac; background: #f0fdf4; color: #166634; }
+.sd-visibility-btn.active-private { border-color: #c7d2fe; background: #eef2ff; color: #4338ca; }
+
+.sd-visibility-hint { margin: 4px 0 0; font-size: 11px; color: #888888; }
+
+/* ── Gallery upload fields ────────────────────────────────────────────────── */
+.sd-gallery-upload-fields { display: grid; grid-template-columns: 1fr 160px; gap: 12px; }
+
+.sd-upload-field { display: flex; flex-direction: column; gap: 5px; }
+
+.sd-field-input {
+  padding: 9px 12px; border-radius: 8px; border: 1px solid #e8e8e8;
+  font-size: 13px; color: #111111; background: #fafafa;
+  outline: none; transition: border-color 0.15s; width: 100%; box-sizing: border-box; font-family: inherit;
+}
+.sd-field-input:focus { border-color: #111111; background: #ffffff; }
+
+/* ── Upload previews ──────────────────────────────────────────────────────── */
+.sd-upload-previews { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin-top: 8px; }
+.sd-upload-preview-thumb { width: 72px; height: 72px; object-fit: cover; border-radius: 6px; }
+
+/* ── Lightbox ─────────────────────────────────────────────────────────────── */
+.sd-lightbox {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.92);
+  z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px;
+}
+.sd-lightbox-inner { position: relative; max-width: 90vw; max-height: 90vh; text-align: center; }
+.sd-lightbox-img { max-width: 90vw; max-height: 75vh; object-fit: contain; border-radius: 8px; display: block; }
+.sd-lightbox-caption { color: #ffffff; font-size: 14px; font-weight: 700; margin: 10px 0 2px; }
+.sd-lightbox-meta { color: rgba(255,255,255,0.6); font-size: 12px; margin: 0 0 14px; }
+.sd-lightbox-actions { display: flex; justify-content: center; gap: 10px; }
+.sd-lightbox-delete-btn {
+  padding: 8px 18px; border-radius: 8px; border: none;
+  background: #dc2626; color: #ffffff; cursor: pointer; font-size: 13px; font-weight: 600;
+}
+.sd-lightbox-close-btn {
+  padding: 8px 18px; border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.3); background: transparent;
+  color: #ffffff; cursor: pointer; font-size: 13px;
+}
+
+/* ── Responsive ───────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .sd-form-grid { grid-template-columns: 1fr; }
+  .sd-resources-grid { grid-template-columns: 1fr; }
+  .sd-gallery-grid { columns: 2 140px; }
+  .sd-gallery-filters { flex-direction: column; }
+  .sd-gallery-upload-fields { grid-template-columns: 1fr; }
+  .sd-tab-header { flex-direction: column; gap: 14px; }
+  .sd-profile-hero { flex-direction: column; align-items: flex-start; }
+}
+
+/* ── Dark theme ───────────────────────────────────────────────────────────── */
+[data-theme="dark"] .sd-tab-title    { color: #f0f0f0; }
+[data-theme="dark"] .sd-tab-subtitle { color: #555555; }
+[data-theme="dark"] .sd-tab-header   { border-bottom-color: #2a2a2a; }
+[data-theme="dark"] .sd-profile-hero { background: #1e1e1e; border-color: #2a2a2a; }
+[data-theme="dark"] .sd-logo-placeholder { background: #2a2a2a; border-color: #3a3a3a; color: #555555; }
+[data-theme="dark"] .sd-logo-img { border-color: #2a2a2a; }
+[data-theme="dark"] .sd-school-name   { color: #f0f0f0; }
+[data-theme="dark"] .sd-school-slogan { color: #555555; }
+[data-theme="dark"] .sd-info-card { background: #1e1e1e; border-color: #2a2a2a; }
+[data-theme="dark"] .sd-info-value { color: #e0e0e0; }
+[data-theme="dark"] .sd-bio-preview { background: #1a1a1a; border-color: #2a2a2a; color: #cccccc; }
+[data-theme="dark"] .sd-editor-wrap { border-color: #2a2a2a; }
+[data-theme="dark"] .sd-editor-toolbar { background: #252525; border-bottom-color: #2a2a2a; }
+[data-theme="dark"] .sd-toolbar-btn { background: #2a2a2a; border-color: #3a3a3a; color: #888888; }
+[data-theme="dark"] .sd-toolbar-btn:hover { background: #333333; color: #f0f0f0; }
+[data-theme="dark"] .sd-toolbar-btn.active { background: #1e3a6e; border-color: #2563eb; color: #93c5fd; }
+[data-theme="dark"] .sd-toolbar-sep { background: #2a2a2a; }
+[data-theme="dark"] .sd-editor-content { background: #1a1a1a; color: #cccccc; }
+[data-theme="dark"] .sd-search-wrap { background: #1e1e1e; border-color: #2a2a2a; color: #555555; }
+[data-theme="dark"] .sd-search-input { color: #e0e0e0; }
+[data-theme="dark"] .sd-filter-tab { background: #1e1e1e; border-color: #2a2a2a; color: #555555; }
+[data-theme="dark"] .sd-filter-tab:hover  { border-color: #f0f0f0; color: #f0f0f0; }
+[data-theme="dark"] .sd-filter-tab.active { background: #f0f0f0; color: #111111; border-color: #f0f0f0; }
+[data-theme="dark"] .sd-loading { color: #555555; }
+[data-theme="dark"] .sd-empty h3 { color: #f0f0f0; }
+[data-theme="dark"] .sd-empty p  { color: #555555; }
+[data-theme="dark"] .sd-gallery-item { background: #252525; }
+[data-theme="dark"] .sd-gallery-page { color: #555555; }
+[data-theme="dark"] .sd-panel { background: #1a1a1a; }
+[data-theme="dark"] .sd-panel-header { background: #0a0a0a; }
+[data-theme="dark"] .sd-panel-body { background: #1a1a1a; }
+[data-theme="dark"] .sd-panel-body::-webkit-scrollbar-thumb { background: #2a2a2a; }
+[data-theme="dark"] .sd-panel-footer { background: #1e1e1e; border-top-color: #2a2a2a; }
+[data-theme="dark"] .sd-drop-zone { border-color: #2a2a2a; }
+[data-theme="dark"] .sd-drop-zone:hover { border-color: #f0f0f0; background: #252525; }
+[data-theme="dark"] .sd-drop-zone.has-files { border-color: #166634; background: #052e16; }
+[data-theme="dark"] .sd-drop-text { color: #e0e0e0; }
+[data-theme="dark"] .sd-drop-filename { color: #e0e0e0; }
+[data-theme="dark"] .sd-drop-icon { color: #555555; }
+[data-theme="dark"] .sd-field-label { color: #555555; }
+[data-theme="dark"] .sd-visibility-btn { background: #252525; border-color: #3a3a3a; color: #888888; }
+[data-theme="dark"] .sd-visibility-btn:hover { border-color: #f0f0f0; color: #f0f0f0; }
+[data-theme="dark"] .sd-visibility-hint { color: #555555; }
+[data-theme="dark"] .sd-field-input { background: #252525; border-color: #3a3a3a; color: #e0e0e0; }
+[data-theme="dark"] .sd-field-input:focus { border-color: #f0f0f0; background: #2a2a2a; }

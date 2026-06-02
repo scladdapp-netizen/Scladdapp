@@ -1,0 +1,105 @@
+/* ── Header ───────────────────────────────────────────────────────────────── */
+.tch-header { margin-bottom: 20px; }
+.tch-header h2 { margin: 0 0 4px; font-size: 22px; font-weight: 800; color: #111111; letter-spacing: -0.02em; }
+.tch-header p  { margin: 0; font-size: 13px; color: #888888; font-weight: 500; }
+
+/* ── Table cell styles ────────────────────────────────────────────────────── */
+.tch-mono  { font-family: monospace; font-size: 12px; font-weight: 600; color: #888888; }
+.tch-code  { font-family: monospace; font-size: 12px; font-weight: 700; color: #111111; background: #f4f4f4; padding: 2px 8px; border-radius: 6px; }
+.tch-name  { font-size: 13px; font-weight: 700; color: #111111; }
+.tch-email { font-size: 12px; color: #888888; font-weight: 500; }
+.tch-date  { font-size: 12px; color: #555555; font-weight: 500; }
+.tch-unassigned { font-size: 13px; color: #aaaaaa; font-style: italic; }
+
+/* ── Appointed by cell ────────────────────────────────────────────────────── */
+.tch-appointed-by   { display: flex; flex-direction: column; gap: 2px; }
+.tch-appointed-name { font-size: 13px; font-weight: 700; color: #111111; }
+.tch-appointed-role { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #888888; }
+
+/* ── Status badge ─────────────────────────────────────────────────────────── */
+.tch-badge {
+  display: inline-flex; align-items: center;
+  padding: 3px 10px; border-radius: 20px;
+  font-size: 11px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.05em;
+  white-space: nowrap; line-height: 1;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.4), 0 1px 2px rgba(0,0,0,0.05);
+}
+
+.tch-badge-active   { background: #dcfce7; color: #166534; }
+.tch-badge-inactive { background: #fecaca; color: #991b1b; }
+
+/* ── Dark theme ───────────────────────────────────────────────────────────── */
+[data-theme="dark"] .tch-header h2 { color: #f0f0f0; }
+[data-theme="dark"] .tch-header p  { color: #555555; }
+[data-theme="dark"] .tch-mono  { color: #555555; }
+[data-theme="dark"] .tch-code  { background: #252525; color: #e0e0e0; }
+[data-theme="dark"] .tch-name  { color: #e0e0e0; }
+[data-theme="dark"] .tch-email { color: #555555; }
+[data-theme="dark"] .tch-date  { color: #888888; }
+[data-theme="dark"] .tch-unassigned { color: #555555; }
+[data-theme="dark"] .tch-appointed-name { color: #e0e0e0; }
+[data-theme="dark"] .tch-appointed-role { color: #555555; }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Create Teacher Panel
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.ctp-container { display: flex; flex-direction: column; height: 100%; min-height: 0; overflow: hidden; background: #ffffff; }
+
+/* ── Header ───────────────────────────────────────────────────────────────── */
+.ctp-header { position: relative; padding: 22px 24px 20px; background: #111111; flex-shrink: 0; overflow: hidden; }
+.ctp-header::before { content: ""; position: absolute; width: 140px; height: 140px; border-radius: 50%; border: 22px solid rgba(255,255,255,0.05); top: -50px; right: -30px; pointer-events: none; }
+.ctp-header::after  { content: ""; position: absolute; width: 44px; height: 44px; border-radius: 8px; border: 1.5px solid rgba(255,255,255,0.07); bottom: -14px; right: 80px; transform: rotate(18deg); pointer-events: none; }
+.ctp-header-deco  { position: absolute; width: 70px; height: 70px; border-radius: 50%; border: 10px solid rgba(255,255,255,0.04); bottom: -22px; left: -14px; pointer-events: none; }
+.ctp-header-deco2 { position: absolute; width: 24px; height: 24px; border-radius: 4px; border: 1.5px solid rgba(255,255,255,0.06); top: 12px; left: 180px; transform: rotate(12deg); pointer-events: none; }
+.ctp-header-content { position: relative; z-index: 1; display: flex; align-items: center; gap: 14px; }
+.ctp-header-icon { width: 44px; height: 44px; border-radius: 12px; background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.18); display: flex; align-items: center; justify-content: center; color: #ffffff; flex-shrink: 0; }
+.ctp-header-text h2 { margin: 0 0 3px; font-size: 15px; font-weight: 800; color: #ffffff; letter-spacing: -0.02em; }
+.ctp-header-text p  { margin: 0; font-size: 12px; color: rgba(255,255,255,0.5); }
+
+/* ── Body ─────────────────────────────────────────────────────────────────── */
+.ctp-body { flex: 1; min-height: 0; overflow-y: auto; padding: 22px 24px; display: flex; flex-direction: column; gap: 18px; }
+.ctp-body::-webkit-scrollbar { width: 3px; }
+.ctp-body::-webkit-scrollbar-thumb { background: #e0e0e0; border-radius: 2px; }
+.ctp-loading { padding: 32px 0; text-align: center; }
+
+/* ── Field groups ─────────────────────────────────────────────────────────── */
+.ctp-field-group { display: flex; flex-direction: column; gap: 6px; }
+.ctp-hint { margin: 0; font-size: 11px; color: #888888; }
+.ctp-warn { margin: 0; font-size: 12px; color: #cc3333; font-weight: 600; }
+
+/* ── Staff preview card ───────────────────────────────────────────────────── */
+.ctp-staff-card { background: #f4f4f4; border: 1px solid #e8e8e8; border-radius: 12px; overflow: hidden; }
+
+.ctp-staff-card-header { display: flex; align-items: center; gap: 12px; padding: 14px 16px; background: #111111; }
+
+.ctp-staff-avatar { width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0; background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.2); color: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 800; text-transform: uppercase; }
+
+.ctp-staff-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.ctp-staff-name { font-size: 13px; font-weight: 800; color: #ffffff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ctp-staff-meta { font-size: 11px; color: rgba(255,255,255,0.5); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.ctp-staff-badge { flex-shrink: 0; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; background: rgba(255,255,255,0.15); color: #ffffff; padding: 3px 9px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.2); }
+
+.ctp-staff-details { padding: 14px 16px; display: flex; flex-direction: column; gap: 8px; }
+
+.ctp-detail-row { display: flex; align-items: baseline; gap: 8px; }
+.ctp-detail-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: #888888; flex-shrink: 0; min-width: 80px; }
+.ctp-detail-value { font-size: 13px; font-weight: 600; color: #111111; }
+
+/* ── Footer ───────────────────────────────────────────────────────────────── */
+.ctp-footer { display: flex; justify-content: flex-end; gap: 10px; padding: 14px 24px; border-top: 1px solid #e8e8e8; background: #f7f7f7; flex-shrink: 0; }
+
+/* ── Dark theme ───────────────────────────────────────────────────────────── */
+[data-theme="dark"] .ctp-container { background: #1a1a1a; }
+[data-theme="dark"] .ctp-header { background: #0a0a0a; }
+[data-theme="dark"] .ctp-body { background: #1a1a1a; }
+[data-theme="dark"] .ctp-body::-webkit-scrollbar-thumb { background: #2a2a2a; }
+[data-theme="dark"] .ctp-hint { color: #555555; }
+[data-theme="dark"] .ctp-staff-card { background: #1e1e1e; border-color: #2a2a2a; }
+[data-theme="dark"] .ctp-staff-card-header { background: #0a0a0a; }
+[data-theme="dark"] .ctp-staff-details { background: #1e1e1e; }
+[data-theme="dark"] .ctp-detail-label { color: #555555; }
+[data-theme="dark"] .ctp-detail-value { color: #e0e0e0; }
+[data-theme="dark"] .ctp-footer { background: #1e1e1e; border-top-color: #2a2a2a; }

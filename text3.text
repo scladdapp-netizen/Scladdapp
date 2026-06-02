@@ -1,0 +1,277 @@
+- Subscription
+    subscription_id
+    school_id
+    plan_id
+    subscription_status (active / trialing / paused / canceled / expired)
+    start_date
+    end_date
+    canceled_at
+- Plan (Pricing Plans)
+    plan_id
+    plan_name
+    plan_description
+    plan_type (free / paid / trial) 
+    billing_cycle (  monthly / quataly / yearly)
+    price_amount
+    currency
+    interval_count (e.g. every 3 months)
+    trial_period_days
+    discount_allowed (true/false)
+    discount_amount
+    features
+    is_active
+- Subscription Payment
+    payment_id
+    subscription_id
+    school_id
+    payment_provider (Stripe / Paystack / Flutterwave / PayPal)
+    provider_transaction_id
+    payment_method (card / bank / wallet)
+    amount_paid
+    currency
+    tax_amount
+    discount_amount
+    total_amount
+    billing_period_start
+    billing_period_end
+
+- school
+    school_id
+    school_name
+    motto
+    logo_url
+    website_url
+    email
+    phone_number
+    alternate_phone
+    school_code / registration_number
+    school_type (primary / secondary / tertiary)
+    ownership (private / public / government)
+    address
+    city
+    state
+    country
+    year_established
+    postal_code
+    is_active
+- Session
+    session_id
+    session_name
+    session_code
+    school_id
+    academic_year_start_date
+    academic_year_end_date
+    session_status (draft / active / completed / archived)
+- Subsession
+    term_id
+    school_id
+    session_id
+    term_name
+    term_code
+    term_start_date
+    term_end_date
+    term_status
+
+- student
+    student_id
+    enrolment_id
+    roll_number
+    first_name
+    last_name
+    middle_name
+    student_photo_url
+    gender
+    date_of_birth
+    place_of_birth
+    nationality
+    state_of_origin
+    local_government
+    religion
+    blood_group
+    genotype
+    home_address
+    city    
+    state
+    countr
+- Staff
+    staff_id
+    school_id
+    national_id_number
+    Full Name
+    email
+    phone_number
+    date_of_birth
+    gender
+    marital_status
+    nationality
+    state_of_origin
+    local_government
+    home_address
+    position (principal, librarian )
+    qualification
+    years of experience
+    employment_type (full-time / part-time / contract)
+    role
+    salary_amount
+    date_of_appointment
+    bank_name
+    bank_account_number
+    National ID
+    emergency_contact_name
+    emergency_contact_phone
+    Next of Kin
+    Next of Kin Phone
+    religion
+    staff_photo_url
+    alternate_phone
+    medical_conditions
+    blood_group
+    genotype
+    salary_grade
+    job_title
+    confirmation_date
+    employment_status (active / on_leave / suspended / terminated / retired)
+    tax_number
+    emergency_contact_relationship
+    emergency_contact_address
+    Next of Kin_relationship
+    Next of Kin_address
+    password
+    confirmPassword
+    twoFactorAuth
+- Admin
+    admin_id
+    staff_id
+    school_id
+    admin_role
+    access_scope
+    permissions (JSON / array)
+    is_active
+    assigned_by
+    assigned_at
+    revoked_at
+- teacher
+    teacher_id
+    staff_id
+    teacher_code
+    is_active
+    appointed_by
+    appointed_at
+    revoked_at
+- headmaster/Form Teacher
+    headmaster_id
+    staff_id____
+    class_id______
+    school_id
+    is_active
+    appointed_by
+- alumni
+     alumni_id
+     student_id
+     graduation_session_id
+     graduation_date
+     current_occupation
+     current_employer
+     current_position
+     contact_email
+     contact_phone
+
+- Admission
+     admission_id
+     student_id
+     admission_number
+     session_id
+     term_id
+     admission_status (pending / accepted / rejected / waitlisted / withdrawn)
+     enrollment_date
+     
+
+
+- subject
+     subject_id
+     subject_name
+     subject_code
+     class_id
+     Subject Description
+     created_by
+     created_AT
+- class
+     class_id
+     class_name
+     class_code
+     class_section
+     school_id
+     is_active
+     class_type
+     created_by (staff_id)
+     created_at
+     updated_at
+
+- Parent/Guardian
+    guardian_idz  
+    student_id
+    full_name
+    relationship_to_student
+    guardian_code
+    phone_number
+    alternate_phone_number
+    email
+    home_address
+    city
+    state
+    country
+    occupation
+    employer_name
+    work_address
+    work_phone
+    emergency_contact
+
+- SubjectTeacher
+- StudentPromotion
+
+
+- timetable
+- Attendance
+- Syllabus
+- Curriculum
+
+- score
+- Certificate
+- ReportCard
+
+- FeeBilling
+- Payment
+- income
+- expencies
+
+- Announcement
+- Notification
+- Event
+- Calendar
+
+- Resource
+- Document
+- Book
+- Material
+
+- GradingTemplate
+- FeeBillTemplate
+- ReportCardLayoutTemplate
+- TimetableTemplate
+- AnnouncementTemplate
+- ClassPromotionTemplate
+
+- BehaviorAssessment
+- Activity
+
+- Credential
+- Qualification
+- Performance
+
+########################
+Grade/Level
+Stream
+
+
+not////////////////////////////////////////////
+each item will have an activation and deactivation date

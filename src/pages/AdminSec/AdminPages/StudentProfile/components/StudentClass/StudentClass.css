@@ -1,0 +1,201 @@
+.studentClass {
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #a855f7 100%);
+  border-radius: 20px;
+  padding: 18px;
+  width: 100%;
+  margin-top: 20px;
+  color: white;
+  position: relative;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.classHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  position: relative;
+  z-index: 2;
+}
+
+.classTitle {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+  letter-spacing: 0.5px;
+}
+
+.sessionBadge {
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 25px;
+  padding: 6px 12px;
+  font-size: 11px;
+  font-weight: 600;
+  color: white;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.classMainInfo {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-bottom: 20px;
+  position: relative;
+  z-index: 2;
+}
+
+.classIconContainer {
+  flex-shrink: 0;
+}
+
+.classIcon {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(20px);
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  transition: all 0.3s ease;
+}
+
+.classDetails {
+  flex: 1;
+}
+
+.gradeName {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 700;
+  color: white;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  letter-spacing: -0.5px;
+  line-height: 1.1;
+}
+
+.performanceCard {
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(25px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 18px;
+  padding: 16px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  position: relative;
+  z-index: 2;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.performanceItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.performanceLabel {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 6px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.performanceValue {
+  font-size: 16px;
+  font-weight: 700;
+  color: white;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  line-height: 1.2;
+}
+
+/* Hover effects */
+
+.classIcon:hover {
+  transform: scale(1.08) rotate(5deg);
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.25);
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.performanceCard:hover {
+  background: rgba(255, 255, 255, 0.12);
+  transform: translateY(-2px);
+  transition: all 0.3s ease;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .studentClass {
+    padding: 16px;
+    margin-top: 16px;
+  }
+
+  .classHeader {
+    margin-bottom: 16px;
+  }
+
+  .classTitle {
+    font-size: 13px;
+  }
+
+  .sessionBadge {
+    padding: 5px 10px;
+    font-size: 10px;
+  }
+
+  .classMainInfo {
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+
+  .classIcon {
+    width: 45px;
+    height: 45px;
+    font-size: 20px;
+  }
+
+  .gradeName {
+    font-size: 20px;
+  }
+
+  .performanceCard {
+    padding: 14px;
+    gap: 14px;
+  }
+
+  .performanceValue {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .performanceCard {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .performanceItem {
+    flex-direction: row;
+    justify-content: space-between;
+    text-align: left;
+  }
+
+  .performanceLabel {
+    margin-bottom: 0;
+    text-align: left;
+  }
+
+  .performanceValue {
+    text-align: right;
+  }
+}
