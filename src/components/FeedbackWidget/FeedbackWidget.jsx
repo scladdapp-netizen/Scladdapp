@@ -112,19 +112,23 @@ const FeedbackWidget = () => {
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
-        title="Help us improve"
+        title="Help &amp; Report"
       >
         <button className="fbw_dismiss" onClick={handleDismiss} aria-label="Dismiss">
           ×
         </button>
         <div className="fbw_icon">
-          <svg width="20" height="20" viewBox="0 0 22 22" fill="none">
-            <path d="M11 3l8 4-8 4-8-4 8-4z" fill="white" opacity="0.35" stroke="white" strokeWidth="1.4" strokeLinejoin="round"/>
-            <circle cx="15" cy="15" r="4" fill="white" opacity="0.2" stroke="white" strokeWidth="1.4"/>
-            <path d="M15 13v2.2M15 16.8h.01" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
+          {/* headset / customer service */}
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path d="M12 3C7.58 3 4 6.58 4 11v1" stroke="white" strokeWidth="1.7" strokeLinecap="round"/>
+            <path d="M20 11v1" stroke="white" strokeWidth="1.7" strokeLinecap="round"/>
+            <rect x="2" y="12" width="4" height="6" rx="2" fill="white" opacity="0.9"/>
+            <rect x="18" y="12" width="4" height="6" rx="2" fill="white" opacity="0.9"/>
+            <path d="M20 17.5C20 19.43 18.43 21 16.5 21H13" stroke="white" strokeWidth="1.7" strokeLinecap="round"/>
+            <circle cx="12" cy="21" r="1.3" fill="white"/>
           </svg>
         </div>
-        <span className="fbw_label">Help us improve</span>
+        <span className="fbw_label">Help &amp; Report</span>
       </div>
 
       <FeedbackPanel

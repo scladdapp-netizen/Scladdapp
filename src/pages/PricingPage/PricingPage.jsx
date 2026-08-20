@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import PublicHeader from "../../components/PublicHeader/PublicHeader";
 import Footer from "../../components/Footer/Footer";
@@ -6,21 +6,41 @@ import { getPriceDetails } from "../../components/ProductPricing/getPriceDetails
 import useSubscription from "../../api_call/useSubscription";
 import "./PricingPage.css";
 
+const SKELETON_COUNT = 3;
+
 const PricingPage = () => {
   const [priceView, setPriceView] = useState("monthly");
   const [plans, setPlans] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [headerDark, setHeaderDark] = useState(true);
+  const cardsSectionRef = useRef(null);
+  const heroRef = useRef(null);
   const navigate = useNavigate();
   const { getPlans } = useSubscription();
 
   useEffect(() => {
-    getPlans().then((res) => { if (res.success) setPlans(res.data); });
+    getPlans().then((res) => {
+      if (res.success) setPlans(res.data);
+      setLoading(false);
+    });
+  }, []);
+
+  // Switch header to light once the hero bottom scrolls above the header
+  useEffect(() => {
+    const onScroll = () => {
+      const el = heroRef.current;
+      if (!el) return;
+      setHeaderDark(el.getBoundingClientRect().bottom > 64);
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
   return (
     <div className="pricing-pg">
-      <PublicHeader dark />
+      <PublicHeader dark={headerDark} />
 
-      <div className="pricing-pg__hero">
+      <div className="pricing-pg__hero" ref={heroRef}>
         <span className="pricing-pg__hero-corner-tr" />
         <span className="pricing-pg__hero-corner-bl" />
         <span className="pricing-pg__tag">Simple Pricing</span>
@@ -42,11 +62,29 @@ const PricingPage = () => {
         </div>
       </div>
 
-      <div className="pricing-pg__cards-section">
+      <div className="pricing-pg__cards-section" ref={cardsSectionRef}>
         <span className="pricing-pg__cards-corner-tr" />
         <span className="pricing-pg__cards-corner-bl" />
         <div className="pricing-pg__cards">
-          {plans.map((plan, i) => (
+          {loading
+            ? Array.from({ length: SKELETON_COUNT }).map((_, i) => (
+                <div key={i} className={`pricing-pg__card pricing-pg__card--skeleton${i === 1 ? " featured" : ""}`}>
+                  <span className="pricing-pg__card-corner-tr" />
+                  <span className="pricing-pg__card-corner-bl" />
+                  <div className="pricing-pg__skeleton-header">
+                    <div className="pricing-pg__skeleton-line pricing-pg__skeleton-line--sm" />
+                    <div className="pricing-pg__skeleton-line pricing-pg__skeleton-line--xs" />
+                  </div>
+                  <div className="pricing-pg__skeleton-price" />
+                  <div className="pricing-pg__skeleton-features">
+                    {Array.from({ length: 4 }).map((_, j) => (
+                      <div key={j} className="pricing-pg__skeleton-line" />
+                    ))}
+                  </div>
+                  <div className="pricing-pg__skeleton-btn" />
+                </div>
+              ))
+            : plans.map((plan, i) => (
           <div key={i} className={`pricing-pg__card${plan.featured ? " featured" : ""}`}>
             {/* corner accents */}
             <span className="pricing-pg__card-corner-tr" />

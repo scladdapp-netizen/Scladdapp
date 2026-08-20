@@ -76,6 +76,17 @@ export default function Nav() {
             )
           }
         />
+        {/* School-specific login route — shows school branding in the left panel */}
+        <Route
+          path="/school/:schoolId/login"
+          element={
+            isAuthenticated ? (
+              <Navigate to={getUserDashboardRoute()} replace />
+            ) : (
+              <LogIn />
+            )
+          }
+        />
         <Route
           path="/forgot-password"
           element={

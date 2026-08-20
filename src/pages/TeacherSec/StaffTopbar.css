@@ -62,6 +62,50 @@
   letter-spacing: -0.4px;
 }
 
+.sft_brand_divider {
+  width: 1px;
+  height: 20px;
+  background: #e5e7eb;
+  flex-shrink: 0;
+}
+
+.sft_school_brand {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+}
+
+.sft_school_logo {
+  width: 22px;
+  height: 22px;
+  border-radius: 5px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.sft_school_logo_fallback {
+  width: 22px;
+  height: 22px;
+  border-radius: 5px;
+  background: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.sft_school_name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 180px;
+}
+
 /* ── Center ── */
 .sft_center {
   flex: 1;
@@ -365,6 +409,8 @@
 @media (max-width: 768px) {
   .sft_center { display: none; }
   .sft_brand_text { display: none; }
+  .sft_brand_divider { display: none; }
+  .sft_school_name { display: none; }
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -378,6 +424,13 @@
 [data-theme="dark"] .sft_brand_text { color: #f0f0f0; }
 [data-theme="dark"] .sft_brand_icon { background: #f0f0f0; }
 [data-theme="dark"] .sft_brand_icon svg path { fill: #111111; }
+
+[data-theme="dark"] .sft_brand_divider { background: #2e2e2e; }
+[data-theme="dark"] .sft_school_name { color: #d1d5db; }
+[data-theme="dark"] .sft_school_logo_fallback {
+  background: #252525;
+  border-color: #3a3a3a;
+}
 
 [data-theme="dark"] .sft_menu_btn {
   border-color: #3a3a3a;

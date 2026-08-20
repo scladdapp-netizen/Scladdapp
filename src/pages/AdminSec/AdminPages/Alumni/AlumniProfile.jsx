@@ -29,6 +29,7 @@ const AlumniProfile = () => {
           fullName: a.student_name || "—",
           gender: a.gender || null,
           dateOfBirth: null, // not stored on alumni record
+          profileImage: a.student_photo || null,
           // graduation
           graduationYear: a.graduation_date ? new Date(a.graduation_date).getFullYear() : "—",
           graduationDate: a.graduation_date || null,

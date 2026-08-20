@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import PublicHeader from "../../components/PublicHeader/PublicHeader";
 import Footer from "../../components/Footer/Footer";
 import useContact from "../../api_call/useContact";
@@ -57,7 +57,21 @@ const ContactUs = () => {
   const [sent, setSent] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [headerDark, setHeaderDark] = useState(true);
+  const bodyRef = useRef(null);
+  const heroRef = useRef(null);
   const { sendMessage } = useContact();
+
+  useEffect(() => {
+    const onScroll = () => {
+      const el = heroRef.current;
+      if (!el) return;
+      // go light once the hero's bottom edge scrolls above the header (64px)
+      setHeaderDark(el.getBoundingClientRect().bottom > 64);
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
 
@@ -76,10 +90,10 @@ const ContactUs = () => {
 
   return (
     <div className="ct-pg">
-      <PublicHeader dark />
+      <PublicHeader dark={headerDark} />
 
       {/* Hero */}
-      <div className="ct-pg__hero">
+      <div className="ct-pg__hero" ref={heroRef}>
         <span className="ct-pg__tag">Contact Us</span>
         <h1>We're here to help</h1>
         <p>Reach out and we'll get back to you as soon as possible.</p>

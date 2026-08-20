@@ -33,17 +33,103 @@ const FEATURES = [
     img: "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=400&q=80",
     bullets: ["End-of-term results", "GPA calculation", "Printable report cards"],
   },
-  {
-    title: "School Fees",
-    img: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=400&q=80",
-    bullets: ["Online payment", "Payment history", "Receipts", "Debt tracking"],
-  },
+  // {
+  //   title: "School Fees",
+  //   img: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=400&q=80",
+  //   bullets: ["Online payment", "Payment history", "Receipts", "Debt tracking"],
+  // },
   {
     title: "Notifications",
     img: "https://images.unsplash.com/photo-1611532736597-de2d4265fba3?w=400&q=80",
     bullets: ["Announcements", "Exam alerts", "Fee reminders", "SMS / email"],
   },
 ];
+
+const TESTIMONIALS = [
+  {
+    quote: "Scladapp completely transformed how we manage student records and fees. Setup was under 30 minutes and our staff adopted it immediately.",
+    name: "Mrs. Adaeze Okonkwo",
+    role: "Principal",
+    school: "Greenfield Academy, Lagos",
+    initials: "AO",
+    color: "#6c5ce7",
+  },
+  {
+    quote: "The timetable generation alone saved us two full days of work every term. Parents love getting fee reminders directly on their phones.",
+    name: "Mr. Chidi Eze",
+    role: "Head Teacher",
+    school: "Bright Stars College, Abuja",
+    initials: "CE",
+    color: "#00cec9",
+  },
+  {
+    quote: "We switched from spreadsheets to Scladapp and never looked back. Result processing that used to take a week now takes one afternoon.",
+    name: "Mrs. Funke Adesanya",
+    role: "School Administrator",
+    school: "Heritage International School, Ibadan",
+    initials: "FA",
+    color: "#fd79a8",
+  },
+];
+
+function CtaTestimonials() {
+  const [active, setActive] = useState(0);
+  const [animating, setAnimating] = useState(false);
+  const [direction, setDirection] = useState("up");
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setDirection("up");
+      setAnimating(true);
+      setTimeout(() => {
+        setActive(i => (i + 1) % TESTIMONIALS.length);
+        setAnimating(false);
+      }, 350);
+    }, 4500);
+    return () => clearInterval(timer);
+  }, []);
+
+  const goTo = (i) => {
+    if (i === active) return;
+    setDirection(i > active ? "up" : "down");
+    setAnimating(true);
+    setTimeout(() => {
+      setActive(i);
+      setAnimating(false);
+    }, 350);
+  };
+
+  const t = TESTIMONIALS[active];
+
+  return (
+    <div className="cta-testimonials">
+      <div className="cta-testimonials__label">What schools say</div>
+      <div className={`cta-testimonials__card cta-tcard--${animating ? direction : "visible"}`}>
+        <svg className="cta-tcard__quote-icon" width="32" height="24" viewBox="0 0 32 24" fill="none">
+          <path d="M0 24V14.4C0 6.4 4.267 1.6 12.8 0l1.6 2.4C10.133 3.733 8 6.667 8 10.4V12h6.4V24H0zm17.6 0V14.4C17.6 6.4 21.867 1.6 30.4 0L32 2.4C27.733 3.733 25.6 6.667 25.6 10.4V12H32V24H17.6z" fill="rgba(255,255,255,0.08)"/>
+        </svg>
+        <p className="cta-tcard__quote">{t.quote}</p>
+        <div className="cta-tcard__author">
+          <span className="cta-tcard__avatar" style={{ background: t.color }}>{t.initials}</span>
+          <div>
+            <strong className="cta-tcard__name">{t.name}</strong>
+            <span className="cta-tcard__role">{t.role} · {t.school}</span>
+          </div>
+        </div>
+      </div>
+      <div className="cta-testimonials__dots">
+        {TESTIMONIALS.map((_, i) => (
+          <button
+            key={i}
+            className={`cta-tdot${i === active ? " cta-tdot--active" : ""}`}
+            onClick={() => goTo(i)}
+            aria-label={`Testimonial ${i + 1}`}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
 
 const Landing = () => {
   const navigate = useNavigate();
@@ -278,17 +364,12 @@ const Landing = () => {
       <div className="stack-scroll">
 
       {/* Hero */}
-      <section className="landing__hero stack-section stack-section--hero">
+      <section className="landing__hero ">
 
-        {/* Corner accents */}
-        <span className="lh-corner lh-corner--tl" />
-        <span className="lh-corner lh-corner--tr" />
-        <span className="lh-corner lh-corner--bl" />
-        <span className="lh-corner lh-corner--br" />
-
-        <div className="landing__hero-left">
+        {/* TOP — left-aligned text block */}
+        <div className="landing__hero-text">
           <span className="landing__hero-tag">All-In-One School Platform</span>
-          <h1>The Smarter Way to<br />Experience Education</h1>
+          <h1>The Smarter Way to <br /> Experience Education</h1>
           <div className="landing__hero-typewriter">
             <span>{displayed}</span>
             <span className="landing__hero-cursor">|</span>
@@ -317,14 +398,30 @@ const Landing = () => {
               <span className="orbit-dots"><span></span><span></span><span></span><span></span></span>
               <span className="corners"><span></span><span></span><span></span><span></span></span>
             </button>
+  
           </div>
         </div>
 
-        <div className="landing__hero-right">
-          <img
-            src="https://images.unsplash.com/photo-1580582932707-520aed937b7b?w=800&q=80"
-            alt="School management"
-          />
+        {/* BOTTOM — Dashboard screenshot image */}
+        <div className="landing__hero-img-wrap">
+          {/* Browser chrome bar on top of the image */}
+          <div className="lh-browser-bar">
+            <span className="lh-browser-dots">
+              <span></span><span></span><span></span>
+            </span>
+            <span className="lh-browser-url">app.scladapp.com/dashboard</span>
+          </div>
+          <div className="lh-img-frame">
+            <img
+              src="/dashboard-preview.png"
+              alt="Scladapp dashboard preview"
+              className="lh-dash-img"
+              onError={(e) => {
+                e.currentTarget.style.display = "none";
+                e.currentTarget.parentElement.classList.add("lh-img-frame--placeholder");
+              }}
+            />
+          </div>
         </div>
       </section>
 
@@ -370,18 +467,14 @@ const Landing = () => {
                       </div>
                     </div>
 
-                    {/* SVG curved connector + dot */}
+                    {/* SVG curved connector + dot — all same direction (top to bottom) */}
                     <svg
                       className="hscroll-svg-connector"
                       width="40" height="80" viewBox="0 0 40 80"
                       fill="none" xmlns="http://www.w3.org/2000/svg"
                     >
-                      {isUp ? (
-                        <path d="M20 0 C20 40, 20 40, 20 72" stroke="rgba(255,255,255,0.5)" strokeWidth="1.5" strokeDasharray="4 3" className="hscroll-svg-path" />
-                      ) : (
-                        <path d="M20 80 C20 40, 20 40, 20 8" stroke="rgba(255,255,255,0.5)" strokeWidth="1.5" strokeDasharray="4 3" className="hscroll-svg-path" />
-                      )}
-                      <circle cx="20" cy={isUp ? 76 : 4} r="5" fill="#fff" stroke="#000" strokeWidth="2" className="hscroll-svg-dot" />
+                      <path d="M20 0 C20 40, 20 40, 20 72" stroke="rgba(255,255,255,0.5)" strokeWidth="1.5" strokeDasharray="4 3" className="hscroll-svg-path" />
+                      <circle cx="20" cy="76" r="5" fill="#fff" stroke="#000" strokeWidth="2" className="hscroll-svg-dot" />
                     </svg>
                   </div>
                 );
@@ -520,6 +613,41 @@ const Landing = () => {
 
       </div>{/* end stack-scroll */}
 
+      {/* Intro Video */}
+      <div className="intro-video-section">
+        <div className="ivs-noise" />
+        <div className="ivs-grid" />
+
+        <div className="intro-video-inner">
+          {/* Left — text */}
+          <div className="intro-video-text">
+            <span className="ivs-eyebrow">See It In Action</span>
+            <h2 className="ivs-heading">
+              Watch how<br />Scladapp<br />works
+            </h2>
+            <p className="ivs-sub">
+              A 2-minute walkthrough of the platform — from onboarding to daily use, for admins, teachers, and students.
+            </p>
+            <div className="ivs-divider" />
+            <span className="ivs-runtime">2 min watch</span>
+          </div>
+
+          {/* Right — video */}
+          <div className="intro-video-frame-wrap">
+            <div className="ivs-glow" />
+            <div className="intro-video-frame">
+              <iframe
+                src="https://www.youtube.com/embed/dQw4w9WgXcQ"
+                title="Scladapp Introduction Video"
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Pricing — horizontal scroll (left-to-right) */}
       <div
         className="pricing-hscroll-wrapper"
@@ -589,64 +717,65 @@ const Landing = () => {
         </div>
       </div>
 
-      {/* Final CTA — normal scroll */}
-      <section className="normal-section normal-section--cta">
-        <span className="normal-section-deco-circle" />
-        <span className="normal-section-deco-box" />
-        <div className="normal-section-inner">
-          <div className="cta-section-text">
-            <span className="landing-section-tag">Get Started</span>
-            <h2>Ready to simplify your school?</h2>
-            <p>Join hundreds of schools already running smarter with Scladapp.</p>
-            <div className="cta-final-actions">
-              <button className="cta-final-btn cta-final-btn--dark" onClick={() => navigate("/setup/1")}>Start for Free</button>
-              <button className="cta-final-btn cta-final-btn--outline" onClick={() => navigate("/contact")}>Talk to Us</button>
+      {/* Final CTA */}
+      <section className="cta-section">
+        <div className="cta-section__bg-grid" />
+        <div className="cta-section__layout">
+
+          {/* Left — CTA text */}
+          <div className="cta-section__inner">
+            <span className="landing-section-tag cta-section__tag">Get Started</span>
+            <h2 className="cta-section__heading">
+              Ready to simplify<br />your school?
+            </h2>
+            <p className="cta-section__sub">
+              Join hundreds of schools already running smarter with Scladapp.
+              No credit card required. Setup in under 30 minutes.
+            </p>
+            <div className="cta-section__actions">
+              <button className="cta-section__btn cta-section__btn--primary" onClick={() => navigate("/setup/1")}>
+                Start for Free
+              </button>
+              <button className="cta-section__btn cta-section__btn--ghost" onClick={() => navigate("/contact")}>
+                Talk to Us
+              </button>
             </div>
+          
           </div>
-          <div className="cta-section-img">
-            <span className="section-img-corners"><span/><span/><span/><span/></span>
-            <span className="section-img-deco-circle" />
-            <span className="section-img-deco-box" />
-            <img
-              src="https://images.unsplash.com/photo-1509062522246-3755977927d7?w=700&q=80"
-              alt="Students using school platform"
-            />
-          </div>
+
+          {/* Right — Testimonial slider */}
+          <CtaTestimonials />
+
         </div>
       </section>
 
-      {/* FAQ — normal scroll */}
-      <section className="normal-section">
-        <span className="normal-section-deco-circle" />
-        <span className="normal-section-deco-box" />
-        <div className="normal-section-inner">
-          <div className="faq-section-img">
-            <span className="section-img-corners"><span/><span/><span/><span/></span>
-            <span className="section-img-deco-circle" />
-            <span className="section-img-deco-box" />
-            <img
-              src="https://images.unsplash.com/photo-1606761568499-6d2451b23c66?w=700&q=80"
-              alt="School timetable and management"
-            />
-          </div>
-          <div className="landing-faq">
+      {/* FAQ */}
+      <section className="faq-section">
+        <div className="faq-section__inner">
+          <div className="faq-section__head">
             <span className="landing-section-tag">FAQ</span>
             <h2>Frequently asked questions</h2>
-            <div className="faq-list">
-              {[
-                { q: "How long does setup take?", a: "Most schools are fully set up within 30 minutes using our guided wizard." },
-                { q: "Can students access it on mobile?", a: "Yes — students and staff have dedicated mobile apps available on Google Play." },
-                { q: "Is my school's data secure?", a: "All data is encrypted in transit and at rest. We follow industry-standard security practices." },
-                { q: "Can I import existing student data?", a: "Yes, you can bulk import students via CSV from any spreadsheet." },
-                { q: "What happens when I exceed my plan limit?", a: "We'll notify you before you hit the limit and offer a seamless upgrade path." },
-                { q: "Do you offer a free trial?", a: "The Starter plan is free forever. Paid plans come with a 14-day free trial." },
-              ].map((item, i) => (
-                <details key={i} className="faq-item">
-                  <summary className="faq-question">{item.q}<span className="faq-icon">+</span></summary>
-                  <p className="faq-answer">{item.a}</p>
-                </details>
-              ))}
-            </div>
+            <p>Everything you need to know before getting started.</p>
+          </div>
+          <div className="faq-grid">
+            {[
+              { q: "How long does setup take?", a: "Most schools are fully set up within 30 minutes using our guided wizard." },
+              { q: "Can students access it on mobile?", a: "Yes — students and staff have dedicated mobile apps available on Google Play." },
+              { q: "Is my school's data secure?", a: "All data is encrypted in transit and at rest. We follow industry-standard security practices." },
+              { q: "Can I import existing student data?", a: "Yes, you can bulk import students via CSV from any spreadsheet." },
+              { q: "What happens when I exceed my plan limit?", a: "We'll notify you before you hit the limit and offer a seamless upgrade path." },
+              { q: "Do you offer a free trial?", a: "The Starter plan is free forever. Paid plans come with a 14-day free trial." },
+              { q: "Can multiple admins use the same account?", a: "Yes, you can invite multiple staff members with different roles and permissions." },
+              { q: "What payment methods are supported?", a: "We support bank transfers, card payments, and major Nigerian payment gateways." },
+            ].map((item, i) => (
+              <details key={i} className="faq-item">
+                <summary className="faq-question">
+                  <span>{item.q}</span>
+                  <span className="faq-icon">+</span>
+                </summary>
+                <p className="faq-answer">{item.a}</p>
+              </details>
+            ))}
           </div>
         </div>
       </section>

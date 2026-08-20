@@ -24,17 +24,6 @@ const SubAdminGuard = ({ children, permission, blockAll = false }) => {
   const { user } = useAuth();
   const admin = user?.admin;
 
-  // blockAll — nobody gets through, regardless of role
-  if (blockAll) {
-    return (
-      <Blocked
-        adminRole={admin?.admin_role || "Admin"}
-        permission={permission}
-        blocked
-      />
-    );
-  }
-
   // No admin object at all — not an admin, block access
   if (!admin) {
     return <Blocked adminRole="Staff" permission={permission} />;
@@ -44,8 +33,19 @@ const SubAdminGuard = ({ children, permission, blockAll = false }) => {
     admin.admin_role === "Super Admin" ||
     (Array.isArray(admin.permissions) && admin.permissions.includes("ALL"));
 
-  // Super admin — always allow
+  // Super admin — always allow, even when blockAll is set
   if (isSuperAdmin) return children;
+
+  // blockAll — blocks sub-admins entirely, regardless of permissions
+  if (blockAll) {
+    return (
+      <Blocked
+        adminRole={admin?.admin_role || "Admin"}
+        permission={permission}
+        blocked
+      />
+    );
+  }
 
   const perms = admin.permissions;
 

@@ -252,11 +252,6 @@ const AtendanceStudentInfo = () => {
     );
   }
 
-  const total = attendanceSummary.total || 1; // Avoid division by zero
-  const presentPercentage = attendanceSummary.total > 0 ? (attendanceSummary.present / total) * 100 : 0;
-  const absentPercentage = attendanceSummary.total > 0 ? (attendanceSummary.absent / total) * 100 : 0;
-  const excusedPercentage = attendanceSummary.total > 0 ? (attendanceSummary.excused / total) * 100 : 0;
-
   // Generate fallback dates from attendance records if subsession info is not available
   const getCalendarDates = () => {
     if (subsessionInfo) {
@@ -332,6 +327,11 @@ const AtendanceStudentInfo = () => {
     return count;
   };
   const totalDays = computeTotalDays();
+
+  // Use totalDays (weekday count) as the denominator for percentages
+  const presentPercentage = totalDays > 0 ? (attendanceSummary.present / totalDays) * 100 : 0;
+  const absentPercentage  = totalDays > 0 ? (attendanceSummary.absent  / totalDays) * 100 : 0;
+  const excusedPercentage = totalDays > 0 ? (attendanceSummary.excused / totalDays) * 100 : 0;
 
   return (
     <InnerTabCon>

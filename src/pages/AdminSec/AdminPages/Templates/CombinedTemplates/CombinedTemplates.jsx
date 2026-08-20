@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import Button from "../../../../../components/Button/Button";
 import SlideInMenu from "../../../../../components/SlideInMenu/SlideInMenu";
 import FormInput from "../../../../../components/FormInput";
@@ -9,26 +9,27 @@ import ReportCardPreview from "../../../../../components/ReportCardPreview/Repor
 import { useNotification } from "../../../../../context/NotificationProvider/NotificationProvider";
 import { useCombinedTemplate } from "../../../../../api_call/useCombinedTemplate";
 import { useAuth } from "../../../../../context/AuthContext/AuthContext";
+import { generateDefaultReportHtml } from "../../../../../utils/generateDefaultReportHtml";
+import { hydrateReportHtml } from "../../../../../utils/hydrateReportHtml";
 import {
-  FaPlus, FaEdit, FaCopy, FaTrash, FaBan, FaCheckCircle, FaExclamationTriangle, FaEye, FaEyeSlash,
+  FaPlus, FaEdit, FaCopy, FaTrash, FaBan, FaCheckCircle, FaExclamationTriangle,
 } from "react-icons/fa";
 
 const EMPTY_FORM = {
   name: "",
   description: "",
-  // grading
   gradingFields: [{ fieldName: "", weight: 0, maxScore: "" }],
   gradingScheme: [{ gradeLetter: "", minRange: "", maxRange: "", gradePoint: "", passFail: "Pass" }],
   totalWeight: 0,
   behavioralTraits: [],
-  styling: { theme_id: "", theme_name: "", primaryColor: "#3b82f6" },
 };
 
 const CombinedTemplates = () => {
   const { schoolId } = useParams();
+  const navigate = useNavigate();
   const { addNotification } = useNotification();
   const { user } = useAuth();
-  const { createTemplate, getTemplatesBySchool, updateTemplate, deleteTemplate, duplicateTemplate, updateTemplateStatus, checkIsAssigned, getReportCardThemes } = useCombinedTemplate();
+  const { createTemplate, getTemplatesBySchool, updateTemplate, deleteTemplate, duplicateTemplate, updateTemplateStatus, checkIsAssigned } = useCombinedTemplate();
 
   // Permission helpers
   const admin = user?.admin;
@@ -47,11 +48,7 @@ const CombinedTemplates = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState(EMPTY_FORM);
   const [traitInput, setTraitInput] = useState("");
-  const [showEditPreview, setShowEditPreview] = useState(false);
-  const [showDetailPreview, setShowDetailPreview] = useState(false);
   const [templateAssigned, setTemplateAssigned] = useState(false);
-  const [themes, setThemes] = useState([]);
-  const [themesLoading, setThemesLoading] = useState(false);
 
   useEffect(() => { fetchTemplates(); }, [schoolId]);
 
@@ -93,16 +90,12 @@ const CombinedTemplates = () => {
   const overlaps = checkOverlaps();
 
   const set = (field) => (value) => setFormData((p) => ({ ...p, [field]: value }));
-  const setStyling = (field) => (value) => setFormData((p) => ({ ...p, styling: { ...p.styling, [field]: value } }));
 
   const setGradingField = (i, field, value) =>
     setFormData((p) => ({ ...p, gradingFields: p.gradingFields.map((f, idx) => idx === i ? { ...f, [field]: value } : f) }));
 
   const setScheme = (i, field, value) =>
     setFormData((p) => ({ ...p, gradingScheme: p.gradingScheme.map((s, idx) => idx === i ? { ...s, [field]: value } : s) }));
-
-  const toggleSection = (s) =>
-    setFormData((p) => ({ ...p, sections: p.sections.includes(s) ? p.sections.filter((x) => x !== s) : [...p.sections, s] }));
 
   const toggleTrait = (t) =>
     setFormData((p) => ({ ...p, behavioralTraits: p.behavioralTraits.includes(t) ? p.behavioralTraits.filter((x) => x !== t) : [...p.behavioralTraits, t] }));
@@ -115,13 +108,6 @@ const CombinedTemplates = () => {
     setTraitInput("");
   };
 
-  const fetchThemes = async () => {
-    setThemesLoading(true);
-    const result = await getReportCardThemes(schoolId);
-    setThemes(result.success ? result.data : []);
-    setThemesLoading(false);
-  };
-
   const openCreate = () => {
     if (!canCreate) {
       addNotification("You do not have permission to create templates.", "error");
@@ -130,10 +116,8 @@ const CombinedTemplates = () => {
     setSelectedTemplate(null);
     setFormData(EMPTY_FORM);
     setTraitInput("");
-    setShowEditPreview(false);
     setTemplateAssigned(false);
     setIsCreateMenuOpen(true);
-    fetchThemes();
   };
 
   const openEdit = async (template) => {
@@ -151,29 +135,12 @@ const CombinedTemplates = () => {
       gradingScheme: gs.map((s) => ({ gradeLetter: s.grade_letter, minRange: s.min_range, maxRange: s.max_range, gradePoint: s.grade_point, passFail: s.pass_fail || "Pass" })),
       totalWeight: gf.reduce((sum, f) => sum + f.weight, 0),
       behavioralTraits: template.behavioral_traits || [],
-      styling: (() => {
-        const s = template.styling || EMPTY_FORM.styling;
-        // migrate old string-based theme to new { theme_id, theme_name } shape
-        if (s.theme_id !== undefined) return s;
-        return { theme_id: "", theme_name: s.theme || "", primaryColor: s.primaryColor || "#3b82f6" };
-      })(),
     });
-    setShowEditPreview(false);
     setIsDetailMenuOpen(false);
-    // Check if assigned
     const result = await checkIsAssigned(template.template_id);
     setTemplateAssigned(result.assigned);
     setTraitInput("");
     setIsCreateMenuOpen(true);
-    fetchThemes();
-  };
-
-  // Convert live formData → preview-compatible shape
-  const formAsTemplate = {
-    grading_fields: formData.gradingFields.map((f) => ({ field_name: f.fieldName, weight: f.weight, max_score: f.maxScore })),
-    grading_scheme: formData.gradingScheme.map((s) => ({ grade_letter: s.gradeLetter, min_range: s.minRange, max_range: s.maxRange, grade_point: s.gradePoint, pass_fail: s.passFail })),
-    behavioral_traits: formData.behavioralTraits,
-    styling: formData.styling,
   };
 
   const handleSubmit = async () => {
@@ -184,16 +151,24 @@ const CombinedTemplates = () => {
 
     setIsSubmitting(true);
     try {
+      const gradingFields = formData.gradingFields.map((f) => ({ field_name: f.fieldName, weight: f.weight, max_score: f.maxScore || 0 }));
+      const gradingScheme = formData.gradingScheme.map((s) => ({ grade_letter: s.gradeLetter, min_range: s.minRange, max_range: s.maxRange, grade_point: s.gradePoint, pass_fail: s.passFail }));
+
       const payload = templateAssigned
-        ? { styling: formData.styling, modified_by: user?.admin?.admin_id || user?.user_id }
+        ? { modified_by: user?.admin?.admin_id || user?.user_id }
         : {
             school_id: schoolId,
             name: formData.name,
             description: formData.description,
-            grading_fields: formData.gradingFields.map((f) => ({ field_name: f.fieldName, weight: f.weight, max_score: f.maxScore || 0 })),
-            grading_scheme: formData.gradingScheme.map((s) => ({ grade_letter: s.gradeLetter, min_range: s.minRange, max_range: s.maxRange, grade_point: s.gradePoint, pass_fail: s.passFail })),
+            grading_fields: gradingFields,
+            grading_scheme: gradingScheme,
             behavioral_traits: formData.behavioralTraits,
-            styling: formData.styling,
+            html_template: generateDefaultReportHtml({
+              grading_fields: gradingFields,
+              grading_scheme: gradingScheme,
+              behavioral_traits: formData.behavioralTraits,
+              school: user?.school || {},
+            }),
             created_by: user?.admin?.admin_id || user?.user_id,
             modified_by: user?.admin?.admin_id || user?.user_id,
           };
@@ -203,9 +178,17 @@ const CombinedTemplates = () => {
         : await createTemplate(payload);
 
       if (result.success) {
-        addNotification(selectedTemplate ? "Template updated" : "Template created", "success");
-        setIsCreateMenuOpen(false);
-        fetchTemplates();
+        if (selectedTemplate) {
+          // Update — just close and refresh
+          addNotification("Template updated", "success");
+          setIsCreateMenuOpen(false);
+          fetchTemplates();
+        } else {
+          // Create — navigate straight to edit page
+          addNotification("Template created", "success");
+          setIsCreateMenuOpen(false);
+          navigate(`/admin/${schoolId}/templates/edit/${result.data?.template_id || result.template_id}`);
+        }
       } else {
         addNotification(result.message || "Failed to save template", "error");
       }
@@ -279,7 +262,7 @@ const CombinedTemplates = () => {
           ) : (
             <div className="template-grid">
               {templates.map((t) => (
-                <div key={t.template_id} className="template-card" onClick={async () => { setSelectedTemplate(t); setShowDetailPreview(false); const r = await checkIsAssigned(t.template_id); setTemplateAssigned(r.assigned); setIsDetailMenuOpen(true); }} style={{ cursor: "pointer" }}>
+                <div key={t.template_id} className="template-card" onClick={async () => { setSelectedTemplate(t); const r = await checkIsAssigned(t.template_id); setTemplateAssigned(r.assigned); setIsDetailMenuOpen(true); }} style={{ cursor: "pointer" }}>
                   <div className="template-card-header">
                     <h4 className="template-card-title">{t.name}</h4>
                     <span className={`template-card-status ${t.status}`}>{t.status}</span>
@@ -370,25 +353,36 @@ const CombinedTemplates = () => {
                     </Button>
                   </div>
                   <div style={{ overflowX: "auto", width: "100%" }}>
-                  <div className="grading-scheme-table">
-                    <div className="scheme-table-header">
-                      <span>Grade</span><span>Min %</span><span>Max %</span><span>Points</span><span>Pass/Fail</span><span>Actions</span>
-                    </div>
-                    {formData.gradingScheme.map((s, i) => (
-                      <div key={i} className="grading-scheme-row">
-                        <FormInput type="text" value={s.gradeLetter} onChange={(v) => setScheme(i, "gradeLetter", v)} placeholder="A" />
-                        <FormInput type="number" value={s.minRange} onChange={(v) => setScheme(i, "minRange", v)} placeholder="80" />
-                        <FormInput type="number" value={s.maxRange} onChange={(v) => setScheme(i, "maxRange", v)} placeholder="100" />
-                        <FormInput type="number" value={s.gradePoint} onChange={(v) => setScheme(i, "gradePoint", v)} placeholder="4.0" />
-                        <FormInput type="select" value={s.passFail} onChange={(v) => setScheme(i, "passFail", v)} options={[{ value: "Pass", label: "Pass" }, { value: "Fail", label: "Fail" }]} />
-                        {formData.gradingScheme.length > 1 && (
-                          <button className="remove-scheme-btn" onClick={() => setFormData((p) => ({ ...p, gradingScheme: p.gradingScheme.filter((_, idx) => idx !== i) }))}>
-                            <FaTrash size={12} />
-                          </button>
-                        )}
-                      </div>
-                    ))}
-                  </div>
+                    <table className="scheme-edit-table">
+                      <thead>
+                        <tr>
+                          <th>Grade</th>
+                          <th>Min %</th>
+                          <th>Max %</th>
+                          <th>Points</th>
+                          <th>Pass/Fail</th>
+                          <th></th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {formData.gradingScheme.map((s, i) => (
+                          <tr key={i}>
+                            <td><FormInput type="text" value={s.gradeLetter} onChange={(v) => setScheme(i, "gradeLetter", v)} placeholder="A" /></td>
+                            <td><FormInput type="number" value={s.minRange} onChange={(v) => setScheme(i, "minRange", v)} placeholder="80" /></td>
+                            <td><FormInput type="number" value={s.maxRange} onChange={(v) => setScheme(i, "maxRange", v)} placeholder="100" /></td>
+                            <td><FormInput type="number" value={s.gradePoint} onChange={(v) => setScheme(i, "gradePoint", v)} placeholder="4.0" /></td>
+                            <td><FormInput type="select" value={s.passFail} onChange={(v) => setScheme(i, "passFail", v)} options={[{ value: "Pass", label: "Pass" }, { value: "Fail", label: "Fail" }]} /></td>
+                            <td>
+                              {formData.gradingScheme.length > 1 && (
+                                <button className="remove-scheme-btn" onClick={() => setFormData((p) => ({ ...p, gradingScheme: p.gradingScheme.filter((_, idx) => idx !== i) }))}>
+                                  <FaTrash size={12} />
+                                </button>
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
                   {overlaps.length > 0 && <div className="range-warning"><FaExclamationTriangle size={14} /><span>{overlaps.join(", ")}</span></div>}
                 </div>
@@ -424,56 +418,15 @@ const CombinedTemplates = () => {
               </div>
               </div>
 
-              {/* ── Report Card Layout (Theme only — always editable) ── */}
-              {/* <div className="template-sections-section" style={{ marginTop: "24px" }}>
-                <h3>Report Card Layout</h3>
-                <div className="form-row">
-                  {themesLoading ? (
-                    <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 4 }}>
-                      <label style={{ fontSize: 12, color: "#6b7280", fontWeight: 600 }}>Theme</label>
-                      <div style={{ display: "flex", alignItems: "center", gap: 8, height: 38, padding: "0 12px", border: "1px solid #e5e7eb", borderRadius: 6, background: "#f9fafb", fontSize: 13, color: "#9ca3af" }}>
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ animation: "spin 1s linear infinite" }}><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
-                        Loading themes...
-                      </div>
-                    </div>
-                  ) : (
-                    <FormInput
-                      label="Theme"
-                      type="select"
-                      value={formData.styling.theme_id}
-                      onChange={(val) => {
-                        const found = themes.find((t) => t.theme_id === val);
-                        setStyling("theme_id")(val);
-                        setStyling("theme_name")(found ? found.name : "");
-                      }}
-                      options={[
-                        { value: "", label: "— Select Theme —" },
-                        ...themes.map((t) => ({ value: t.theme_id, label: t.name })),
-                      ]}
-                    />
-                  )}
-                  <FormInput label="Primary Color" type="color" value={formData.styling.primaryColor} onChange={setStyling("primaryColor")} />
-                </div>
-              </div> */}
+              {/* ── Report Card Layout (Theme only — always editable) — removed ── */}
             </div>
 
             <div className="create-template-footer">
               <Button variant="secondary" onClick={() => setIsCreateMenuOpen(false)} disabled={isSubmitting}>Cancel</Button>
-              {/* <Button variant="secondary" onClick={() => setShowEditPreview((p) => !p)}>
-                {showEditPreview ? <><FaEyeSlash size={13} style={{ marginRight: 6 }} />Hide Preview</> : <><FaEye size={13} style={{ marginRight: 6 }} />Preview</>}
-              </Button> */}
               <Button onClick={handleSubmit} disabled={(!templateAssigned && (!formData.name || !isWeightValid || overlaps.length > 0)) || isSubmitting}>
                 {isSubmitting ? (selectedTemplate ? "Updating..." : "Creating...") : (selectedTemplate ? "Update Template" : "Create Template")}
               </Button>
             </div>
-
-            {/* Live preview below footer */}
-            {showEditPreview && (
-              <div style={{ marginTop: "24px", borderTop: "1px solid #e5e7eb", paddingTop: "20px" }}>
-                <h3 style={{ marginBottom: "12px", fontSize: "14px", color: "#374151" }}>Report Card Preview</h3>
-                <ReportCardPreview template={formAsTemplate} />
-              </div>
-            )}
           </div>
         </SlideInMenu>
 
@@ -528,21 +481,34 @@ const CombinedTemplates = () => {
                   {/* Grading Scheme */}
                   <div className="detail-section">
                     <h3>Grading Scheme ({gs.length} grades)</h3>
-                    <div className="grading-scheme-table">
-                      <div className="scheme-table-header"><span>Grade</span><span>Range</span><span>Points</span><span>Pass/Fail</span></div>
-                      {gs.map((s, i) => (
-                        <div key={i} className="scheme-table-row">
-                          <span>{s.grade_letter}</span>
-                          <span>{s.min_range}% - {s.max_range}%</span>
-                          <span>{s.grade_point}</span>
-                          <span className={`pass-fail ${(s.pass_fail || "").toLowerCase()}`}>{s.pass_fail}</span>
-                        </div>
-                      ))}
+                    <div style={{ overflowX: "auto" }}>
+                      <table className="scheme-view-table">
+                        <thead>
+                          <tr>
+                            <th>Grade</th>
+                            <th>Min %</th>
+                            <th>Max %</th>
+                            <th>Points</th>
+                            <th>Pass/Fail</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {gs.map((s, i) => (
+                            <tr key={i}>
+                              <td>{s.grade_letter}</td>
+                              <td>{s.min_range}%</td>
+                              <td>{s.max_range}%</td>
+                              <td>{s.grade_point}</td>
+                              <td><span className={`pass-fail ${(s.pass_fail || "").toLowerCase()}`}>{s.pass_fail}</span></td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
                     </div>
                   </div>
 
                   {/* Report Card Info */}
-                  <div className="detail-section">
+                  {/* <div className="detail-section">
                     <h3>Report Card Settings</h3>
                     <div className="config-grid">
                       <div className="config-item"><strong>GPA:</strong> <span>{selectedTemplate.include_gpa ? "Yes" : "No"}</span></div>
@@ -552,7 +518,7 @@ const CombinedTemplates = () => {
                       <div className="config-item"><strong>Level:</strong> <span>{selectedTemplate.level}</span></div>
                       <div className="config-item"><strong>Layout:</strong> <span>{selectedTemplate.layout}</span></div>
                     </div>
-                  </div>
+                  </div> */}
 
 
                   {/* Behavioral Traits */}
@@ -572,19 +538,26 @@ const CombinedTemplates = () => {
 
                   {/* Preview toggle */}
                   {/* <div className="detail-section">
-                    <button
-                      onClick={() => setShowDetailPreview((p) => !p)}
-                      style={{ display: "flex", alignItems: "center", gap: 6, background: "none", border: "1px solid #d1d5db", borderRadius: 6, padding: "8px 14px", cursor: "pointer", fontSize: 13, color: "#374151" }}
-                    >
-                      {showDetailPreview ? <FaEyeSlash size={13} /> : <FaEye size={13} />}
-                      {showDetailPreview ? "Hide Preview" : "Show Report Card Preview"}
-                    </button>
-                    {showDetailPreview && (
-                      <div style={{ marginTop: 16 }}>
-                        <ReportCardPreview template={selectedTemplate} />
-                      </div>
-                    )}
+                    ...
                   </div> */}
+
+                  {/* Report Card Preview — always visible, renders saved html_template */}
+                  <div className="detail-section" style={{ marginTop: 4 }}>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+                      <h3 style={{ margin: 0 }}>Report Card Preview</h3>
+                      <Button
+                        variant="secondary"
+                        onClick={() => navigate(`/admin/${schoolId}/templates/edit/${selectedTemplate.template_id}`)}
+                      >
+                        <FaEdit size={13} style={{ marginRight: 6 }} />
+                        Edit Template
+                      </Button>
+                    </div>
+                    {selectedTemplate.html_template
+                      ? <div dangerouslySetInnerHTML={{ __html: hydrateReportHtml(selectedTemplate.html_template, selectedTemplate) }} />
+                      : <ReportCardPreview template={selectedTemplate} school={user?.school} />
+                    }
+                  </div>
                 </div>
 
                 <div className="template-detail-actions">

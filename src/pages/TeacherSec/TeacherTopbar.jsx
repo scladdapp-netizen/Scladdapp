@@ -5,6 +5,7 @@ import { useAuth } from "../../context/AuthContext/AuthContext";
 import { useNavigate, useParams } from "react-router-dom";
 import { useTheme } from "../../context/ThemeContext/ThemeContext";
 import { useSession } from "../../api_call/useSession";
+import useNotification from "../../api_call/useNotification";
 import "./TeacherTopbar.css";
 
 const TeacherTopbar = ({ isMobileMenuOpen, onMenuClick }) => {
@@ -18,10 +19,14 @@ const TeacherTopbar = ({ isMobileMenuOpen, onMenuClick }) => {
   const [activeSession, setActiveSession] = useState(null);
   const [avatarBroken, setAvatarBroken] = useState(false);
   const [schoolLogoBroken, setSchoolLogoBroken] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [bellShake, setBellShake]     = useState(false);
   const profileRef = useRef(null);
 
   const staff  = user?.staff;
   const school = user?.school;
+
+  const { getUserUnreadCount } = useNotification();
 
   const displayName = staff?.full_name || staff?.email || "Staff";
   const staffPhotoUrl =
@@ -65,6 +70,25 @@ const TeacherTopbar = ({ isMobileMenuOpen, onMenuClick }) => {
     });
   }, [schoolId]);
 
+  // Poll unread notification count every 2 min
+  useEffect(() => {
+    if (!staff?.staff_id) return;
+    const poll = async () => {
+      const res = await getUserUnreadCount(staff.staff_id);
+      if (res.success && res.count !== unreadCount) {
+        setUnreadCount(res.count);
+        if (res.count > 0) {
+          setBellShake(true);
+          setTimeout(() => setBellShake(false), 820);
+        }
+      }
+    };
+    poll();
+    const id = setInterval(poll, 120000);
+    return () => clearInterval(id);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [staff?.staff_id]);
+
   const handleLogout = () => { logout(); navigate("/"); };
   const handleMenuClick = (e) => { e.stopPropagation(); onMenuClick(); };
 
@@ -84,6 +108,26 @@ const TeacherTopbar = ({ isMobileMenuOpen, onMenuClick }) => {
             </svg>
           </div>
           <span className="st_brand_text">Scladapp</span>
+        </div>
+
+        {/* Divider */}
+        <div className="st_brand_divider" />
+
+        {/* School identity */}
+        <div className="st_school_brand">
+          {schoolLogoUrl && !schoolLogoBroken ? (
+            <img
+              src={schoolLogoUrl}
+              alt={school?.school_name}
+              className="st_school_logo"
+              onError={() => setSchoolLogoBroken(true)}
+            />
+          ) : (
+            <div className="st_school_logo_fallback">
+              <FaSchool size={12} color="#6b7280" />
+            </div>
+          )}
+          <span className="st_school_name">{school?.school_name || "School"}</span>
         </div>
       </div>
 
@@ -108,6 +152,22 @@ const TeacherTopbar = ({ isMobileMenuOpen, onMenuClick }) => {
 
       {/* Right */}
       <div className="st_topbar_right">
+        {/* Notifications */}
+        <button
+          className={`st_icon_btn st_bell_btn${bellShake ? " st_bell_shake" : ""}`}
+          onClick={() => navigate(`/teacher/${schoolId}/notifications`)}
+          title="Notifications"
+        >
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+            <path d="M9 2a5.5 5.5 0 00-5.5 5.5c0 2.2-.6 3.5-1.2 4.3-.3.4-.1 1 .4 1h12.6c.5 0 .7-.6.4-1-.6-.8-1.2-2.1-1.2-4.3A5.5 5.5 0 009 2z"
+              stroke="#111111" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" opacity="0.8"/>
+            <path d="M7 14.5a2 2 0 004 0" stroke="#111111" strokeWidth="1.4" strokeLinecap="round" opacity="0.6"/>
+          </svg>
+          {unreadCount > 0 && (
+            <span className="st_bell_badge">{unreadCount > 99 ? "99+" : unreadCount}</span>
+          )}
+        </button>
+
         {/* Theme toggle — cycles light → dark → system */}
         <button
           className="st_icon_btn"

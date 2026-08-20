@@ -1,13 +1,30 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import { useParams } from "react-router-dom";
 import "./SubjectAssessments.css";
 import InnerTabCon from "../../../../../components/InnerTabCon/InnerTabCon";
 import ServerSmartTable from "../../../../../components/ServerSmartTable/ServerSmartTable";
-import SlideInMenu from "../../../../../components/SlideInMenu/SlideInMenu";
-import Button from "../../../../../components/Button/Button";
 import { useSubjectAssessments } from "../../../../../api_call/useSubjectAssessments";
 import { useNotification } from "../../../../../context/NotificationProvider/NotificationProvider";
 import { useAuth } from "../../../../../context/AuthContext/AuthContext";
+
+/**
+ * Double-tap tracker for mobile — fires callback on second tap within 300ms.
+ */
+const createTapTracker = () => {
+  let lastKey = null;
+  let lastTime = 0;
+  return (key, callback, e) => {
+    const now = Date.now();
+    if (key === lastKey && now - lastTime < 300) {
+      e.preventDefault();
+      callback();
+      lastKey = null;
+    } else {
+      lastKey = key;
+      lastTime = now;
+    }
+  };
+};
 
 const SubjectAssessments = () => {
   const { subjectId, subseasion } = useParams();
@@ -22,13 +39,20 @@ const SubjectAssessments = () => {
     (Array.isArray(admin?.permissions) && admin?.permissions.includes("ALL"));
   const canEdit = isSuperAdmin || !!admin?.permissions?.subject?.edit;
 
+  const tapTracker = useRef(createTapTracker());
+
   const [gradingFields, setGradingFields] = useState([]);
-  const [selected, setSelected] = useState(null);
-  const [showDetail, setShowDetail] = useState(false);
-  const [editMode, setEditMode] = useState(false);
-  const [scoreForm, setScoreForm] = useState({});
-  const [saving, setSaving] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
+
+  // Inline editing state
+  // activeCell: { studentId, fieldName, maxScore } | null
+  const [activeCell, setActiveCell] = useState(null);
+  const [cellValue, setCellValue] = useState("");
+  const [cellError, setCellError] = useState("");
+  // Per-cell saving spinners: Set of "studentId:fieldName" strings
+  const [savingCells, setSavingCells] = useState(new Set());
+  // Local score overrides after save: { [studentId]: { [fieldName]: value, has_score: true } }
+  const [scoreOverrides, setScoreOverrides] = useState({});
 
   // Wrap fetchScores to capture grading_fields from first response
   const fetchData = useCallback(
@@ -42,77 +66,166 @@ const SubjectAssessments = () => {
     [fetchScores]
   );
 
-  const handleRowClick = (row) => {
-    setSelected(row);
-    setEditMode(false);
-    setScoreForm({});
-    setShowDetail(true);
-  };
-
-  const openEditMode = () => {
+  // Open a cell for editing
+  const openCell = (studentId, fieldName, maxScore, currentValue, hasScore) => {
     if (!canEdit) {
       addNotification("You do not have permission to edit scores.", "error");
       return;
     }
-    const initial = {};
-    gradingFields.forEach((f) => {
-      const val = selected?.scores?.[f.field_name];
-      initial[f.field_name] = val !== null && val !== undefined ? String(val) : "";
-    });
-    setScoreForm(initial);
-    setEditMode(true);
+    setActiveCell({ studentId, fieldName, maxScore, hasScore });
+    setCellValue(currentValue !== null && currentValue !== undefined ? String(currentValue) : "");
+    setCellError("");
   };
 
-  const handleSave = async () => {
-    // Validate: all fields must be numbers within max
-    for (const f of gradingFields) {
-      const val = scoreForm[f.field_name];
-      if (val === "" || val === undefined) continue; // allow empty (null)
-      const num = Number(val);
-      if (isNaN(num) || num < 0) {
-        addNotification(`${f.field_name.toUpperCase()}: invalid value`, "error");
-        return;
+  const handleCellChange = (value, maxScore) => {
+    setCellValue(value);
+    if (value !== "") {
+      const num = Number(value);
+      if (isNaN(num) || num < 0 || num > Number(maxScore)) {
+        setCellError(`0 – ${maxScore}`);
+      } else {
+        setCellError("");
       }
-      if (num > Number(f.max_score)) {
-        addNotification(`${f.field_name.toUpperCase()} cannot exceed ${f.max_score}`, "error");
-        return;
-      }
+    } else {
+      setCellError("");
+    }
+  };
+
+  const commitCell = async (rowData) => {
+    if (!activeCell || cellError) { setActiveCell(null); return; }
+
+    const { studentId, fieldName, maxScore, hasScore } = activeCell;
+
+    // Resolve current value from overrides or row
+    const currentOverrides = scoreOverrides[studentId] ?? {};
+    const prevVal = currentOverrides[fieldName] !== undefined
+      ? currentOverrides[fieldName]
+      : (rowData?.scores?.[fieldName] ?? null);
+
+    const newVal = cellValue === "" ? null : Number(cellValue);
+
+    // No change — close silently
+    if (newVal === prevVal || (newVal === null && prevVal === null)) {
+      setActiveCell(null);
+      return;
     }
 
-    // Build scores object — empty string → null
-    const scores = {};
-    gradingFields.forEach((f) => {
-      const val = scoreForm[f.field_name];
-      scores[f.field_name] = val !== "" && val !== undefined ? Number(val) : null;
-    });
+    const savedCell = { ...activeCell };
+    setActiveCell(null);
 
-    setSaving(true);
+    // Optimistic update
+    const mergedOverrides = { ...currentOverrides, [fieldName]: newVal, _hasScore: hasScore };
+    setScoreOverrides((prev) => ({ ...prev, [studentId]: mergedOverrides }));
+
+    // Per-cell spinner
+    const cellKey = `${studentId}:${fieldName}`;
+    setSavingCells((prev) => new Set(prev).add(cellKey));
+
+    // Build full scores object for this student
+    const existingScores = { ...(rowData?.scores ?? {}), ...currentOverrides };
+    const newScores = { ...existingScores, [fieldName]: newVal };
+    // Remove internal keys
+    delete newScores._hasScore;
+
     let res;
-    if (selected.has_score) {
-      res = await updateScore(selected.student_id, scores);
+    if (hasScore || currentOverrides._hasScore) {
+      res = await updateScore(studentId, newScores);
     } else {
-      res = await createScore(selected.student_id, scores);
+      res = await createScore(studentId, newScores);
     }
-    setSaving(false);
 
-    if (res.success) {
-      addNotification("Scores saved", "success");
-      setEditMode(false);
-      setShowDetail(false);
-      setReloadKey((k) => k + 1);
+    setSavingCells((prev) => { const s = new Set(prev); s.delete(cellKey); return s; });
+
+    if (res?.success) {
+      addNotification("Score saved", "success");
+      // Mark student as has_score after first create
+      setScoreOverrides((prev) => ({
+        ...prev,
+        [studentId]: { ...(prev[studentId] ?? {}), [fieldName]: newVal, _hasScore: true },
+      }));
     } else {
-      addNotification(res.message || "Failed to save scores", "error");
+      // Roll back
+      setScoreOverrides((prev) => {
+        const next = { ...prev };
+        if (next[studentId]) {
+          delete next[studentId][fieldName];
+          if (Object.keys(next[studentId]).filter(k => k !== '_hasScore').length === 0) {
+            delete next[studentId];
+          }
+        }
+        return next;
+      });
+      addNotification(res?.message || "Failed to save score", "error");
     }
   };
 
-  // Build dynamic score columns from grading_fields
+  // Build dynamic score columns — each cell is inline-editable
   const scoreColumns = gradingFields.map((f) => ({
     accessor: `scores.${f.field_name}`,
     label: `${f.field_name.toUpperCase()} (/${f.max_score})`,
     render: (_, row) => {
-      if (!row.has_score) return <span className="sa-score-empty">—</span>;
-      const val = row.scores?.[f.field_name];
-      return val !== null && val !== undefined ? val : <span className="sa-score-zero">0</span>;
+      const studentId = row.student_id;
+      const override = scoreOverrides[studentId];
+      const effectiveHasScore = override?._hasScore ?? row.has_score;
+      const val = override?.[f.field_name] !== undefined
+        ? override[f.field_name]
+        : (row.scores?.[f.field_name] ?? null);
+
+      const isActive = activeCell?.studentId === studentId && activeCell?.fieldName === f.field_name;
+      const cellKey = `${studentId}:${f.field_name}`;
+      const isSaving = savingCells.has(cellKey);
+
+      // We return content only — ServerSmartTable wraps it in <td>
+      // Use a div that captures double-click and stops row-level click propagation
+      return (
+        <div
+          className={`sa-inline-cell${isActive ? " sa-cell-active" : ""}`}
+          onDoubleClick={(e) => {
+            e.stopPropagation();
+            openCell(studentId, f.field_name, f.max_score, val, effectiveHasScore);
+          }}
+          onTouchEnd={(e) => {
+            e.stopPropagation();
+            tapTracker.current(
+              `score:${studentId}:${f.field_name}`,
+              () => openCell(studentId, f.field_name, f.max_score, val, effectiveHasScore),
+              e
+            );
+          }}
+          title="Double-click to edit"
+        >
+          {isActive ? (
+            <div className="rsi-inline-edit-wrap" onClick={(e) => e.stopPropagation()}>
+              <input
+                className={`rsi-inline-input${cellError ? " rsi-input-error" : ""}`}
+                type="number"
+                min="0"
+                max={f.max_score}
+                value={cellValue}
+                autoFocus
+                onChange={(e) => handleCellChange(e.target.value, f.max_score)}
+                onBlur={() => commitCell(row)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") e.target.blur();
+                  if (e.key === "Escape") setActiveCell(null);
+                }}
+              />
+              {cellError && <span className="rsi-inline-error">{cellError}</span>}
+            </div>
+          ) : (
+            <span className="rsi-cell-display">
+              {!effectiveHasScore ? (
+                <span className="sa-score-empty">—</span>
+              ) : val !== null && val !== undefined ? (
+                val
+              ) : (
+                <span className="sa-score-zero">0</span>
+              )}
+              {isSaving && <span className="rsi-cell-spinner" />}
+            </span>
+          )}
+        </div>
+      );
     },
   }));
 
@@ -137,127 +250,45 @@ const SubjectAssessments = () => {
     {
       accessor: "total",
       label: "Total",
-      render: (val, row) =>
-        row.has_score ? (
-          <span className="sa-score-total">{val ?? "—"}</span>
-        ) : (
-          <span className="sa-no-score">No score</span>
-        ),
+      render: (val, row) => {
+        const override = scoreOverrides[row.student_id];
+        const effectiveHasScore = override?._hasScore ?? row.has_score;
+        if (!effectiveHasScore) return <span className="sa-no-score">No score</span>;
+        // Recalculate total from overrides if any
+        if (override) {
+          const total = gradingFields.reduce((sum, f) => {
+            const v = override[f.field_name] !== undefined
+              ? override[f.field_name]
+              : (row.scores?.[f.field_name] ?? 0);
+            return sum + (Number(v) || 0);
+          }, 0);
+          return <span className="sa-score-total">{total}</span>;
+        }
+        return <span className="sa-score-total">{val ?? "—"}</span>;
+      },
     },
   ];
 
   return (
     <InnerTabCon>
-    <div className="subjectAssessments">
-      <div className="assessmentsHeader">
-        <div className="assessmentsHeaderLeft">
-          <h2 className="assessmentsTitle">Student Assessments</h2>
-          <p className="assessmentsSubtitle">Scores for this subject in the selected subsession</p>
-        </div>
-      </div>
-
-      <ServerSmartTable
-        columns={columns}
-        fetchData={fetchData}
-        onRowClick={handleRowClick}
-        showcreatbut={false}
-        initialPageSize={20}
-        reloadKey={reloadKey}
-      />
-
-      {/* Detail / Score entry panel */}
-      <SlideInMenu isShow={showDetail} onClose={() => { setShowDetail(false); setEditMode(false); }} width="500px">
-        {selected && (
-          <div className="sa-panel">
-            <div className="sa-panel-header">
-              <span className="sa-panel-header-deco" aria-hidden="true" />
-              <div className="sa-panel-header-content">
-                <div className="sa-panel-header-icon">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                    <path d="M9 11l3 3L22 4" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"/>
-                    <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                </div>
-                <div className="sa-panel-header-text">
-                  <h2>{selected.student_name || "Student"}</h2>
-                  <p>{selected.class_name || selected.class_id || "—"}</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="sa-panel-body">
-              <div className="sa-info-row"><span className="sa-info-label">Student ID</span><span className="sa-info-value">{selected.student_id}</span></div>
-              <div className="sa-info-row"><span className="sa-info-label">Teacher</span><span className="sa-info-value">{selected.teacher_name || "—"}</span></div>
-              <div className="sa-divider" />
-
-              {editMode ? (
-                <>
-                  <span className="sa-edit-title">{selected.has_score ? "Edit Scores" : "Enter Scores"}</span>
-                  {gradingFields.map((f) => (
-                    <div key={f.field_name} className="sa-field">
-                      <label className="sa-field-label">
-                        {f.field_name.toUpperCase()}
-                        <span className="sa-field-max"> (max {f.max_score})</span>
-                      </label>
-                      <input
-                        type="number" min={0} max={Number(f.max_score)}
-                        className="sa-field-input"
-                        value={scoreForm[f.field_name] ?? ""}
-                        onChange={(e) => setScoreForm((prev) => ({ ...prev, [f.field_name]: e.target.value }))}
-                        placeholder={`0 – ${f.max_score}`}
-                      />
-                    </div>
-                  ))}
-                </>
-              ) : (
-                <>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <span className="sa-edit-title">Scores</span>
-                    <Button variant="secondary" onClick={openEditMode}>
-                      {selected.has_score ? "Edit Scores" : "Enter Scores"}
-                    </Button>
-                  </div>
-
-                  {!selected.has_score ? (
-                    <div className="sa-no-scores">No scores entered yet for this student.</div>
-                  ) : (
-                    <>
-                      {gradingFields.map((f) => (
-                        <div key={f.field_name} className="sa-score-row">
-                          <div>
-                            <span className="sa-score-row-label">{f.field_name.toUpperCase()}</span>
-                            <span className="sa-score-row-max"> / {f.max_score}</span>
-                          </div>
-                          <span className="sa-score-row-value">
-                            {selected.scores?.[f.field_name] !== null && selected.scores?.[f.field_name] !== undefined
-                              ? selected.scores[f.field_name] : "—"}
-                          </span>
-                        </div>
-                      ))}
-                      <div className="sa-score-total-row">
-                        <span>Total</span>
-                        <span>{selected.total ?? "—"}</span>
-                      </div>
-                    </>
-                  )}
-                </>
-              )}
-            </div>
-
-            <div className="sa-panel-footer">
-              {editMode ? (
-                <>
-                  <Button variant="secondary" onClick={() => setEditMode(false)} disabled={saving}>Cancel</Button>
-                  <Button onClick={handleSave} disabled={saving}>{saving ? "Saving..." : "Save Scores"}</Button>
-                </>
-              ) : (
-                <Button variant="secondary" onClick={() => setShowDetail(false)}>Close</Button>
-              )}
-            </div>
+      <div className="subjectAssessments">
+        <div className="assessmentsHeader">
+          <div className="assessmentsHeaderLeft">
+            <h2 className="assessmentsTitle">Student Assessments</h2>
+            <p className="assessmentsSubtitle">
+              Double-click a score cell to edit · Scores for this subject in the selected subsession
+            </p>
           </div>
-        )}
-      </SlideInMenu>
-    </div>
+        </div>
+
+        <ServerSmartTable
+          columns={columns}
+          fetchData={fetchData}
+          showcreatbut={false}
+          initialPageSize={20}
+          reloadKey={reloadKey}
+        />
+      </div>
     </InnerTabCon>
   );
 };

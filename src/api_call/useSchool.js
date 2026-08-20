@@ -88,7 +88,81 @@ const useSchool = () => {
     }
   };
 
-  return { loading, error, getProfile, saveProfile, getBio, saveBio };
+  const getWebsite = async (schoolId) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/schools/${schoolId}/website`);
+      const data = await res.json();
+      if (!data.success) throw new Error(data.message);
+      return { success: true, data: data.data };
+    } catch (err) {
+      setError(err.message);
+      return { success: false, data: null };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const saveWebsite = async (schoolId, website) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/schools/${schoolId}/website`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ website }),
+      });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.message);
+      return { success: true, data: data.data };
+    } catch (err) {
+      setError(err.message);
+      return { success: false };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const requestWebsite = async (schoolId) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/schools/${schoolId}/website/request`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.message);
+      return { success: true, message: data.message };
+    } catch (err) {
+      setError(err.message);
+      return { success: false };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const cancelWebsiteRequest = async (schoolId) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/schools/${schoolId}/website/request`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+      });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.message);
+      return { success: true, message: data.message };
+    } catch (err) {
+      setError(err.message);
+      return { success: false };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return { loading, error, getProfile, saveProfile, getBio, saveBio, getWebsite, saveWebsite, requestWebsite, cancelWebsiteRequest };
 };
 
 export default useSchool;

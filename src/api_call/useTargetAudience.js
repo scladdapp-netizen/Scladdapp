@@ -133,7 +133,8 @@ const useTargetAudience = () => {
       const data = await res.json();
       if (!data.success) throw new Error(data.message);
       return (data.data || []).map((a) => ({
-        id: a.alumni_id,
+        id: a.student_id,          // use student_id so UserNotification.user_id matches the student dashboard query
+        alumni_id: a.alumni_id,    // kept for reference/display
         name: a.student_name || a.alumni_id,
         graduationYear: a.graduation_date
           ? new Date(a.graduation_date).getFullYear().toString()
@@ -151,7 +152,41 @@ const useTargetAudience = () => {
     }
   }, []);
 
-  return { loading, error, fetchClasses, fetchStudentsByClass, fetchStudents, fetchStaff, fetchAlumni };
+  /**
+   * Fetch guardians for all students in the school.
+   * Backend already applies primary-guardian logic:
+   *   - student has a primary → only primary is returned
+   *   - student has no primary → all of their guardians are returned
+   * Each item has { id, guardian_id, name, studentName, relationship, phone, email, is_primary, type }
+   */
+  const fetchGuardians = useCallback(async (schoolId) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch(`${API_BASE_URL}/guardian/school/${schoolId}`);
+      const data = await res.json();
+      if (!data.success) throw new Error(data.message);
+      return (data.data || []).map((g) => ({
+        id: g.guardian_id,
+        guardian_id: g.guardian_id,
+        name: g.guardian_name,
+        studentName: g.student_name || "",
+        studentId: g.student_id,
+        relationship: g.guardian_relationship || "",
+        phone: g.guardian_phone || "",
+        email: g.guardian_email || "",
+        is_primary: g.is_primary,
+        type: "guardian",
+      }));
+    } catch (err) {
+      setError(err.message);
+      return [];
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  return { loading, error, fetchClasses, fetchStudentsByClass, fetchStudents, fetchStaff, fetchAlumni, fetchGuardians };
 };
 
 export default useTargetAudience;

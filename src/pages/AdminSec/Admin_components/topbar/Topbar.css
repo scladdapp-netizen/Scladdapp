@@ -1,17 +1,22 @@
 /* Topbar.css */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
 .al_topbar {
   position: fixed;
   top: 0;
   display: flex;
   height: 52px;
-  width: 100vw;
+  width: 100%;
   justify-content: space-between;
   align-items: center;
   z-index: 100;
   border-bottom: 1px solid #e5e7eb;
   background-color: #ffffff;
   padding: 0 18px;
-  box-sizing: border-box;
   overflow: visible;
 }
 
@@ -20,6 +25,8 @@
   display: flex;
   align-items: center;
   gap: 14px;
+  flex-shrink: 1;
+  min-width: 0;
 }
 
 .al_menu_btn {
@@ -33,6 +40,7 @@
   color: #374151;
   line-height: 1;
   transition: background 0.15s;
+  flex-shrink: 0;
 }
 
 .al_menu_btn:hover { background: #f3f4f6; }
@@ -41,6 +49,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
+  flex-shrink: 0;
 }
 
 .al_brand_icon {
@@ -59,6 +68,54 @@
   font-weight: 800;
   color: #111111;
   letter-spacing: -0.4px;
+  white-space: nowrap;
+}
+
+/* Divider between Scladapp brand and school */
+.al_brand_divider {
+  width: 1px;
+  height: 22px;
+  background: #e5e7eb;
+  flex-shrink: 0;
+}
+
+/* School identity */
+.al_school_brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.al_school_logo {
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  object-fit: cover;
+  border: 1px solid #e5e7eb;
+  flex-shrink: 0;
+}
+
+.al_school_logo_fallback {
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  background: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.al_school_name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 180px;
 }
 
 /* ── Center ───────────────────────────────────────────────────────────────── */
@@ -67,6 +124,7 @@
   display: flex;
   justify-content: center;
   padding: 0 24px;
+  min-width: 0;
 }
 
 .al_search_trigger {
@@ -101,6 +159,7 @@
   padding: 1px 5px;
   color: #aaaaaa;
   font-family: inherit;
+  white-space: nowrap;
 }
 
 /* ── Right ────────────────────────────────────────────────────────────────── */
@@ -108,9 +167,12 @@
   display: flex;
   align-items: center;
   gap: 8px;
+  justify-content: flex-end;
   overflow: visible;
   position: relative;
   z-index: 10001;
+  flex-shrink: 0;
+  /* width: fit-content; */
 }
 
 .topbar-icon-btn {
@@ -151,6 +213,7 @@
   align-items: center;
   justify-content: center;
   transition: box-shadow 0.2s, opacity 0.15s;
+  flex-shrink: 0;
 }
 
 .profile-avatar-btn:hover {
@@ -614,14 +677,78 @@
   flex-shrink: 0;
 }
 
+/* ── Notification bell ────────────────────────────────────────────────────── */
+.np_bell_wrapper {
+  position: relative;
+}
+
+.np_bell_btn {
+  position: relative;
+}
+
+.np_bell_badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background: #ef4444;
+  color: #ffffff;
+  font-size: 9px;
+  font-weight: 700;
+  min-width: 16px;
+  height: 16px;
+  border-radius: 99px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 3px;
+  border: 1.5px solid #ffffff;
+  pointer-events: none;
+  line-height: 1;
+}
+
+@keyframes np_bell_shake {
+  0%   { transform: rotate(0deg); }
+  15%  { transform: rotate(14deg); }
+  30%  { transform: rotate(-12deg); }
+  45%  { transform: rotate(10deg); }
+  60%  { transform: rotate(-8deg); }
+  75%  { transform: rotate(5deg); }
+  90%  { transform: rotate(-3deg); }
+  100% { transform: rotate(0deg); }
+}
+
+.np_bell_shake {
+  animation: np_bell_shake 0.8s ease;
+}
+
+[data-theme="dark"] .np_bell_badge {
+  border-color: #1a1a1a;
+}
+
 /* ── Mobile ───────────────────────────────────────────────────────────────── */
 @media (max-width: 1200px) {
   .al_menu_btn { display: flex; }
 }
 
 @media (max-width: 768px) {
+  .al_topbar {
+    padding: 0 12px;
+    gap: 8px;
+  }
+
+  /* Both sides shrink to their content */
+  .al_topbar_left  { width: fit-content; }
+  .al_topbar_right { width: auto; flex-shrink: 0; gap: 6px; }
+
+  /* Hide center search bar — use icon instead */
   .al_topbar_center { display: none; }
-  .al_brand_text { display: none; }
+
+  /* Collapse left — only show menu btn + brand icon */
+  .al_brand_text    { display: none; }
+  .al_brand_divider { display: none; }
+  .al_school_name   { display: none; }
+
+  /* Show mobile search icon */
   .al_search_mobile { display: flex; }
 }
 
@@ -636,6 +763,11 @@
 [data-theme="dark"] .al_brand_text { color: #f0f0f0; }
 [data-theme="dark"] .al_brand_icon { background: #f0f0f0; }
 [data-theme="dark"] .al_brand_icon svg path { fill: #111111; }
+
+[data-theme="dark"] .al_brand_divider { background: #3a3a3a; }
+[data-theme="dark"] .al_school_name { color: #cccccc; }
+[data-theme="dark"] .al_school_logo { border-color: #3a3a3a; }
+[data-theme="dark"] .al_school_logo_fallback { background: #2a2a2a; border-color: #3a3a3a; }
 
 [data-theme="dark"] .al_menu_btn {
   border-color: #3a3a3a;
@@ -681,6 +813,14 @@
 }
 [data-theme="dark"] .topbar-icon-btn svg [fill="#111111"] { fill: #cccccc; }
 [data-theme="dark"] .topbar-icon-btn svg [fill="#111111"][opacity] { fill: #cccccc; }
+
+/* FaBell and other react-icons use fill=currentColor — don't override them */
+[data-theme="dark"] .np_bell_btn svg path,
+[data-theme="dark"] .np_bell_btn svg circle,
+[data-theme="dark"] .np_bell_btn svg rect {
+  fill: currentColor;
+  stroke: none;
+}
 
 /* Profile avatar */
 [data-theme="dark"] .profile-avatar-btn { background: #f0f0f0; }

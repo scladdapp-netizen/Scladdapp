@@ -8,7 +8,10 @@ const Docs = () => {
   const firstItem = docsContent[0].items[0];
   const [activeId, setActiveId] = useState(firstItem.id);
   const [search, setSearch] = useState("");
+  const [headerDark, setHeaderDark] = useState(true);
   const contentRef = useRef(null);
+  const bodyRef = useRef(null);
+  const heroRef = useRef(null);
 
   const allItems = docsContent.flatMap((s) => s.items);
 
@@ -27,12 +30,23 @@ const Docs = () => {
     contentRef.current?.scrollTo({ top: 0, behavior: "smooth" });
   };
 
+  // Switch header to light when the body section scrolls under the header (64px)
+  useEffect(() => {
+    const onScroll = () => {
+      const el = heroRef.current;
+      if (!el) return;
+      setHeaderDark(el.getBoundingClientRect().bottom > 64);
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
   return (
     <div className="docs-pg">
-      <PublicHeader dark />
+      <PublicHeader dark={headerDark} />
 
       {/* Hero */}
-      <div className="docs-pg__hero">
+      <div className="docs-pg__hero" ref={heroRef}>
         <span className="docs-pg__tag">Documentation</span>
         <h1>Everything you need to build with Scladapp</h1>
         <p>Guides, references, and tutorials to get your school up and running.</p>

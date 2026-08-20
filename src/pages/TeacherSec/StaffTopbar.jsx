@@ -67,6 +67,24 @@ const StaffTopbar = ({ isMobileMenuOpen, onMenuClick }) => {
           </div>
           <span className="sft_brand_text">Scladapp</span>
         </div>
+
+        {/* Divider */}
+        <div className="sft_brand_divider" />
+
+        {/* School identity */}
+        <div className="sft_school_brand">
+          {(typeof school?.logo_url === "string" && school.logo_url) ? (
+            <img src={school.logo_url} alt={school?.school_name} className="sft_school_logo" />
+          ) : (
+            <div className="sft_school_logo_fallback">
+              <svg width="14" height="14" viewBox="0 0 20 20" fill="none">
+                <path d="M3 9l7-6 7 6v8a1 1 0 01-1 1H4a1 1 0 01-1-1V9z" fill="#111111" opacity="0.15" stroke="#111111" strokeWidth="1.5"/>
+                <rect x="7" y="12" width="6" height="6" rx="1" fill="#111111" opacity="0.4"/>
+              </svg>
+            </div>
+          )}
+          <span className="sft_school_name">{school?.school_name || "School"}</span>
+        </div>
       </div>
 
       {/* Center — active session pill */}

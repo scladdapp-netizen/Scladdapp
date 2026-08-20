@@ -285,3 +285,49 @@
 [data-theme="dark"] .att-stat-card:nth-child(5) { background: #252525; border-color: #2a2a2a; }
 [data-theme="dark"] .att-stat-label { color: #555555; }
 [data-theme="dark"] .sa-stat-total  { color: #f0f0f0; }
+
+/* ── Auto-save indicator ─────────────────────────────────────────────────── */
+.sa-row-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.sa-save-indicator {
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* Spinner */
+.sa-spinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid #e5e7eb;
+  border-top-color: #111111;
+  border-radius: 50%;
+  animation: saSpinAnim 0.6s linear infinite;
+}
+
+@keyframes saSpinAnim {
+  to { transform: rotate(360deg); }
+}
+
+/* Error mark */
+.sa-save-error {
+  font-size: 11px;
+  font-weight: 800;
+  color: #dc2626;
+  line-height: 1;
+}
+
+/* Dark */
+[data-theme="dark"] .sa-spinner {
+  border-color: #3a3a3a;
+  border-top-color: #f0f0f0;
+}

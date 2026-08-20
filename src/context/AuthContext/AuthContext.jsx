@@ -64,20 +64,27 @@ export const AuthProvider = ({ children }) => {
           data.data.admin || data.data.teacher || data.data.staff;
 
         if (userInfo && userInfo.two_fac_auth) {
-          // Generate OTP and show alert instead of sending email
-          const otp = Math.floor(100000 + Math.random() * 900000).toString();
-
-          return new Promise((resolve) => {
-            // Import useAlert and useOTP at component level, not here
-            // This will be handled in the component that calls login
-            resolve({
-              success: true,
-              requiresOTP: true,
-              otp: otp,
-              userData: data.data,
-              message: "OTP required for login",
+          // Send OTP via backend (email) — do NOT expose the OTP to the frontend
+          try {
+            await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/otp/send`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                email:    credentials.email,
+                schoolId: data.data.school?.school_id || null,
+              }),
             });
-          });
+          } catch {
+            // Non-fatal — still show the OTP modal; user can retry
+          }
+
+          return {
+            success:     true,
+            requiresOTP: true,
+            email:       credentials.email,
+            userData:    data.data,
+            message:     "OTP sent to your email",
+          };
         } else {
           // No 2FA required, login directly
           setUser(data.data);

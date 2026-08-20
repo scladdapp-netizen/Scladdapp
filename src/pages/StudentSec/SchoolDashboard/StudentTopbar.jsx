@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef } from "react";
-import { useNavigate, useParams, useLocation } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../../../context/AuthContext/AuthContext";
 import { useTheme } from "../../../context/ThemeContext/ThemeContext";
 import { useSession } from "../../../api_call/useSession";
 import { useFetchStudents } from "../../../api_call";
+import useNotification from "../../../api_call/useNotification";
 import "../../TeacherSec/StaffTopbar.css";
 import "./StudentTopbar.css";
 
@@ -12,12 +13,16 @@ const StudentTopbar = ({ onMenuClick, isMobileMenuOpen }) => {
   const navigate = useNavigate();
   const { studentId, schoolId } = useParams();
   const { theme, setTheme } = useTheme();
-  const { getActiveSession } = useSession();
+  const { getActiveSession, getSessionsBySchool } = useSession();
   const { getAdmissionsByStudentId } = useFetchStudents();
+
+  const { getUserUnreadCount } = useNotification();
 
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [activeSession, setActiveSession] = useState(null);
   const [admissions, setAdmissions]       = useState([]);
+  const [unreadCount, setUnreadCount]     = useState(0);
+  const [bellShake,   setBellShake]       = useState(false);
   const profileRef = useRef(null);
 
   const student = user?.student;
@@ -42,7 +47,17 @@ const StudentTopbar = ({ onMenuClick, isMobileMenuOpen }) => {
   useEffect(() => {
     if (!schoolId) return;
     getActiveSession(schoolId).then((res) => {
-      if (res.success && res.data?.session) setActiveSession(res.data);
+      if (res.success && res.data?.session) {
+        setActiveSession(res.data);
+      } else {
+        // Fallback: pick the session explicitly marked "active" by status
+        getSessionsBySchool(schoolId).then((r) => {
+          if (r.success && r.data?.length) {
+            const activeByStatus = r.data.find((s) => s.session_status === "active" && !s.is_archived);
+            if (activeByStatus) setActiveSession({ session: activeByStatus, subsession: null });
+          }
+        });
+      }
     });
   }, [schoolId]);
 
@@ -53,32 +68,24 @@ const StudentTopbar = ({ onMenuClick, isMobileMenuOpen }) => {
     });
   }, [student?.student_id]);
 
-  const location = useLocation();
-
-  // Build breadcrumb from pathname
-  const buildBreadcrumb = () => {
-    const base = `/student/${studentId}/school/${schoolId}`;
-    const after = location.pathname.replace(base, "").replace(/^\//, "");
-    if (!after) return [];
-    const segments = after.split("/").filter(Boolean);
-    const crumbs = [];
-    const LABELS = {
-      session: "Session", school: "School", bill: "Bills",
-      alumni: "Profile", notification: "Notifications",
-      class: "Class", subjects: "Subjects", timetable: "Timetable",
-      attendance: "Attendance", report: "Report", events: "Events",
-      calendar: "Calendar", info: "Info", bio: "About",
-      resources: "Resources", gallery: "Gallery",
+  // Poll unread notification count every 60 s
+  useEffect(() => {
+    if (!student?.student_id) return;
+    const poll = async () => {
+      const res = await getUserUnreadCount(student.student_id);
+      if (res.success && res.count !== unreadCount) {
+        setUnreadCount(res.count);
+        if (res.count > 0) {
+          setBellShake(true);
+          setTimeout(() => setBellShake(false), 820);
+        }
+      }
     };
-    for (const seg of segments) {
-      const label = LABELS[seg];
-      if (label) crumbs.push(label);
-      // skip IDs (pure numbers)
-    }
-    return crumbs;
-  };
-
-  const breadcrumb = buildBreadcrumb();
+    poll();
+    const id = setInterval(poll, 120000);
+    return () => clearInterval(id);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [student?.student_id]);
 
   const handleLogout = () => { logout(); navigate("/"); };
 
@@ -99,20 +106,31 @@ const StudentTopbar = ({ onMenuClick, isMobileMenuOpen }) => {
           </div>
           <span className="sft_brand_text">Scladapp</span>
         </div>
+
+        {/* Divider */}
+        <div className="sft_brand_divider" />
+
+        {/* School identity */}
+        <div className="sft_school_brand">
+          {(currentAdmission?.school_logo && typeof currentAdmission.school_logo === "string") ? (
+            <img src={currentAdmission.school_logo} alt={currentSchoolName} className="sft_school_logo" />
+          ) : (typeof school?.logo_url === "string" && school.logo_url) ? (
+            <img src={school.logo_url} alt={currentSchoolName} className="sft_school_logo" />
+          ) : (
+            <div className="sft_school_logo_fallback">
+              <svg width="14" height="14" viewBox="0 0 20 20" fill="none">
+                <path d="M3 9l7-6 7 6v8a1 1 0 01-1 1H4a1 1 0 01-1-1V9z" fill="#111111" opacity="0.15" stroke="#111111" strokeWidth="1.5"/>
+                <rect x="7" y="12" width="6" height="6" rx="1" fill="#111111" opacity="0.4"/>
+              </svg>
+            </div>
+          )}
+          <span className="sft_school_name">{currentSchoolName}</span>
+        </div>
       </div>
 
-      {/* Center — breadcrumb */}
+      {/* Center — active session */}
       <div className="sft_center">
-        {breadcrumb.length > 0 ? (
-          <div className="sft_breadcrumb">
-            {breadcrumb.map((crumb, i) => (
-              <span key={i} className="sft_breadcrumb_item">
-                {i > 0 && <span className="sft_breadcrumb_sep">›</span>}
-                {crumb}
-              </span>
-            ))}
-          </div>
-        ) : !isGraduated && activeSession?.session ? (
+        {activeSession?.session ? (
           <div className="sft_session_pill">
             <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
               <rect x="1" y="2.5" width="11" height="9.5" rx="1.5" stroke="#10b981" strokeWidth="1.3"/>
@@ -135,6 +153,22 @@ const StudentTopbar = ({ onMenuClick, isMobileMenuOpen }) => {
 
       {/* Right */}
       <div className="sft_right">
+        {/* Notifications */}
+        <button
+          className={`sft_icon_btn sft_bell_btn${bellShake ? " sft_bell_shake" : ""}`}
+          onClick={() => navigate(`/student/${studentId}/school/${schoolId}/notification`)}
+          title="Notifications"
+        >
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+            <path d="M9 2a5.5 5.5 0 00-5.5 5.5c0 2.2-.6 3.5-1.2 4.3-.3.4-.1 1 .4 1h12.6c.5 0 .7-.6.4-1-.6-.8-1.2-2.1-1.2-4.3A5.5 5.5 0 009 2z"
+              stroke="#111111" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" opacity="0.8"/>
+            <path d="M7 14.5a2 2 0 004 0" stroke="#111111" strokeWidth="1.4" strokeLinecap="round" opacity="0.6"/>
+          </svg>
+          {unreadCount > 0 && (
+            <span className="sft_bell_badge">{unreadCount > 99 ? "99+" : unreadCount}</span>
+          )}
+        </button>
+
         {/* Theme toggle */}
         <button
           className="sft_icon_btn"

@@ -14,6 +14,10 @@ import "../../../../TeacherSec/pages/Notifications/Notifications.css";
 const fmt = (d) =>
   d ? new Date(d).toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" }) : "—";
 
+// Remove inline styles from <span> tags so placeholder highlights render as plain text
+const stripSpanStyles = (html) =>
+  html.replace(/<span([^>]*?)style="[^"]*"([^>]*?)>/gi, "<span$1$2>");
+
 const Notification = () => {
   const { user } = useAuth();
   const { getUserNotificationsPaginated, getNotificationById, markAsRead } = useNotification();
@@ -58,7 +62,7 @@ const Notification = () => {
         <div className="notification-title-cell">
           <div className="title-main" style={{ display: "flex", alignItems: "center", gap: 7 }}>
             {!row.is_read && (
-              <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#111111", flexShrink: 0, display: "inline-block" }}/>
+              <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#10b981", flexShrink: 0, display: "inline-block" }}/>
             )}
             <span style={{ fontWeight: row.is_read ? 500 : 700 }}>{val || "—"}</span>
           </div>
@@ -66,23 +70,7 @@ const Notification = () => {
         </div>
       ),
     },
-    {
-      accessor: "target_type",
-      label: "Audience",
-      render: (v) => <span className="notif-target-badge">{v ? v.replace(/_/g, " ") : "—"}</span>,
-    },
-    { accessor: "created_by_name", label: "Sent By", render: (v) => v || "—" },
     { accessor: "created_at", label: "Date", render: (v) => fmt(v) },
-    {
-      accessor: "is_read",
-      label: "Status",
-      render: (v) => (
-        <span className={`cs-status ${v ? "inactive" : "active"}`}
-          style={v ? { background: "#f4f4f4", color: "#888888" } : { background: "#f0f0f0", color: "#111111" }}>
-          {v ? "Read" : "Unread"}
-        </span>
-      ),
-    },
   ];
 
   return (
@@ -147,7 +135,7 @@ const Notification = () => {
             {detailLoading ? (
               <LoadingData message="Loading notification..." />
             ) : detail?.resolved_content ? (
-              <div className="notif-content" dangerouslySetInnerHTML={{ __html: detail.resolved_content }}/>
+              <div className="notif-content" dangerouslySetInnerHTML={{ __html: stripSpanStyles(detail.resolved_content) }}/>
             ) : (
               <p className="cs-panel-empty">No content available.</p>
             )}

@@ -13,7 +13,7 @@ const Templates = () => {
   const tabRoutes = [
     { label: "Grading Templates", link: "" },
     { label: "Fee Bill Templates", link: "/fee_bill" },
-    { label: "Timetable Templates", link: "/timetable" },
+    // { label: "Timetable Templates", link: "/timetable" },
     { label: "Announcement Templates", link: "/announcement" },
     { label: "Class Promotion Templates", link: "/class_promotion" },
   ];

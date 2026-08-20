@@ -1,3 +1,98 @@
+/* ── Notification bell badge + shake ── */
+.sft_bell_btn {
+  position: relative;
+}
+
+.sft_bell_badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: #ef4444;
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 16px;
+  text-align: center;
+  pointer-events: none;
+}
+
+@keyframes sft_bell_shake {
+  0%   { transform: rotate(0deg); }
+  15%  { transform: rotate(18deg); }
+  30%  { transform: rotate(-16deg); }
+  45%  { transform: rotate(12deg); }
+  60%  { transform: rotate(-10deg); }
+  75%  { transform: rotate(6deg); }
+  90%  { transform: rotate(-4deg); }
+  100% { transform: rotate(0deg); }
+}
+
+.sft_bell_shake {
+  animation: sft_bell_shake 0.82s cubic-bezier(0.36, 0.07, 0.19, 0.97);
+}
+
+[data-theme="dark"] .sft_bell_badge {
+  background: #dc2626;
+  box-shadow: 0 0 0 2px #1a1a1a;
+}
+
+/* Divider between Scladapp brand and school */
+.sft_brand_divider {
+  width: 1px;
+  height: 22px;
+  background: #e5e7eb;
+  flex-shrink: 0;
+}
+
+/* School identity */
+.sft_school_brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.sft_school_logo {
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  object-fit: cover;
+  border: 1px solid #e5e7eb;
+  flex-shrink: 0;
+}
+
+.sft_school_logo_fallback {
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  background: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.sft_school_name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 180px;
+}
+
+/* Dark theme — school brand */
+[data-theme="dark"] .sft_brand_divider { background: #3a3a3a; }
+[data-theme="dark"] .sft_school_name { color: #cccccc; }
+[data-theme="dark"] .sft_school_logo { border-color: #3a3a3a; }
+[data-theme="dark"] .sft_school_logo_fallback { background: #2a2a2a; border-color: #3a3a3a; }
+
 /* School switch buttons inside dropdown */
 .st_switch_btn {
   width: 100%;

@@ -8,6 +8,7 @@ import {
   FaPrint,
   FaUserTimes,
   FaEdit,
+  FaPaperPlane,
 } from "react-icons/fa";
 
 const StudentInfoCard = ({
@@ -16,6 +17,7 @@ const StudentInfoCard = ({
   onPrint,
   onRemoveFromSchool,
   onEdit,
+  onResendInvite,
   schoolId,
 }) => {
   const navigate = useNavigate();
@@ -133,6 +135,9 @@ const StudentInfoCard = ({
               <div className="sic-dropdown">
                 <button className="sic-dropdown-item" onClick={() => { onEdit?.(); setShowDropdown(false); }}>
                   <FaEdit size={13} /> Edit Student
+                </button>
+                <button className="sic-dropdown-item" onClick={() => { onResendInvite?.(); setShowDropdown(false); }}>
+                  <FaPaperPlane size={13} /> Resend Invite Link
                 </button>
                 <div className="sic-dropdown-divider" />
                 <button className="sic-dropdown-item" onClick={() => { onExport?.(); setShowDropdown(false); }}>

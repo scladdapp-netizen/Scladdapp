@@ -589,6 +589,25 @@
 @media (max-width: 640px) {
   .rsi-remarks-row { flex-direction: column; }
   .rsi-topbar { flex-direction: column; align-items: flex-start; }
+  .rsi-section-remarks-row { flex-direction: column; }
+}
+
+/* ── Section + Remarks side-by-side ──────────────────────────────────────── */
+.rsi-section-remarks-row {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.rsi-section-remarks-row .rsi-section {
+  flex: 1;
+  min-width: 0;
+}
+
+.rsi-section-remarks-row .rsi-remarks-row {
+  flex-direction: column;
+  flex: 1;
+  gap: 12px;
 }
 
 /* ── Dark theme ───────────────────────────────────────────────────────────── */
@@ -658,3 +677,112 @@
 [data-theme="dark"] .rsi-check-val   { color: #e0e0e0; }
 [data-theme="dark"] .rsi-btn-danger  { background: #2d0a0a; border-color: #991b1b; color: #f87171; }
 [data-theme="dark"] .rsi-btn-danger:hover { background: #3d1010; }
+
+/* ── Inline cell editing ─────────────────────────────────────────────────── */
+.rsi-editable-cell {
+  cursor: default;
+  position: relative;
+  transition: background 0.1s;
+  user-select: none;
+}
+
+.rsi-editable-cell:not(.rsi-cell-active):hover {
+  background: #f0f7ff;
+  outline: 1px dashed #93c5fd;
+  outline-offset: -2px;
+  border-radius: 4px;
+  cursor: cell;
+}
+
+.rsi-cell-active {
+  background: #f8faff !important;
+  padding: 4px 8px !important;
+}
+
+.rsi-inline-edit-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.rsi-inline-input {
+  width: 70px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: 2px solid #3b82f6;
+  font-size: 13px;
+  font-weight: 600;
+  color: #111111;
+  background: #ffffff;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
+  -moz-appearance: textfield;
+}
+.rsi-inline-input::-webkit-inner-spin-button,
+.rsi-inline-input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+.rsi-inline-input.rsi-input-error { border-color: #ef4444; box-shadow: 0 0 0 3px rgba(239,68,68,0.15); }
+
+.rsi-inline-error {
+  font-size: 10px;
+  font-weight: 700;
+  color: #ef4444;
+  white-space: nowrap;
+}
+
+.rsi-inline-select {
+  padding: 5px 8px;
+  border-radius: 6px;
+  border: 2px solid #3b82f6;
+  font-size: 13px;
+  font-weight: 600;
+  color: #111111;
+  background: #ffffff;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
+  cursor: pointer;
+  min-width: 160px;
+}
+
+.rsi-cell-display {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.rsi-cell-spinner {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 2px solid #d1d5db;
+  border-top-color: #3b82f6;
+  animation: rsi-spin 0.6s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes rsi-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Remove old pulse dot */
+
+/* ── Dark theme inline editing ───────────────────────────────────────────── */
+[data-theme="dark"] .rsi-editable-cell:not(.rsi-cell-active):hover {
+  background: #0d1f3c;
+  outline-color: #1d4ed8;
+}
+[data-theme="dark"] .rsi-cell-active { background: #111827 !important; }
+[data-theme="dark"] .rsi-inline-input {
+  background: #1e1e1e;
+  border-color: #3b82f6;
+  color: #e0e0e0;
+}
+[data-theme="dark"] .rsi-inline-select {
+  background: #1e1e1e;
+  border-color: #3b82f6;
+  color: #e0e0e0;
+}
+[data-theme="dark"] .rsi-cell-spinner {
+  border-color: #3a3a3a;
+  border-top-color: #60a5fa;
+}

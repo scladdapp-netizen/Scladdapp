@@ -1,0 +1,313 @@
+/* ── Buy Tokens Modal ──────────────────────────────────────────────────────── */
+.btm-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: btm-fade 0.2s ease;
+}
+@keyframes btm-fade { from { opacity: 0; } to { opacity: 1; } }
+
+.btm-modal {
+  width: 480px;
+  max-width: 95vw;
+  background: #141414;
+  border: 1px solid #2a2a2a;
+  border-radius: 18px;
+  overflow: hidden;
+  animation: btm-slide 0.25s ease;
+}
+@keyframes btm-slide {
+  from { opacity: 0; transform: translateY(12px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0)   scale(1);    }
+}
+
+.btm-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid #222222;
+}
+.btm-header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.btm-header-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #2d2a4a, #1e1a3a);
+  border: 1px solid #3a3360;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #a29bfe;
+}
+.btm-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 800;
+  color: #f0f0f0;
+  letter-spacing: -0.01em;
+}
+.btm-subtitle {
+  margin: 2px 0 0;
+  font-size: 12px;
+  color: #555555;
+}
+.btm-close {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  border: 1px solid #2a2a2a;
+  background: #1a1a1a;
+  color: #666666;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+  transition: background 0.15s, color 0.15s;
+}
+.btm-close:hover { background: #2a2a2a; color: #e0e0e0; }
+
+/* current balance */
+.btm-balance {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 24px;
+  background: #0d0d0d;
+  border-bottom: 1px solid #222222;
+}
+.btm-balance-label { font-size: 12px; color: #555555; font-weight: 600; }
+.btm-balance-count { font-size: 22px; font-weight: 900; color: #a29bfe; }
+.btm-balance-unit  { font-size: 12px; color: #444444; font-weight: 500; }
+
+/* packages */
+.btm-packages {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 20px 24px;
+}
+.btm-packages-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: #444444;
+  margin-bottom: 2px;
+}
+.btm-package {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 1px solid #2a2a2a;
+  background: #1a1a1a;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  position: relative;
+}
+.btm-package:hover {
+  border-color: #6c5ce7;
+  background: #1e1a3a;
+}
+.btm-package--selected {
+  border-color: #6c5ce7;
+  background: #1e1a3a;
+}
+.btm-package--popular {
+  border-color: #6c5ce7;
+}
+.btm-popular-badge {
+  position: absolute;
+  top: -9px;
+  left: 16px;
+  padding: 2px 9px;
+  border-radius: 100px;
+  background: #6c5ce7;
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.btm-pkg-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+  background: rgba(108, 92, 231, 0.15);
+  border: 1px solid rgba(108, 92, 231, 0.2);
+}
+.btm-pkg-info { flex: 1; min-width: 0; }
+.btm-pkg-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: #e0e0e0;
+  margin: 0 0 2px;
+}
+.btm-pkg-tokens {
+  font-size: 12px;
+  color: #888888;
+  font-weight: 500;
+}
+.btm-pkg-tokens strong { color: #a29bfe; }
+.btm-pkg-price {
+  font-size: 18px;
+  font-weight: 900;
+  color: #ffffff;
+  flex-shrink: 0;
+}
+.btm-pkg-per {
+  font-size: 10px;
+  color: #444444;
+  font-weight: 400;
+  display: block;
+  text-align: right;
+}
+
+/* radio dot */
+.btm-radio {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid #3a3a3a;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.15s;
+}
+.btm-package--selected .btm-radio {
+  border-color: #6c5ce7;
+}
+.btm-radio-inner {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #6c5ce7;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.btm-package--selected .btm-radio-inner { opacity: 1; }
+
+/* footer */
+.btm-footer {
+  padding: 16px 24px 20px;
+  border-top: 1px solid #222222;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.btm-pay-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 13px;
+  border-radius: 12px;
+  border: none;
+  background: #6c5ce7;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s, opacity 0.15s;
+}
+.btm-pay-btn:hover { background: #7c6cf7; }
+.btm-pay-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.btm-pay-note {
+  text-align: center;
+  font-size: 11px;
+  color: #444444;
+  margin: 0;
+}
+.btm-pay-note a { color: #6c5ce7; }
+
+/* ── Success state ────────────────────────────────────────────────────────── */
+.btm-success {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 36px 24px 28px;
+  text-align: center;
+}
+
+.btm-success-icon {
+  color: #22c55e;
+}
+
+.btm-success-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 800;
+  color: #f0f0f0;
+}
+
+.btm-success-body {
+  margin: 0;
+  font-size: 13px;
+  color: #888;
+  line-height: 1.6;
+}
+
+.btm-success-body strong {
+  color: #a29bfe;
+}
+
+.btm-done-btn {
+  margin-top: 8px;
+  padding: 12px 32px;
+  border-radius: 12px;
+  border: none;
+  background: #22c55e;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.btm-done-btn:hover { background: #16a34a; }
+
+/* ── Error message ────────────────────────────────────────────────────────── */
+.btm-error {
+  margin: 0 0 8px;
+  padding: 10px 14px;
+  background: rgba(248, 113, 113, 0.08);
+  border: 1px solid rgba(248, 113, 113, 0.2);
+  border-radius: 8px;
+  color: #f87171;
+  font-size: 12px;
+  line-height: 1.5;
+  text-align: center;
+}
+
+/* ── Pay button spinner ───────────────────────────────────────────────────── */
+.btm-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: btm-spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes btm-spin { to { transform: rotate(360deg); } }

@@ -164,6 +164,18 @@ const useNotification = () => {
     }
   };
 
+  const getUserUnreadCount = async (userId) => {
+    try {
+      const res  = await fetch(`${API_BASE_URL}/api/notifications/user/${userId}`);
+      const data = await res.json();
+      if (!data.success) return { success: false, count: 0 };
+      const count = (data.data || []).filter((n) => !n.is_read).length;
+      return { success: true, count };
+    } catch {
+      return { success: false, count: 0 };
+    }
+  };
+
   return {
     loading,
     error,
@@ -174,6 +186,7 @@ const useNotification = () => {
     getNotificationsBySchool,
     getUserNotifications,
     getUserNotificationsPaginated,
+    getUserUnreadCount,
     markAsRead,
     deleteNotification,
   };

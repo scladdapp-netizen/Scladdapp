@@ -1,5 +1,5 @@
-import { useState, useRef, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useState, useRef, useEffect, useCallback } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import Button from "../../../../../components/Button/Button";
 import SlideInMenu from "../../../../../components/SlideInMenu/SlideInMenu";
 import FormInput from "../../../../../components/FormInput";
@@ -11,17 +11,114 @@ import SubAdminGuard from "../../../../../components/SubAdminGuard/SubAdminGuard
 import LoadingData from "../../../../../components/LoadingData/LoadingData";
 import { FaPlus, FaEdit, FaCopy, FaTrash } from "react-icons/fa";
 
+// ── Email layout helpers (mirrors EditAnnouncementTemplatePage) ───────────────
+
+const isDarkColor = (hex = "#000000") => {
+  const h = hex.replace("#", "");
+  const r = parseInt(h.slice(0,2)||"00",16);
+  const g = parseInt(h.slice(2,4)||"00",16);
+  const b = parseInt(h.slice(4,6)||"00",16);
+  return (r*0.299 + g*0.587 + b*0.114) < 128;
+};
+
+const renderEmailNode = (node) => {
+  if (!node) return "";
+  if (node.type === "text") {
+    let t = (node.text || "")
+      .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+    const marks = node.marks || [];
+    if (marks.find(m=>m.type==="bold"))      t = `<strong>${t}</strong>`;
+    if (marks.find(m=>m.type==="italic"))     t = `<em>${t}</em>`;
+    if (marks.find(m=>m.type==="underline"))  t = `<u>${t}</u>`;
+    if (marks.find(m=>m.type==="strike"))     t = `<s>${t}</s>`;
+    const ts = marks.find(m=>m.type==="textStyle");
+    if (ts?.attrs?.color) t = `<span style="color:${ts.attrs.color}">${t}</span>`;
+    return t;
+  }
+  if (node.type === "image") {
+    const w = node.attrs?.width  ? ` width="${node.attrs.width}"`  : "";
+    const h2 = node.attrs?.height ? ` height="${node.attrs.height}"` : "";
+    return `<img src="${node.attrs?.src||""}" alt="${node.attrs?.alt||""}"${w}${h2} style="max-width:100%;height:auto;border-radius:4px;display:block;margin:6px auto"/>`;
+  }
+  const inner = (node.content||[]).map(renderEmailNode).join("");
+  const align = node.attrs?.textAlign;
+  const aStyle = align ? `text-align:${align};` : "";
+  if (node.type==="paragraph")   return `<p style="margin:0 0 6px;${aStyle}">${inner||"&nbsp;"}</p>`;
+  if (node.type==="heading")     return `<h${node.attrs?.level||2} style="margin:0 0 8px;${aStyle}">${inner}</h${node.attrs?.level||2}>`;
+  if (node.type==="bulletList")  return `<ul style="margin:4px 0 4px 18px;padding:0">${inner}</ul>`;
+  if (node.type==="orderedList") return `<ol style="margin:4px 0 4px 18px;padding:0">${inner}</ol>`;
+  if (node.type==="listItem")    return `<li style="margin-bottom:3px">${inner}</li>`;
+  if (node.type==="hardBreak")   return `<br/>`;
+  return inner;
+};
+
+const docToHtmlStr = (doc) => {
+  if (!doc?.content) return "";
+  return (doc.content||[]).map(renderEmailNode).join("");
+};
+
+const buildEmailSectionHtml = (html, bg, bgImg, overlay) => {
+  if (bgImg) {
+    const tint = overlay > 0
+      ? `rgba(0,0,0,${overlay})`
+      : overlay < 0
+        ? `rgba(255,255,255,${Math.abs(overlay)})`
+        : "transparent";
+    return `<div style="position:relative;background-image:url(${bgImg});background-size:cover;background-position:center;padding:22px 28px">
+      <div style="position:absolute;inset:0;background:${tint};pointer-events:none"></div>
+      <div style="position:relative;z-index:1;color:#ffffff">${html}</div>
+    </div>`;
+  }
+  return `<div style="background:${bg};padding:22px 28px;color:${isDarkColor(bg)?"#ffffff":"#1e293b"}">${html}</div>`;
+};
+
+const parseStoredLayout = (raw) => {
+  if (!raw) return null;
+  if (typeof raw === "object") return raw;
+  try { return JSON.parse(raw); } catch { return null; }
+};
+
+const buildFullEmailPreviewHtml = (template, schoolName) => {
+  const stored = parseStoredLayout(template.html_template);
+  if (!stored?.top_doc && !stored?.bottom_doc) return null;
+
+  const topHtml    = docToHtmlStr(stored.top_doc    || { type:"doc", content:[] });
+  const bottomHtml = docToHtmlStr(stored.bottom_doc || { type:"doc", content:[] });
+
+  const topBg       = stored.top_bg       || "#1e293b";
+  const topBgImg    = stored.top_bg_img   || null;
+  const topOverlay  = stored.top_overlay  ?? 0.4;
+  const bottomBg    = stored.bottom_bg    || "#f9fafb";
+  const bottomBgImg = stored.bottom_bg_img || null;
+  const bottomOver  = stored.bottom_overlay ?? 0;
+
+  const sampleContent = template.content
+    ? `<p style="margin:0 0 8px;color:#374151;font-size:14px">${template.content}</p>`
+    : `<p style="color:#9ca3af;font-style:italic;font-size:13px">Announcement content will appear here.</p>`;
+
+  return `
+    <div style="max-width:540px;margin:0 auto;font-family:Arial,Helvetica,sans-serif;background:#fff;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden">
+      ${buildEmailSectionHtml(topHtml, topBg, topBgImg, topOverlay)}
+      <div style="padding:24px 28px;background:#ffffff;border-top:2px dashed #e5e7eb;border-bottom:2px dashed #e5e7eb">${sampleContent}</div>
+      ${buildEmailSectionHtml(bottomHtml, bottomBg, bottomBgImg, bottomOver)}
+    </div>`;
+};
+
 const AnnouncementTemplates = () => {
   const { schoolId } = useParams();
+  const navigate = useNavigate();
   const { addNotification } = useNotification();
   const { user } = useAuth();
   const {
     createAnnouncementTemplate,
     getAnnouncementTemplatesBySchool,
+    getAnnouncementTemplateById,
     updateAnnouncementTemplate,
     deleteAnnouncementTemplate,
     duplicateAnnouncementTemplate,
     updateTemplateStatus,
+    saveHtmlDraft,
+    publishHtmlDraft,
   } = useAnnouncementTemplate();
 
   // Permission helpers
@@ -41,6 +138,16 @@ const AnnouncementTemplates = () => {
   const [dataLoading, setDataLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const contentEditorRef = useRef(null);
+
+  // Full template detail (includes html_template from API)
+  const [fullTemplate, setFullTemplate] = useState(null);
+  const [detailLoading, setDetailLoading] = useState(false);
+  // Track whether the rich-text editor is empty (for placeholder visibility)
+  const [editorIsEmpty, setEditorIsEmpty] = useState(true);
+
+  // Link insertion modal
+  const [linkModal, setLinkModal] = useState(null); // null | { mode:"new"|"edit", label:"", url:"", anchorNode: el|null }
+  const savedRangeRef = useRef(null); // saved selection before modal opens
 
   // Fetch templates on mount
   useEffect(() => {
@@ -260,6 +367,133 @@ const AnnouncementTemplates = () => {
     }
   };
 
+  // Wrap selected text (or insert) in a heading tag
+  const insertHeading = (level) => {
+    if (!contentEditorRef.current) return;
+    contentEditorRef.current.focus();
+    const sel = window.getSelection();
+    if (!sel || sel.rangeCount === 0) return;
+    const range = sel.getRangeAt(0);
+    // Check if we're already inside this heading — if so, unwrap
+    let node = range.commonAncestorContainer;
+    while (node && node !== contentEditorRef.current) {
+      if (node.nodeName === `H${level}`) {
+        // Unwrap: replace heading with its inner content
+        const frag = document.createDocumentFragment();
+        while (node.firstChild) frag.appendChild(node.firstChild);
+        node.parentNode.replaceChild(frag, node);
+        const newContent = contentEditorRef.current.innerHTML;
+        contentEditorRef.current.latestContent = newContent;
+        handleInputChange("content")(newContent);
+        return;
+      }
+      node = node.parentNode;
+    }
+    // Wrap selection in heading
+    const heading = document.createElement(`h${level}`);
+    try {
+      range.surroundContents(heading);
+    } catch {
+      // Selection spans multiple blocks — just insert a heading with selected text
+      const selectedText = range.extractContents();
+      heading.appendChild(selectedText);
+      range.insertNode(heading);
+    }
+    const newContent = contentEditorRef.current.innerHTML;
+    contentEditorRef.current.latestContent = newContent;
+    handleInputChange("content")(newContent);
+  };
+
+  // Insert / edit a hyperlink — opens inline modal
+  const insertLink = () => {
+    if (!contentEditorRef.current) return;
+    contentEditorRef.current.focus();
+    const sel = window.getSelection();
+    if (!sel || sel.rangeCount === 0) return;
+
+    // Save the selection so we can restore it when modal confirms
+    savedRangeRef.current = sel.getRangeAt(0).cloneRange();
+
+    // Check if cursor is inside an existing link
+    let node = sel.getRangeAt(0).commonAncestorContainer;
+    while (node && node !== contentEditorRef.current) {
+      if (node.nodeName === "A") {
+        setLinkModal({ mode: "edit", label: node.textContent, url: node.href, anchorNode: node });
+        return;
+      }
+      node = node.parentNode;
+    }
+
+    // New link — pre-fill label from selected text
+    const selectedText = sel.getRangeAt(0).toString();
+    setLinkModal({ mode: "new", label: selectedText, url: "https://", anchorNode: null });
+  };
+
+  const confirmLink = () => {
+    if (!linkModal) return;
+    const { mode, label, url, anchorNode } = linkModal;
+    const cleanUrl = url.trim();
+    const cleanLabel = label.trim();
+
+    if (mode === "edit" && anchorNode) {
+      if (!cleanUrl || cleanUrl === "https://") {
+        // Remove link
+        const frag = document.createDocumentFragment();
+        while (anchorNode.firstChild) frag.appendChild(anchorNode.firstChild);
+        anchorNode.parentNode.replaceChild(frag, anchorNode);
+      } else {
+        anchorNode.href = cleanUrl;
+        if (cleanLabel) anchorNode.textContent = cleanLabel;
+      }
+    } else {
+      // Restore saved selection
+      if (savedRangeRef.current) {
+        const sel = window.getSelection();
+        sel.removeAllRanges();
+        sel.addRange(savedRangeRef.current);
+      }
+      if (!cleanUrl || cleanUrl === "https://") {
+        setLinkModal(null);
+        return;
+      }
+      // If there's selected text, createLink wraps it; otherwise insert label as text
+      const sel = window.getSelection();
+      const hasSelection = sel && sel.rangeCount > 0 && !sel.getRangeAt(0).collapsed;
+      if (hasSelection) {
+        document.execCommand("createLink", false, cleanUrl);
+      } else {
+        // Insert label text as a link
+        const a = document.createElement("a");
+        a.href = cleanUrl;
+        a.textContent = cleanLabel || cleanUrl;
+        a.target = "_blank";
+        a.rel = "noopener noreferrer";
+        if (sel && sel.rangeCount > 0) {
+          const range = sel.getRangeAt(0);
+          range.deleteContents();
+          range.insertNode(a);
+          range.setStartAfter(a);
+          range.collapse(true);
+          sel.removeAllRanges();
+          sel.addRange(range);
+        }
+      }
+    }
+
+    // Ensure all links open in new tab
+    contentEditorRef.current?.querySelectorAll("a").forEach((a) => {
+      a.target = "_blank";
+      a.rel = "noopener noreferrer";
+    });
+
+    const newContent = contentEditorRef.current?.innerHTML || "";
+    contentEditorRef.current.latestContent = newContent;
+    handleInputChange("content")(newContent);
+    setLinkModal(null);
+  };
+
+  const cancelLink = () => setLinkModal(null);
+
   // Insert placeholder into rich text editor
   const insertPlaceholderIntoEditor = (placeholder) => {
     if (contentEditorRef.current) {
@@ -311,6 +545,8 @@ const AnnouncementTemplates = () => {
     if (contentEditorRef.current) {
       contentEditorRef.current.latestContent = newContent;
     }
+    // Update placeholder visibility based on actual DOM content
+    setEditorIsEmpty(e.target.innerText.trim() === "" && e.target.innerHTML.trim() === "");
   };
 
   // Handle content editor blur to save content
@@ -459,6 +695,7 @@ const AnnouncementTemplates = () => {
       if (contentEditorRef.current) {
         contentEditorRef.current.innerHTML = "";
       }
+      setEditorIsEmpty(true);
     }, 100);
   };
 
@@ -485,12 +722,23 @@ const AnnouncementTemplates = () => {
       if (contentEditorRef.current) {
         contentEditorRef.current.innerHTML = template.content || "";
       }
+      setEditorIsEmpty(!template.content || template.content.trim() === "");
     }, 100);
   };
 
   const handleViewTemplate = (template) => {
     setSelectedTemplate(template);
+    setFullTemplate(null);
     setIsDetailMenuOpen(true);
+    // Fetch full template to get html_template for email preview
+    (async () => {
+      setDetailLoading(true);
+      const res = await getAnnouncementTemplateById(template.id);
+      if (res.success && res.data) {
+        setFullTemplate(res.data);
+      }
+      setDetailLoading(false);
+    })();
   };
 
   const handlePreview = () => {
@@ -551,7 +799,80 @@ const AnnouncementTemplates = () => {
           "success"
         );
         setIsCreateMenuOpen(false);
-        await loadTemplates(); // Reload templates
+        if (!selectedTemplate && result.data?.template_id) {
+          // Build and save the default email layout before opening the editor
+          const schoolName = user?.school?.school_name || "";
+          const logoUrl    = user?.school?.logo_url    || "";
+          const templateName = backendData.name || "";
+
+          const defaultTopDoc = {
+            type: "doc",
+            content: [
+              ...(logoUrl ? [{
+                type: "paragraph",
+                attrs: { textAlign: "center" },
+                content: [{ type: "image", attrs: { src: logoUrl, alt: "School Logo", title: null, width: 64, height: 64 } }],
+              }] : []),
+              {
+                type: "paragraph",
+                attrs: { textAlign: "center" },
+                content: [{ type: "text", marks: [{ type: "bold" }], text: schoolName || "SCHOOL NAME" }],
+              },
+              {
+                type: "paragraph",
+                attrs: { textAlign: "center" },
+                content: [{ type: "text", text: "Official School Communication" }],
+              },
+              { type: "paragraph", content: [] },
+              {
+                type: "paragraph",
+                content: [
+                  { type: "text", marks: [{ type: "bold" }], text: "Subject: " },
+                  { type: "text", text: templateName || "Announcement Subject" },
+                ],
+              },
+            ],
+          };
+
+          const defaultBottomDoc = {
+            type: "doc",
+            content: [
+              {
+                type: "paragraph",
+                attrs: { textAlign: "center" },
+                content: [{ type: "text", marks: [{ type: "bold" }], text: "Warm regards," }],
+              },
+              {
+                type: "paragraph",
+                attrs: { textAlign: "center" },
+                content: [{ type: "text", text: `${schoolName || "School"} Administration` }],
+              },
+              {
+                type: "paragraph",
+                attrs: { textAlign: "center" },
+                content: [{ type: "text", text: "This is an official communication. Please do not reply directly." }],
+              },
+            ],
+          };
+
+          const defaultLayout = JSON.stringify({
+            top_doc:        defaultTopDoc,
+            bottom_doc:     defaultBottomDoc,
+            top_bg:         "#1e293b",
+            top_bg_img:     null,
+            top_overlay:    0.4,
+            bottom_bg:      "#f9fafb",
+            bottom_bg_img:  null,
+            bottom_overlay: 0,
+          });
+
+          await saveHtmlDraft(result.data.template_id, defaultLayout);
+          await publishHtmlDraft(result.data.template_id);
+
+          navigate(`/admin/${schoolId}/templates/announcement/edit/${result.data.template_id}`);
+        } else {
+          await loadTemplates();
+        }
       } else {
         addNotification(result.message || "Operation failed", "error");
       }
@@ -908,7 +1229,7 @@ const AnnouncementTemplates = () => {
                   </div>
                 </div>
 
-                <div className="content-section">
+    <div className="content-section">
                   <div className="content-header">
                     <label className="form-label">
                       Subject Line Template *
@@ -935,7 +1256,6 @@ const AnnouncementTemplates = () => {
                     placeholder="e.g., Important Update from {school_name}"
                   />
                 </div>
-
                 <div className="content-section">
                   <div className="content-header">
                     <label className="form-label">
@@ -983,6 +1303,36 @@ const AnnouncementTemplates = () => {
                       >
                         <u>U</u>
                       </button>
+
+                      <span className="format-sep" />
+
+                      <button
+                        type="button"
+                        className="format-btn format-btn-heading"
+                        title="Heading 1"
+                        onClick={() => insertHeading(1)}
+                      >
+                        H1
+                      </button>
+                      <button
+                        type="button"
+                        className="format-btn format-btn-heading"
+                        title="Heading 2"
+                        onClick={() => insertHeading(2)}
+                      >
+                        H2
+                      </button>
+                      <button
+                        type="button"
+                        className="format-btn format-btn-heading"
+                        title="Heading 3"
+                        onClick={() => insertHeading(3)}
+                      >
+                        H3
+                      </button>
+
+                      <span className="format-sep" />
+
                       <button
                         type="button"
                         className="format-btn"
@@ -999,6 +1349,17 @@ const AnnouncementTemplates = () => {
                       >
                         1. List
                       </button>
+
+                      <span className="format-sep" />
+
+                      <button
+                        type="button"
+                        className="format-btn"
+                        title="Insert / edit link"
+                        onClick={insertLink}
+                      >
+                        🔗 Link
+                      </button>
                     </div>
 
                     <div className="editor-wrapper">
@@ -1010,61 +1371,88 @@ const AnnouncementTemplates = () => {
                         onInput={handleContentEditorInput}
                         onBlur={handleContentEditorBlur}
                         onKeyDown={(e) => {
-                          // Handle Enter key to create proper line breaks
+                          // Walk up from a DOM node to find an ancestor <li>
+                          // that is inside the editor
+                          const findLi = () => {
+                            const sel = window.getSelection();
+                            if (!sel || sel.rangeCount === 0) return null;
+                            let node = sel.getRangeAt(0).startContainer;
+                            while (node && node !== contentEditorRef.current) {
+                              if (node.nodeType === 1 && node.nodeName === "LI") return node;
+                              node = node.parentNode;
+                            }
+                            return null;
+                          };
+
+                          // An li counts as empty if it has no real text
+                          const isEmpty = (li) =>
+                            (li.textContent || "").replace(/[\u00a0\n]/g, "").trim() === "";
+
+                          // Remove li, exit the list, place cursor after
+                          const exitList = (li) => {
+                            const sel = window.getSelection();
+                            const list = li.parentNode;
+                            const afterList = list.nextSibling;
+                            li.remove();
+                            // Drop a text node after the list so cursor has somewhere to go
+                            const textNode = document.createTextNode("\u200b");
+                            if (afterList) {
+                              list.parentNode.insertBefore(textNode, afterList);
+                            } else {
+                              list.parentNode.appendChild(textNode);
+                            }
+                            // Clean up empty list
+                            if (list.children.length === 0) list.remove();
+                            // Move cursor to the text node
+                            const r = document.createRange();
+                            r.setStart(textNode, 1);
+                            r.collapse(true);
+                            sel.removeAllRanges();
+                            sel.addRange(r);
+                          };
+
                           if (e.key === "Enter" && !e.shiftKey) {
-                            e.preventDefault();
-                            document.execCommand(
-                              "insertHTML",
-                              false,
-                              "<br><br>"
-                            );
+                            const li = findLi();
+                            if (li) {
+                              if (isEmpty(li)) {
+                                e.preventDefault();
+                                exitList(li);
+                              }
+                              // non-empty li: browser adds next li naturally
+                            } else {
+                              e.preventDefault();
+                              document.execCommand("insertHTML", false, "<br><br>");
+                            }
                           }
 
-                          // Reset formatting when typing after placeholders
-                          if (
-                            e.key.length === 1 ||
-                            e.key === "Backspace" ||
-                            e.key === "Delete"
-                          ) {
-                            setTimeout(() => {
-                              const selection = window.getSelection();
-                              if (selection.rangeCount > 0) {
-                                const range = selection.getRangeAt(0);
-                                const container = range.commonAncestorContainer;
+                          if (e.key === "Backspace") {
+                            const li = findLi();
+                            if (li && isEmpty(li)) {
+                              e.preventDefault();
+                              exitList(li);
+                            }
+                          }
 
-                                // If we're in a span that's not a placeholder, remove its styling
-                                if (
-                                  container.nodeType === Node.TEXT_NODE &&
-                                  container.parentElement
-                                ) {
-                                  const parent = container.parentElement;
-                                  if (
-                                    parent.tagName === "SPAN" &&
-                                    !parent.classList.contains(
-                                      "placeholder-tag"
-                                    )
-                                  ) {
-                                    // Remove inline styles that might cause inheritance
-                                    parent.style.background = "";
-                                    parent.style.color = "";
-                                    parent.style.fontWeight = "";
-                                  }
+                          // Reset span formatting inherited from placeholder tags
+                          if (e.key.length === 1 || e.key === "Backspace" || e.key === "Delete") {
+                            setTimeout(() => {
+                              const sel = window.getSelection();
+                              if (!sel || sel.rangeCount === 0) return;
+                              const container = sel.getRangeAt(0).commonAncestorContainer;
+                              if (container.nodeType === Node.TEXT_NODE && container.parentElement) {
+                                const parent = container.parentElement;
+                                if (parent.tagName === "SPAN" && !parent.classList.contains("placeholder-tag")) {
+                                  parent.style.background = "";
+                                  parent.style.color = "";
+                                  parent.style.fontWeight = "";
                                 }
                               }
                             }, 0);
                           }
                         }}
-                        style={{
-                          minHeight: "150px",
-                          padding: "12px",
-                          outline: "none",
-                          fontSize: "14px",
-                          lineHeight: "1.5",
-                          backgroundColor: "white",
-                        }}
                       />
 
-                      {!formData.content && (
+                      {editorIsEmpty && (
                         <div className="editor-placeholder">
                           Write your announcement content template here. Use
                           placeholders and formatting...
@@ -1157,6 +1545,65 @@ const AnnouncementTemplates = () => {
                   Template
                 </Button>
               </div>
+
+              {/* Link insertion modal */}
+              {linkModal && (
+                <div className="at-link-modal-overlay" onClick={cancelLink}>
+                  <div className="at-link-modal" onClick={(e) => e.stopPropagation()}>
+                    <div className="at-link-modal-title">
+                      {linkModal.mode === "edit" ? "Edit Link" : "Insert Link"}
+                    </div>
+                    <div className="at-link-modal-field">
+                      <label className="at-link-modal-label">Label</label>
+                      <input
+                        className="at-link-modal-input"
+                        type="text"
+                        placeholder="e.g. Click here"
+                        value={linkModal.label}
+                        onChange={(e) => setLinkModal((m) => ({ ...m, label: e.target.value }))}
+                        autoFocus
+                      />
+                    </div>
+                    <div className="at-link-modal-field">
+                      <label className="at-link-modal-label">URL</label>
+                      <input
+                        className="at-link-modal-input"
+                        type="url"
+                        placeholder="https://example.com"
+                        value={linkModal.url}
+                        onChange={(e) => setLinkModal((m) => ({ ...m, url: e.target.value }))}
+                        onKeyDown={(e) => { if (e.key === "Enter") confirmLink(); if (e.key === "Escape") cancelLink(); }}
+                      />
+                    </div>
+                    <div className="at-link-modal-actions">
+                      {linkModal.mode === "edit" && (
+                        <button
+                          className="at-link-modal-remove"
+                          onClick={() => {
+                            // Remove the link
+                            const { anchorNode } = linkModal;
+                            if (anchorNode) {
+                              const frag = document.createDocumentFragment();
+                              while (anchorNode.firstChild) frag.appendChild(anchorNode.firstChild);
+                              anchorNode.parentNode.replaceChild(frag, anchorNode);
+                              const newContent = contentEditorRef.current?.innerHTML || "";
+                              contentEditorRef.current.latestContent = newContent;
+                              handleInputChange("content")(newContent);
+                            }
+                            setLinkModal(null);
+                          }}
+                        >
+                          Remove Link
+                        </button>
+                      )}
+                      <button className="at-link-modal-cancel" onClick={cancelLink}>Cancel</button>
+                      <button className="at-link-modal-confirm" onClick={confirmLink}>
+                        {linkModal.mode === "edit" ? "Save" : "Insert"}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </SlideInMenu>
 
@@ -1195,21 +1642,6 @@ const AnnouncementTemplates = () => {
                 </div>
 
                 <div className="template-detail-content">
-                  {/* Template Configuration */}
-                  <div className="detail-section">
-                    <h3>Template Configuration</h3>
-                    <div className="config-grid">
-                      <div className="config-item">
-                        <strong>Subject Template:</strong>
-                        <span>{selectedTemplate.subject}</span>
-                      </div>
-                      {/* <div className="config-item">
-                        <strong>Delivery Channels:</strong>
-                        <span>{selectedTemplate.channels.join(", ")}</span>
-                      </div> */}
-                    </div>
-                  </div>
-
                   {/* Content Template */}
                   <div className="detail-section">
                     <h3>Content Template</h3>
@@ -1251,19 +1683,49 @@ const AnnouncementTemplates = () => {
                   {/* Announcement Preview */}
                   <div className="detail-section">
                     <h3>Announcement Preview</h3>
-                    <div className="announcement-preview-container">
-                      {(() => {
-                        const preview =
-                          generatePreviewContent(selectedTemplate);
+
+                    {/* Edit Email Layout button — above the preview */}
+                    <div style={{ marginBottom: "14px" }}>
+                      <Button
+                        variant="secondary"
+                        onClick={() => navigate(`/admin/${schoolId}/templates/announcement/edit/${selectedTemplate.id}`)}
+                      >
+                        <FaEdit size={14} style={{ marginRight: "8px" }} />
+                        Edit Email Layout
+                      </Button>
+                    </div>
+
+                    {/* Full email layout preview */}
+                    {detailLoading ? (
+                      <div style={{ padding: "24px", textAlign: "center", color: "#94a3b8", fontSize: "13px" }}>
+                        Loading email preview…
+                      </div>
+                    ) : (() => {
+                      const schoolName = user?.school?.school_name || "";
+                      const previewHtml = fullTemplate
+                        ? buildFullEmailPreviewHtml({ ...fullTemplate, content: selectedTemplate.content }, schoolName)
+                        : null;
+
+                      if (previewHtml) {
                         return (
+                          <div
+                            className="at-email-full-preview"
+                            dangerouslySetInnerHTML={{ __html: previewHtml }}
+                          />
+                        );
+                      }
+
+                      // Fallback: plain text preview if no layout saved yet
+                      const preview = generatePreviewContent(selectedTemplate);
+                      return (
+                        <div className="announcement-preview-container">
                           <div className="email-preview">
                             <div className="email-header">
                               <div className="email-field">
                                 <strong>Subject:</strong> {preview.subject}
                               </div>
                               <div className="email-field">
-                                <strong>From:</strong> Greenwood International
-                                School
+                                <strong>From:</strong> Greenwood International School
                               </div>
                               <div className="email-field">
                                 <strong>To:</strong> John Smith
@@ -1271,17 +1733,13 @@ const AnnouncementTemplates = () => {
                             </div>
                             <div className="email-body">
                               <div className="email-content">
-                                <div
-                                  dangerouslySetInnerHTML={{
-                                    __html: preview.content,
-                                  }}
-                                />
+                                <div dangerouslySetInnerHTML={{ __html: preview.content }} />
                               </div>
                             </div>
                           </div>
-                        );
-                      })()}
-                    </div>
+                        </div>
+                      );
+                    })()}
                   </div>
                 </div>
 
@@ -1292,7 +1750,7 @@ const AnnouncementTemplates = () => {
                     disabled={isSubmitting}
                   >
                     <FaEdit size={14} style={{ marginRight: "8px" }} />
-                    Edit Template
+                    Edit Content
                   </Button>
                   <Button
                     variant="secondary"

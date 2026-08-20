@@ -56,21 +56,8 @@
 
 .te-subtitle { margin: 0; font-size: 12px; color: rgba(255,255,255,0.5); }
 
-/* ── Form tabs ────────────────────────────────────────────────────────────── */
-.te-tabs {
-  display: flex; flex-shrink: 0;
-  border-bottom: 1px solid #f0f0f0;
-}
-
-.te-tab {
-  flex: 1; padding: 10px; border: none; background: #fafafa;
-  font-size: 13px; font-weight: 700; color: #888888;
-  cursor: pointer; transition: background 0.15s, color 0.15s;
-  border-bottom: 2px solid transparent;
-}
-
-.te-tab.active { background: #ffffff; color: #111111; border-bottom-color: #111111; }
-.te-tab:hover:not(.active) { background: #f4f4f4; color: #555555; }
+/* ── Form tabs (removed — kept for reference) ─────────────────────────────── */
+/* .te-tabs / .te-tab styles no longer used */
 
 /* ── Content area ─────────────────────────────────────────────────────────── */
 .te-content {
@@ -106,6 +93,35 @@
 }
 
 .te-select:focus, .te-input:focus { border-color: #111111; }
+
+/* ── Break option row ─────────────────────────────────────────────────────── */
+.te-break-option {
+  display: flex; align-items: center; gap: 9px;
+  padding: 9px 12px; border-radius: 8px;
+  border: 1px solid #e8e8e8; background: #ffffff;
+  font-size: 13px; font-weight: 600; color: #555555;
+  cursor: pointer; transition: border-color 0.15s, background 0.15s, color 0.15s;
+  margin-bottom: 8px; user-select: none;
+}
+
+.te-break-option:hover { border-color: #9ca3af; background: #f9f9f9; color: #333333; }
+
+.te-break-option.selected {
+  border-color: #9ca3af; background: #f5f5f5; color: #111111;
+}
+
+.te-break-option-dot {
+  width: 10px; height: 10px; border-radius: 50%;
+  background: #9ca3af; flex-shrink: 0;
+}
+
+.te-break-option-check {
+  margin-left: auto; font-size: 12px; color: #9ca3af; font-weight: 700;
+}
+
+.te-break-name-input {
+  margin-top: 0;
+}
 
 /* ── Selected subjects ────────────────────────────────────────────────────── */
 .te-subjects-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
@@ -368,6 +384,9 @@
 [data-theme="dark"] .te-tab:hover:not(.active) { background: #1e1e1e; color: #888888; }
 [data-theme="dark"] .te-content::-webkit-scrollbar-thumb { background: #2a2a2a; }
 [data-theme="dark"] .te-form { background: #141414; border-bottom-color: #2a2a2a; }
+[data-theme="dark"] .te-break-option { background: #252525; border-color: #3a3a3a; color: #888888; }
+[data-theme="dark"] .te-break-option:hover { border-color: #6b7280; background: #2a2a2a; color: #cccccc; }
+[data-theme="dark"] .te-break-option.selected { border-color: #9ca3af; background: #2a2a2a; color: #e0e0e0; }
 [data-theme="dark"] .te-field-label { color: #555555; }
 [data-theme="dark"] .te-select,
 [data-theme="dark"] .te-input { background: #252525; border-color: #3a3a3a; color: #e0e0e0; }

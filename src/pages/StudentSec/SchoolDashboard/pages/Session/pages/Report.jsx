@@ -4,7 +4,8 @@ import { useAuth } from "../../../../../../context/AuthContext/AuthContext";
 import useStudentReport from "../../../../../../api_call/useStudentReport";
 import InnerTabCon from "../../../../../../components/InnerTabCon/InnerTabCon";
 import LoadingData from "../../../../../../components/LoadingData/LoadingData";
-import jsPDF from "jspdf";
+import { exportReportPDF } from "../../../../../../utils/exportReportPDF";
+import { exportReportHtml } from "../../../../../../utils/exportReportHtml";
 import "../../../../../AdminSec/AdminPages/StudentProfile/pagesTab/ReportStudentInfo/ReportStudentInfo.css";
 
 const Report = () => {
@@ -18,7 +19,7 @@ const Report = () => {
     loading, fetchSubsession,
     templateData, studentScores, traitScore,
     classAverage, subjectPositions, reportCard,
-    subsessionData, classData,
+    subsessionData, classData, previewData,
   } = useStudentReport(studentId);
 
   useEffect(() => {
@@ -53,140 +54,66 @@ const Report = () => {
 
   // ── PDF Export ────────────────────────────────────────────────────────────
   const handleExportPDF = () => {
-    const doc = new jsPDF({ unit: "mm", format: "a4" });
-    const pageW = doc.internal.pageSize.getWidth();
-    const pageH = doc.internal.pageSize.getHeight();
-    const margin = 16;
-    let y = 0;
+    const studentName = previewData?.student?.studentName
+      || subsessionData?.student_name
+      || classData?.student_name
+      || user?.student?.full_name
+      || "Student";
+    const className   = classData?.class_name || previewData?.student?.class || "—";
+    const sessionName = classData?.session_name || subsessionData?.session_name || previewData?.student?.session || "—";
+    const termName    = subsessionData?.term_name || classData?.subsession_name || previewData?.student?.term || "—";
+    const profileImg  = previewData?.student?.profileImg || null;
 
-    const studentName = user?.student?.full_name || "Student";
-    const className   = classData?.class_name || "—";
-    const sessionName = classData?.session_name || "—";
-    const termName    = subsessionData?.term_name || classData?.subsession_name || "—";
-
-    // Header
-    doc.setFillColor(255, 255, 255);
-    doc.rect(0, 0, pageW, 38, "F");
-    doc.setDrawColor(229, 231, 235); doc.line(0, 38, pageW, 38);
-
-    if (school.logo_url && typeof school.logo_url === "string") {
-      try { doc.addImage(school.logo_url, "JPEG", margin, 6, 22, 22); } catch {}
-    } else {
-      doc.setFillColor(240, 240, 240); doc.circle(margin + 11, 17, 11, "F");
-      doc.setTextColor(150, 150, 150); doc.setFontSize(7); doc.setFont("helvetica", "bold");
-      doc.text("LOGO", margin + 11, 18, { align: "center" });
-    }
-
-    doc.setTextColor(17, 17, 17); doc.setFontSize(13); doc.setFont("helvetica", "bold");
-    doc.text(school.school_name || "School Name", margin + 28, 14);
-    doc.setFontSize(8); doc.setFont("helvetica", "normal"); doc.setTextColor(100, 100, 100);
-    doc.text(school.address || "", margin + 28, 20);
-    doc.text(`${school.phone_number || ""}  ${school.email || ""}`, margin + 28, 26);
-    doc.setTextColor(17, 17, 17); doc.setFontSize(9); doc.setFont("helvetica", "bold");
-    doc.text("STUDENT REPORT CARD", pageW - margin, 14, { align: "right" });
-    doc.setFont("helvetica", "normal"); doc.setFontSize(8); doc.setTextColor(100, 100, 100);
-    doc.text(`${sessionName}  ·  ${termName}`, pageW - margin, 21, { align: "right" });
-    doc.text(`Generated: ${new Date().toLocaleDateString()}`, pageW - margin, 28, { align: "right" });
-
-    y = 46;
-
-    // Student info
-    doc.setFillColor(249, 250, 251);
-    doc.roundedRect(margin, y, pageW - margin * 2, 28, 4, 4, "F");
-    doc.setDrawColor(229, 231, 235); doc.roundedRect(margin, y, pageW - margin * 2, 28, 4, 4, "S");
-    const infoItems = [
-      ["Student", studentName], ["Class", className], ["Session", sessionName],
-      ["Term", termName], ["Class Avg", classAverage ? `${classAverage.average}%` : "—"],
-      ["Position", classPos > 0 ? `${classPos} / ${rankings.length}` : "—"],
-    ];
-    const colW = (pageW - margin * 2) / 3;
-    infoItems.forEach(([label, value], i) => {
-      const cx = margin + 6 + (i % 3) * colW;
-      const cy = y + 8 + Math.floor(i / 3) * 12;
-      doc.setFontSize(7); doc.setFont("helvetica", "bold"); doc.setTextColor(150, 150, 150);
-      doc.text(label.toUpperCase(), cx, cy);
-      doc.setFontSize(9); doc.setFont("helvetica", "normal"); doc.setTextColor(17, 17, 17);
-      doc.text(String(value), cx, cy + 5);
-    });
-    y += 36;
-
-    // Scores table
-    doc.setFontSize(10); doc.setFont("helvetica", "bold"); doc.setTextColor(17, 17, 17);
-    doc.text("Academic Scores", margin, y); y += 6;
-    const subjectColW = 52;
-    const scoreColW = Math.min(18, (pageW - margin * 2 - subjectColW - 24 - 16 - 16) / Math.max(gradingFields.length, 1));
-    const totalColW = 20; const gradeColW = 14; const posColW = 14;
-    doc.setFillColor(17, 17, 17); doc.rect(margin, y, pageW - margin * 2, 7, "F");
-    doc.setTextColor(255, 255, 255); doc.setFontSize(7); doc.setFont("helvetica", "bold");
-    let cx = margin + 3;
-    doc.text("SUBJECT", cx, y + 5); cx += subjectColW;
-    gradingFields.forEach((f) => { doc.text(`${f.field_name}/${f.max_score}`, cx, y + 5, { maxWidth: scoreColW - 1 }); cx += scoreColW; });
-    doc.text("TOTAL", cx, y + 5); cx += totalColW;
-    doc.text("GRADE", cx, y + 5); cx += gradeColW;
-    doc.text("POS", cx, y + 5);
-    y += 7;
-    tableRows.forEach((row, idx) => {
-      const total = row.scores ? gradingFields.reduce((s, f) => s + (Number(row.scores[f.field_name]) || 0), 0) : null;
-      if (idx % 2 === 0) { doc.setFillColor(249, 250, 251); doc.rect(margin, y, pageW - margin * 2, 6.5, "F"); }
-      doc.setTextColor(17, 17, 17); doc.setFontSize(8); doc.setFont("helvetica", "normal");
-      cx = margin + 3;
-      doc.text(row.subject_name, cx, y + 4.5, { maxWidth: subjectColW - 2 }); cx += subjectColW;
-      gradingFields.forEach((f) => { doc.text(String(row.scores ? (row.scores[f.field_name] ?? "—") : "—"), cx, y + 4.5); cx += scoreColW; });
-      doc.setFont("helvetica", "bold");
-      doc.text(total !== null ? String(total) : "—", cx, y + 4.5); cx += totalColW;
-      doc.text(total !== null ? getGrade(total) : "—", cx, y + 4.5); cx += gradeColW;
-      doc.text(String(subjectPositions[row.subject_id] ?? "—"), cx, y + 4.5);
-      doc.setFont("helvetica", "normal"); y += 6.5;
-    });
-    doc.setFillColor(17, 17, 17); doc.rect(margin, y, pageW - margin * 2, 7, "F");
-    doc.setTextColor(255, 255, 255); doc.setFontSize(8); doc.setFont("helvetica", "bold");
-    cx = margin + 3; doc.text("GRAND TOTAL", cx, y + 5); cx += subjectColW + gradingFields.length * scoreColW;
-    doc.text(String(grandTotal), cx, y + 5); y += 14;
-
-    // Traits
-    if (behavioralTraits.length > 0 && traitScore?.traits) {
-      doc.setFontSize(10); doc.setFont("helvetica", "bold"); doc.setTextColor(17, 17, 17);
-      doc.text("Behavioral Traits", margin, y); y += 6;
-      const traitColW = (pageW - margin * 2) / 2 - 4;
-      behavioralTraits.forEach((trait, i) => {
-        const tx = margin + (i % 2) * (traitColW + 8);
-        if (i % 2 === 0) { doc.setFillColor(249, 250, 251); doc.roundedRect(tx, y, traitColW, 6, 2, 2, "F"); }
-        doc.setFontSize(8); doc.setFont("helvetica", "normal"); doc.setTextColor(17, 17, 17);
-        doc.text(trait, tx + 3, y + 4.2);
-        doc.setFont("helvetica", "bold");
-        doc.text(traitScore.traits[trait] || "—", tx + traitColW - 3, y + 4.2, { align: "right" });
-        doc.setFont("helvetica", "normal");
-        if (i % 2 === 1) y += 7;
+    // ── Use html_template if the admin designed a custom layout ─────────────
+    if (templateData?.html_template) {
+      exportReportHtml({
+        htmlTemplate: templateData.html_template,
+        template:     templateData,
+        school,
+        studentData: {
+          studentName,
+          class:          className,
+          session:        sessionName,
+          term:           termName,
+          admissionId:    previewData?.student?.admissionId ?? "—",
+          position:       classPos > 0 ? `${classPos} / ${rankings.length}` : "—",
+          gender:         previewData?.student?.gender ?? "—",
+          dob:            previewData?.student?.dob    ?? "—",
+          profileImg,
+          teacherRemark:   reportCard?.teacher_remark   ?? "",
+          principalRemark: reportCard?.principal_remark ?? "",
+          attendance:      previewData?.student?.attendance ?? null,
+        },
+        tableRows,
+        traitScores:    traitScore?.traits ?? {},
+        classAverage,
+        classPos,
+        totalStudents:  rankings.length,
+        grandTotal,
       });
-      if (behavioralTraits.length % 2 !== 0) y += 7;
-      y += 6;
+      return;
     }
 
-    // Remarks
-    if (reportCard?.teacher_remark || reportCard?.principal_remark) {
-      doc.setFontSize(10); doc.setFont("helvetica", "bold"); doc.setTextColor(17, 17, 17);
-      doc.text("Remarks", margin, y); y += 6;
-      const remarkW = (pageW - margin * 2 - 8) / 2;
-      [["Teacher's Remark", reportCard.teacher_remark], ["Principal's Remark", reportCard.principal_remark]].forEach(([label, text], i) => {
-        const rx = margin + i * (remarkW + 8);
-        doc.setFillColor(249, 250, 251); doc.roundedRect(rx, y, remarkW, 22, 3, 3, "F");
-        doc.setDrawColor(229, 231, 235); doc.roundedRect(rx, y, remarkW, 22, 3, 3, "S");
-        doc.setFontSize(7); doc.setFont("helvetica", "bold"); doc.setTextColor(150, 150, 150);
-        doc.text(label.toUpperCase(), rx + 4, y + 6);
-        doc.setFontSize(8); doc.setFont("helvetica", "normal"); doc.setTextColor(17, 17, 17);
-        doc.text(doc.splitTextToSize(text || "—", remarkW - 8).slice(0, 2), rx + 4, y + 13);
-      });
-      y += 28;
-    }
-
-    // Footer
-    doc.setFillColor(17, 17, 17); doc.rect(0, pageH - 12, pageW, 12, "F");
-    doc.setTextColor(150, 150, 150); doc.setFontSize(7); doc.setFont("helvetica", "normal");
-    doc.text(school.school_name || "", margin, pageH - 5);
-    doc.text(`${sessionName}  ·  ${termName}`, pageW / 2, pageH - 5, { align: "center" });
-    doc.text("Page 1", pageW - margin, pageH - 5, { align: "right" });
-
-    doc.save(`report_${studentName.replace(/\s+/g, "_")}_${termName}.pdf`);
+    // ── Fallback: jsPDF programmatic export ───────────────────────────────────
+    exportReportPDF({
+      studentName,
+      className,
+      sessionName,
+      termName,
+      profileImg,
+      school,
+      gradingFields,
+      gradingScheme,
+      behavioralTraits,
+      traitScores: traitScore?.traits ?? {},
+      tableRows,
+      subjectPositions,
+      grandTotal,
+      classAverage,
+      classPos,
+      totalStudents: rankings.length,
+      reportCard,
+    });
   };
 
   if (loading) return <InnerTabCon><LoadingData message="Loading report card..." /></InnerTabCon>;
@@ -284,47 +211,54 @@ const Report = () => {
             </div>
           </div>
 
-          {/* Behavioral Traits */}
-          {behavioralTraits.length > 0 && (
-            <div className="rsi-section">
-              <div className="rsi-section-header">
-                <span className="rsi-section-title">Behavioral Traits</span>
-              </div>
-              <div className="rsi-table-wrap">
-                <table className="rsi-table">
-                  <thead><tr><th>Trait</th><th>Rating</th></tr></thead>
-                  <tbody>
-                    {behavioralTraits.map((trait) => (
-                      <tr key={trait}>
-                        <td className="rsi-subject-cell">{trait}</td>
-                        <td>
-                          {traitScore?.traits?.[trait]
-                            ? <span className="rsi-trait-badge">{traitScore.traits[trait]}</span>
-                            : <span className="rsi-empty">Not set</span>}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
+          {/* Behavioral Traits + Remarks side by side */}
+          {(behavioralTraits.length > 0 || reportCard?.teacher_remark || reportCard?.principal_remark) && (
+            <div className="rsi-section-remarks-row">
 
-          {/* Remarks */}
-          {(reportCard?.teacher_remark || reportCard?.principal_remark) && (
-            <div className="rsi-remarks-row">
-              <div className="rsi-remark-card">
-                <div className="rsi-remark-header"><span className="rsi-remark-title">Teacher's Remark</span></div>
-                <p className={`rsi-remark-text ${!reportCard?.teacher_remark ? "rsi-remark-empty" : ""}`}>
-                  {reportCard?.teacher_remark ?? "No remark added yet"}
-                </p>
-              </div>
-              <div className="rsi-remark-card">
-                <div className="rsi-remark-header"><span className="rsi-remark-title">Principal's Remark</span></div>
-                <p className={`rsi-remark-text ${!reportCard?.principal_remark ? "rsi-remark-empty" : ""}`}>
-                  {reportCard?.principal_remark ?? "No remark added yet"}
-                </p>
-              </div>
+              {/* Behavioral Traits */}
+              {behavioralTraits.length > 0 && (
+                <div className="rsi-section">
+                  <div className="rsi-section-header">
+                    <span className="rsi-section-title">Behavioral Traits</span>
+                  </div>
+                  <div className="rsi-table-wrap">
+                    <table className="rsi-table">
+                      <thead><tr><th>Trait</th><th>Rating</th></tr></thead>
+                      <tbody>
+                        {behavioralTraits.map((trait) => (
+                          <tr key={trait}>
+                            <td className="rsi-subject-cell">{trait}</td>
+                            <td>
+                              {traitScore?.traits?.[trait]
+                                ? <span className="rsi-trait-badge">{traitScore.traits[trait]}</span>
+                                : <span className="rsi-empty">Not set</span>}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+
+              {/* Remarks */}
+              {(reportCard?.teacher_remark || reportCard?.principal_remark) && (
+                <div className="rsi-remarks-row">
+                  <div className="rsi-remark-card">
+                    <div className="rsi-remark-header"><span className="rsi-remark-title">Teacher's Remark</span></div>
+                    <p className={`rsi-remark-text ${!reportCard?.teacher_remark ? "rsi-remark-empty" : ""}`}>
+                      {reportCard?.teacher_remark ?? "No remark added yet"}
+                    </p>
+                  </div>
+                  <div className="rsi-remark-card">
+                    <div className="rsi-remark-header"><span className="rsi-remark-title">Principal's Remark</span></div>
+                    <p className={`rsi-remark-text ${!reportCard?.principal_remark ? "rsi-remark-empty" : ""}`}>
+                      {reportCard?.principal_remark ?? "No remark added yet"}
+                    </p>
+                  </div>
+                </div>
+              )}
+
             </div>
           )}
 

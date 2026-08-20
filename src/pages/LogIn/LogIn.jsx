@@ -1,6 +1,6 @@
 import React from "react";
 import "./LogIn.css";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import FormInput from "../../components/FormInput";
 import Button from "../../components/Button/Button";
 import RoleSelectionModal from "../../components/RoleSelectionModal/RoleSelectionModal";
@@ -8,8 +8,10 @@ import { uselogin } from "./uselogin";
 import { useTheme } from "../../context/ThemeContext/ThemeContext";
 import LoginLeftPanel from "./LoginLeftPanel";
 
-const LogIn = () => {
+const LogIn = ({ schoolId: propSchoolId = null }) => {
   const navigate = useNavigate();
+  const { schoolId: paramSchoolId } = useParams();
+  const schoolId = propSchoolId || paramSchoolId || null;
   const { theme, setTheme, resolved } = useTheme();
 
   const {
@@ -54,7 +56,7 @@ const LogIn = () => {
 
       {/* Left panel */}
       <div className="login-left">
-        <LoginLeftPanel />
+        <LoginLeftPanel schoolId={schoolId} />
       </div>
 
       {/* Right — form */}

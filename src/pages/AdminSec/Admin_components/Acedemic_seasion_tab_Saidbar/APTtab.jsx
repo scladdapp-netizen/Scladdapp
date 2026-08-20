@@ -234,8 +234,8 @@ const APTtab = ({}) => {
     if (!addFormData.name || !addFormData.code || !addFormData.startDate || !addFormData.endDate) {
       addNotification("All fields are required", "error"); return;
     }
-    if (!addFormData.gradingTemplateId || !addFormData.reportCardTemplateId) {
-      addNotification("All templates are required", "error"); return;
+    if (!addFormData.gradingTemplateId && !addFormData.reportCardTemplateId) {
+      addNotification("At least one template is required", "error"); return;
     }
     if (!validateAddSubsession("endDate", addFormData.endDate)) return;
     const result = await createSubsession({

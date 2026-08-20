@@ -1,17 +1,32 @@
 import { useState, useCallback, useEffect, useRef } from "react";
 import { useParams } from "react-router-dom";
 import InnerTabCon from "../../../../../../components/InnerTabCon/InnerTabCon";
-import ServerSmartTable from "../../../../../../components/ServerSmartTable/ServerSmartTable";
-import SlideInMenu from "../../../../../../components/SlideInMenu/SlideInMenu";
-import Button from "../../../../../../components/Button/Button";
-import InfoField from "../../../../../../components/infoField/InfoField";
+import LoadingData from "../../../../../../components/LoadingData/LoadingData";
 import { useSubjectAssessments } from "../../../../../../api_call/useSubjectAssessments";
 import useTeacherSubjectAssignment from "../../../../../../api_call/useTeacherSubjectAssignment";
 import { useNotification } from "../../../../../../context/NotificationProvider/NotificationProvider";
 import { useAuth } from "../../../../../../context/AuthContext/AuthContext";
-import "../../../../../../pages/AdminSec/AdminPages/subjectProfile/SubjectResources/SubjectResources.css";
-import "../../../../../../pages/AdminSec/AdminPages/subjectProfile/SubjectClasses/SubjectClasses.css";
 import "./Assessment.css";
+
+/**
+ * Double-tap-to-edit tracker for touch devices.
+ * Returns the same createTapTracker factory used in ReportStudentInfo.
+ */
+const createTapTracker = () => {
+  let lastKey = null;
+  let lastTime = 0;
+  return (key, callback, e) => {
+    const now = Date.now();
+    if (key === lastKey && now - lastTime < 300) {
+      e.preventDefault();
+      callback();
+      lastKey = null;
+    } else {
+      lastKey = key;
+      lastTime = now;
+    }
+  };
+};
 
 const Assessment = ({ subjectData }) => {
   const { subjectId, assignmentId, subseasionId } = useParams();
@@ -21,245 +36,290 @@ const Assessment = ({ subjectData }) => {
 
   const modifiedBy = user?.staff?.staff_id || user?.admin?.admin_id || user?.user_id;
 
-  // Fetch assignment from URL param to get class_id
   const { assignment: myAssignment } = useTeacherSubjectAssignment(assignmentId);
   const assignedClassId = myAssignment?.class_id || null;
 
   const { fetchScores, updateScore, createScore } = useSubjectAssessments(subjectId, subseasion, modifiedBy);
 
+  /* ── Data state ─────────────────────────────────────────────────────────── */
+  const [rows, setRows]               = useState([]);
   const [gradingFields, setGradingFields] = useState([]);
-  const [selected, setSelected]           = useState(null);
-  const [showDetail, setShowDetail]       = useState(false);
-  const [editMode, setEditMode]           = useState(false);
-  const [scoreForm, setScoreForm]         = useState({});
-  const [saving, setSaving]               = useState(false);
-  const [saveCount, setSaveCount]         = useState(0);
+  const [loading, setLoading]         = useState(false);
+  const [search, setSearch]           = useState("");
+
+  /* ── Inline editing ─────────────────────────────────────────────────────── */
+  // activeCell: { studentId, fieldName, maxScore } | null
+  const [activeCell, setActiveCell]   = useState(null);
+  const [cellValue, setCellValue]     = useState("");
+  const [cellError, setCellError]     = useState("");
+  // Per-cell saving: Set of "studentId:fieldName"
+  const [savingCells, setSavingCells] = useState(new Set());
+
+  /* ── Local score overrides (optimistic) ─────────────────────────────────── */
+  // { [studentId]: { [fieldName]: value } }
+  const [scoreOverrides, setScoreOverrides] = useState({});
+  // hasScore overrides (after first create)
+  const [hasScoreSet, setHasScoreSet] = useState(new Set());
+
+  const tapTracker = useRef(createTapTracker());
+
+  /* ── Fetch ──────────────────────────────────────────────────────────────── */
+  const load = useCallback(async () => {
+    setLoading(true);
+    const result = await fetchScores({ page: 1, limit: 1000, search: "" });
+    setLoading(false);
+    if (result.success) {
+      let data = result.data || [];
+      if (assignedClassId) data = data.filter((r) => r.class_id === assignedClassId);
+      setRows(data);
+      if (result.grading_fields?.length) setGradingFields(result.grading_fields);
+      // Reset overrides on fresh load
+      setScoreOverrides({});
+      setHasScoreSet(new Set());
+    }
+  }, [fetchScores, assignedClassId]);
 
   useEffect(() => {
-    setGradingFields([]);
-    setSelected(null);
-    setShowDetail(false);
-    setEditMode(false);
-  }, [subseasion]);
+    if (subjectId && subseasion) load();
+  }, [subjectId, subseasion, load]);
 
-  // Refs updated synchronously so fetchData (stable) always reads latest values
-  const assignedClassIdRef = useRef(assignedClassId);
-  assignedClassIdRef.current = assignedClassId;
+  /* ── Search filter (client-side since we fetched all) ───────────────────── */
+  const filteredRows = search.trim()
+    ? rows.filter((r) => (r.student_name || "").toLowerCase().includes(search.toLowerCase()))
+    : rows;
 
-  const fetchScoresRef = useRef(fetchScores);
-  fetchScoresRef.current = fetchScores;
-
-  const fetchData = useCallback(async (params) => {
-    const classId = assignedClassIdRef.current;
-    const fetchParams = classId ? { ...params, limit: 1000, page: 1 } : params;
-    const result = await fetchScoresRef.current(fetchParams);
-    if (result.success && result.grading_fields?.length) {
-      setGradingFields(result.grading_fields);
-    }
-    if (result.success && classId && Array.isArray(result.data)) {
-      result.data = result.data.filter((row) => row.class_id === classId);
-      const filtered = result.data.length;
-      if (result.pagination) {
-        result.pagination.totalRecords = filtered;
-        result.pagination.totalPages   = Math.ceil(filtered / (result.pagination.recordsPerPage || 20)) || 1;
-        result.pagination.hasNextPage  = false;
-        result.pagination.hasPrevPage  = false;
-        result.pagination.startIndex   = filtered === 0 ? 0 : 1;
-        result.pagination.endIndex     = filtered;
-      }
-    }
-    return result;
-  }, []); // stable — reads via refs
-
-  const handleRowClick = (row) => {
-    setSelected(row);
-    setEditMode(false);
-    setScoreForm({});
-    setShowDetail(true);
+  /* ── Open a cell for editing ─────────────────────────────────────────────── */
+  const openCell = (studentId, fieldName, maxScore, currentValue) => {
+    setActiveCell({ studentId, fieldName, maxScore });
+    setCellValue(currentValue != null ? String(currentValue) : "");
+    setCellError("");
   };
 
-  const openEditMode = () => {
-    const initial = {};
-    gradingFields.forEach((f) => {
-      const val = selected.scores?.[f.field_name];
-      initial[f.field_name] = val !== null && val !== undefined ? String(val) : "";
-    });
-    setScoreForm(initial);
-    setEditMode(true);
-  };
-
-  const handleSave = async () => {
-    for (const f of gradingFields) {
-      const val = scoreForm[f.field_name];
-      if (val === "" || val === undefined) continue;
-      const num = Number(val);
-      if (isNaN(num) || num < 0) { addNotification(`${f.field_name.toUpperCase()}: invalid value`, "error"); return; }
-      if (num > Number(f.max_score)) { addNotification(`${f.field_name.toUpperCase()} cannot exceed ${f.max_score}`, "error"); return; }
-    }
-    const scores = {};
-    gradingFields.forEach((f) => {
-      const val = scoreForm[f.field_name];
-      scores[f.field_name] = val !== "" && val !== undefined ? Number(val) : null;
-    });
-    setSaving(true);
-    const res = selected.has_score
-      ? await updateScore(selected.student_id, scores)
-      : await createScore(selected.student_id, scores);
-    setSaving(false);
-    if (res.success) {
-      addNotification("Scores saved", "success");
-      setEditMode(false);
-      setShowDetail(false);
-      setSaveCount((k) => k + 1);
+  const handleCellChange = (value, maxScore) => {
+    setCellValue(value);
+    const num = Number(value);
+    if (value !== "" && (isNaN(num) || num < 0 || num > Number(maxScore))) {
+      setCellError(`Max ${maxScore}`);
     } else {
-      addNotification(res.message || "Failed to save scores", "error");
+      setCellError("");
     }
   };
 
-  const scoreColumns = gradingFields.map((f) => ({
-    accessor: `scores.${f.field_name}`,
-    label: `${f.field_name.toUpperCase()} (/${f.max_score})`,
-    render: (_, row) => {
-      if (!row.has_score) return <span className="as-no-score">—</span>;
-      const val = row.scores?.[f.field_name];
-      return val !== null && val !== undefined ? val : <span className="as-zero">0</span>;
-    },
-  }));
+  /* ── Commit a cell edit ─────────────────────────────────────────────────── */
+  const commitCell = async () => {
+    if (!activeCell || cellError) { setActiveCell(null); return; }
 
-  const columns = [
-    {
-      accessor: "student_name",
-      label: "Student Name",
-      searchable: true,
-      render: (val, row) => (
-        <div>
-          <div className="as-student-name">{val || "—"}</div>
-          <div className="as-student-id">{row.student_id}</div>
-        </div>
-      ),
-    },
-    { accessor: "class_name", label: "Class", render: (val) => val || "—" },
-    ...scoreColumns,
-    {
-      accessor: "total",
-      label: "Total",
-      render: (val, row) =>
-        row.has_score
-          ? <span className="as-total">{val ?? "—"}</span>
-          : <span className="as-no-score-label">No score</span>,
-    },
-  ];
+    const { studentId, fieldName, maxScore } = activeCell;
+    const row = rows.find((r) => r.student_id === studentId);
+    if (!row) { setActiveCell(null); return; }
 
+    // Resolve current displayed value (override or server)
+    const currentVal = scoreOverrides[studentId]?.[fieldName] !== undefined
+      ? scoreOverrides[studentId][fieldName]
+      : (row.scores?.[fieldName] ?? null);
+
+    const newVal = cellValue === "" ? null : Number(cellValue);
+
+    // No change → close silently
+    if (newVal === currentVal || (newVal === null && currentVal === null)) {
+      setActiveCell(null);
+      return;
+    }
+
+    const savedCell = { ...activeCell };
+    setActiveCell(null);
+
+    // Optimistic update
+    setScoreOverrides((prev) => ({
+      ...prev,
+      [studentId]: { ...(prev[studentId] ?? {}), [fieldName]: newVal },
+    }));
+
+    const cellKey = `${studentId}:${fieldName}`;
+    setSavingCells((prev) => new Set(prev).add(cellKey));
+
+    // Build full score map: merge server + existing overrides + new value
+    const baseScores = row.scores ?? {};
+    const merged = {
+      ...baseScores,
+      ...(scoreOverrides[studentId] ?? {}),
+      [fieldName]: newVal,
+    };
+
+    const isExisting = row.has_score || hasScoreSet.has(studentId);
+    const res = isExisting
+      ? await updateScore(studentId, merged)
+      : await createScore(studentId, merged);
+
+    setSavingCells((prev) => { const s = new Set(prev); s.delete(cellKey); return s; });
+
+    if (res?.success) {
+      if (!isExisting) setHasScoreSet((prev) => new Set(prev).add(studentId));
+      // Recompute total optimistically
+      const allFields = gradingFields.reduce((acc, f) => {
+        acc[f.field_name] = scoreOverrides[studentId]?.[f.field_name] !== undefined
+          ? scoreOverrides[studentId][f.field_name]
+          : (row.scores?.[f.field_name] ?? null);
+        return acc;
+      }, {});
+      allFields[fieldName] = newVal;
+      const newTotal = gradingFields.reduce((s, f) => s + (Number(allFields[f.field_name]) || 0), 0);
+      setScoreOverrides((prev) => ({
+        ...prev,
+        [studentId]: { ...(prev[studentId] ?? {}), [fieldName]: newVal, __total: newTotal },
+      }));
+    } else {
+      // Rollback
+      setScoreOverrides((prev) => {
+        const next = { ...prev };
+        if (next[studentId]) {
+          delete next[studentId][fieldName];
+          if (Object.keys(next[studentId]).filter((k) => !k.startsWith("__")).length === 0)
+            delete next[studentId];
+        }
+        return next;
+      });
+      addNotification(res?.message || "Failed to save score", "error");
+    }
+  };
+
+  /* ── Resolved display value for a cell ─────────────────────────────────── */
+  const getDisplayVal = (row, fieldName) => {
+    const override = scoreOverrides[row.student_id];
+    if (override && override[fieldName] !== undefined) return override[fieldName];
+    if (row.has_score || hasScoreSet.has(row.student_id)) return row.scores?.[fieldName] ?? null;
+    return null;
+  };
+
+  const getTotal = (row) => {
+    const override = scoreOverrides[row.student_id];
+    if (override?.__total !== undefined) return override.__total;
+    if (row.has_score || hasScoreSet.has(row.student_id)) return row.total ?? null;
+    return null;
+  };
+
+  const hasScore = (row) => row.has_score || hasScoreSet.has(row.student_id);
+
+  /* ── Render ─────────────────────────────────────────────────────────────── */
   return (
     <InnerTabCon>
       <div className="as-container">
+
+        {/* Header */}
         <div className="sr2-header">
           <div className="sr2-header-left">
             <h2 className="sr2-title">Student Assessments</h2>
             <p className="sr2-subtitle">
               {myAssignment?.class_name
-                ? `Class: ${myAssignment.class_name} · Scores for the selected subsession`
-                : "Scores for this subject in the selected subsession"}
+                ? `Class: ${myAssignment.class_name} · Double-click a score to edit`
+                : "Double-click a score cell to edit inline"}
             </p>
+          </div>
+          {/* Search */}
+          <div className="as-search-wrap">
+            <input
+              className="as-search-input"
+              type="text"
+              placeholder="Search student…"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
           </div>
         </div>
 
-        <ServerSmartTable
-          columns={columns}
-          fetchData={fetchData}
-          onRowClick={handleRowClick}
-          showcreatbut={false}
-          initialPageSize={20}
-          reloadKey={`${subseasion}-${assignedClassId}-${saveCount}`}
-        />
-      </div>
-
-      <SlideInMenu isShow={showDetail} onClose={() => { setShowDetail(false); setEditMode(false); }} width="500px">
-        {selected && (
-          <div className="sc-panel">
-            <div className="sc-panel-header default">
-              <span className="sc-panel-header-deco" aria-hidden="true" />
-              <div className="sc-panel-header-content">
-                <div className="sc-panel-header-icon">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"/>
-                    <circle cx="12" cy="7" r="4" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                </div>
-                <div className="sc-panel-header-text">
-                  <h2>{selected.student_name || "Student"}</h2>
-                  <p>{selected.class_name || "—"}</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="sc-panel-body">
-              <div className="sc-detail-grid">
-                <InfoField label="Student ID" value={selected.student_id} />
-                <InfoField label="Class"      value={selected.class_name || selected.class_id || "—"} />
-                <InfoField label="Teacher"    value={selected.teacher_name || "—"} />
-              </div>
-
-              <span className="sc-section-label">Scores</span>
-
-              {editMode ? (
-                <div className="as-score-form">
+        {loading ? (
+          <LoadingData message="Loading scores…" />
+        ) : filteredRows.length === 0 ? (
+          <div className="as-empty">No students found.</div>
+        ) : (
+          <div className="as-table-wrap">
+            <table className="as-table">
+              <thead>
+                <tr className="as-thead-row">
+                  <th className="as-th as-th-sticky">Student</th>
                   {gradingFields.map((f) => (
-                    <div key={f.field_name} className="as-score-field">
-                      <label className="as-score-label">
-                        {f.field_name.toUpperCase()}
-                        <span className="as-score-max"> (max {f.max_score})</span>
-                      </label>
-                      <input
-                        type="number" min={0} max={Number(f.max_score)}
-                        value={scoreForm[f.field_name] ?? ""}
-                        onChange={(e) => setScoreForm((prev) => ({ ...prev, [f.field_name]: e.target.value }))}
-                        className="as-score-input"
-                        placeholder={`0 – ${f.max_score}`}
-                      />
-                    </div>
+                    <th key={f.field_name} className="as-th as-th-score">
+                      {f.field_name.toUpperCase()}
+                      <span className="as-th-max">/{f.max_score}</span>
+                    </th>
                   ))}
-                </div>
-              ) : !selected.has_score ? (
-                <div className="as-empty-scores">No scores entered yet for this student.</div>
-              ) : (
-                <div className="as-scores-list">
-                  {gradingFields.map((f) => (
-                    <div key={f.field_name} className="as-score-row">
-                      <span className="as-score-row-label">
-                        {f.field_name.toUpperCase()}
-                        <span className="as-score-max"> /{f.max_score}</span>
-                      </span>
-                      <span className="as-score-row-value">
-                        {selected.scores?.[f.field_name] !== null && selected.scores?.[f.field_name] !== undefined
-                          ? selected.scores[f.field_name] : "—"}
-                      </span>
-                    </div>
-                  ))}
-                  <div className="as-score-total-row">
-                    <span>Total</span>
-                    <span>{selected.total ?? "—"}</span>
-                  </div>
-                </div>
-              )}
-            </div>
+                  <th className="as-th as-th-total">Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredRows.map((row, i) => {
+                  const total = getTotal(row);
+                  return (
+                    <tr key={row.student_id} className={`as-row${i % 2 !== 0 ? " as-row-alt" : ""}`}>
+                      {/* Name column */}
+                      <td className="as-td as-td-sticky">
+                        <div className="as-student-name">{row.student_name || "—"}</div>
+                        <div className="as-student-id">{row.student_id}</div>
+                      </td>
 
-            <div className="sc-panel-footer">
-              {editMode ? (
-                <>
-                  <Button variant="secondary" onClick={() => setEditMode(false)} disabled={saving}>Cancel</Button>
-                  <Button onClick={handleSave} disabled={saving}>{saving ? "Saving..." : "Save Scores"}</Button>
-                </>
-              ) : (
-                <>
-                  <Button variant="secondary" onClick={() => { setShowDetail(false); setEditMode(false); }}>Close</Button>
-                  <Button onClick={openEditMode}>{selected.has_score ? "Edit Scores" : "Enter Scores"}</Button>
-                </>
-              )}
-            </div>
+                      {/* Score columns */}
+                      {gradingFields.map((f) => {
+                        const isActive = activeCell?.studentId === row.student_id && activeCell?.fieldName === f.field_name;
+                        const cellKey  = `${row.student_id}:${f.field_name}`;
+                        const isSaving = savingCells.has(cellKey);
+                        const displayVal = getDisplayVal(row, f.field_name);
+
+                        return (
+                          <td
+                            key={f.field_name}
+                            className={`as-td as-td-score as-editable-cell${isActive ? " as-cell-active" : ""}`}
+                            onDoubleClick={() => openCell(row.student_id, f.field_name, f.max_score, displayVal)}
+                            onTouchEnd={(e) => tapTracker.current(
+                              `${row.student_id}:${f.field_name}`,
+                              () => openCell(row.student_id, f.field_name, f.max_score, displayVal),
+                              e
+                            )}
+                            title="Double-click to edit"
+                          >
+                            {isActive ? (
+                              <div className="as-inline-wrap">
+                                <input
+                                  className={`as-inline-input${cellError ? " as-inline-input--error" : ""}`}
+                                  type="number"
+                                  min="0"
+                                  max={f.max_score}
+                                  value={cellValue}
+                                  autoFocus
+                                  onChange={(e) => handleCellChange(e.target.value, f.max_score)}
+                                  onBlur={commitCell}
+                                  onKeyDown={(e) => {
+                                    if (e.key === "Enter")  { e.target.blur(); }
+                                    if (e.key === "Escape") { setActiveCell(null); }
+                                  }}
+                                />
+                                {cellError && <span className="as-inline-error">{cellError}</span>}
+                              </div>
+                            ) : (
+                              <span className="as-cell-display">
+                                {displayVal != null
+                                  ? displayVal
+                                  : <span className="as-no-score">—</span>}
+                                {isSaving && <span className="as-cell-spinner" />}
+                              </span>
+                            )}
+                          </td>
+                        );
+                      })}
+
+                      {/* Total */}
+                      <td className="as-td as-td-total">
+                        {total != null
+                          ? <span className="as-total">{total}</span>
+                          : <span className="as-no-score-label">No score</span>}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
           </div>
         )}
-      </SlideInMenu>
+      </div>
     </InnerTabCon>
   );
 };

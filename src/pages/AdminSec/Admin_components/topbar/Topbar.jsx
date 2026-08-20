@@ -5,6 +5,8 @@ import { useAuth } from "../../../../context/AuthContext/AuthContext";
 import { useNavigate, useParams } from "react-router-dom";
 import { useTheme } from "../../../../context/ThemeContext/ThemeContext";
 import useGlobalSearch from "../../../../api_call/useGlobalSearch";
+import useAdminNotification from "../../../../api_call/useAdminNotification";
+import NotificationPanel from "../../../../components/NotificationPanel/NotificationPanel";
 import "./Topbar.css";
 
 const Topbar = ({ isMobileMenuOpen, onMenuClick }) => {
@@ -61,6 +63,36 @@ const Topbar = ({ isMobileMenuOpen, onMenuClick }) => {
   const displayName = admin?.username || admin?.email || "Admin";
   const initials = displayName.slice(0, 2).toUpperCase();
 
+  // ── Notification bell ──
+  const { getUnreadCount } = useAdminNotification();
+  const [notifOpen,   setNotifOpen]   = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [bellShake,   setBellShake]   = useState(false);
+  const notifWrapRef = useRef(null);
+  const adminId  = admin?.admin_id;
+  const schoolId2 = school?.school_id;
+
+  // Poll for unread count every 60 seconds
+  useEffect(() => {
+    if (!adminId || !schoolId2) return;
+
+    const poll = async () => {
+      const res = await getUnreadCount(schoolId2, adminId);
+      if (res.success && res.count !== unreadCount) {
+        setUnreadCount(res.count);
+        if (res.count > 0) {
+          setBellShake(true);
+          setTimeout(() => setBellShake(false), 800);
+        }
+      }
+    };
+
+    poll(); // immediate on mount
+    const id = setInterval(poll, 60000);
+    return () => clearInterval(id);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [adminId, schoolId2]);
+
   const { results: searchResults, loading: searchLoading, search: runSearch, clear: clearSearch } = useGlobalSearch(school?.school_id);
 
   const handleLogout = () => { logout(); navigate("/"); };
@@ -84,6 +116,24 @@ const Topbar = ({ isMobileMenuOpen, onMenuClick }) => {
               </svg>
             </div>
             <span className="al_brand_text">Scladapp</span>
+          </div>
+
+          {/* Divider */}
+          <div className="al_brand_divider" />
+
+          {/* School identity */}
+          <div className="al_school_brand">
+            {school?.logo_url ? (
+              <img src={school.logo_url} alt={school.school_name} className="al_school_logo" />
+            ) : (
+              <div className="al_school_logo_fallback">
+                <svg width="14" height="14" viewBox="0 0 20 20" fill="none">
+                  <path d="M3 9l7-6 7 6v8a1 1 0 01-1 1H4a1 1 0 01-1-1V9z" fill="#111111" opacity="0.15" stroke="#111111" strokeWidth="1.5"/>
+                  <rect x="7" y="12" width="6" height="6" rx="1" fill="#111111" opacity="0.4"/>
+                </svg>
+              </div>
+            )}
+            <span className="al_school_name">{school?.school_name || "School"}</span>
           </div>
         </div>
 
@@ -134,15 +184,26 @@ const Topbar = ({ isMobileMenuOpen, onMenuClick }) => {
             )}
           </button>
 
-          {/* Settings */}
-          <button className="topbar-icon-btn" onClick={() => navigate(`/admin/${schoolId}/settings`)} title="Settings">
-            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-              <circle cx="9" cy="9" r="2.5" fill="#111111" />
-              <path d="M9 1.5v2M9 14.5v2M1.5 9h2M14.5 9h2M3.4 3.4l1.4 1.4M13.2 13.2l1.4 1.4M3.4 14.6l1.4-1.4M13.2 4.8l1.4-1.4"
-                stroke="#111111" strokeWidth="1.5" strokeLinecap="round" opacity="0.4" />
-              <circle cx="9" cy="9" r="4.5" stroke="#111111" strokeWidth="1.4" fill="none" opacity="0.18" />
-            </svg>
-          </button>
+          {/* Notifications */}
+          <div className="np_bell_wrapper" ref={notifWrapRef}>
+            <button
+              className={`topbar-icon-btn np_bell_btn${bellShake ? " np_bell_shake" : ""}`}
+              onClick={() => setNotifOpen((p) => !p)}
+              title="Notifications"
+            >
+              <FaBell size={15} />
+              {unreadCount > 0 && (
+                <span className="np_bell_badge">{unreadCount > 99 ? "99+" : unreadCount}</span>
+              )}
+            </button>
+            <NotificationPanel
+              schoolId={schoolId2}
+              adminId={adminId}
+              isOpen={notifOpen}
+              onClose={() => setNotifOpen(false)}
+              onUnreadChange={(count) => setUnreadCount(count)}
+            />
+          </div>
 
           {/* Profile */}
           <div className="profile-dropdown-wrapper" ref={profileRef}>

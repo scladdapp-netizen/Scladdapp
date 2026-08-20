@@ -250,6 +250,48 @@ const useStaffInfo = () => {
     setError(null);
   };
 
+  // Change staff password
+  const changePassword = async (staffId, currentPassword, newPassword) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await fetch(`${API_BASE_URL}/staff/${staffId}/change-password`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ currentPassword, newPassword }),
+      });
+      const result = await handleApiResponse(response);
+      return { success: true, message: result.message };
+    } catch (err) {
+      const errorMessage = err.message || "Failed to change password";
+      setError(errorMessage);
+      return { success: false, message: errorMessage };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Toggle 2FA for staff
+  const toggleTwoFactorAuth = async (staffId, enabled) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await fetch(`${API_BASE_URL}/staff/${staffId}/two-factor-auth`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ enabled }),
+      });
+      const result = await handleApiResponse(response);
+      return { success: true, data: result.data, message: result.message };
+    } catch (err) {
+      const errorMessage = err.message || "Failed to update 2FA setting";
+      setError(errorMessage);
+      return { success: false, message: errorMessage };
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return {
     // State
     loading,
@@ -261,6 +303,8 @@ const useStaffInfo = () => {
     deleteStaff,
     getStaffById,
     getStaffBySchoolId,
+    changePassword,
+    toggleTwoFactorAuth,
     clearError,
   };
 };

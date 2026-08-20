@@ -166,12 +166,6 @@ const Bill = () => {
       <InnerTabCon>
         <div className="notifications-container">
           {/* Header */}
-          <div className="notif-header">
-            <div className="notif-header-left">
-              <h2 className="notif-title">Bills & Payments</h2>
-              <p className="notif-subtitle">Your active fee bills and payment history</p>
-            </div>
-          </div>
 
           {/* Summary */}
           <div className="bill-summary-row">
@@ -291,21 +285,31 @@ const Bill = () => {
                 {(bill.bill_items || []).length > 0 && (
                   <div>
                     <span className="sc-section-label">Bill Items</span>
-                    <div className="bill-items-table">
-                      {bill.bill_items.map((item, i) => (
-                        <div key={i} className={`bill-item-row ${i % 2 === 0 ? "" : "alt"}`}>
-                          <div>
-                            <p className="bill-item-name">{item.item_name}</p>
-                            {item.description && <p className="bill-item-desc">{item.description}</p>}
-                          </div>
-                          <span className="bill-item-amount">{fmtMoney(item.amount, bill.currency)}</span>
-                        </div>
-                      ))}
-                      <div className="bill-item-total">
-                        <span>Total</span>
-                        <span>{fmtMoney(bill.total_amount, bill.currency)}</span>
-                      </div>
-                    </div>
+                    <table className="bill-items-table">
+                      <thead>
+                        <tr>
+                          <th>Item</th>
+                          <th>Amount</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {bill.bill_items.map((item, i) => (
+                          <tr key={i}>
+                            <td>
+                              <span className="bill-item-name">{item.item_name}</span>
+                              {item.description && <span className="bill-item-desc">{item.description}</span>}
+                            </td>
+                            <td className="bill-item-amount">{fmtMoney(item.amount, bill.currency)}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                      <tfoot>
+                        <tr>
+                          <td className="bill-item-total-label">Total</td>
+                          <td className="bill-item-total-val">{fmtMoney(bill.total_amount, bill.currency)}</td>
+                        </tr>
+                      </tfoot>
+                    </table>
                   </div>
                 )}
 

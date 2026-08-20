@@ -126,35 +126,54 @@
 
 /* Bill items table */
 .bill-items-table {
-  border: 1px solid #e8e8e8;
-  border-radius: 10px;
-  overflow: hidden;
+  width: 100%;
+  border-collapse: collapse;
   margin-bottom: 14px;
+  font-size: 13px;
 }
 
-.bill-item-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  padding: 10px 14px;
+.bill-items-table thead th {
+  text-align: left;
+  padding: 8px 12px;
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: #888888;
+  border-bottom: 1px solid #e8e8e8;
+  width: 100%;
+}
+
+.bill-items-table thead th:last-child { text-align: right; }
+
+.bill-items-table tbody tr:nth-child(even) td { background: #fafafa; }
+
+.bill-items-table tbody td {
+  padding: 10px 12px;
   border-bottom: 1px solid #f0f0f0;
+  vertical-align: middle;
+  color: #111111;
+  width: 100%;
 }
 
-.bill-item-row.alt { background: #fafafa; }
-.bill-item-row:last-child { border-bottom: none; }
+.bill-items-table tbody td:last-child { text-align: right; font-weight: 700; white-space: nowrap; }
 
-.bill-item-name { margin: 0 0 2px; font-size: 13px; font-weight: 700; color: #111111; }
-.bill-item-desc { margin: 0; font-size: 11px; color: #888888; }
-.bill-item-amount { font-size: 13px; font-weight: 700; color: #111111; flex-shrink: 0; margin-left: 12px; }
+.bill-item-name { display: block; font-weight: 600; color: #111111; }
+.bill-item-desc { display: block; font-size: 11px; color: #888888; margin-top: 2px; }
+.bill-item-amount { font-weight: 700; white-space: nowrap; }
 
-.bill-item-total {
-  display: flex;
-  justify-content: space-between;
-  padding: 10px 14px;
-  background: #f7f7f7;
+.bill-items-table tfoot td {
+  padding: 10px 12px;
+  font-size: 13px;
+  font-weight: 800;
+  color: #111111;
   border-top: 2px solid #e8e8e8;
-  font-size: 13px; font-weight: 800; color: #111111;
+  background: #f4f4f4;
+  width: 100%;
 }
+
+.bill-item-total-label { }
+.bill-item-total-val   { text-align: right; white-space: nowrap; }
 
 /* Installment */
 .bill-installment-info {
@@ -267,11 +286,12 @@
 [data-theme="dark"] .bill-card-cat  { color: #555555; }
 [data-theme="dark"] .bill-card-amounts { border-top-color: #2a2a2a; }
 [data-theme="dark"] .bill-amount-due  { color: #f0f0f0; }
-[data-theme="dark"] .bill-items-table { border-color: #2a2a2a; }
-[data-theme="dark"] .bill-item-row { border-bottom-color: #2a2a2a; }
-[data-theme="dark"] .bill-item-row.alt { background: #1a1a1a; }
-[data-theme="dark"] .bill-item-name   { color: #f0f0f0; }
-[data-theme="dark"] .bill-item-total  { background: #252525; border-top-color: #2a2a2a; color: #f0f0f0; }
+[data-theme="dark"] .bill-items-table thead th { color: #555555; border-bottom-color: #2a2a2a; }
+[data-theme="dark"] .bill-items-table tbody tr:nth-child(even) td { background: #1a1a1a; }
+[data-theme="dark"] .bill-items-table tbody td { border-bottom-color: #2a2a2a; color: #f0f0f0; }
+[data-theme="dark"] .bill-item-name { color: #f0f0f0; }
+[data-theme="dark"] .bill-item-desc { color: #555555; }
+[data-theme="dark"] .bill-items-table tfoot td { border-top-color: #2a2a2a; background: #252525; color: #f0f0f0; }
 [data-theme="dark"] .bill-installment-info { background: #0f1e3a; border-color: #1e3a6e; }
 [data-theme="dark"] .bill-pay-form { background: #252525; border-color: #2a2a2a; }
 [data-theme="dark"] .bill-pay-title { color: #f0f0f0; }

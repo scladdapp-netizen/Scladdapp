@@ -108,3 +108,33 @@
   border: 1px solid currentColor;
   opacity: 0.4;
 }
+
+/* ── School branding overrides ─────────────────────────────────────────── */
+.llp-logo--school {
+  width: 80px;
+  height: 80px;
+  border-radius: 20px;
+  overflow: hidden;
+  padding: 0;
+  border: 1.5px solid currentColor;
+  opacity: 1;
+}
+
+.llp-school-logo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: inherit;
+}
+
+.llp-school-logo-initial {
+  font-size: 36px;
+  font-weight: 900;
+  line-height: 1;
+  color: currentColor;
+}
+
+.llp-title--school {
+  font-size: 32px;
+  letter-spacing: -1.5px;
+}

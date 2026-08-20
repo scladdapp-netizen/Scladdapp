@@ -357,9 +357,66 @@ export const useAnnouncementTemplate = () => {
     }
   };
 
+  /**
+   * Upload an image to Cloudinary via the backend
+   */
+  const uploadImage = async (file) => {
+    try {
+      const formData = new FormData();
+      formData.append("image", file);
+      const response = await fetch(`${API_BASE_URL}/announcement-template/upload-image`, {
+        method: "POST",
+        body: formData,
+      });
+      const result = await response.json();
+      return result; // { success, url, public_id }
+    } catch (err) {
+      return { success: false, message: err.message };
+    }
+  };
+
   // Clear error state
   const clearError = () => {
     setError(null);
+  };
+
+  /**
+   * Save HTML draft (auto-save)
+   */
+  const saveHtmlDraft = async (templateId, html_template_draft) => {
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/announcement-template/${templateId}/html-draft`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ html_template_draft }),
+        }
+      );
+      const result = await response.json();
+      return result;
+    } catch (err) {
+      return { success: false, message: err.message };
+    }
+  };
+
+  /**
+   * Publish HTML draft → html_template
+   */
+  const publishHtmlDraft = async (templateId) => {
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/announcement-template/${templateId}/publish-draft`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+      const result = await response.json();
+      return result;
+    } catch (err) {
+      return { success: false, message: err.message };
+    }
   };
 
   return {
@@ -372,6 +429,9 @@ export const useAnnouncementTemplate = () => {
     deleteAnnouncementTemplate,
     duplicateAnnouncementTemplate,
     updateTemplateStatus,
+    saveHtmlDraft,
+    publishHtmlDraft,
+    uploadImage,
     clearError,
   };
 };

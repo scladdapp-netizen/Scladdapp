@@ -298,6 +298,7 @@ export const useSchoolSetups = () => {
     if (step === 3) {
       setIsLoading(true);
       try {
+        // 1. Check email doesn't already exist
         const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/setup/check-email`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -308,12 +309,55 @@ export const useSchoolSetups = () => {
           addNotification("This email is already registered. Please use a different email.", "error");
           return;
         }
+
+        // 2. Send OTP to the admin email
+        const otpRes = await fetch(`${import.meta.env.VITE_API_BASE_URL}/setup/send-otp`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: adminData.adminEmail }),
+        });
+        const otpResult = await otpRes.json();
+        if (!otpResult.success) {
+          addNotification(otpResult.message || "Failed to send OTP. Please try again.", "error");
+          return;
+        }
+
+        addNotification("OTP sent to " + adminData.adminEmail, "success");
+
+        // 3. Open the shared OTP modal — same one used in login
+        openOTPModal(null, async (enteredOtp) => {
+          try {
+            const vRes = await fetch(`${import.meta.env.VITE_API_BASE_URL}/setup/verify-otp`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ email: adminData.adminEmail, otp: enteredOtp }),
+            });
+            const vData = await vRes.json();
+            if (vData.success) {
+              updateAdminData("emailVerify", true);
+              navigate("/setup/4");
+              return { success: true };
+            }
+            return { success: false, message: vData.message || "Incorrect OTP." };
+          } catch {
+            return { success: false, message: "Could not verify OTP. Check your connection." };
+          }
+        }, async () => {
+          // Resend callback
+          const rRes = await fetch(`${import.meta.env.VITE_API_BASE_URL}/setup/send-otp`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: adminData.adminEmail }),
+          });
+          const rData = await rRes.json();
+          if (!rData.success) throw new Error(rData.message || "Failed to resend.");
+        });
       } catch {
         addNotification("Could not verify email. Please check your connection.", "error");
-        return;
       } finally {
         setIsLoading(false);
       }
+      return;
     }
 
     navigate(`/setup/${step + 1}`);

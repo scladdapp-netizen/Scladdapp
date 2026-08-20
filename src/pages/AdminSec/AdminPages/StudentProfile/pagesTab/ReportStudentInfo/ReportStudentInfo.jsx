@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useParams } from "react-router-dom";
 import "./ReportStudentInfo.css";
 import InnerTabCon from "../../../../../../components/InnerTabCon/InnerTabCon";
@@ -9,12 +9,37 @@ import ReportCardPreview from "../../../../../../components/ReportCardPreview/Re
 import useStudentReport from "../../../../../../api_call/useStudentReport";
 import { useAuth } from "../../../../../../context/AuthContext/AuthContext";
 import { useNotification } from "../../../../../../context/NotificationProvider/NotificationProvider";
-import jsPDF from "jspdf";
+import { exportReportPDF } from "../../../../../../utils/exportReportPDF";
+import { exportReportHtml } from "../../../../../../utils/exportReportHtml";
+
+/**
+ * A single touch-tap tracker shared across cells.
+ * We pass the cell's open-callback; it fires on the second tap within 300ms.
+ * We store state in a module-level object per tracker instance returned by createTapTracker().
+ */
+const createTapTracker = () => {
+  let lastKey = null;
+  let lastTime = 0;
+  return (key, callback, e) => {
+    const now = Date.now();
+    if (key === lastKey && now - lastTime < 300) {
+      e.preventDefault();
+      callback();
+      lastKey = null;
+    } else {
+      lastKey = key;
+      lastTime = now;
+    }
+  };
+};
 
 const ReportStudentInfo = () => {
   const { subseasion, studentId } = useParams();
   const { user } = useAuth();
   const { addNotification } = useNotification();
+
+  // Single tap tracker for double-tap-to-edit on mobile (touch devices)
+  const tapTracker = useRef(createTapTracker());
 
   // Permission helpers
   const admin = user?.admin;
@@ -33,13 +58,31 @@ const ReportStudentInfo = () => {
     subsessionData, classData,
   } = useStudentReport(user?.admin?.admin_id || user?.user_id);
 
-  const [selectedRow, setSelectedRow] = useState(null);
-  const [editScores, setEditScores] = useState({});
-  const [scoreErrors, setScoreErrors] = useState({});
-  const [saving, setSaving] = useState(false);
+  // Local overrides — patch values after save without a full refetch
+  // scoreOverrides: { [subjectId]: { [fieldName]: value } }
+  const [scoreOverrides, setScoreOverrides] = useState({});
+  // Track subjects whose score record was created this session (so we PATCH on subsequent saves)
+  // hasExistingOverrides: Set of subjectId strings
+  const [hasExistingOverrides, setHasExistingOverrides] = useState(new Set());
+  // traitOverrides: { [traitName]: value }
+  const [traitOverrides, setTraitOverrides] = useState({});
+  // Per-cell saving spinners: Set of "subjectId:fieldName" strings
+  const [savingCells, setSavingCells] = useState(new Set());
+  // Per-trait saving spinners: Set of trait name strings
+  const [savingTraits, setSavingTraits] = useState(new Set());
 
-  const [selectedTrait, setSelectedTrait] = useState(null);
-  const [editTraitValue, setEditTraitValue] = useState("");
+  // inline cell editing state — Academic Scores
+  // activeCell: { subjectId, fieldName } | null
+  const [activeCell, setActiveCell] = useState(null);
+  const [cellValue, setCellValue] = useState("");
+  const [cellError, setCellError] = useState("");
+
+  // inline cell editing state — Behavioral Traits
+  // activeTrait: traitName string | null
+  const [activeTrait, setActiveTrait] = useState(null);
+  const [traitCellValue, setTraitCellValue] = useState("");
+
+  const [saving, setSaving] = useState(false);
 
   const [remarkPanel, setRemarkPanel] = useState(false);
   const [editTeacherRemark, setEditTeacherRemark] = useState("");
@@ -147,56 +190,136 @@ const ReportStudentInfo = () => {
   const subjectList = reportCard?.subjects?.length > 0 ? reportCard.subjects : classSubjects;
   const tableRows = subjectList.map((subject) => {
     const score = studentScores.find((s) => s.subject_id === subject.subject_id);
-    return { subject_id: subject.subject_id, subject_name: subject.subject_name, scores: score?.scores ?? null, hasExisting: !!score };
+    // Merge any local overrides on top of the server scores
+    const mergedScores = score?.scores
+      ? { ...score.scores, ...(scoreOverrides[subject.subject_id] ?? {}) }
+      : (scoreOverrides[subject.subject_id] ? { ...scoreOverrides[subject.subject_id] } : null);
+    return {
+      subject_id: subject.subject_id,
+      subject_name: subject.subject_name,
+      scores: mergedScores,
+      // A record exists if it came from the server OR was created this session
+      hasExisting: !!score || hasExistingOverrides.has(subject.subject_id),
+    };
   });
-
-  const openRow = (row) => {
-    if (!canEdit) { permNotify("You do not have permission to edit scores."); return; }
-    setSelectedRow(row);
-    setScoreErrors({});
-    const init = {};
-    gradingFields.forEach((f) => { init[f.field_name] = row.scores?.[f.field_name] ?? ""; });
-    setEditScores(init);
-  };
-
-  const handleScoreChange = (fieldName, maxScore, value) => {
-    setEditScores((p) => ({ ...p, [fieldName]: value }));
-    const num = Number(value);
-    if (value !== "" && (num > maxScore || num < 0)) {
-      setScoreErrors((p) => ({ ...p, [fieldName]: `Max is ${maxScore}` }));
-    } else {
-      setScoreErrors((p) => { const n = { ...p }; delete n[fieldName]; return n; });
-    }
-  };
-
-  const hasErrors = Object.keys(scoreErrors).length > 0;
-
-  const handleSave = async () => {
-    if (hasErrors) return;
-    setSaving(true);
-    const scores = {};
-    gradingFields.forEach((f) => { scores[f.field_name] = editScores[f.field_name] === "" ? null : Number(editScores[f.field_name]); });
-    await saveScore(studentId, subseasion, selectedRow.subject_id, scores, selectedRow.hasExisting);
-    setSaving(false);
-    setSelectedRow(null);
-    reload();
-  };
 
   const behavioralTraits = templateData?.behavioral_traits ?? [];
 
-  const openTrait = (name) => {
-    if (!canEdit) { permNotify("You do not have permission to edit traits."); return; }
-    setSelectedTrait({ name, value: traitScore?.traits?.[name] ?? "" });
-    setEditTraitValue(traitScore?.traits?.[name] ?? "");
+  // ── Inline score cell editing ──────────────────────────────────────────────
+  const openScoreCell = (subjectId, fieldName, maxScore, currentValue) => {
+    if (!canEdit) { permNotify("You do not have permission to edit scores."); return; }
+    setActiveCell({ subjectId, fieldName, maxScore });
+    setCellValue(currentValue ?? "");
+    setCellError("");
   };
 
-  const handleSaveTrait = async () => {
-    setSaving(true);
-    const updatedTraits = { ...(traitScore?.traits ?? {}), [selectedTrait.name]: editTraitValue || null };
-    await saveTraitScore(studentId, subseasion, { traits: updatedTraits });
-    setSaving(false);
-    setSelectedTrait(null);
-    reload();
+  const handleCellChange = (value, maxScore) => {
+    setCellValue(value);
+    const num = Number(value);
+    if (value !== "" && (num > maxScore || num < 0)) {
+      setCellError(`Max is ${maxScore}`);
+    } else {
+      setCellError("");
+    }
+  };
+
+  const commitScoreCell = async () => {
+    if (!activeCell || cellError) return;
+    const row = tableRows.find((r) => r.subject_id === activeCell.subjectId);
+    if (!row) { setActiveCell(null); return; }
+
+    // No change — close silently
+    const prev = row.scores?.[activeCell.fieldName] ?? "";
+    const newVal = cellValue === "" ? null : Number(cellValue);
+    if (String(cellValue) === String(prev === null ? "" : prev)) {
+      setActiveCell(null);
+      return;
+    }
+
+    // Close input immediately
+    const savedCell = { ...activeCell };
+    setActiveCell(null);
+
+    // Optimistic update in local state
+    const optimisticScores = { ...(row.scores ?? {}), [savedCell.fieldName]: newVal };
+    setScoreOverrides((prev) => ({
+      ...prev,
+      [savedCell.subjectId]: { ...(prev[savedCell.subjectId] ?? {}), [savedCell.fieldName]: newVal },
+    }));
+
+    // Show per-cell spinner
+    const cellKey = `${savedCell.subjectId}:${savedCell.fieldName}`;
+    setSavingCells((prev) => new Set(prev).add(cellKey));
+
+    const res = await saveScore(studentId, subseasion, savedCell.subjectId, optimisticScores, row.hasExisting);
+
+    // Remove spinner
+    setSavingCells((prev) => { const s = new Set(prev); s.delete(cellKey); return s; });
+
+    if (res?.success) {
+      addNotification("Score updated successfully", "success");
+      // If this was a newly created record (POST), mark the subject as hasExisting
+      // so subsequent saves for other fields on the same subject use PATCH
+      if (!row.hasExisting) {
+        setHasExistingOverrides((prev) => new Set(prev).add(savedCell.subjectId));
+      }
+    } else {
+      // Roll back optimistic update
+      setScoreOverrides((prev) => {
+        const next = { ...prev };
+        if (next[savedCell.subjectId]) {
+          delete next[savedCell.subjectId][savedCell.fieldName];
+          if (Object.keys(next[savedCell.subjectId]).length === 0) delete next[savedCell.subjectId];
+        }
+        return next;
+      });
+      addNotification(res?.message || "Failed to save score", "error");
+    }
+  };
+
+  // ── Inline trait cell editing ──────────────────────────────────────────────
+  const openTraitCell = (traitName) => {
+    if (!canEdit) { permNotify("You do not have permission to edit traits."); return; }
+    setActiveTrait(traitName);
+    // Use override value if present, otherwise server value
+    setTraitCellValue(traitOverrides[traitName] !== undefined ? traitOverrides[traitName] : (traitScore?.traits?.[traitName] ?? ""));
+  };
+
+  const commitTraitCell = async (traitName, value) => {
+    if (!traitName) return;
+
+    const currentVal = traitOverrides[traitName] !== undefined ? traitOverrides[traitName] : (traitScore?.traits?.[traitName] ?? "");
+    if (value === currentVal) {
+      setActiveTrait(null);
+      return;
+    }
+
+    // Close select immediately
+    setActiveTrait(null);
+
+    // Optimistic update
+    setTraitOverrides((prev) => ({ ...prev, [traitName]: value || null }));
+
+    // Show per-trait spinner
+    setSavingTraits((prev) => new Set(prev).add(traitName));
+
+    const allTraits = { ...(traitScore?.traits ?? {}), ...traitOverrides, [traitName]: value || null };
+    const res = await saveTraitScore(studentId, subseasion, { traits: allTraits });
+
+    // Remove spinner
+    setSavingTraits((prev) => { const s = new Set(prev); s.delete(traitName); return s; });
+
+    if (res?.success) {
+      addNotification("Trait updated successfully", "success");
+    } else {
+      // Roll back
+      setTraitOverrides((prev) => {
+        const next = { ...prev };
+        delete next[traitName];
+        return next;
+      });
+      addNotification(res?.message || "Failed to save trait", "error");
+    }
   };
 
   const openRemarkPanel = () => {
@@ -233,179 +356,87 @@ const ReportStudentInfo = () => {
 
   // ── PDF Export ────────────────────────────────────────────────────────────
   const handleExportPDF = () => {
-    const doc = new jsPDF({ unit: "mm", format: "a4" });
-    const pageW = doc.internal.pageSize.getWidth();
-    const pageH = doc.internal.pageSize.getHeight();
-    const margin = 16;
-    const col2 = pageW / 2;
-    let y = 0;
-
     const school = user?.school || {};
-    const studentName = subsessionData?.student_name || classData?.student_name || "Student";
-    const className   = classData?.class_name || "—";
-    const sessionName = classData?.session_name || subsessionData?.session_name || "—";
-    const termName    = subsessionData?.term_name || classData?.subsession_name || "—";
+    const studentName = previewData?.student?.studentName
+      || subsessionData?.student_name
+      || classData?.student_name
+      || "Student";
+    const className   = classData?.class_name || previewData?.student?.class || "—";
+    const sessionName = classData?.session_name || subsessionData?.session_name || previewData?.student?.session || "—";
+    const termName    = subsessionData?.term_name || classData?.subsession_name || previewData?.student?.term || "—";
+    const profileImg  = previewData?.student?.profileImg || null;
 
-    // ── Header band ──────────────────────────────────────────────────────────
-    doc.setFillColor(255, 255, 255);
-    doc.rect(0, 0, pageW, 38, "F");
-    doc.setDrawColor(229, 231, 235);
-    doc.line(0, 38, pageW, 38);
+    const rankings  = classAverage?.student_rankings ?? [];
+    const classPosN = rankings.findIndex((r) => r.student_id === studentId) + 1;
 
-    // School logo placeholder circle
-    if (school.logo_url && typeof school.logo_url === "string") {
-      try { doc.addImage(school.logo_url, "JPEG", margin, 6, 22, 22); } catch {}
-    } else {
-      doc.setFillColor(240, 240, 240);
-      doc.circle(margin + 11, 17, 11, "F");
-      doc.setTextColor(150, 150, 150); doc.setFontSize(7); doc.setFont("helvetica", "bold");
-      doc.text("LOGO", margin + 11, 18, { align: "center" });
+    // Merge local score overrides into tableRows for export
+    const exportRows = tableRows.map((row) => ({
+      ...row,
+      scores: row.scores
+        ? { ...row.scores, ...(scoreOverrides[row.subject_id] ?? {}) }
+        : (scoreOverrides[row.subject_id] ? { ...scoreOverrides[row.subject_id] } : null),
+    }));
+
+    const exportGrandTotal = exportRows.reduce((sum, row) => {
+      if (!row.scores) return sum;
+      return sum + gradingFields.reduce((s, f) => s + (Number(row.scores[f.field_name]) || 0), 0);
+    }, 0);
+
+    // Merge local trait overrides
+    const exportTraitScores = { ...(traitScore?.traits ?? {}), ...traitOverrides };
+
+    // ── Use html_template from the grading template if available ─────────────
+    // html_template is the published custom layout the admin designed in the editor.
+    // Falls back to the jsPDF programmatic export when no custom HTML exists.
+    if (templateData?.html_template) {
+      exportReportHtml({
+        htmlTemplate: templateData.html_template,
+        template:     templateData,
+        school,
+        studentData: {
+          studentName,
+          class:          className,
+          session:        sessionName,
+          term:           termName,
+          admissionId:    previewData?.student?.admissionId ?? "—",
+          position:       classPosN > 0 ? `${classPosN} / ${rankings.length}` : "—",
+          gender:         previewData?.student?.gender ?? "—",
+          dob:            previewData?.student?.dob    ?? "—",
+          profileImg,
+          teacherRemark:   reportCard?.teacher_remark   ?? "",
+          principalRemark: reportCard?.principal_remark ?? "",
+          attendance:      previewData?.student?.attendance ?? null,
+        },
+        tableRows:      exportRows,
+        traitScores:    exportTraitScores,
+        classAverage,
+        classPos:       classPosN,
+        totalStudents:  rankings.length,
+        grandTotal:     exportGrandTotal,
+      });
+      return;
     }
 
-    doc.setTextColor(17, 17, 17);
-    doc.setFontSize(13); doc.setFont("helvetica", "bold");
-    doc.text(school.school_name || "School Name", margin + 28, 14);
-    doc.setFontSize(8); doc.setFont("helvetica", "normal"); doc.setTextColor(100, 100, 100);
-    doc.text(school.address || "", margin + 28, 20);
-    doc.text(`${school.phone_number || ""}  ${school.email || ""}`, margin + 28, 26);
-
-    doc.setTextColor(17, 17, 17); doc.setFontSize(9); doc.setFont("helvetica", "bold");
-    doc.text("STUDENT REPORT CARD", pageW - margin, 14, { align: "right" });
-    doc.setFont("helvetica", "normal"); doc.setFontSize(8); doc.setTextColor(100, 100, 100);
-    doc.text(`${sessionName}  ·  ${termName}`, pageW - margin, 21, { align: "right" });
-    doc.text(`Generated: ${new Date().toLocaleDateString()}`, pageW - margin, 28, { align: "right" });
-
-    y = 46;
-
-    // ── Student info card ────────────────────────────────────────────────────
-    doc.setFillColor(249, 250, 251);
-    doc.roundedRect(margin, y, pageW - margin * 2, 28, 4, 4, "F");
-    doc.setDrawColor(229, 231, 235); doc.roundedRect(margin, y, pageW - margin * 2, 28, 4, 4, "S");
-
-    const infoItems = [
-      ["Student", studentName],
-      ["Class", className],
-      ["Session", sessionName],
-      ["Term", termName],
-      ["Class Avg", classAverage ? `${classAverage.average}%` : "—"],
-      ["Position", classPos > 0 ? `${classPos} / ${rankings.length}` : "—"],
-    ];
-    const colW = (pageW - margin * 2) / 3;
-    infoItems.forEach(([label, value], i) => {
-      const cx = margin + 6 + (i % 3) * colW;
-      const cy = y + 8 + Math.floor(i / 3) * 12;
-      doc.setFontSize(7); doc.setFont("helvetica", "bold"); doc.setTextColor(150, 150, 150);
-      doc.text(label.toUpperCase(), cx, cy);
-      doc.setFontSize(9); doc.setFont("helvetica", "normal"); doc.setTextColor(17, 17, 17);
-      doc.text(String(value), cx, cy + 5);
+    // ── Fallback: jsPDF programmatic export ───────────────────────────────────
+    exportReportPDF({
+      studentName,
+      className,
+      sessionName,
+      termName,
+      profileImg,
+      school,
+      gradingFields,
+      gradingScheme,
+      behavioralTraits,
+      traitScores: exportTraitScores,
+      tableRows: exportRows,
+      subjectPositions,
+      grandTotal: exportGrandTotal,
+      classAverage,
+      classPos: classPosN,
+      totalStudents: rankings.length,
+      reportCard,
     });
-
-    y += 36;
-
-    // ── Scores table ─────────────────────────────────────────────────────────
-    doc.setFontSize(10); doc.setFont("helvetica", "bold"); doc.setTextColor(17, 17, 17);
-    doc.text("Academic Scores", margin, y); y += 6;
-
-    // Table header
-    const fieldCols = gradingFields.map((f) => ({ name: f.field_name, max: f.max_score }));
-    const subjectColW = 52;
-    const scoreColW   = Math.min(18, (pageW - margin * 2 - subjectColW - 24 - 16 - 16) / Math.max(fieldCols.length, 1));
-    const totalColW   = 20; const gradeColW = 14; const posColW = 14;
-
-    doc.setFillColor(17, 17, 17);
-    doc.rect(margin, y, pageW - margin * 2, 7, "F");
-    doc.setTextColor(255, 255, 255); doc.setFontSize(7); doc.setFont("helvetica", "bold");
-    let cx = margin + 3;
-    doc.text("SUBJECT", cx, y + 5); cx += subjectColW;
-    fieldCols.forEach((f) => { doc.text(`${f.name}/${f.max}`, cx, y + 5, { maxWidth: scoreColW - 1 }); cx += scoreColW; });
-    doc.text("TOTAL", cx, y + 5); cx += totalColW;
-    doc.text("GRADE", cx, y + 5); cx += gradeColW;
-    doc.text("POS", cx, y + 5);
-    y += 7;
-
-    tableRows.forEach((row, idx) => {
-      const total = row.scores ? gradingFields.reduce((s, f) => s + (Number(row.scores[f.field_name]) || 0), 0) : null;
-      const grade = total !== null ? getGrade(total) : "—";
-      const pos   = subjectPositions[row.subject_id] ?? "—";
-
-      if (idx % 2 === 0) { doc.setFillColor(249, 250, 251); doc.rect(margin, y, pageW - margin * 2, 6.5, "F"); }
-      doc.setTextColor(17, 17, 17); doc.setFontSize(8); doc.setFont("helvetica", "normal");
-      cx = margin + 3;
-      doc.text(row.subject_name, cx, y + 4.5, { maxWidth: subjectColW - 2 }); cx += subjectColW;
-      fieldCols.forEach((f) => {
-        const v = row.scores ? (row.scores[f.field_name] ?? "—") : "—";
-        doc.text(String(v), cx, y + 4.5); cx += scoreColW;
-      });
-      doc.setFont("helvetica", "bold");
-      doc.text(total !== null ? String(total) : "—", cx, y + 4.5); cx += totalColW;
-      doc.text(grade, cx, y + 4.5); cx += gradeColW;
-      doc.text(String(pos), cx, y + 4.5);
-      doc.setFont("helvetica", "normal");
-      y += 6.5;
-    });
-
-    // Grand total row
-    doc.setFillColor(17, 17, 17); doc.rect(margin, y, pageW - margin * 2, 7, "F");
-    doc.setTextColor(255, 255, 255); doc.setFontSize(8); doc.setFont("helvetica", "bold");
-    cx = margin + 3;
-    doc.text("GRAND TOTAL", cx, y + 5); cx += subjectColW + fieldCols.length * scoreColW;
-    doc.text(String(grandTotal), cx, y + 5);
-    y += 14;
-
-    // ── Behavioral Traits ────────────────────────────────────────────────────
-    if (behavioralTraits.length > 0 && traitScore?.traits) {
-      doc.setFontSize(10); doc.setFont("helvetica", "bold"); doc.setTextColor(17, 17, 17);
-      doc.text("Behavioral Traits", margin, y); y += 6;
-
-      const traitColW = (pageW - margin * 2) / 2 - 4;
-      behavioralTraits.forEach((trait, i) => {
-        const tx = margin + (i % 2) * (traitColW + 8);
-        if (i % 2 === 0 && i > 0) y += 7;
-        if (i === 0 || i % 2 === 0) {
-          if (i % 2 === 0) {
-            doc.setFillColor(249, 250, 251);
-            doc.roundedRect(tx, y, traitColW, 6, 2, 2, "F");
-          }
-        }
-        const rating = traitScore.traits[trait] || "—";
-        doc.setFontSize(8); doc.setFont("helvetica", "normal"); doc.setTextColor(17, 17, 17);
-        doc.text(trait, tx + 3, y + 4.2);
-        doc.setFont("helvetica", "bold");
-        doc.text(rating, tx + traitColW - 3, y + 4.2, { align: "right" });
-        doc.setFont("helvetica", "normal");
-        if (i % 2 === 1) y += 7;
-      });
-      if (behavioralTraits.length % 2 !== 0) y += 7;
-      y += 6;
-    }
-
-    // ── Remarks ──────────────────────────────────────────────────────────────
-    if (reportCard?.teacher_remark || reportCard?.principal_remark) {
-      doc.setFontSize(10); doc.setFont("helvetica", "bold"); doc.setTextColor(17, 17, 17);
-      doc.text("Remarks", margin, y); y += 6;
-
-      const remarkW = (pageW - margin * 2 - 8) / 2;
-      [["Teacher's Remark", reportCard.teacher_remark], ["Principal's Remark", reportCard.principal_remark]].forEach(([label, text], i) => {
-        const rx = margin + i * (remarkW + 8);
-        doc.setFillColor(249, 250, 251); doc.roundedRect(rx, y, remarkW, 22, 3, 3, "F");
-        doc.setDrawColor(229, 231, 235); doc.roundedRect(rx, y, remarkW, 22, 3, 3, "S");
-        doc.setFontSize(7); doc.setFont("helvetica", "bold"); doc.setTextColor(150, 150, 150);
-        doc.text(label.toUpperCase(), rx + 4, y + 6);
-        doc.setFontSize(8); doc.setFont("helvetica", "normal"); doc.setTextColor(17, 17, 17);
-        const lines = doc.splitTextToSize(text || "—", remarkW - 8);
-        doc.text(lines.slice(0, 2), rx + 4, y + 13);
-      });
-      y += 28;
-    }
-
-    // ── Footer ───────────────────────────────────────────────────────────────
-    doc.setFillColor(17, 17, 17); doc.rect(0, pageH - 12, pageW, 12, "F");
-    doc.setTextColor(150, 150, 150); doc.setFontSize(7); doc.setFont("helvetica", "normal");
-    doc.text(school.school_name || "", margin, pageH - 5);
-    doc.text(`${sessionName}  ·  ${termName}`, col2, pageH - 5, { align: "center" });
-    doc.text(`Page 1`, pageW - margin, pageH - 5, { align: "right" });
-
-    doc.save(`report_${studentName.replace(/\s+/g, "_")}_${termName}.pdf`);
   };
 
   return (
@@ -473,7 +504,7 @@ const ReportStudentInfo = () => {
           <div className="rsi-section">
             <div className="rsi-section-header">
               <span className="rsi-section-title">Academic Scores</span>
-              <span className="rsi-section-sub">Click a row to edit scores</span>
+              <span className="rsi-section-sub">Double-click a score cell to edit</span>
             </div>
             <div className="rsi-table-wrap">
               <table className="rsi-table">
@@ -490,9 +521,48 @@ const ReportStudentInfo = () => {
                   {tableRows.map((row) => {
                     const total = row.scores ? gradingFields.reduce((s, f) => s + (Number(row.scores[f.field_name]) || 0), 0) : null;
                     return (
-                      <tr key={row.subject_id} onClick={() => openRow(row)}>
+                      <tr key={row.subject_id}>
                         <td className="rsi-subject-cell">{row.subject_name}</td>
-                        {gradingFields.map((f) => <td key={f.field_name} className="rsi-score-cell">{row.scores ? (row.scores[f.field_name] ?? "—") : "—"}</td>)}
+                        {gradingFields.map((f) => {
+                          const isActive = activeCell?.subjectId === row.subject_id && activeCell?.fieldName === f.field_name;
+                          const cellKey = `${row.subject_id}:${f.field_name}`;
+                          const isSaving = savingCells.has(cellKey);
+                          const displayVal = row.scores ? (row.scores[f.field_name] ?? "—") : "—";
+                          return (
+                            <td
+                              key={f.field_name}
+                              className={`rsi-score-cell rsi-editable-cell${isActive ? " rsi-cell-active" : ""}`}
+                              onDoubleClick={() => openScoreCell(row.subject_id, f.field_name, f.max_score, row.scores?.[f.field_name])}
+                              onTouchEnd={(e) => tapTracker.current(`score:${row.subject_id}:${f.field_name}`, () => openScoreCell(row.subject_id, f.field_name, f.max_score, row.scores?.[f.field_name]), e)}
+                              title="Double-tap to edit"
+                            >
+                              {isActive ? (
+                                <div className="rsi-inline-edit-wrap">
+                                  <input
+                                    className={`rsi-inline-input${cellError ? " rsi-input-error" : ""}`}
+                                    type="number"
+                                    min="0"
+                                    max={f.max_score}
+                                    value={cellValue}
+                                    autoFocus
+                                    onChange={(e) => handleCellChange(e.target.value, f.max_score)}
+                                    onBlur={commitScoreCell}
+                                    onKeyDown={(e) => {
+                                      if (e.key === "Enter") { e.target.blur(); }
+                                      if (e.key === "Escape") { setActiveCell(null); }
+                                    }}
+                                  />
+                                  {cellError && <span className="rsi-inline-error">{cellError}</span>}
+                                </div>
+                              ) : (
+                                <span className="rsi-cell-display">
+                                  {displayVal}
+                                  {isSaving && <span className="rsi-cell-spinner" />}
+                                </span>
+                              )}
+                            </td>
+                          );
+                        })}
                         <td className="rsi-total-cell">{total ?? "—"}</td>
                         <td>{total !== null ? <span className="rsi-grade-badge">{getGrade(total)}</span> : "—"}</td>
                         <td className="rsi-pos-cell">{subjectPositions[row.subject_id] ?? "—"}</td>
@@ -511,61 +581,103 @@ const ReportStudentInfo = () => {
             </div>
           </div>
 
-          {/* Behavioral Traits */}
-          {behavioralTraits.length > 0 && (
-            <div className="rsi-section">
-              <div className="rsi-section-header">
-                <span className="rsi-section-title">Behavioral Traits</span>
-                <span className="rsi-section-sub">Click a row to edit</span>
-              </div>
-              <div className="rsi-table-wrap">
-                <table className="rsi-table">
-                  <thead>
-                    <tr><th>Trait</th><th>Rating</th></tr>
-                  </thead>
-                  <tbody>
-                    {behavioralTraits.map((trait) => (
-                      <tr key={trait} onClick={() => openTrait(trait)}>
-                        <td className="rsi-subject-cell">{trait}</td>
-                        <td>
-                          {traitScore?.traits?.[trait]
-                            ? <span className="rsi-trait-badge">{traitScore.traits[trait]}</span>
-                            : <span className="rsi-empty">Not set</span>}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
+          {/* Behavioral Traits + Remarks side by side */}
+          {(behavioralTraits.length > 0 || reportCard) && (
+            <div className="rsi-section-remarks-row">
 
-          {/* Remarks */}
-          {reportCard && (
-          <div className="rsi-remarks-row">
-            <div className="rsi-remark-card">
-              <div className="rsi-remark-header">
-                <span className="rsi-remark-title">Teacher's Remark</span>
-                <button className="rsi-edit-btn" onClick={openRemarkPanel}>
-                  {reportCard?.teacher_remark ? "Edit" : "Add"}
-                </button>
-              </div>
-              <p className={`rsi-remark-text ${!reportCard?.teacher_remark ? "rsi-remark-empty" : ""}`}>
-                {reportCard?.teacher_remark ?? "No remark added yet"}
-              </p>
+              {/* Behavioral Traits */}
+              {behavioralTraits.length > 0 && (
+                <div className="rsi-section">
+                  <div className="rsi-section-header">
+                    <span className="rsi-section-title">Behavioral Traits</span>
+                    <span className="rsi-section-sub">Double-click a rating to edit</span>
+                  </div>
+                  <div className="rsi-table-wrap">
+                    <table className="rsi-table">
+                      <thead>
+                        <tr><th>Trait</th><th>Rating</th></tr>
+                      </thead>
+                      <tbody>
+                        {behavioralTraits.map((trait) => {
+                          const isActive = activeTrait === trait;
+                          const isSaving = savingTraits.has(trait);
+                          const currentRating = traitOverrides[trait] !== undefined
+                            ? traitOverrides[trait]
+                            : (traitScore?.traits?.[trait] ?? "");
+                          return (
+                            <tr key={trait}>
+                              <td className="rsi-subject-cell">{trait}</td>
+                              <td
+                                className={`rsi-editable-cell${isActive ? " rsi-cell-active" : ""}`}
+                                onDoubleClick={() => openTraitCell(trait)}
+                                onTouchEnd={(e) => tapTracker.current(`trait:${trait}`, () => openTraitCell(trait), e)}
+                                title="Double-tap to edit"
+                              >
+                                {isActive ? (
+                                  <select
+                                    className="rsi-inline-select"
+                                    value={traitCellValue}
+                                    autoFocus
+                                    onChange={(e) => setTraitCellValue(e.target.value)}
+                                    onBlur={() => commitTraitCell(trait, traitCellValue)}
+                                    onKeyDown={(e) => {
+                                      if (e.key === "Enter") { e.target.blur(); }
+                                      if (e.key === "Escape") { setActiveTrait(null); }
+                                    }}
+                                  >
+                                    <option value="">— Select —</option>
+                                    <option value="Excellent">Excellent</option>
+                                    <option value="Very Good">Very Good</option>
+                                    <option value="Good">Good</option>
+                                    <option value="Needs Improvement">Needs Improvement</option>
+                                  </select>
+                                ) : (
+                                  <span className="rsi-cell-display">
+                                    {currentRating
+                                      ? <span className="rsi-trait-badge">{currentRating}</span>
+                                      : <span className="rsi-empty">Not set</span>}
+                                    {isSaving && <span className="rsi-cell-spinner" />}
+                                  </span>
+                                )}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+
+              {/* Remarks */}
+              {reportCard && (
+                <div className="rsi-remarks-row">
+                  <div className="rsi-remark-card">
+                    <div className="rsi-remark-header">
+                      <span className="rsi-remark-title">Teacher's Remark</span>
+                      <button className="rsi-edit-btn" onClick={openRemarkPanel}>
+                        {reportCard?.teacher_remark ? "Edit" : "Add"}
+                      </button>
+                    </div>
+                    <p className={`rsi-remark-text ${!reportCard?.teacher_remark ? "rsi-remark-empty" : ""}`}>
+                      {reportCard?.teacher_remark ?? "No remark added yet"}
+                    </p>
+                  </div>
+                  <div className="rsi-remark-card">
+                    <div className="rsi-remark-header">
+                      <span className="rsi-remark-title">Principal's Remark</span>
+                      <button className="rsi-edit-btn" onClick={openRemarkPanel}>
+                        {reportCard?.principal_remark ? "Edit" : "Add"}
+                      </button>
+                    </div>
+                    <p className={`rsi-remark-text ${!reportCard?.principal_remark ? "rsi-remark-empty" : ""}`}>
+                      {reportCard?.principal_remark ?? "No remark added yet"}
+                    </p>
+                  </div>
+                </div>
+              )}
+
             </div>
-            <div className="rsi-remark-card">
-              <div className="rsi-remark-header">
-                <span className="rsi-remark-title">Principal's Remark</span>
-                <button className="rsi-edit-btn" onClick={openRemarkPanel}>
-                  {reportCard?.principal_remark ? "Edit" : "Add"}
-                </button>
-              </div>
-              <p className={`rsi-remark-text ${!reportCard?.principal_remark ? "rsi-remark-empty" : ""}`}>
-                {reportCard?.principal_remark ?? "No remark added yet"}
-              </p>
-            </div>
-          </div>
           )}
 
           {/* Subjects on Report */}
@@ -623,61 +735,6 @@ const ReportStudentInfo = () => {
             </div>
           </div>
         )}
-
-        {/* Score edit panel */}
-        <SlideInMenu isShow={!!selectedRow} onClose={() => setSelectedRow(null)} width="420px">
-          {selectedRow && (
-            <div className="rsi-panel-body">
-              <h2 className="rsi-panel-title">{selectedRow.subject_name}</h2>
-              <div className="rsi-panel-fields">
-                {gradingFields.map((f) => {
-                  const isError = !!scoreErrors[f.field_name];
-                  return (
-                    <div key={f.field_name} className="rsi-field-row">
-                      <label className="rsi-field-label">{f.field_name} <span className="rsi-field-max">(max {f.max_score})</span></label>
-                      <input
-                        type="number" min="0" max={f.max_score}
-                        value={editScores[f.field_name] ?? ""}
-                        onChange={(e) => handleScoreChange(f.field_name, f.max_score, e.target.value)}
-                        className={`rsi-input ${isError ? "rsi-input-error" : ""}`}
-                      />
-                      {isError && <p className="rsi-error-msg">{scoreErrors[f.field_name]}</p>}
-                    </div>
-                  );
-                })}
-              </div>
-              <div className="rsi-panel-actions">
-                <Button variant="secondary" onClick={() => setSelectedRow(null)} disabled={saving}>Cancel</Button>
-                <Button onClick={handleSave} disabled={saving || hasErrors}>{saving ? "Saving..." : "Save"}</Button>
-              </div>
-            </div>
-          )}
-        </SlideInMenu>
-
-        {/* Trait edit panel */}
-        <SlideInMenu isShow={!!selectedTrait} onClose={() => setSelectedTrait(null)} width="420px">
-          {selectedTrait && (
-            <div className="rsi-panel-body">
-              <h2 className="rsi-panel-title">{selectedTrait.name}</h2>
-              <div className="rsi-panel-fields">
-                <div className="rsi-field-row">
-                  <label className="rsi-field-label">Rating</label>
-                  <select value={editTraitValue} onChange={(e) => setEditTraitValue(e.target.value)} className="rsi-select">
-                    <option value="">— Select —</option>
-                    <option value="Excellent">Excellent</option>
-                    <option value="Very Good">Very Good</option>
-                    <option value="Good">Good</option>
-                    <option value="Needs Improvement">Needs Improvement</option>
-                  </select>
-                </div>
-              </div>
-              <div className="rsi-panel-actions">
-                <Button variant="secondary" onClick={() => setSelectedTrait(null)} disabled={saving}>Cancel</Button>
-                <Button onClick={handleSaveTrait} disabled={saving}>{saving ? "Saving..." : "Save"}</Button>
-              </div>
-            </div>
-          )}
-        </SlideInMenu>
 
         {/* Remark edit panel */}
         <SlideInMenu isShow={remarkPanel} onClose={() => setRemarkPanel(false)} width="480px">

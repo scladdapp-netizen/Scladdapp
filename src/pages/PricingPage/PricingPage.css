@@ -463,3 +463,85 @@
   .pricing-pg__card.featured { transform: none; }
   .pricing-pg__card.featured:hover { transform: translateY(-8px); }
 }
+
+/* ── Skeleton loader ─────────────────────────────────────────────────────── */
+@keyframes ppSkeletonShimmer {
+  0%   { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+
+.pricing-pg__card--skeleton {
+  pointer-events: none;
+}
+
+/* shimmer base used on all skeleton pieces */
+.pricing-pg__skeleton-line,
+.pricing-pg__skeleton-price,
+.pricing-pg__skeleton-btn {
+  background: linear-gradient(
+    90deg,
+    rgba(0, 0, 0, 0.07) 25%,
+    rgba(0, 0, 0, 0.13) 50%,
+    rgba(0, 0, 0, 0.07) 75%
+  );
+  background-size: 800px 100%;
+  animation: ppSkeletonShimmer 1.6s infinite linear;
+  border-radius: 6px;
+}
+
+/* override shimmer colours on dark (featured) card */
+.pricing-pg__card--skeleton.featured .pricing-pg__skeleton-line,
+.pricing-pg__card--skeleton.featured .pricing-pg__skeleton-price,
+.pricing-pg__card--skeleton.featured .pricing-pg__skeleton-btn {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.08) 25%,
+    rgba(255, 255, 255, 0.18) 50%,
+    rgba(255, 255, 255, 0.08) 75%
+  );
+  background-size: 800px 100%;
+  animation: ppSkeletonShimmer 1.6s infinite linear;
+}
+
+.pricing-pg__skeleton-header {
+  margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.pricing-pg__skeleton-line {
+  height: 12px;
+  width: 100%;
+}
+
+.pricing-pg__skeleton-line--sm {
+  width: 55%;
+  height: 14px;
+}
+
+.pricing-pg__skeleton-line--xs {
+  width: 80%;
+  height: 10px;
+}
+
+.pricing-pg__skeleton-price {
+  height: 42px;
+  width: 60%;
+  margin-bottom: 20px;
+  border-radius: 8px;
+}
+
+.pricing-pg__skeleton-features {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1;
+  margin-bottom: 20px;
+}
+
+.pricing-pg__skeleton-btn {
+  height: 38px;
+  border-radius: 8px;
+  width: 100%;
+}

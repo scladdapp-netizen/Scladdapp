@@ -39,7 +39,7 @@ const TeacherSec = () => {
             <Route path="/notifications" element={<Notifications />} />
             <Route path="/events/*"       element={<EventsCalendar />} />
             <Route path="/school/*"      element={<SchoolInfo />} />
-            <Route path="/profile"       element={<Profile />} />
+            <Route path="/profile/*"     element={<Profile />} />
             <Route path="/subject/:subjectId/:assignmentId/*" element={<SubjectDashboard />} />
             <Route path="/subject/:subjectId/*" element={<SubjectDashboard />} />
             <Route path="/class/:classId/*"     element={<ClassDashboard />} />

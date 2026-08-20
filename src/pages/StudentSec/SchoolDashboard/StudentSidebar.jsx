@@ -1,6 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Link, useLocation, useParams } from "react-router-dom";
 import { useAuth } from "../../../context/AuthContext/AuthContext";
+import useStudentBills from "../../../api_call/useStudentBills";
 import FeedbackPanel from "../../../components/FeedbackPanel/FeedbackPanel";
 import "../../TeacherSec/TeacherSec.css";
 
@@ -75,6 +76,12 @@ const StudentSidebar = ({ isMobileOpen, onClose }) => {
   const student = user?.student || {};
   const school  = user?.school  || {};
 
+  const { bills } = useStudentBills(student?.student_id);
+  const unpaidCount = useMemo(
+    () => bills.filter((b) => b.payment_status === "unpaid" || b.payment_status === "partial").length,
+    [bills]
+  );
+
   const base = `/student/${studentId}/school/${schoolId}`;
   const isActive = (id) => location.pathname.startsWith(`${base}/${id}`);
 
@@ -108,6 +115,9 @@ const StudentSidebar = ({ isMobileOpen, onClose }) => {
               >
                 <span className="t_nav_icon">{item.icon}</span>
                 {isExpanded && <span className="t_nav_text">{item.name}</span>}
+                {item.id === "bill" && unpaidCount > 0 && (
+                  <span className="t_nav_bill_badge">{unpaidCount > 99 ? "99+" : unpaidCount}</span>
+                )}
               </Link>
             ))}
           </div>

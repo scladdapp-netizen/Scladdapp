@@ -57,6 +57,7 @@ const StudentDetailTopTab = ({
   const isSchoolInfoContext = (location.pathname.includes("/teacher/") || location.pathname.includes("/student/")) && location.pathname.includes("/school") && !location.pathname.includes("/alumni") && !location.pathname.includes("/session/");
   const isSessionContext = location.pathname.includes("/student/") && location.pathname.includes("/session/") && !location.pathname.includes("/alumni");
   const isStudentProfileContext = location.pathname.includes("/student/") && location.pathname.includes("/alumni") && !location.pathname.includes("/admin/");
+  const isTeacherProfileContext = location.pathname.includes("/teacher/") && location.pathname.includes("/profile");
 
   const entityId = isClassContext
     ? classId
@@ -283,6 +284,14 @@ const StudentDetailTopTab = ({
       if (!link) return location.pathname === base || location.pathname === `${base}/identity`;
       return location.pathname === `${base}${link}`;
     }
+
+    // Handle teacher profile context
+    if (isTeacherProfileContext) {
+      const base = `/teacher/${schoolId}/profile`;
+      if (!link) return location.pathname === base || location.pathname === `${base}/identity`;
+      return location.pathname === `${base}${link}`;
+    }
+
     if (isFeeBillingContext) {
       if (!link) {
         // Default route for fee billing (bills)
@@ -418,6 +427,13 @@ const StudentDetailTopTab = ({
     // Handle student profile/alumni context
     if (isStudentProfileContext) {
       const base = location.pathname.split("/alumni")[0] + "/alumni";
+      navigate(`${base}${link || "/identity"}`);
+      return;
+    }
+
+    // Handle teacher profile context
+    if (isTeacherProfileContext) {
+      const base = `/teacher/${schoolId}/profile`;
       navigate(`${base}${link || "/identity"}`);
       return;
     }

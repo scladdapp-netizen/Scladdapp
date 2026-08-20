@@ -149,3 +149,144 @@
 [data-theme="dark"] .sa-no-scores { background: #252525; border-color: #2a2a2a; color: #555555; }
 [data-theme="dark"] .sa-field-input { background: #252525; border-color: #3a3a3a; color: #e0e0e0; }
 [data-theme="dark"] .sa-field-input:focus { border-color: #f0f0f0; background: #2a2a2a; }
+
+/* ── Mobile: show data-label on all cells inside the assessments table ─────── */
+@media (max-width: 640px) {
+
+  /* Show the column label as a prefix on every cell */
+  .subjectAssessments .smart-table td::before {
+    display: block;
+    content: attr(data-label);
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: #888888;
+    margin-bottom: 4px;
+  }
+
+  /* Give editable cells a little breathing room so label + input don't feel cramped */
+  .subjectAssessments .smart-table td {
+    padding: 12px 14px;
+  }
+
+  /* Inline cell: stack label on top, value/input below */
+  .subjectAssessments .sa-inline-cell {
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+    cursor: cell;
+    min-height: unset;
+    width: 100%;
+  }
+
+  /* In active (edit) mode, input takes full width */
+  .subjectAssessments .sa-inline-cell.sa-cell-active .rsi-inline-edit-wrap {
+    width: 100%;
+  }
+
+  .subjectAssessments .sa-inline-cell.sa-cell-active .rsi-inline-input {
+    width: 100%;
+    box-sizing: border-box;
+  }
+}
+
+/* ── Dark theme mobile labels ─────────────────────────────────────────────── */
+@media (max-width: 640px) {
+  [data-theme="dark"] .subjectAssessments .smart-table td::before {
+    color: #555555;
+  }
+}
+
+.sa-inline-cell {
+  min-width: 48px;
+  min-height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: cell;
+  border-radius: 4px;
+  transition: background 0.1s, outline 0.1s;
+  user-select: none;
+}
+
+.sa-inline-cell:hover {
+  background: #f0f7ff;
+  outline: 1px dashed #93c5fd;
+  outline-offset: -1px;
+}
+
+.sa-inline-cell.sa-cell-active {
+  background: #f8faff;
+  outline: none;
+  cursor: default;
+}
+
+/* Reuse rsi inline edit classes for input/error */
+.rsi-inline-edit-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  align-items: flex-start;
+}
+
+.rsi-inline-input {
+  width: 70px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: 2px solid #3b82f6;
+  font-size: 13px;
+  font-weight: 600;
+  color: #111111;
+  background: #ffffff;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
+  -moz-appearance: textfield;
+}
+.rsi-inline-input::-webkit-inner-spin-button,
+.rsi-inline-input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+.rsi-inline-input.rsi-input-error { border-color: #ef4444; box-shadow: 0 0 0 3px rgba(239,68,68,0.15); }
+
+.rsi-inline-error {
+  font-size: 10px;
+  font-weight: 700;
+  color: #ef4444;
+  white-space: nowrap;
+}
+
+.rsi-cell-display {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.rsi-cell-spinner {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 2px solid #d1d5db;
+  border-top-color: #3b82f6;
+  animation: sa-spin 0.6s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes sa-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Dark theme inline ───────────────────────────────────────────────────── */
+[data-theme="dark"] .sa-inline-cell:hover {
+  background: #0d1f3c;
+  outline-color: #1d4ed8;
+}
+[data-theme="dark"] .sa-inline-cell.sa-cell-active { background: #111827; }
+[data-theme="dark"] .rsi-inline-input {
+  background: #1e1e1e;
+  border-color: #3b82f6;
+  color: #e0e0e0;
+}
+[data-theme="dark"] .rsi-cell-spinner {
+  border-color: #3a3a3a;
+  border-top-color: #60a5fa;
+}

@@ -23,7 +23,6 @@ export default function StepThree({
       number: /\d/.test(password),
       special: /[!@#$%^&*(),.?":{}|<>]/.test(password),
     };
-
     updateAdminData("passwordChecks", checks);
     const passed = Object.values(checks).filter(Boolean).length;
     updateAdminData("passwordStrength", passed);
@@ -33,6 +32,7 @@ export default function StepThree({
     updateAdminData("adminPassword", value);
     checkPasswordStrength(value);
   };
+
   return (
     <div className="stepform">
       <FormInput
@@ -41,15 +41,24 @@ export default function StepThree({
         value={adminUsername}
         onChange={(value) => updateAdminData("adminUsername", value)}
       />
-      <FormInput
-        label="Admin Email"
-        type="email"
-        value={adminEmail}
-        onChange={(value) => updateAdminData("adminEmail", value)}
-      />
-      {emailVerify && (
-        <p style={{ color: "green", marginBottom: 30 }}>Email Verified</p>
-      )}
+
+      <div style={{ position: "relative" }}>
+        <FormInput
+          label="Admin Email"
+          type="email"
+          value={adminEmail}
+          onChange={(value) => updateAdminData("adminEmail", value)}
+        />
+        {emailVerify && (
+          <span style={{
+            position: "absolute", right: 12, bottom: 10,
+            fontSize: 12, fontWeight: 600, color: "#16a34a",
+            background: "#dcfce7", padding: "2px 8px", borderRadius: 20,
+          }}>
+            ✓ Verified
+          </span>
+        )}
+      </div>
 
       <PasswordStrength
         password={adminPassword}
@@ -61,12 +70,13 @@ export default function StepThree({
           updateAdminData("adminConfirmPassword", value)
         }
       />
+
       <div className="sbl">
         <Button
           variant="primary"
           onClick={onNext}
           loading={isLoading}
-          loadingText={"Loading..."}
+          loadingText="Checking..."
         >
           Next →
         </Button>

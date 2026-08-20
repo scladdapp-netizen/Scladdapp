@@ -1,15 +1,29 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useTheme } from "../../context/ThemeContext/ThemeContext";
+import useSchool from "../../api_call/useSchool";
 import "./LoginLeftPanel.css";
 
 const BOX_SIZE = 140;
 const GAP = 2;
 const EDGE_COLS = 3; // how many cols from the right edge get scattered
 
-const LoginLeftPanel = () => {
+const LoginLeftPanel = ({ schoolId = null }) => {
   const { resolved } = useTheme();
   const rootRef = useRef(null);
   const [grid, setGrid] = useState({ cols: 10, rows: 8 });
+  const [schoolProfile, setSchoolProfile] = useState(null);
+  const { getProfile } = useSchool();
+
+  // Fetch school profile when schoolId is provided
+  useEffect(() => {
+    if (!schoolId) {
+      setSchoolProfile(null);
+      return;
+    }
+    getProfile(schoolId).then((res) => {
+      if (res.success) setSchoolProfile(res.data);
+    });
+  }, [schoolId]);
   const animCancelRef = useRef(false);
 
   // Measure container and compute cols/rows to fill it
@@ -102,15 +116,43 @@ const LoginLeftPanel = () => {
 
       {/* Centered overlay */}
       <div className="llp-content">
-        <div className="llp-logo">
-          <svg width="36" height="36" viewBox="0 0 16 16" fill="none">
-            <path d="M8 1l7 3.5-7 3.5-7-3.5L8 1z" fill="currentColor" />
-            <path d="M1 8l7 3.5L15 8" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" opacity="0.6" />
-            <path d="M1 11.5l7 3.5 7-3.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" opacity="0.3" />
-          </svg>
-        </div>
-        <h1 className="llp-title">Scladapp</h1>
-        <p className="llp-sub">School management,<br />simplified.</p>
+        {schoolProfile ? (
+          // School branding
+          <>
+            <div className="llp-logo llp-logo--school">
+              {schoolProfile.logo_url ? (
+                <img
+                  src={schoolProfile.logo_url}
+                  alt={schoolProfile.school_name}
+                  className="llp-school-logo-img"
+                />
+              ) : (
+                <span className="llp-school-logo-initial">
+                  {schoolProfile.school_name?.charAt(0)?.toUpperCase() || "S"}
+                </span>
+              )}
+            </div>
+            <h1 className="llp-title llp-title--school">
+              {schoolProfile.school_name}
+            </h1>
+            <p className="llp-sub">
+              {schoolProfile.address || "Welcome back"}
+            </p>
+          </>
+        ) : (
+          // Default Scladapp branding
+          <>
+            <div className="llp-logo">
+              <svg width="36" height="36" viewBox="0 0 16 16" fill="none">
+                <path d="M8 1l7 3.5-7 3.5-7-3.5L8 1z" fill="currentColor" />
+                <path d="M1 8l7 3.5L15 8" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" opacity="0.6" />
+                <path d="M1 11.5l7 3.5 7-3.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" opacity="0.3" />
+              </svg>
+            </div>
+            <h1 className="llp-title">Scladapp</h1>
+            <p className="llp-sub">School management,<br />simplified.</p>
+          </>
+        )}
       </div>
     </div>
   );

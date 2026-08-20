@@ -46,22 +46,35 @@ const IconClasses = () => (
   </svg>
 );
 
+const IconGuardian = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"/>
+    <circle cx="9" cy="7" r="4" stroke="currentColor" strokeWidth="1.7"/>
+    <path d="M23 17v-1a4 4 0 0 0-3-3.87" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round"/>
+    <path d="M16 3.13a4 4 0 0 1 0 7.75" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round"/>
+    <path d="M19 12v4m-2-2h4" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round"/>
+  </svg>
+);
+
 const ICONS = {
-  whole_school:     <IconWholeSchool />,
-  all_students:     <IconStudent />,
-  all_staff:        <IconStaff />,
-  all_alumni:       <IconAlumni />,
-  alumni_by_year:   <IconAlumni />,
-  specific_classes: <IconClasses />,
-  specific_students:<IconStudent />,
-  specific_staff:   <IconStaff />,
-  specific_alumni:  <IconAlumni />,
+  whole_school:        <IconWholeSchool />,
+  all_students:        <IconStudent />,
+  all_staff:           <IconStaff />,
+  all_alumni:          <IconAlumni />,
+  alumni_by_year:      <IconAlumni />,
+  specific_classes:    <IconClasses />,
+  specific_students:   <IconStudent />,
+  specific_staff:      <IconStaff />,
+  specific_alumni:     <IconAlumni />,
+  all_guardians:       <IconGuardian />,
+  specific_guardians:  <IconGuardian />,
 };
 
 const TYPE_BADGE = {
-  Student: { bg: "#dcfce7", color: "#166634" },
-  Staff:   { bg: "#dbeafe", color: "#1e40af" },
-  Alumni:  { bg: "#ede9fe", color: "#6d28d9" },
+  Student:  { bg: "#dcfce7", color: "#166634" },
+  Staff:    { bg: "#dbeafe", color: "#1e40af" },
+  Alumni:   { bg: "#ede9fe", color: "#6d28d9" },
+  Guardian: { bg: "#fff7ed", color: "#9a3412" },
 };
 
 const TargetAudienceSelector = ({
@@ -74,58 +87,68 @@ const TargetAudienceSelector = ({
   const { user } = useAuth();
   const schoolId = user?.school?.school_id;
 
-  const { loading, fetchClasses, fetchStudentsByClass, fetchStudents, fetchStaff, fetchAlumni } =
+  const { loading, fetchClasses, fetchStudentsByClass, fetchStudents, fetchStaff, fetchAlumni, fetchGuardians } =
     useTargetAudience();
 
-  const [selectedItems, setSelectedItems]               = useState([]);
+  const [selectedItems, setSelectedItems]                   = useState([]);
   const [selectedGraduationYear, setSelectedGraduationYear] = useState("");
-  const [selectedFromDropdown, setSelectedFromDropdown] = useState("");
-  const [classStudentsLoading, setClassStudentsLoading] = useState(false);
-  const [classStudents, setClassStudents]               = useState([]);
-  const [classes, setClasses]   = useState([]);
-  const [students, setStudents] = useState([]);
-  const [staff, setStaff]       = useState([]);
-  const [alumni, setAlumni]     = useState([]);
+  const [selectedFromDropdown, setSelectedFromDropdown]     = useState("");
+  const [classStudentsLoading, setClassStudentsLoading]     = useState(false);
+  const [classStudents, setClassStudents]                   = useState([]);
+  const [classes, setClasses]     = useState([]);
+  const [students, setStudents]   = useState([]);
+  const [staff, setStaff]         = useState([]);
+  const [alumni, setAlumni]       = useState([]);
+  const [guardians, setGuardians] = useState([]);
 
   const targetOptions = [
-    { value: "whole_school",      label: "Whole School",      description: "All students, staff, and alumni" },
-    { value: "all_students",      label: "All Students",      description: "All enrolled students" },
-    { value: "all_staff",         label: "All Staff",         description: "All teaching and non-teaching staff" },
-    { value: "all_alumni",        label: "All Alumni",        description: "All graduated students" },
-    { value: "alumni_by_year",    label: "Alumni by Year",    description: "Select alumni from graduation years" },
-    { value: "specific_classes",  label: "Specific Classes",  description: "Select individual classes" },
-    { value: "specific_students", label: "Specific Students", description: "Select individual students" },
-    { value: "specific_staff",    label: "Specific Staff",    description: "Select individual staff members" },
-    { value: "specific_alumni",   label: "Specific Alumni",   description: "Select individual alumni/graduates" },
+    { value: "whole_school",       label: "Whole School",       description: "All students, staff, and alumni" },
+    { value: "all_students",       label: "All Students",       description: "All enrolled students" },
+    { value: "all_staff",          label: "All Staff",          description: "All teaching and non-teaching staff" },
+    { value: "all_alumni",         label: "All Alumni",         description: "All graduated students" },
+    { value: "alumni_by_year",     label: "Alumni by Year",     description: "Select alumni from graduation years" },
+    { value: "all_guardians",      label: "All Guardians",      description: "Primary guardian per student (or all if none set)" },
+    { value: "specific_classes",   label: "Specific Classes",   description: "Select individual classes" },
+    { value: "specific_students",  label: "Specific Students",  description: "Select individual students" },
+    { value: "specific_staff",     label: "Specific Staff",     description: "Select individual staff members" },
+    { value: "specific_alumni",    label: "Specific Alumni",    description: "Select individual alumni/graduates" },
+    { value: "specific_guardians", label: "Specific Guardians", description: "Select individual guardians" },
   ];
 
+  // Load data when type changes
   useEffect(() => {
     if (!schoolId) return;
-    if (selectedType === "specific_classes")  fetchClasses(schoolId).then(setClasses);
-    else if (selectedType === "specific_students") fetchStudents(schoolId).then(setStudents);
-    else if (selectedType === "specific_staff")    fetchStaff(schoolId).then(setStaff);
+    if (selectedType === "specific_classes")
+      fetchClasses(schoolId).then(setClasses);
+    else if (selectedType === "specific_students")
+      fetchStudents(schoolId).then(setStudents);
+    else if (selectedType === "specific_staff")
+      fetchStaff(schoolId).then(setStaff);
     else if (selectedType === "specific_alumni" || selectedType === "alumni_by_year")
       fetchAlumni(schoolId).then(setAlumni);
+    else if (selectedType === "all_guardians" || selectedType === "specific_guardians")
+      fetchGuardians(schoolId).then(setGuardians);
   }, [selectedType, schoolId]);
 
   useEffect(() => { setSelectedItems(selectedTargets || []); }, [selectedTargets]);
 
   useEffect(() => {
     if (!schoolId) return;
-    if (["whole_school","all_students","all_alumni"].includes(selectedType)) {
+    if (["whole_school", "all_students", "all_alumni"].includes(selectedType)) {
       if (students.length === 0) fetchStudents(schoolId).then(setStudents);
       if (alumni.length === 0)   fetchAlumni(schoolId).then(setAlumni);
     }
-    if (["whole_school","all_staff"].includes(selectedType)) {
+    if (["whole_school", "all_staff"].includes(selectedType)) {
       if (staff.length === 0) fetchStaff(schoolId).then(setStaff);
     }
   }, [selectedType, schoolId]);
 
+  // Notify parent when resolved recipients list changes
   useEffect(() => {
     if (!selectedType) return;
     const list = getRecipientsList();
     if (list.length > 0) onRecipientsChange?.(list);
-  }, [students, staff, alumni, classStudents, selectedType]);
+  }, [students, staff, alumni, classStudents, guardians, selectedType]);
 
   const handleTypeChange = (type) => {
     onChange(type, []);
@@ -145,21 +168,34 @@ const TargetAudienceSelector = ({
 
   const getItemSubtitle = (item) => {
     switch (item.type) {
-      case "class":   return `${item.students} student${item.students !== 1 ? "s" : ""}`;
-      case "student": return item.class || item.email || "";
-      case "staff":   return `${item.role}${item.department ? " · " + item.department : ""}`;
-      case "alumni":  return `Class of ${item.graduationYear}${item.currentOccupation ? " · " + item.currentOccupation : ""}`;
-      default:        return item.email || "";
+      case "class":
+        return `${item.students} student${item.students !== 1 ? "s" : ""}`;
+      case "student":
+        return item.class || item.email || "";
+      case "staff":
+        return `${item.role}${item.department ? " · " + item.department : ""}`;
+      case "alumni":
+        return `Class of ${item.graduationYear}${item.currentOccupation ? " · " + item.currentOccupation : ""}`;
+      case "guardian":
+        return item.studentName
+          ? `Ward: ${item.studentName}${item.relationship ? " · " + item.relationship : ""}`
+          : item.relationship || "";
+      default:
+        return item.email || "";
     }
   };
 
   const getDataForType = () => {
     switch (selectedType) {
-      case "specific_classes":  return classes;
-      case "specific_students": return students;
-      case "specific_staff":    return staff;
-      case "specific_alumni":   return alumni;
-      case "alumni_by_year":    return selectedGraduationYear ? alumni.filter(a => a.graduationYear === selectedGraduationYear) : [];
+      case "specific_classes":   return classes;
+      case "specific_students":  return students;
+      case "specific_staff":     return staff;
+      case "specific_alumni":    return alumni;
+      case "specific_guardians": return guardians;
+      case "alumni_by_year":
+        return selectedGraduationYear
+          ? alumni.filter(a => a.graduationYear === selectedGraduationYear)
+          : [];
       default: return [];
     }
   };
@@ -171,9 +207,16 @@ const TargetAudienceSelector = ({
         const total = students.length + sc + alumni.length;
         return `Entire school community (${total} recipients)`;
       }
-      case "all_students":   return `All students (${students.length} recipients)`;
-      case "all_staff":      return `All staff (${staff.length} recipients)`;
-      case "all_alumni":     return `All alumni (${alumni.length} recipients)`;
+      case "all_students":
+        return `All students (${students.length} recipients)`;
+      case "all_staff":
+        return `All staff (${staff.length} recipients)`;
+      case "all_alumni":
+        return `All alumni (${alumni.length} recipients)`;
+      case "all_guardians":
+        return guardians.length > 0
+          ? `All guardians (${guardians.length} recipients)`
+          : "Loading guardians...";
       case "alumni_by_year":
         if (selectedGraduationYear) {
           const count = alumni.filter(a => a.graduationYear === selectedGraduationYear).length;
@@ -182,7 +225,8 @@ const TargetAudienceSelector = ({
         return "Select a graduation year";
       case "specific_classes":
         if (selectedItems.length === 0) return "No classes selected";
-        if (classStudentsLoading) return `${selectedItems.length} class${selectedItems.length !== 1 ? "es" : ""} selected — fetching students...`;
+        if (classStudentsLoading)
+          return `${selectedItems.length} class${selectedItems.length !== 1 ? "es" : ""} selected — fetching students...`;
         return `${selectedItems.length} class${selectedItems.length !== 1 ? "es" : ""} selected — ${classStudents.length} student${classStudents.length !== 1 ? "s" : ""}`;
       default:
         return selectedItems.length > 0
@@ -193,30 +237,60 @@ const TargetAudienceSelector = ({
 
   const getRecipientsList = () => {
     switch (selectedType) {
-      case "all_students": return students.map(s => ({ id: s.id, name: s.name, subtitle: s.class || "", type: "Student" }));
-      case "all_staff":    return staff.map(s => ({ id: s.id, name: s.name, subtitle: `${s.role}${s.department ? " · " + s.department : ""}`, type: "Staff" }));
-      case "all_alumni":   return alumni.map(a => ({ id: a.id, name: a.name, subtitle: `Class of ${a.graduationYear}`, type: "Alumni" }));
-      case "whole_school": return [
-        ...students.map(s => ({ id: s.id, name: s.name, subtitle: s.class || "", type: "Student" })),
-        ...(excludeTypes.includes("all_staff") ? [] : staff.map(s => ({ id: s.id, name: s.name, subtitle: s.role || "", type: "Staff" }))),
-        ...alumni.map(a => ({ id: a.id, name: a.name, subtitle: `Class of ${a.graduationYear}`, type: "Alumni" })),
-      ];
-      case "specific_classes": return classStudents.map(s => ({ id: s.id, name: s.name, subtitle: s.class || "", type: "Student" }));
-      default: return [];
+      case "all_students":
+        return students.map(s => ({ id: s.id, name: s.name, subtitle: s.class || "", type: "Student" }));
+      case "all_staff":
+        return staff.map(s => ({
+          id: s.id,
+          name: s.name,
+          subtitle: `${s.role}${s.department ? " · " + s.department : ""}`,
+          type: "Staff",
+        }));
+      case "all_alumni":
+        return alumni.map(a => ({ id: a.id, name: a.name, subtitle: `Class of ${a.graduationYear}`, type: "Alumni" }));
+      case "all_guardians":
+        return guardians.map(g => ({
+          id: g.id,
+          name: g.name,
+          subtitle: `Ward: ${g.studentName}${g.relationship ? " · " + g.relationship : ""}`,
+          type: "Guardian",
+        }));
+      case "whole_school":
+        return [
+          ...students.map(s => ({ id: s.id, name: s.name, subtitle: s.class || "", type: "Student" })),
+          ...(excludeTypes.includes("all_staff") ? [] : staff.map(s => ({ id: s.id, name: s.name, subtitle: s.role || "", type: "Staff" }))),
+          ...alumni.map(a => ({ id: a.id, name: a.name, subtitle: `Class of ${a.graduationYear}`, type: "Alumni" })),
+        ];
+      case "specific_classes":
+        return classStudents.map(s => ({ id: s.id, name: s.name, subtitle: s.class || "", type: "Student" }));
+      default:
+        return [];
     }
   };
 
-  const broadTypes = ["all_students","all_staff","all_alumni","whole_school","specific_classes"];
+  const broadTypes = ["all_students", "all_staff", "all_alumni", "whole_school", "specific_classes", "all_guardians"];
   const recipientsList = getRecipientsList();
   const filteredOptions = excludeTypes.length
     ? targetOptions.filter(o => !excludeTypes.includes(o.value))
     : targetOptions;
 
-  const needsSelection = ["specific_classes","specific_students","specific_staff","specific_alumni","alumni_by_year"].includes(selectedType);
+  const needsSelection = [
+    "specific_classes",
+    "specific_students",
+    "specific_staff",
+    "specific_alumni",
+    "alumni_by_year",
+    "specific_guardians",
+  ].includes(selectedType);
 
   const graduationYears = [...new Set(alumni.map(a => a.graduationYear))]
-    .filter(Boolean).sort((a, b) => b - a)
-    .map(year => ({ year, label: `Class of ${year}`, count: alumni.filter(a => a.graduationYear === year).length }));
+    .filter(Boolean)
+    .sort((a, b) => b - a)
+    .map(year => ({
+      year,
+      label: `Class of ${year}`,
+      count: alumni.filter(a => a.graduationYear === year).length,
+    }));
 
   return (
     <div className="tas-wrap">
@@ -280,10 +354,12 @@ const TargetAudienceSelector = ({
                     onClick={() => {
                       if (selectedType === "specific_classes") {
                         setClassStudents(prev => prev.filter(s => s.id !== r.id));
+                      } else if (selectedType === "all_guardians") {
+                        setGuardians(prev => prev.filter(g => g.id !== r.id));
                       } else {
-                        if (r.type === "Student") setStudents(prev => prev.filter(s => s.id !== r.id));
-                        else if (r.type === "Staff") setStaff(prev => prev.filter(s => s.id !== r.id));
-                        else if (r.type === "Alumni") setAlumni(prev => prev.filter(s => s.id !== r.id));
+                        if (r.type === "Student")  setStudents(prev => prev.filter(s => s.id !== r.id));
+                        else if (r.type === "Staff")   setStaff(prev => prev.filter(s => s.id !== r.id));
+                        else if (r.type === "Alumni")  setAlumni(prev => prev.filter(s => s.id !== r.id));
                       }
                     }}
                     title="Remove"
@@ -362,11 +438,23 @@ const TargetAudienceSelector = ({
             <>
               <div className="tas-searchable">
                 <SearchableSelect
-                  label={`Select ${selectedType.replace("specific_", "").replace("_", " ")}`}
-                  placeholder={loading ? "Loading..." : `Choose ${selectedType.replace("specific_", "").replace("_", " ")} to add...`}
+                  label={
+                    selectedType === "specific_guardians"
+                      ? "Select Guardian"
+                      : `Select ${selectedType.replace("specific_", "").replace("_", " ")}`
+                  }
+                  placeholder={
+                    loading
+                      ? "Loading..."
+                      : selectedType === "specific_guardians"
+                        ? "Search by guardian or student name..."
+                        : `Choose ${selectedType.replace("specific_", "").replace("_", " ")} to add...`
+                  }
                   options={getDataForType().map(item => ({
                     value: item.id,
-                    label: item.name,
+                    label: item.type === "guardian"
+                      ? `${item.name}${item.studentName ? " — " + item.studentName : ""}`
+                      : item.name,
                     subtitle: getItemSubtitle(item),
                   }))}
                   value={selectedFromDropdown}
@@ -401,19 +489,27 @@ const TargetAudienceSelector = ({
                 <div className="tas-recipients">
                   <p className="tas-recipients-title">Selected Recipients ({selectedItems.length})</p>
                   <div className="tas-recipients-grid">
-                    {selectedItems.map((item) => (
-                      <div key={item.id} className="tas-recipient-card">
-                        <div className="tas-recipient-info">
-                          <span className="tas-recipient-name">{item.name}</span>
-                          <span className="tas-recipient-sub">{getItemSubtitle(item)}</span>
+                    {selectedItems.map((item) => {
+                      const badge = item.type === "guardian" ? TYPE_BADGE.Guardian : TYPE_BADGE.Student;
+                      return (
+                        <div key={item.id} className="tas-recipient-card">
+                          <div className="tas-recipient-info">
+                            <div className="tas-recipient-row">
+                              <span className="tas-recipient-name">{item.name}</span>
+                              {item.type === "guardian" && (
+                                <span className="tas-type-badge" style={{ background: badge.bg, color: badge.color }}>Guardian</span>
+                              )}
+                            </div>
+                            <span className="tas-recipient-sub">{getItemSubtitle(item)}</span>
+                          </div>
+                          <button className="tas-remove-btn" onClick={() => handleRemoveFromList(item.id)} title="Remove">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+                              <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                            </svg>
+                          </button>
                         </div>
-                        <button className="tas-remove-btn" onClick={() => handleRemoveFromList(item.id)} title="Remove">
-                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
-                            <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-                          </svg>
-                        </button>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
               )}

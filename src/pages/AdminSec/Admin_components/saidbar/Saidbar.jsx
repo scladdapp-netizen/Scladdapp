@@ -91,10 +91,18 @@ const IconDocs = () => (
 );
 
 const IconReport = () => (
-  <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-    <path d="M11 3l8 4-8 4-8-4 8-4z" fill="#111111" opacity="0.15" stroke="#111111" strokeWidth="1.5" strokeLinejoin="round" />
-    <circle cx="15" cy="15" r="4" fill="#111111" opacity="0.12" stroke="#111111" strokeWidth="1.5" />
-    <path d="M15 13v2.5M15 17h.01" stroke="#111111" strokeWidth="1.5" strokeLinecap="round" />
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+    {/* arc / headband */}
+    <path d="M12 3C7.58 3 4 6.58 4 11v1" stroke="#111111" strokeWidth="1.7" strokeLinecap="round"/>
+    <path d="M20 11v1" stroke="#111111" strokeWidth="1.7" strokeLinecap="round"/>
+    {/* left ear cup */}
+    <rect x="2" y="12" width="4" height="6" rx="2" fill="#111111" opacity="0.85"/>
+    {/* right ear cup */}
+    <rect x="18" y="12" width="4" height="6" rx="2" fill="#111111" opacity="0.85"/>
+    {/* chin strap */}
+    <path d="M20 17.5C20 19.43 18.43 21 16.5 21H13" stroke="#111111" strokeWidth="1.7" strokeLinecap="round"/>
+    {/* mic dot */}
+    <circle cx="12" cy="21" r="1.3" fill="#111111"/>
   </svg>
 );
 
@@ -114,7 +122,7 @@ const bottomNav = [
   { id: "settings",       name: "Settings",                  path: "/settings", icon: <IconSettings /> },
   { id: "divider",        divider: true },
   { id: "documentation",  name: "Documentation",             path: null,        icon: <IconDocs /> },
-  { id: "report",         name: "Report / Improvement Idea", path: null,        icon: <IconReport /> },
+  { id: "report",         name: "Help & Report",             path: null,        icon: <IconReport /> },
 ];
 
 /* ── Component ─────────────────────────────────────────────────────────── */

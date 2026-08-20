@@ -13,13 +13,6 @@ import "../../../../../TeacherSec/pages/EventsCalendar/EventsCalendar.css";
 const fmt = (d) =>
   d ? new Date(d).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" }) : "—";
 
-const STATUS_CLASS = {
-  Upcoming:  "ev-badge ev-badge-blue",
-  Ongoing:   "ev-badge ev-badge-green",
-  Completed: "ev-badge ev-badge-grey",
-  Cancelled: "ev-badge ev-badge-red",
-};
-
 const Events = () => {
   const { subseasion } = useParams();
   const { getEventsPaginated } = useSchoolEvents();
@@ -48,11 +41,6 @@ const Events = () => {
       render: (v) => v ? <span className="notif-target-badge">{v}</span> : "—",
     },
     { accessor: "location", label: "Location", render: (v) => v || "—" },
-    {
-      accessor: "status",
-      label: "Status",
-      render: (v) => <span className={STATUS_CLASS[v] || "ev-badge ev-badge-grey"}>{v || "—"}</span>,
-    },
   ];
 
   return (
@@ -94,9 +82,6 @@ const Events = () => {
               </div>
             </div>
             <div className="cs-panel-body">
-              <div style={{ marginBottom: 4 }}>
-                <span className={STATUS_CLASS[selected.status] || "ev-badge ev-badge-grey"}>{selected.status || "—"}</span>
-              </div>
               <div className="cs-panel-grid">
                 <InfoField label="Location"     value={selected.location} />
                 <InfoField label="Category"     value={selected.category} />

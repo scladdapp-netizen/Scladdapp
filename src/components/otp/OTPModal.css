@@ -120,3 +120,44 @@
 }
 
 [data-theme="dark"] .otp-note { color: #444; }
+
+/* Resend button */
+.otp-resend-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  color: #555;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  padding: 0;
+  margin-top: -4px;
+  transition: color 0.15s;
+}
+
+.otp-resend-btn:hover:not(:disabled) { color: #111; }
+.otp-resend-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+[data-theme="dark"] .otp-resend-btn { color: #aaa; }
+[data-theme="dark"] .otp-resend-btn:hover:not(:disabled) { color: #f0f0f0; }
+
+/* Resend success message */
+.otp-resend-msg {
+  font-size: 12px;
+  color: #16a34a;
+  background: #dcfce7;
+  border: 1px solid #bbf7d0;
+  border-radius: 8px;
+  padding: 7px 12px;
+  width: 100%;
+  box-sizing: border-box;
+  text-align: center;
+  margin: 0;
+}
+
+[data-theme="dark"] .otp-resend-msg {
+  background: #14532d;
+  border-color: #166534;
+  color: #86efac;
+}

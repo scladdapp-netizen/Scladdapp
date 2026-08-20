@@ -5,22 +5,52 @@ import Button from "../Button/Button";
 import "./OTPModal.css";
 
 export const OTPModal = () => {
-  const { isOpen, verifyOTP, closeOTPModal } = useOTP();
+  const { isOpen, verifyOTP, closeOTPModal, onResend } = useOTP();
   const initialOTP = Array(6).fill("");
   const [enteredOTP, setEnteredOTP] = useState(initialOTP);
-  const [error, setError] = useState("");
+  const [error, setError]           = useState("");
+  const [verifying, setVerifying]   = useState(false);
+  const [resending, setResending]   = useState(false);
+  const [resendMsg, setResendMsg]   = useState("");
   const prevOTP = useRef(initialOTP);
 
   if (!isOpen) return null;
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const otpString = enteredOTP.join("");
-    if (!verifyOTP(otpString)) {
-      setError("Incorrect code. Please try again.");
+    setVerifying(true);
+    setError("");
+    setResendMsg("");
+
+    const result = await verifyOTP(otpString);
+
+    setVerifying(false);
+
+    if (!result.success) {
+      setError(result.message || "Incorrect code. Please try again.");
       setTimeout(() => {
-        setEnteredOTP(prevOTP.current);
+        setEnteredOTP(initialOTP);
+        prevOTP.current = initialOTP;
         setError("");
       }, 2000);
+    }
+  };
+
+  const handleResend = async () => {
+    if (resending || !onResend) return;
+    setResending(true);
+    setResendMsg("");
+    setError("");
+    try {
+      await onResend();
+      setEnteredOTP(initialOTP);
+      prevOTP.current = initialOTP;
+      setResendMsg("A new code has been sent.");
+      setTimeout(() => setResendMsg(""), 4000);
+    } catch {
+      setResendMsg("Failed to resend. Please try again.");
+    } finally {
+      setResending(false);
     }
   };
 
@@ -64,17 +94,40 @@ export const OTPModal = () => {
           </div>
         )}
 
+        {/* Resend confirmation */}
+        {resendMsg && (
+          <p className="otp-resend-msg">{resendMsg}</p>
+        )}
+
         {/* Actions */}
         <div className="otp-actions">
-          <Button variant="secondary" onClick={closeOTPModal}>Cancel</Button>
-          <Button variant="primary" onClick={handleSubmit}
-            disabled={enteredOTP.some(d => !d)}>
-            Verify
+          <Button variant="secondary" onClick={closeOTPModal} disabled={verifying || resending}>
+            Cancel
+          </Button>
+          <Button
+            variant="primary"
+            onClick={handleSubmit}
+            disabled={enteredOTP.some((d) => !d) || verifying || resending}
+          >
+            {verifying ? "Verifying…" : "Verify"}
           </Button>
         </div>
 
-        {/* Footer note */}
-        <p className="otp-note">Didn't receive a code? Check your spam folder.</p>
+        {/* Resend link — only shown when a resend callback was provided */}
+        {onResend && (
+          <button
+            type="button"
+            className="otp-resend-btn"
+            onClick={handleResend}
+            disabled={resending || verifying}
+          >
+            {resending ? "Sending…" : "Resend code"}
+          </button>
+        )}
+
+        {!onResend && (
+          <p className="otp-note">Didn't receive a code? Check your spam folder.</p>
+        )}
       </div>
     </div>
   );

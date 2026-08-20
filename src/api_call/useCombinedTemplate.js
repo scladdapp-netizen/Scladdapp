@@ -53,6 +53,24 @@ export const useCombinedTemplate = () => {
     }
   };
 
+  const getTemplateById = async (templateId) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await fetch(`${API_BASE_URL}/grading-template/${templateId}`, {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+      });
+      const result = await handleApiResponse(response);
+      return { success: true, data: result.data };
+    } catch (err) {
+      setError(err.message);
+      return { success: false, message: err.message };
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const updateTemplate = async (templateId, templateData) => {
     setLoading(true);
     setError(null);
@@ -157,17 +175,48 @@ export const useCombinedTemplate = () => {
     }
   };
 
+  const saveDraft = async (templateId, htmlDraft) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/grading-template/${templateId}/html-draft`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ html_template_draft: htmlDraft }),
+      });
+      const result = await handleApiResponse(response);
+      return { success: true, data: result.data };
+    } catch (err) {
+      return { success: false, message: err.message };
+    }
+  };
+
+  const publishDraft = async (templateId, modifiedBy = null) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/grading-template/${templateId}/publish-draft`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ modified_by: modifiedBy }),
+      });
+      const result = await handleApiResponse(response);
+      return { success: true, data: result.data, message: result.message };
+    } catch (err) {
+      return { success: false, message: err.message };
+    }
+  };
+
   return {
     loading,
     error,
     createTemplate,
     getTemplatesBySchool,
+    getTemplateById,
     updateTemplate,
     deleteTemplate,
     duplicateTemplate,
     updateTemplateStatus,
     checkIsAssigned,
     getReportCardThemes,
+    saveDraft,
+    publishDraft,
   };
 };
 

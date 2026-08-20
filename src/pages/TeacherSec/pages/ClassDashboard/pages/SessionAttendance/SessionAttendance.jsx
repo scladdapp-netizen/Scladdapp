@@ -21,11 +21,19 @@ const STATUS = {
 
 const getWeekdays = (start, end) => {
   const days = [];
-  const cur  = new Date(start);
-  const last = new Date(end);
+  // Parse as local date to avoid UTC-offset shifting the day-of-week
+  const [sy, sm, sd] = start.split("-").map(Number);
+  const [ey, em, ed] = end.split("-").map(Number);
+  const cur  = new Date(sy, sm - 1, sd);
+  const last = new Date(ey, em - 1, ed);
   while (cur <= last) {
     const dow = cur.getDay();
-    if (dow !== 0 && dow !== 6) days.push(cur.toISOString().split("T")[0]);
+    if (dow !== 0 && dow !== 6) {
+      const y = cur.getFullYear();
+      const m = String(cur.getMonth() + 1).padStart(2, "0");
+      const d = String(cur.getDate()).padStart(2, "0");
+      days.push(`${y}-${m}-${d}`);
+    }
     cur.setDate(cur.getDate() + 1);
   }
   return days;
@@ -45,7 +53,8 @@ const SessionAttendance = () => {
   const [panelOpen, setPanelOpen] = useState(false);
   const [markDate, setMarkDate]   = useState("");
   const [statuses, setStatuses]   = useState({});
-  const [saving, setSaving]       = useState(false);
+  // per-student save state: { [studentId]: "saving" | "error" | null }
+  const [saveState, setSaveState] = useState({});
 
   const load = () => loadAttendance(classId, subseasion).then(setData);
   useEffect(() => { if (classId && subseasion) load(); }, [classId, subseasion]);
@@ -63,6 +72,7 @@ const SessionAttendance = () => {
     const initial = {};
     students.forEach((s) => { initial[s.id] = s.attendance?.[defaultDate] || "present"; });
     setStatuses(initial);
+    setSaveState({});
     setPanelOpen(true);
   };
 
@@ -71,38 +81,41 @@ const SessionAttendance = () => {
     const initial = {};
     students.forEach((s) => { initial[s.id] = s.attendance?.[date] || "present"; });
     setStatuses(initial);
+    setSaveState({});
   };
 
-  const handleSave = async () => {
-    if (!markDate) return addNotification("Please select a date", "error");
-    if (!subsession?.session_id) return addNotification("Session info missing", "error");
-    setSaving(true);
-    let successCount = 0;
-    for (const student of students) {
-      const status = statuses[student.id];
-      if (!status) continue;
-      try {
-        const res = await fetch(`${API}/api/student-attendance`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            student_id: student.id, school_id: schoolId || "",
-            class_id: classId, session_id: subsession.session_id,
-            subsession_id: subseasion, attendance_date: markDate,
-            status, marked_by: markedBy,
-          }),
-        });
-        const result = await res.json();
-        if (result.success) successCount++;
-      } catch (_) {}
-    }
-    setSaving(false);
-    if (successCount > 0) {
-      addNotification(`Attendance saved for ${successCount} student(s)`, "success");
-      setPanelOpen(false);
-      load();
-    } else {
-      addNotification("Failed to save attendance", "error");
+  // Auto-save a single student's status immediately on click
+  const handleStatusClick = async (studentId, st) => {
+    if (!markDate) { addNotification("Please select a date first", "error"); return; }
+    if (!subsession?.session_id) { addNotification("Session info missing", "error"); return; }
+    if (saveState[studentId] === "saving") return; // already in flight
+
+    setStatuses((p) => ({ ...p, [studentId]: st }));
+    setSaveState((p) => ({ ...p, [studentId]: "saving" }));
+
+    try {
+      const res = await fetch(`${API}/api/student-attendance`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          student_id: studentId, school_id: schoolId || "",
+          class_id: classId, session_id: subsession.session_id,
+          subsession_id: subseasion, attendance_date: markDate,
+          status: st, marked_by: markedBy,
+        }),
+      });
+      const result = await res.json();
+      if (result.success) {
+        setSaveState((p) => ({ ...p, [studentId]: null }));
+        // silently refresh data in background
+        loadAttendance(classId, subseasion).then(setData);
+      } else {
+        setSaveState((p) => ({ ...p, [studentId]: "error" }));
+        addNotification(result.message || "Failed to save attendance", "error");
+      }
+    } catch (err) {
+      setSaveState((p) => ({ ...p, [studentId]: "error" }));
+      addNotification(err.message || "Failed to save attendance", "error");
     }
   };
 
@@ -225,33 +238,46 @@ const SessionAttendance = () => {
             </div>
 
             <div className="sa-student-list">
-              {students.map((s) => (
-                <div key={s.id} className="sa-student-row">
-                  <span className="sa-student-row-name">{s.name}</span>
-                  <div className="sa-status-btns">
-                    {["present", "absent", "excused"].map((st) => (
-                      <button
-                        key={st}
-                        className={`sa-status-btn ${statuses[s.id] === st ? "selected" : ""}`}
-                        style={statuses[s.id] === st
-                          ? { background: STATUS[st].bg, color: STATUS[st].color, borderColor: STATUS[st].color }
-                          : {}}
-                        onClick={() => setStatuses((p) => ({ ...p, [s.id]: st }))}
-                      >
-                        {st.charAt(0).toUpperCase() + st.slice(1)}
-                      </button>
-                    ))}
+              {students.map((s) => {
+                const state = saveState[s.id];
+                return (
+                  <div key={s.id} className="sa-student-row">
+                    <span className="sa-student-row-name">{s.name}</span>
+                    <div className="sa-row-right">
+                      <div className="sa-status-btns">
+                        {["present", "absent", "excused"].map((st) => (
+                          <button
+                            key={st}
+                            className={`sa-status-btn ${statuses[s.id] === st ? "selected" : ""}`}
+                            style={statuses[s.id] === st
+                              ? { background: STATUS[st].bg, color: STATUS[st].color, borderColor: STATUS[st].color }
+                              : {}}
+                            onClick={() => handleStatusClick(s.id, st)}
+                            disabled={state === "saving"}
+                          >
+                            {st.charAt(0).toUpperCase() + st.slice(1)}
+                          </button>
+                        ))}
+                      </div>
+                      {/* Per-student save indicator */}
+                      <div className="sa-save-indicator">
+                        {state === "saving" && (
+                          <span className="sa-spinner" title="Saving..." />
+                        )}
+                        {state === "error" && (
+                          <span className="sa-save-error" title="Failed to save">✕</span>
+                        )}
+                      </div>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
 
+          {/* No footer — changes save automatically */}
           <div className="cs-panel-footer">
-            <Button variant="secondary" onClick={() => setPanelOpen(false)} disabled={saving}>Cancel</Button>
-            <Button onClick={handleSave} disabled={saving}>
-              {saving ? "Saving..." : "Save Attendance"}
-            </Button>
+            <Button variant="secondary" onClick={() => setPanelOpen(false)}>Close</Button>
           </div>
         </div>
       </SlideInMenu>

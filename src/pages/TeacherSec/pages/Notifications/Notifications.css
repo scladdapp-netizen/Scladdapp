@@ -11,7 +11,9 @@
   color: inherit !important;
   padding: 0 !important;
   border-radius: 0 !important;
-  font-weight: inherit;
+  font-weight: inherit !important;
+  margin: 0 !important;
+  display: inline !important;
 }
 
 .notif-content ul,

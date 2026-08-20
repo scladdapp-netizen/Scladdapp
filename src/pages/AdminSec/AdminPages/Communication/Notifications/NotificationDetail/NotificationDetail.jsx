@@ -60,8 +60,25 @@ const NotificationDetail = () => {
   );
 
   const recipientColumns = [
-    { label: "Name",         accessor: "user_name",    render: (v) => v || "—" },
-    { label: "Type",         accessor: "user_type",    render: (v) => v ? v.charAt(0).toUpperCase() + v.slice(1) : "—" },
+    { label: "Name",     accessor: "user_name", render: (v) => v || "—" },
+    { label: "Type",     accessor: "user_type", render: (v) => v ? v.charAt(0).toUpperCase() + v.slice(1) : "—" },
+    {
+      label: "Email",
+      accessor: "email_sent",
+      render: (v, row) => {
+        if (!row.email_address) {
+          return <span className="nd-email-badge na">No Email</span>;
+        }
+        return (
+          <div className="nd-email-cell">
+            <span className={`nd-email-badge ${v ? "sent" : "not-sent"}`}>
+              {v ? "✓ Sent" : "✗ Not Sent"}
+            </span>
+            <span className="nd-email-addr">{row.email_address}</span>
+          </div>
+        );
+      },
+    },
     {
       label: "Read",
       accessor: "is_read",
@@ -168,13 +185,27 @@ const NotificationDetail = () => {
 };
 
 /* ── Info tab ─────────────────────────────────────────────────────────────── */
-const InfoTab = ({ notification, channels }) => (
+const stripSpanStyles = (html) =>
+  html.replace(/<span([^>]*?)style="[^"]*"([^>]*?)>/gi, "<span$1$2>");
+
+const CHANNEL_META = {
+  "Web":   { label: "Web Notification", icon: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg> },
+  "Email": { label: "Email",            icon: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg> },
+  "App Push": { label: "Push",          icon: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg> },
+  "WhatsApp": { label: "WhatsApp",      icon: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg> },
+};
+
+const InfoTab = ({ notification, channels }) => {
+  const channelList = Array.isArray(notification.delivery_channels)
+    ? notification.delivery_channels
+    : (notification.delivery_channels ? [notification.delivery_channels] : []);
+
+  return (
   <div className="nd-info-tab">
     {/* Overview stat cards */}
     <div className="nd-stat-row">
       {[
         { label: "Target",   value: notification.target_type?.replace(/_/g, " ") },
-        { label: "Channels", value: channels },
         { label: "Sent At",  value: notification.created_at ? new Date(notification.created_at).toLocaleString() : "—" },
         { label: "Sent By",  value: notification.created_by_name },
       ].map(({ label, value }) => (
@@ -183,6 +214,22 @@ const InfoTab = ({ notification, channels }) => (
           <span className="nd-stat-value">{value || "—"}</span>
         </div>
       ))}
+
+      {/* Delivery mode stat card */}
+      <div className="nd-stat-card">
+        <span className="nd-stat-label">Delivery</span>
+        <div className="nd-channel-badges">
+          {channelList.length > 0 ? channelList.map((ch) => {
+            const meta = CHANNEL_META[ch] || { label: ch, icon: null };
+            return (
+              <span key={ch} className="nd-channel-badge">
+                {meta.icon}
+                {meta.label}
+              </span>
+            );
+          }) : <span className="nd-stat-value">—</span>}
+        </div>
+      </div>
     </div>
 
     {/* Content */}
@@ -190,7 +237,7 @@ const InfoTab = ({ notification, channels }) => (
       <span className="nd-section-title">Content</span>
       <div
         className="nd-content-body"
-        dangerouslySetInnerHTML={{ __html: notification.resolved_content || "—" }}
+        dangerouslySetInnerHTML={{ __html: stripSpanStyles(notification.resolved_content || "—") }}
       />
     </div>
 
@@ -210,7 +257,8 @@ const InfoTab = ({ notification, channels }) => (
         </div>
       )}
   </div>
-);
+  );
+};
 
 /* ── Recipients tab ───────────────────────────────────────────────────────── */
 const RecipientsTab = ({ fetchRecipients, columns }) => (

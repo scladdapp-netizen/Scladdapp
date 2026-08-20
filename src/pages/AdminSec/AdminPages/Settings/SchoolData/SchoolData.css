@@ -76,7 +76,7 @@
 /* ── Bio preview ──────────────────────────────────────────────────────────── */
 .sd-bio-preview {
   padding: 16px 20px; border: 1px solid #e8e8e8; border-radius: 10px;
-  background: #ffffff; min-height: 80px; font-size: 14px; line-height: 1.8; color: #333333;
+  background: #ffffff; min-height: 80px; font-size: 14px; line-height: 0.5; color: #333333;
 }
 
 .sd-bio-empty { color: #aaaaaa; font-style: italic; }
@@ -101,7 +101,7 @@
 
 .sd-toolbar-sep { width: 1px; background: #e8e8e8; margin: 0 2px; }
 
-.sd-editor-content { padding: 16px; min-height: 280px; font-size: 14px; line-height: 1.7; }
+.sd-editor-content { padding: 16px; min-height: 280px; font-size: 14px; line-height: 0.5; }
 .sd-editor-content:focus-within { outline: none; }
 
 /* ── Search ───────────────────────────────────────────────────────────────── */

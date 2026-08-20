@@ -1,0 +1,164 @@
+/* ═══════════════════════════════════════════════════════════════
+   HtmlEditor — shared styles for all HTML fragment editors
+   (EditTemplatePage, EmailTemplatePage, etc.)
+   Extends / reuses AIWebsiteEditor CSS classes — do NOT duplicate
+   those here. Only add things specific to fragment editing.
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── Root shell ─────────────────────────────────────────────── */
+.hle-root {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
+  background: #111111;
+  min-width: 0;
+}
+
+/* ── Scrollable dark canvas behind the paper ────────────────── */
+.hle-canvas {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: #1a1a1a;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  /* padding: 32px 24px 60px; */
+  scrollbar-width: thin;
+  scrollbar-color: #2a2a2a transparent;
+ 
+}
+.hle-canvas::-webkit-scrollbar { width: 6px; }
+.hle-canvas::-webkit-scrollbar-thumb { background: #2a2a2a; border-radius: 3px; }
+
+/* ── White "paper" — A4-ish card ────────────────────────────── */
+.hle-paper {
+  width: 100%;
+  max-width: 520px;
+  background: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 4px 32px rgba(0, 0, 0, 0.6);
+  overflow: hidden;
+}
+
+/* ── Content area — where the HTML is rendered ──────────────── */
+.hle-content {
+  width: 100%;
+  /* Prevent the injected styles tag from affecting layout */
+  position: relative;
+}
+.hle-content * {
+  /* Don't let child elements block mouse events for selection */
+  pointer-events: auto;
+}
+
+/* ── Full-page editor shell ─────────────────────────────────── */
+.hle-page {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100vw;
+  background: #0d0d0d;
+  color: #e0e0e0;
+  font-family: "Inter", sans-serif;
+  overflow: hidden;
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+}
+
+/* ── Three-column body (same as manual-layout) ──────────────── */
+.hle-body {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* ── Loading / error states ─────────────────────────────────── */
+.hle-loading,
+.hle-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  gap: 12px;
+  color: #555555;
+  font-size: 14px;
+  font-family: "Inter", sans-serif;
+}
+.hle-error { color: #f87171; }
+.hle-spinner {
+  width: 28px;
+  height: 28px;
+  border: 3px solid #2a2a2a;
+  border-top-color: #6c5ce7;
+  border-radius: 50%;
+  animation: hle-spin 0.8s linear infinite;
+}
+@keyframes hle-spin { to { transform: rotate(360deg); } }
+
+/* ── Draft badge (top bar) ──────────────────────────────────── */
+.aie-draft-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: #f59e0b22;
+  color: #f59e0b;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  border: 1px solid #f59e0b44;
+  cursor: default;
+}
+
+/* ── Reset button ───────────────────────────────────────────── */
+.aie-reset-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 5px 12px;
+  border-radius: 6px;
+  border: 1px solid #3f3f3f;
+  background: transparent;
+  color: #f87171;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: background 0.15s, border-color 0.15s;
+}
+.aie-reset-btn:hover:not(:disabled) {
+  background: #f8717122;
+  border-color: #f87171;
+}
+.aie-reset-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.aie-reset-btn span {
+  white-space: nowrap;
+}
+
+/* ── Top bar overflow fixes for EditTemplatePage ────────────── */
+/* Keep the right-side actions from being pushed off screen */
+.hle-page .aie-topbar-right {
+  flex-shrink: 0;
+  flex-wrap: nowrap;
+  gap: 8px;
+}
+/* Allow name to shrink so it doesn't crowd out the right side */
+.hle-page .aie-site-name {
+  max-width: 140px;
+  min-width: 0;
+}
+/* Save status can also shrink on small screens */
+.hle-page .aie-save-status {
+  flex-shrink: 1;
+  min-width: 0;
+  overflow: hidden;
+}

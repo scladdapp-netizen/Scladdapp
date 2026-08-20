@@ -7,8 +7,8 @@ import Button from "../../../../components/Button/Button";
 import LoadingData from "../../../../components/LoadingData/LoadingData";
 import InnerTabCon from "../../../../components/InnerTabCon/InnerTabCon";
 import useSubsessionTimetable from "../../../../api_call/useSubsessionTimetable";
-import useAITimetable from "../../../../api_call/useAITimetable";
-import { useTimetableTemplate } from "../../../../api_call";
+// import useAITimetable from "../../../../api_call/useAITimetable";
+// import { useTimetableTemplate } from "../../../../api_call";
 import { useAuth } from "../../../../context/AuthContext/AuthContext";
 import { useNotification } from "../../../../context/NotificationProvider/NotificationProvider";
 import "./AdminSubseasionTimetable.css";
@@ -50,25 +50,25 @@ const AdminSubseasionTimetable = () => {
   const { classes, timetables, loading, saving, error, saveTimetable, refetch } =
     useSubsessionTimetable(schoolId, subsessionId);
 
-  const { generating, generate } = useAITimetable();
-  const { getTimetableTemplatesBySchool } = useTimetableTemplate();
+  // const { generating, generate } = useAITimetable();
+  // const { getTimetableTemplatesBySchool } = useTimetableTemplate();
 
   const [editorOpen, setEditorOpen]               = useState(false);
   const [activeClass, setActiveClass]             = useState(null);
   const [editorEntries, setEditorEntries]         = useState([]);
-  const [aiPanelOpen, setAiPanelOpen]             = useState(false);
-  const [templates, setTemplates]                 = useState([]);
-  const [templatesLoading, setTemplatesLoading]   = useState(false);
-  const [selectedTemplateId, setSelectedTemplateId] = useState("");
-  const [aiNotes, setAiNotes]                     = useState("");
+  // const [aiPanelOpen, setAiPanelOpen]             = useState(false);
+  // const [templates, setTemplates]                 = useState([]);
+  // const [templatesLoading, setTemplatesLoading]   = useState(false);
+  // const [selectedTemplateId, setSelectedTemplateId] = useState("");
+  // const [aiNotes, setAiNotes]                     = useState("");
 
-  useEffect(() => {
-    if (!aiPanelOpen || !schoolId) return;
-    setTemplatesLoading(true);
-    getTimetableTemplatesBySchool(schoolId)
-      .then((res) => { if (res.success) setTemplates(res.data || []); })
-      .finally(() => setTemplatesLoading(false));
-  }, [aiPanelOpen, schoolId]);
+  // useEffect(() => {
+  //   if (!aiPanelOpen || !schoolId) return;
+  //   setTemplatesLoading(true);
+  //   getTimetableTemplatesBySchool(schoolId)
+  //     .then((res) => { if (res.success) setTemplates(res.data || []); })
+  //     .finally(() => setTemplatesLoading(false));
+  // }, [aiPanelOpen, schoolId]);
 
   const admin = user?.admin;
   const isSuperAdmin =
@@ -94,19 +94,19 @@ const AdminSubseasionTimetable = () => {
     }
   };
 
-  const handleAIGenerate = async () => {
-    const result = await generate({
-      templateId: selectedTemplateId, schoolId, subsessionId,
-      notes: aiNotes, generatedBy: user?.admin?.admin_id || user?.user_id,
-    });
-    if (result.success) {
-      addNotification(result.message || "Timetables generated successfully!", "success");
-      setAiPanelOpen(false);
-      refetch();
-    } else {
-      addNotification(result.message || "AI generation failed.", "error");
-    }
-  };
+  // const handleAIGenerate = async () => {
+  //   const result = await generate({
+  //     templateId: selectedTemplateId, schoolId, subsessionId,
+  //     notes: aiNotes, generatedBy: user?.admin?.admin_id || user?.user_id,
+  //   });
+  //   if (result.success) {
+  //     addNotification(result.message || "Timetables generated successfully!", "success");
+  //     setAiPanelOpen(false);
+  //     refetch();
+  //   } else {
+  //     addNotification(result.message || "AI generation failed.", "error");
+  //   }
+  // };
 
   const parseField = (val) => {
     if (!val) return null;
@@ -114,7 +114,7 @@ const AdminSubseasionTimetable = () => {
     try { return JSON.parse(val); } catch { return null; }
   };
 
-  const selectedTemplate = templates.find((t) => (t.template_id || t.id) === selectedTemplateId);
+  // const selectedTemplate = templates.find((t) => (t.template_id || t.id) === selectedTemplateId);
 
   if (loading) return <LoadingData message="Loading timetables..." />;
   if (error)   return <div className="ast-error">{error}</div>;
@@ -129,9 +129,9 @@ const AdminSubseasionTimetable = () => {
               <h2>Subsession Timetables</h2>
               <p>{classes.length} class{classes.length !== 1 ? "es" : ""} in this subsession</p>
             </div>
-            <button className="ast-ai-btn" onClick={() => setAiPanelOpen(true)}>
+            {/* <button className="ast-ai-btn" onClick={() => setAiPanelOpen(true)}>
               <IcoAI /> AI Generate All Timetables
-            </button>
+            </button> */}
           </div>
         </div>
 
@@ -199,125 +199,10 @@ const AdminSubseasionTimetable = () => {
         )}
       </SlideInMenu>
 
-      {/* ── AI Generate panel ── */}
-      <SlideInMenu isShow={aiPanelOpen} onClose={() => setAiPanelOpen(false)} width="520px">
-        <div className="ast-ai-container">
-
-          <div className="ast-ai-header">
-            <span className="ast-ai-deco" aria-hidden="true" />
-            <span className="ast-ai-deco2" aria-hidden="true" />
-            <div className="ast-ai-header-content">
-              <div className="ast-ai-icon"><IcoAI /></div>
-              <div className="ast-ai-header-text">
-                <h2>AI Timetable Generator</h2>
-                <p>Generate timetables for all classes automatically</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="ast-ai-body">
-
-            {/* Template selector */}
-            <div className="ast-ai-field">
-              <label>Timetable Template *</label>
-              {templatesLoading ? (
-                <p className="ast-ai-hint">Loading templates...</p>
-              ) : templates.length === 0 ? (
-                <p className="ast-ai-warn">No templates found. Create one in Templates → Timetable Templates.</p>
-              ) : (
-                <select value={selectedTemplateId} onChange={(e) => setSelectedTemplateId(e.target.value)}
-                  className="ast-ai-select">
-                  <option value="">— Select a template —</option>
-                  {templates.map((t) => (
-                    <option key={t.template_id || t.id} value={t.template_id || t.id}>
-                      {t.name} {t.status ? `(${t.status})` : ""}
-                    </option>
-                  ))}
-                </select>
-              )}
-            </div>
-
-            {/* Template detail preview */}
-            {selectedTemplate && (() => {
-              const days    = parseField(selectedTemplate.selected_days) || [];
-              const periods = parseField(selectedTemplate.daily_periods) || {};
-              const breaks  = parseField(selectedTemplate.breaks) || [];
-              return (
-                <div className="ast-template-preview">
-                  <p className="ast-template-preview-title">Template Details</p>
-                  <div className="ast-template-grid">
-                    <div className="ast-template-item">
-                      <span className="ast-template-label">Name</span>
-                      <span className="ast-template-value">{selectedTemplate.name}</span>
-                    </div>
-                    <div className="ast-template-item">
-                      <span className="ast-template-label">Type</span>
-                      <span className="ast-template-value" style={{ textTransform: "capitalize" }}>{selectedTemplate.type || "—"}</span>
-                    </div>
-                    <div className="ast-template-item">
-                      <span className="ast-template-label">Max Period</span>
-                      <span className="ast-template-value">{selectedTemplate.max_period_duration} min</span>
-                    </div>
-                    <div className="ast-template-item">
-                      <span className="ast-template-label">School Days</span>
-                      <span className="ast-template-value">
-                        {Array.isArray(days) ? days.map((d) => d.slice(0, 3)).join(", ") : "—"}
-                      </span>
-                    </div>
-                  </div>
-                  {Object.keys(periods).length > 0 && (
-                    <div className="ast-template-periods">
-                      <span className="ast-template-label">Periods Per Day</span>
-                      <div className="ast-period-pills">
-                        {Object.entries(periods).filter(([, v]) => v > 0).map(([day, count]) => (
-                          <span key={day} className="ast-period-pill">{day.slice(0, 3)}: {count}</span>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                  {Array.isArray(breaks) && breaks.length > 0 && (
-                    <div className="ast-template-breaks">
-                      <span className="ast-template-label">Breaks</span>
-                      {breaks.map((b, i) => (
-                        <p key={i} className="ast-break-item">{b.name} — {b.duration} min after period {b.after_period}</p>
-                      ))}
-                    </div>
-                  )}
-                  {selectedTemplate.description && (
-                    <p className="ast-template-desc">{selectedTemplate.description}</p>
-                  )}
-                </div>
-              );
-            })()}
-
-            {/* Notes */}
-            <div className="ast-ai-field">
-              <label>Additional Notes / Instructions</label>
-              <textarea
-                value={aiNotes}
-                onChange={(e) => setAiNotes(e.target.value)}
-                placeholder="e.g. Science classes should be in the morning, avoid double periods on Fridays..."
-                rows={4}
-                className="ast-ai-textarea"
-              />
-            </div>
-
-            {/* Info banner */}
-            <div className="ast-ai-info">
-              <IcoAI />
-              <p>The AI will generate timetables for all <strong>{classes.length}</strong> classes using the selected template and your instructions.</p>
-            </div>
-          </div>
-
-          <div className="ast-ai-footer">
-            <Button variant="secondary" onClick={() => setAiPanelOpen(false)} disabled={generating}>Cancel</Button>
-            <button className="ast-ai-generate-btn" onClick={handleAIGenerate}
-              disabled={generating || !selectedTemplateId}>
-              <IcoAI /> {generating ? "Generating..." : "Generate Timetables"}
-            </button>
-          </div>
-        </div>
-      </SlideInMenu>
+      {/* ── AI Generate panel (disabled) ── */}
+      {/* <SlideInMenu isShow={aiPanelOpen} onClose={() => setAiPanelOpen(false)} width="520px">
+        ...
+      </SlideInMenu> */}
     </div>
   );
 };

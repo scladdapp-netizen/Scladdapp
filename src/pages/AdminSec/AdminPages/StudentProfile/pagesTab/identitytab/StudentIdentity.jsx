@@ -50,6 +50,31 @@ const StudentIdentity = () => {
   const [editForm, setEditForm] = useState({});
   const [editSaving, setEditSaving] = useState(false);
   const [editPhotoPreview, setEditPhotoPreview] = useState(null);
+  const [showInvitePanel, setShowInvitePanel] = useState(false);
+  const [isSendingInvite, setIsSendingInvite] = useState(false);
+
+  const handleResendInvite = async () => {
+    const student = studentData?.student;
+    if (!student?.student_id) return;
+    setIsSendingInvite(true);
+    try {
+      const res = await fetch(
+        `${import.meta.env.VITE_API_BASE_URL}/student/${student.student_id}/resend-invite`,
+        { method: "POST", headers: { "Content-Type": "application/json" } }
+      );
+      const result = await res.json();
+      if (result.success) {
+        addNotification(result.message || "Invite link sent successfully", "success");
+        setShowInvitePanel(false);
+      } else {
+        addNotification(result.message || "Failed to send invite link", "error");
+      }
+    } catch {
+      addNotification("An error occurred while sending the invite link", "error");
+    } finally {
+      setIsSendingInvite(false);
+    }
+  };
 
   const handleExportStudent = async () => {
     try {
@@ -493,6 +518,7 @@ const StudentIdentity = () => {
         onExport={handleExportStudent}
         onPrint={handlePrintStudent}
         onEdit={handleOpenEdit}
+        onResendInvite={() => setShowInvitePanel(true)}
         onRemoveFromSchool={() => {
           if (!canDelete) {
             addNotification("You do not have permission to remove students from school.", "error");
@@ -501,6 +527,60 @@ const StudentIdentity = () => {
           setShowRemovePanel(true);
         }}
       />
+
+      {/* Resend Invite Panel */}
+      <SlideInMenu isShow={showInvitePanel} onClose={() => setShowInvitePanel(false)} width="480px">
+        <div className="si-pwd-panel">
+          <div className="si-pwd-header">
+            <span className="si-pwd-deco" aria-hidden="true" />
+            <div className="si-pwd-header-content">
+              <div className="si-pwd-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                  <polyline points="22,6 12,13 2,6"/>
+                </svg>
+              </div>
+              <div>
+                <h2 className="si-pwd-title">Resend Invite Link</h2>
+                <p className="si-pwd-subtitle">{studentData?.student?.full_name}</p>
+              </div>
+            </div>
+          </div>
+          <div className="si-pwd-body">
+            <div style={{ background: "#f5f5f5", borderRadius: 12, padding: "16px 18px", border: "1px solid #e8e8e8" }}>
+              <div style={{ fontWeight: 700, fontSize: 13, color: "#111", marginBottom: 6 }}>What happens when you resend?</div>
+              <ul style={{ paddingLeft: 18, display: "flex", flexDirection: "column", gap: 6 }}>
+                {[
+                  "The previous invite link is immediately invalidated",
+                  "A new secure link is generated and sent to their email",
+                  "The new link expires in 48 hours",
+                  "The student sets their own password via the link",
+                ].map((t) => (
+                  <li key={t} style={{ fontSize: 13, color: "#555", lineHeight: 1.5 }}>{t}</li>
+                ))}
+              </ul>
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 16px", background: "#fff", border: "1.5px solid #e8e8e8", borderRadius: 10 }}>
+              <div style={{ width: 36, height: 36, borderRadius: 9, background: "#111", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                  <polyline points="22,6 12,13 2,6"/>
+                </svg>
+              </div>
+              <div>
+                <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.07em", color: "#888", marginBottom: 2 }}>Sending to</div>
+                <div style={{ fontSize: 13, fontWeight: 700, color: "#111" }}>{studentData?.student?.email}</div>
+              </div>
+            </div>
+          </div>
+          <div className="si-pwd-footer">
+            <Button variant="secondary" onClick={() => setShowInvitePanel(false)} disabled={isSendingInvite}>Cancel</Button>
+            <Button onClick={handleResendInvite} disabled={isSendingInvite}>
+              {isSendingInvite ? "Sending..." : "Send Invite Link"}
+            </Button>
+          </div>
+        </div>
+      </SlideInMenu>
 
       {/* Remove from School Panel */}
       <SlideInMenu
