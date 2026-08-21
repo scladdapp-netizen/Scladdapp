@@ -729,8 +729,8 @@ const Landing = () => {
               Ready to simplify<br />your school?
             </h2>
             <p className="cta-section__sub">
-              Join hundreds of schools already running smarter with Scladapp.
-              No credit card required. Setup in under 30 minutes.
+                      Scladapp simplifies education management by bringing student records, teacher schedules, and administrative tools together in one place.
+
             </p>
             <div className="cta-section__actions">
               <button className="cta-section__btn cta-section__btn--primary" onClick={() => navigate("/setup/1")}>
