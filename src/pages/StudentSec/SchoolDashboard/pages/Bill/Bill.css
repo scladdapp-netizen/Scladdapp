@@ -305,3 +305,49 @@
 [data-theme="dark"] .bill-receipt-section-value { color: #f0f0f0; }
 [data-theme="dark"] .bill-receipt-row { border-bottom-color: #2a2a2a; }
 [data-theme="dark"] .bill-receipt-row-value { color: #f0f0f0; }
+
+/* ── Coming soon overlay ──────────────────────────────────────────────────── */
+.bill-pay-coming-soon {
+  position: absolute;
+  inset: 0;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.82);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-align: center;
+  padding: 16px;
+}
+
+.bill-pay-coming-soon-badge {
+  display: inline-block;
+  padding: 5px 14px;
+  border-radius: 20px;
+  background: #111111;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.bill-pay-coming-soon p {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: #555555;
+}
+
+[data-theme="dark"] .bill-pay-coming-soon {
+  background: rgba(20, 20, 20, 0.85);
+}
+[data-theme="dark"] .bill-pay-coming-soon-badge {
+  background: #f0f0f0;
+  color: #111111;
+}
+[data-theme="dark"] .bill-pay-coming-soon p {
+  color: #888888;
+}

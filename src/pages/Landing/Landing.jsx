@@ -41,13 +41,13 @@ const FEATURES = [
   {
     title: "Notifications",
     img: "https://images.unsplash.com/photo-1611532736597-de2d4265fba3?w=400&q=80",
-    bullets: ["Announcements", "Exam alerts", "Fee reminders", "SMS / email"],
+    bullets: ["Announcements", "Exam alerts",  "SMS / email"],
   },
 ];
 
 const TESTIMONIALS = [
   {
-    quote: "Scladapp completely transformed how we manage student records and fees. Setup was under 30 minutes and our staff adopted it immediately.",
+    quote: "Scladapp completely transformed how we manage student records . Setup was under 30 minutes and our staff adopted it immediately.",
     name: "Mrs. Adaeze Okonkwo",
     role: "Principal",
     school: "Greenfield Academy, Lagos",
@@ -55,7 +55,7 @@ const TESTIMONIALS = [
     color: "#6c5ce7",
   },
   {
-    quote: "The timetable generation alone saved us two full days of work every term. Parents love getting fee reminders directly on their phones.",
+    quote: "The timetable generation alone saved us two full days of work every term.",
     name: "Mr. Chidi Eze",
     role: "Head Teacher",
     school: "Bright Stars College, Abuja",
@@ -504,8 +504,8 @@ const Landing = () => {
                 {
                   key: "student", badge: "Student Portal", accent: "#00cec9",
                   title: "Students Stay Informed Anywhere.",
-                  desc: "From exam results to announcements and fees, students access everything from one secure portal.",
-                  features: ["Result checking","Notifications","Fee payments","Timetable","Assignments"],
+                  desc: "From exam results to announcements, students access everything from one secure portal.",
+                  features: ["Result checking","Notifications","Timetable","Assignments"],
                   visual: "both", store: true,
                 },
                 {

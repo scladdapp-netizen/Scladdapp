@@ -2,6 +2,7 @@
 .br-wrap {
   display: flex; flex-direction: column; gap: 16px;
   max-width: 900px;
+  padding: 20px 24px;
 }
 
 /* ── Stats grid ───────────────────────────────────────────────────────────── */

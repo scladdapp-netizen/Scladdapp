@@ -332,7 +332,7 @@ const Bill = () => {
 
                 {/* Pay form */}
                 {remaining > 0 && (
-                  <div className="bill-pay-form">
+                  <div className="bill-pay-form" style={{ position: "relative" }}>
                     <p className="bill-pay-title">Make a Payment</p>
                     <label className="sr-form-label">Amount ({bill.currency || "NGN"}) *</label>
                     <input
@@ -348,6 +348,12 @@ const Bill = () => {
                     <Button onClick={handlePay} disabled={paying} style={{ marginTop: 8 }}>
                       {paying ? "Processing..." : "Pay Now"}
                     </Button>
+
+                    {/* Coming soon overlay */}
+                    <div className="bill-pay-coming-soon">
+                      <span className="bill-pay-coming-soon-badge">🚀 Coming Soon</span>
+                      <p>Online payments will be available soon.</p>
+                    </div>
                   </div>
                 )}
 

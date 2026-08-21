@@ -137,7 +137,45 @@ const useBill = () => {
     }
   };
 
-  return { loading, error, createBill, getBillsBySchoolPaginated, getBillById, getRecipientsPaginated, recordPayment, updateBillStatus, deleteBill };
+  const updatePayment = async (billId, userBillId, paymentId, payload) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/bills/${billId}/recipients/${userBillId}/payment/${paymentId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = await handleResponse(res);
+      return { success: true, data: data.data };
+    } catch (err) {
+      setError(err.message);
+      return { success: false, message: err.message };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const deletePayment = async (billId, userBillId, paymentId, deletedById = null) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/bills/${billId}/recipients/${userBillId}/payment/${paymentId}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ deleted_by_id: deletedById }),
+      });
+      const data = await handleResponse(res);
+      return { success: true, data: data.data };
+    } catch (err) {
+      setError(err.message);
+      return { success: false, message: err.message };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return { loading, error, createBill, getBillsBySchoolPaginated, getBillById, getRecipientsPaginated, recordPayment, updatePayment, deletePayment, updateBillStatus, deleteBill };
 };
 
 export default useBill;
