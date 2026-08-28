@@ -12,6 +12,11 @@ import Button from "../../../../../components/Button/Button";
 import "../../../../AdminSec/AdminPages/Communication/Notifications/Notifications.css";
 import "../../../../TeacherSec/pages/SubjectDashboard/pages/SubjectInfo/SubjectInfo.css";
 import "./SchoolInfo.css";
+import {
+  normalizeSocialLinks,
+  socialPlatformLabel,
+  socialProfileUrl,
+} from "../../../../../utils/schoolSocialLinks";
 
 const API = `${import.meta.env.VITE_API_BASE_URL}`;
 
@@ -51,7 +56,11 @@ const InfoTab = ({ schoolId }) => {
 
   if (loading) return <LoadingData message="Loading school info..." />;
 
-  const logo = typeof profile?.logo_url === "string" ? profile.logo_url : null;
+  const logo =
+    typeof profile?.logo_url === "string"
+      ? profile.logo_url
+      : profile?.logo_url?.url || profile?.logo_url?.secure_url || null;
+  const socialLinks = normalizeSocialLinks(profile || {});
 
   return (
     <InnerTabCon>
@@ -95,8 +104,20 @@ const InfoTab = ({ schoolId }) => {
               <div className="si-grid">
                 {profile?.email        && <div><span className="si-label-text">Email</span><span className="si-value-text">{profile.email}</span></div>}
                 {profile?.phone_number && <div><span className="si-label-text">Phone</span><span className="si-value-text">{profile.phone_number}</span></div>}
-                {profile?.website      && <div><span className="si-label-text">Website</span><span className="si-value-text">{profile.website}</span></div>}
-                {profile?.instagram    && <div><span className="si-label-text">Instagram</span><span className="si-value-text">{profile.instagram}</span></div>}
+                {profile?.website      && (
+                  <div>
+                    <span className="si-label-text">Website</span>
+                    <a
+                      className="si-link-text"
+                      href={/^https?:\/\//i.test(profile.website) ? profile.website : `https://${profile.website}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      title={profile.website}
+                    >
+                      {profile.website.replace(/^https?:\/\/(www\.)?/i, "")}
+                    </a>
+                  </div>
+                )}
                 {profile?.address      && <div><span className="si-label-text">Address</span><span className="si-value-text">{profile.address}</span></div>}
                 {profile?.state        && <div><span className="si-label-text">State</span><span className="si-value-text">{profile.state}</span></div>}
                 {profile?.country      && <div><span className="si-label-text">Country</span><span className="si-value-text">{profile.country}</span></div>}
@@ -107,6 +128,29 @@ const InfoTab = ({ schoolId }) => {
               <div>
                 <span className="si-section-title">Motto</span>
                 <p className="si-description">"{profile.motto}"</p>
+              </div>
+            )}
+
+            {socialLinks.length > 0 && (
+              <div>
+                <span className="si-section-title">Social</span>
+                <div className="shi-social-list">
+                  {socialLinks.map((item) => {
+                    const href = socialProfileUrl(item.platform, item.handle);
+                    return (
+                      <a
+                        key={item.platform}
+                        className="shi-social-chip"
+                        href={href || undefined}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        <span className="shi-social-platform">{socialPlatformLabel(item.platform)}</span>
+                        <span className="shi-social-handle">@{item.handle}</span>
+                      </a>
+                    );
+                  })}
+                </div>
               </div>
             )}
           </div>
@@ -297,7 +341,7 @@ const SchoolInfo = () => {
       subtitle={profile?.motto ? `"${profile.motto}"` : "School information, resources and gallery"}
       route={[
         { label: "School Info", link: "/info" },
-        { label: "About",       link: "/bio" },
+        // { label: "About",       link: "/bio" },
         { label: "Resources",   link: "/resources" },
         { label: "Gallery",     link: "/gallery" },
       ]}

@@ -95,41 +95,53 @@ const StaffInfoCard = ({
         <div>
           <span className="sic2-section-title">Staff Information</span>
           <div className="sic2-grid">
-            <InfoField label="Full Name"    value={s.full_name || "N/A"} />
-            <InfoField label="Staff ID"     value={s.staff_id || "N/A"} />
-            <InfoField label="Position"     value={s.position || "N/A"} />
-            <InfoField label="Job Title"    value={s.job_title || "N/A"} />
-            <InfoField label="Department"   value={s.department || "N/A"} />
+            <InfoField label="Full Name"     value={s.full_name || "N/A"} />
+            <InfoField label="Staff ID"      value={s.staff_id || "N/A"} />
+            <InfoField label="Position"      value={s.position || "N/A"} />
+            <InfoField label="Department"    value={s.department || "N/A"} />
             <InfoField label="Date of Birth" value={s.date_of_birth ? new Date(s.date_of_birth).toLocaleDateString() : "N/A"} />
-            <InfoField label="Gender"       value={s.gender || "N/A"} />
-            <InfoField label="Religion"     value={s.religion || "N/A"} />
+            <InfoField label="Gender"        value={s.gender || "N/A"} />
+            <InfoField label="Email"         value={s.email || "N/A"} />
+            <InfoField label="Phone"         value={s.phone || "N/A"} />
+            <InfoField label="WhatsApp"      value={s.whatsapp || "N/A"} />
+            <InfoField label="Religion"      value={s.religion || "N/A"} />
             <InfoField label="Marital Status" value={s.marital_status || "N/A"} />
-            <InfoField label="Nationality"  value={s.nationality || "N/A"} />
-            <InfoField label="State of Origin" value={s.state_of_origin || "N/A"} />
-            <InfoField label="Blood Group"  value={s.blood_group || "N/A"} />
-            <InfoField label="Genotype"     value={s.genotype || "N/A"} />
+            <InfoField label="Nationality"   value={s.nationality || "N/A"} />
           </div>
         </div>
 
         <div>
-          <span className="sic2-section-title">Contact Information</span>
+          <span className="sic2-section-title">Identity / bio</span>
           <div className="sic2-grid">
-            <InfoField label="Email"          value={s.email || "N/A"} />
-            <InfoField label="Phone"          value={s.phone || "N/A"} />
-            <InfoField label="Alternate Phone" value={s.alternate_phone || "N/A"} />
-            <InfoField label="Address"        value={s.address || "N/A"} />
+            <InfoField label="Place of Birth"       value={s.place_of_birth || "N/A"} />
+            <InfoField label="LGA of Origin"        value={s.lga_of_origin || "N/A"} />
+            <InfoField label="State of Origin"      value={s.state_of_origin || "N/A"} />
+            <InfoField label="Tribe / Ethnic Group" value={s.tribe || "N/A"} />
+            <InfoField label="NIN"                  value={s.nin || s.national_id || "N/A"} />
+            <InfoField label="Blood Group"          value={s.blood_group || "N/A"} />
+            <InfoField label="Genotype"             value={s.genotype || "N/A"} />
           </div>
         </div>
 
         <div>
-          <span className="sic2-section-title">Emergency Contact & Next of Kin</span>
+          <span className="sic2-section-title">Residence</span>
           <div className="sic2-grid">
-            <InfoField label="Emergency Contact" value={s.emergency_contact_name || "N/A"} />
-            <InfoField label="Emergency Relationship" value={s.emergency_contact_relationship || "N/A"} />
-            <InfoField label="Emergency Phone" value={s.emergency_contact_phone || "N/A"} />
-            <InfoField label="Next of Kin"     value={s.next_of_kin_name || "N/A"} />
-            <InfoField label="Next of Kin Relationship" value={s.next_of_kin_relationship || "N/A"} />
-            <InfoField label="Next of Kin Phone" value={s.next_of_kin_phone || "N/A"} />
+            <InfoField label="House Number / Street" value={s.house_number_street || "N/A"} />
+            <InfoField label="Area / Estate"         value={s.area_estate || "N/A"} />
+            <InfoField label="City"                  value={s.city || "N/A"} />
+            <InfoField label="LGA of Residence"      value={s.lga_of_residence || "N/A"} />
+            <InfoField label="State of Residence"    value={s.state_of_residence || "N/A"} />
+            <InfoField label="Landmark"              value={s.landmark || "N/A"} />
+          </div>
+        </div>
+
+        <div>
+          <span className="sic2-section-title">Emergency Contact</span>
+          <div className="sic2-grid">
+            <InfoField label="Name"         value={s.emergency_contact_name || "N/A"} />
+            <InfoField label="Relationship" value={s.emergency_contact_relationship || "N/A"} />
+            <InfoField label="Phone"        value={s.emergency_contact_phone || "N/A"} />
+            <InfoField label="WhatsApp"     value={s.emergency_contact_whatsapp || "N/A"} />
           </div>
         </div>
 
@@ -139,34 +151,9 @@ const StaffInfoCard = ({
             <InfoField label="Qualification"   value={s.qualification || "N/A"} />
             <InfoField label="Experience"      value={s.experience_years ? `${s.experience_years} yrs` : "N/A"} />
             <InfoField label="Joining Date"    value={s.joining_date ? new Date(s.joining_date).toLocaleDateString() : "N/A"} />
-            <InfoField label="Confirmation Date" value={s.confirmation_date ? new Date(s.confirmation_date).toLocaleDateString() : "N/A"} />
             <InfoField label="Employment Type" value={s.employment_type || "N/A"} />
-            <InfoField label="Employment Status" value={s.employment_status || "N/A"} />
-            <InfoField label="Salary"          value={s.salary ? `₦${s.salary.toLocaleString()}` : "N/A"} />
-            <InfoField label="Salary Grade"    value={s.salary_grade || "N/A"} />
           </div>
         </div>
-
-        <div>
-          <span className="sic2-section-title">Financial & Identification</span>
-          <div className="sic2-grid">
-            <InfoField label="Bank Name"    value={s.bank_name || "N/A"} />
-            <InfoField label="Bank Account" value={s.bank_account || "N/A"} />
-            <InfoField label="Tax Number"   value={s.tax_number || "N/A"} />
-            <InfoField label="National ID"  value={s.national_id ? `***-**-${s.national_id.slice(-4)}` : "N/A"} />
-          </div>
-        </div>
-
-        {(s.blood_group || s.genotype || s.medical_conditions) && (
-          <div>
-            <span className="sic2-section-title">Health Information</span>
-            <div className="sic2-grid">
-              <InfoField label="Blood Group"  value={s.blood_group || "N/A"} />
-              <InfoField label="Genotype"     value={s.genotype || "N/A"} />
-              <InfoField label="Medical Conditions" value={s.medical_conditions || "N/A"} />
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );

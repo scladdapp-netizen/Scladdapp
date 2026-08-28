@@ -32,11 +32,65 @@ const IconCursor = () => (
   </svg>
 );
 
+const IconZoomOut = () => (
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
+    <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="2"/>
+    <path d="M21 21l-4.3-4.3M8 11h6" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+  </svg>
+);
+const IconZoomIn = () => (
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
+    <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="2"/>
+    <path d="M21 21l-4.3-4.3M8 11h6M11 8v6" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+  </svg>
+);
+
+const ZOOM_PRESETS = [50, 67, 75, 80, 90, 100, 110, 125, 150, 175, 200, 250];
+
 const DEVICES = [
   { id: "desktop", label: "Desktop", Icon: IconDesktop },
   { id: "tablet",  label: "Tablet",  Icon: IconTablet  },
   { id: "mobile",  label: "Mobile",  Icon: IconMobile  },
 ];
+
+function nearestZoomIndex(pct) {
+  let best = 0;
+  let dist = Infinity;
+  ZOOM_PRESETS.forEach((z, i) => {
+    const d = Math.abs(z - pct);
+    if (d < dist) { dist = d; best = i; }
+  });
+  return best;
+}
+
+function isTransparentColor(c) {
+  return !c || c === "transparent" || c === "rgba(0, 0, 0, 0)" || c === "rgba(0,0,0,0)";
+}
+
+/** Match the iframe chrome to the page html/body background (not forced white). */
+function paintIframeFromPage(iframe) {
+  try {
+    const doc = iframe?.contentDocument;
+    if (!doc?.documentElement) return;
+    const htmlCs = getComputedStyle(doc.documentElement);
+    const bodyCs = doc.body ? getComputedStyle(doc.body) : null;
+    let color = htmlCs.backgroundColor;
+    let image = htmlCs.backgroundImage;
+    if (isTransparentColor(color) && (!image || image === "none") && bodyCs) {
+      color = bodyCs.backgroundColor;
+      image = bodyCs.backgroundImage;
+    }
+    iframe.style.backgroundColor = isTransparentColor(color) ? "transparent" : color;
+    iframe.style.backgroundImage = image && image !== "none" ? image : "none";
+    const frame = iframe.parentElement;
+    if (frame?.className?.includes("aie-preview-frame")) {
+      frame.style.backgroundColor = iframe.style.backgroundColor;
+      frame.style.backgroundImage = iframe.style.backgroundImage;
+    }
+  } catch {
+    /* iframe not ready */
+  }
+}
 
 /**
  * Props:
@@ -50,6 +104,9 @@ const DEVICES = [
 export default function PreviewPanel({ html, siteUrl, isSplitMode, onElementSelect, hoverSelector, hoverLabel, scrollToSelector }) {
   const [device, setDevice] = useState("desktop");
   const [key,    setKey]    = useState(0);
+  const [zoom,   setZoom]   = useState(80);
+  const [zoomMenu, setZoomMenu] = useState(false);
+  const zoomMenuRef  = useRef(null);
   const iframeRef    = useRef(null);
   const initialHtml  = useRef(html);   // the HTML used for the current srcDoc load
   const iframeReady  = useRef(false);  // true once the iframe has fired onLoad
@@ -76,6 +133,7 @@ export default function PreviewPanel({ html, siteUrl, isSplitMode, onElementSele
       { __aie: true, type: "updateHtml", html },
       "*"
     );
+    setTimeout(() => paintIframeFromPage(iframe), 40);
   }, [html]);
 
   // Manual refresh — reload iframe with latest html
@@ -150,6 +208,50 @@ export default function PreviewPanel({ html, siteUrl, isSplitMode, onElementSele
     );
   }, [scrollToSelector]);
 
+  const zoomInSafe = () => {
+    setZoom((z) => {
+      const i = nearestZoomIndex(z);
+      if (ZOOM_PRESETS[i] <= z && i < ZOOM_PRESETS.length - 1) return ZOOM_PRESETS[i + 1];
+      if (ZOOM_PRESETS[i] > z) return ZOOM_PRESETS[i];
+      return z;
+    });
+  };
+  const zoomOutSafe = () => {
+    setZoom((z) => {
+      const i = nearestZoomIndex(z);
+      if (ZOOM_PRESETS[i] >= z && i > 0) return ZOOM_PRESETS[i - 1];
+      if (ZOOM_PRESETS[i] < z) return ZOOM_PRESETS[i];
+      return z;
+    });
+  };
+
+  useEffect(() => {
+    if (!zoomMenu) return;
+    const close = (e) => {
+      if (!zoomMenuRef.current?.contains(e.target)) setZoomMenu(false);
+    };
+    document.addEventListener("mousedown", close);
+    return () => document.removeEventListener("mousedown", close);
+  }, [zoomMenu]);
+
+  useEffect(() => {
+    const onKey = (e) => {
+      if (!(e.ctrlKey || e.metaKey)) return;
+      if (e.key === "=" || e.key === "+") { e.preventDefault(); zoomInSafe(); }
+      else if (e.key === "-") { e.preventDefault(); zoomOutSafe(); }
+      else if (e.key === "0") { e.preventDefault(); setZoom(80); }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
+  const onPreviewWheel = (e) => {
+    if (!(e.ctrlKey || e.metaKey)) return;
+    e.preventDefault();
+    if (e.deltaY < 0) zoomInSafe();
+    else zoomOutSafe();
+  };
+
   const frameClass =
     device === "tablet" ? "aie-preview-frame aie-preview-frame--tablet" :
     device === "mobile" ? "aie-preview-frame aie-preview-frame--mobile" :
@@ -190,6 +292,55 @@ export default function PreviewPanel({ html, siteUrl, isSplitMode, onElementSele
           <IconRefresh />
         </button>
 
+        <div className="aie-zoom" ref={zoomMenuRef}>
+          <button
+            type="button"
+            className="aie-zoom-btn"
+            onClick={zoomOutSafe}
+            disabled={zoom <= ZOOM_PRESETS[0]}
+            title="Zoom out (Ctrl+-)"
+            aria-label="Zoom out"
+          >
+            <IconZoomOut />
+          </button>
+          <button
+            type="button"
+            className="aie-zoom-pct"
+            onClick={() => setZoomMenu((o) => !o)}
+            title="Zoom level — click for presets, Ctrl+0 to reset"
+            aria-label={`Zoom ${zoom} percent`}
+            aria-expanded={zoomMenu}
+          >
+            {zoom}%
+          </button>
+          <button
+            type="button"
+            className="aie-zoom-btn"
+            onClick={zoomInSafe}
+            disabled={zoom >= ZOOM_PRESETS[ZOOM_PRESETS.length - 1]}
+            title="Zoom in (Ctrl++)"
+            aria-label="Zoom in"
+          >
+            <IconZoomIn />
+          </button>
+          {zoomMenu && (
+            <div className="aie-zoom-menu" role="listbox">
+              {ZOOM_PRESETS.map((z) => (
+                <button
+                  key={z}
+                  type="button"
+                  role="option"
+                  aria-selected={z === zoom}
+                  className={`aie-zoom-option ${z === zoom ? "aie-zoom-option--active" : ""}`}
+                  onClick={() => { setZoom(z); setZoomMenu(false); }}
+                >
+                  {z}%
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
         {/* device buttons */}
         <div className="aie-device-btns">
           {DEVICES.map(({ id, label, Icon }) => (
@@ -207,26 +358,36 @@ export default function PreviewPanel({ html, siteUrl, isSplitMode, onElementSele
       </div>
 
       {/* preview stage */}
-      <div className={`aie-preview-stage aie-preview-stage--${device}`}>
+      <div
+        className={`aie-preview-stage aie-preview-stage--${device}`}
+        onWheel={onPreviewWheel}
+      >
         {html ? (
-          <div className={frameClass}>
+          <div
+            className={frameClass}
+            style={{ "--aie-zoom": zoom / 100 }}
+          >
             <iframe
               key={key}
               ref={iframeRef}
               className="aie-preview-iframe"
+              style={{ zoom: zoom / 100 }}
               srcDoc={srcDoc}
               title="Website preview"
               sandbox="allow-scripts allow-same-origin allow-forms"
               aria-label="Live website preview"
               onLoad={() => {
                 iframeReady.current = true;
-                const win = iframeRef.current?.contentWindow;
+                const frameEl = iframeRef.current;
+                const win = frameEl?.contentWindow;
                 if (!win) return;
-                // Flush any html that changed while the iframe was loading
+                paintIframeFromPage(frameEl);
+                requestAnimationFrame(() => paintIframeFromPage(frameEl));
                 const latest = pendingHtml.current ?? html;
                 pendingHtml.current = null;
                 if (latest !== initialHtml.current) {
                   win.postMessage({ __aie: true, type: "updateHtml", html: latest }, "*");
+                  setTimeout(() => paintIframeFromPage(frameEl), 50);
                 }
               }}
             />

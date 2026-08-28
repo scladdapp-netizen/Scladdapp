@@ -55,11 +55,7 @@ const StudentInfoCard = ({
     );
   }
 
-  const { student, admissions, guardians } = studentData;
-
-  // Get primary guardian or first guardian
-  const primaryGuardian =
-    guardians?.find((g) => g.is_primary) || guardians?.[0];
+  const { student, admissions } = studentData;
 
   // Get the admission for THIS school (filter by schoolId)
   const activeAdmission = schoolId
@@ -162,57 +158,59 @@ const StudentInfoCard = ({
         {/* ── Body ── */}
         <div className="sic-body">
 
-          {/* Core info */}
           <div>
             <p className="sic-section-title">Student Information</p>
             <div className="sic-grid">
               <InfoField label="Full Name"        value={student.full_name || "N/A"} />
+              <InfoField label="Admission Number" value={student.admission_number || "N/A"} />
               <InfoField label="Student ID"       value={student.student_id ? student.student_id.substring(0, 16) : "N/A"} />
+              <InfoField label="Gender"           value={student.gender || "N/A"} />
               <InfoField label="Date of Birth"    value={formatDate(student.date_of_birth)} />
               <InfoField label="Age"              value={calculateAge(student.date_of_birth)} />
-              <InfoField label="Gender"           value={student.gender || "N/A"} />
-              {/* <InfoField label="Class"            value={activeAdmission?.admission_class || student.current_class || "N/A"}
-                linkTo={activeAdmission ? `/admin/${student.school_id}/class/${activeAdmission.admission_class}?student=${student.student_id}` : undefined} /> */}
-              <InfoField label="Admission Number" value={student.admission_number || "N/A"} />
               <InfoField label="Email"            value={student.email || "N/A"} />
               <InfoField label="Phone"            value={student.phone || "N/A"} />
+              <InfoField label="WhatsApp"         value={student.whatsapp || "N/A"} />
               <InfoField label="Religion"         value={student.religion || "N/A"} />
               <InfoField label="Nationality"      value={student.nationality || "N/A"} />
-              <InfoField label="Blood Group"      value={student.blood_group || "N/A"} />
-              <InfoField label="Genotype"         value={student.genotype || "N/A"} />
             </div>
           </div>
 
-          {/* Guardians */}
           <div>
-            <p className="sic-section-title">Contacts & Guardians</p>
-            {primaryGuardian ? (
-              <>
-                <div className="sic-grid">
-                  <InfoField label="Guardian Name"  value={primaryGuardian.guardian_name || "N/A"} />
-                  <InfoField label="Relationship"   value={primaryGuardian.guardian_relationship || "N/A"} />
-                  <InfoField label="Phone"          value={primaryGuardian.guardian_phone || "N/A"} />
-                  <InfoField label="Email"          value={primaryGuardian.guardian_email || "N/A"} />
-                  <InfoField label="Address"        value={primaryGuardian.guardian_address || student.address || "N/A"} />
-                  <InfoField label="Occupation"     value={primaryGuardian.guardian_occupation || "N/A"} />
-                </div>
-                {guardians && guardians.length > 1 && (
-                  <p className="sic-more-guardians">+{guardians.length - 1} additional guardian(s)</p>
-                )}
-              </>
-            ) : (
-              <p className="sic-empty">No guardian information available</p>
-            )}
+            <p className="sic-section-title">Identity / bio</p>
+            <div className="sic-grid">
+              <InfoField label="Place of Birth"       value={student.place_of_birth || "N/A"} />
+              <InfoField label="LGA of Origin"        value={student.lga_of_origin || "N/A"} />
+              <InfoField label="State of Origin"      value={student.state_of_origin || "N/A"} />
+              <InfoField label="Tribe / Ethnic Group" value={student.tribe || "N/A"} />
+              <InfoField label="NIN"                  value={student.nin || "N/A"} />
+              <InfoField label="Number of Siblings"   value={student.number_of_siblings || "N/A"} />
+              <InfoField label="Position in Family"   value={student.family_position || "N/A"} />
+              <InfoField label="Lives With"           value={student.lives_with || "N/A"} />
+              <InfoField label="Blood Group"          value={student.blood_group || "N/A"} />
+              <InfoField label="Genotype"             value={student.genotype || "N/A"} />
+            </div>
           </div>
 
-          {/* Emergency contact */}
-          {(student.emergency_contact_name || student.emergency_contact_phone) && (
+          <div>
+            <p className="sic-section-title">Residence</p>
+            <div className="sic-grid">
+              <InfoField label="House Number / Street" value={student.house_number_street || "N/A"} />
+              <InfoField label="Area / Estate"         value={student.area_estate || "N/A"} />
+              <InfoField label="City"                  value={student.city || "N/A"} />
+              <InfoField label="LGA of Residence"      value={student.lga_of_residence || "N/A"} />
+              <InfoField label="State of Residence"    value={student.state_of_residence || "N/A"} />
+              <InfoField label="Landmark"              value={student.landmark || "N/A"} />
+            </div>
+          </div>
+
+          {(student.emergency_contact_name || student.emergency_contact_phone || student.emergency_contact_whatsapp) && (
             <div>
               <p className="sic-section-title">Emergency Contact</p>
               <div className="sic-grid">
-                <InfoField label="Contact Name"  value={student.emergency_contact_name || "N/A"} />
-                <InfoField label="Contact Phone" value={student.emergency_contact_phone || "N/A"} />
-                <InfoField label="Relationship"  value={student.emergency_contact_relationship || "N/A"} />
+                <InfoField label="Name"         value={student.emergency_contact_name || "N/A"} />
+                <InfoField label="Relationship" value={student.emergency_contact_relationship || "N/A"} />
+                <InfoField label="Phone"        value={student.emergency_contact_phone || "N/A"} />
+                <InfoField label="WhatsApp"     value={student.emergency_contact_whatsapp || "N/A"} />
               </div>
             </div>
           )}

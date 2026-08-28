@@ -2,6 +2,9 @@ import React, { useState, useMemo, useEffect } from "react";
 import "./SmartTable.css";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import Button from "../Button/Button";
+import { useSubscriptionAccess } from "../../hooks/useSubscriptionAccess";
+import { useNotification } from "../../context/NotificationProvider/NotificationProvider";
+import { useAuth } from "../../context/AuthContext/AuthContext";
 
 export default function SmartTable({
   columns = [],
@@ -17,6 +20,18 @@ export default function SmartTable({
   creattext = "Create",
   showcreatbut = true,
 }) {
+  const { user } = useAuth();
+  const { canMutate, message: subscriptionMessage } = useSubscriptionAccess();
+  const { addNotification } = useNotification();
+  const isAdminOrStaff = !!(user?.admin || user?.staff || user?.teacher);
+  const guardMutation = (fn) => {
+    if (isAdminOrStaff && !canMutate) {
+      addNotification(subscriptionMessage, "error");
+      return;
+    }
+    fn?.();
+  };
+
   // UI state
   const [search, setSearch] = useState("");
   const [filterField, setFilterField] = useState("");
@@ -105,6 +120,11 @@ export default function SmartTable({
 
   // bulk delete confirm
   const confirmDelete = async () => {
+    if (isAdminOrStaff && !canMutate) {
+      addNotification(subscriptionMessage, "error");
+      setShowDeleteModal(false);
+      return;
+    }
     setShowDeleteModal(false);
     if (onBulkDelete) {
       await onBulkDelete(selectedIds);
@@ -172,7 +192,7 @@ export default function SmartTable({
           {showcreatbut && (
             <>
               {onCreate && (
-                <Button variant="primary" onClick={onCreate}>
+                <Button variant="primary" onClick={() => guardMutation(onCreate)}>
                   {creattext}
                 </Button>
               )}

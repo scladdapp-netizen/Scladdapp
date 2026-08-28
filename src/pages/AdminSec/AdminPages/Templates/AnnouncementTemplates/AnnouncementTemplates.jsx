@@ -36,9 +36,15 @@ const renderEmailNode = (node) => {
     return t;
   }
   if (node.type === "image") {
-    const w = node.attrs?.width  ? ` width="${node.attrs.width}"`  : "";
-    const h2 = node.attrs?.height ? ` height="${node.attrs.height}"` : "";
-    return `<img src="${node.attrs?.src||""}" alt="${node.attrs?.alt||""}"${w}${h2} style="max-width:100%;height:auto;border-radius:4px;display:block;margin:6px auto"/>`;
+    const align = node.attrs?.align || "center";
+    const w = node.attrs?.width ? `width:${node.attrs.width}px;` : "max-width:100%;";
+    let extra = "display:block;";
+    let margin = "6px auto";
+    if (align === "left") margin = "6px auto 6px 0";
+    else if (align === "right") margin = "6px 0 6px auto";
+    else if (align === "float-left") { extra = "float:left;"; margin = "0 8px 0 0"; }
+    else if (align === "float-right") { extra = "float:right;"; margin = "0 0 0 8px"; }
+    return `<img src="${node.attrs?.src||""}" alt="${node.attrs?.alt||""}" data-align="${align}" style="${w}height:auto;${extra}margin:${margin};border-radius:4px;max-width:100%"/>`;
   }
   const inner = (node.content||[]).map(renderEmailNode).join("");
   const align = node.attrs?.textAlign;
@@ -93,7 +99,7 @@ const buildFullEmailPreviewHtml = (template, schoolName) => {
   const bottomOver  = stored.bottom_overlay ?? 0;
 
   const sampleContent = template.content
-    ? `<p style="margin:0 0 8px;color:#374151;font-size:14px">${template.content}</p>`
+    ? `<div style="margin:0 0 8px;color:#374151;font-size:14px">${template.content}</div>`
     : `<p style="color:#9ca3af;font-style:italic;font-size:13px">Announcement content will appear here.</p>`;
 
   return `

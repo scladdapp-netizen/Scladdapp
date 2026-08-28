@@ -58,6 +58,25 @@ const useSubscription = () => {
     }
   };
 
+  const cancelSubscription = async (schoolId) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/subscription/school/${schoolId}/cancel`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.message);
+      return { success: true, data: data.data };
+    } catch (err) {
+      setError(err.message);
+      return { success: false, message: err.message };
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const getPaymentsPaginated = async (schoolId, params = {}) => {
     setLoading(true);
     setError(null);
@@ -76,7 +95,7 @@ const useSubscription = () => {
     }
   };
 
-  return { loading, error, getSubscriptionDashboard, getPlans, upgradeSubscription, getPaymentsPaginated };
+  return { loading, error, getSubscriptionDashboard, getPlans, upgradeSubscription, cancelSubscription, getPaymentsPaginated };
 };
 
 export default useSubscription;

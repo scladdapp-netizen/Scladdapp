@@ -3,6 +3,9 @@ import "../SmartTable/SmartTable.css";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import Button from "../Button/Button";
 import { jsPDF } from "jspdf";
+import { useSubscriptionAccess } from "../../hooks/useSubscriptionAccess";
+import { useNotification } from "../../context/NotificationProvider/NotificationProvider";
+import { useAuth } from "../../context/AuthContext/AuthContext";
 
 export default function ServerSmartTable({
   columns = [],
@@ -20,6 +23,18 @@ export default function ServerSmartTable({
   showcreatbut = true,
   reloadKey = 0,
 }) {
+  const { user } = useAuth();
+  const { canMutate, message: subscriptionMessage } = useSubscriptionAccess();
+  const { addNotification } = useNotification();
+  const isAdminOrStaff = !!(user?.admin || user?.staff || user?.teacher);
+  const guardMutation = (fn) => {
+    if (isAdminOrStaff && !canMutate) {
+      addNotification(subscriptionMessage, "error");
+      return;
+    }
+    fn?.();
+  };
+
   const [search, setSearch] = useState("");
   const [filterField, setFilterField] = useState("");
   const [selectedIds, setSelectedIds] = useState([]);
@@ -103,6 +118,11 @@ export default function ServerSmartTable({
   const clearSelection = () => { setSelectedIds([]); onSelectChange?.([]); };
 
   const confirmDelete = async () => {
+    if (isAdminOrStaff && !canMutate) {
+      addNotification(subscriptionMessage, "error");
+      setShowDeleteModal(false);
+      return;
+    }
     setShowDeleteModal(false);
     if (onBulkDelete) await onBulkDelete(selectedIds);
     clearSelection(); loadData();
@@ -270,7 +290,11 @@ export default function ServerSmartTable({
               Export
             </Button>
           )}
-          {showcreatbut && onCreate && <Button variant="primary" onClick={onCreate}>{creattext}</Button>}
+          {showcreatbut && onCreate && (
+            <Button variant="primary" onClick={() => guardMutation(onCreate)}>
+              {creattext}
+            </Button>
+          )}
         </div>
       </div>
 

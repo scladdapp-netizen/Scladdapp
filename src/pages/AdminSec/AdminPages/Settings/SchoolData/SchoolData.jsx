@@ -22,6 +22,13 @@ import "./SchoolData.css";
 import SubscriptionLimitModal from "../../../../../components/SubscriptionLimitModal/SubscriptionLimitModal";
 
 import downloadFile from "../../../../../utils/downloadFile";
+import {
+  SOCIAL_PLATFORMS,
+  normalizeSocialHandle,
+  normalizeSocialLinks,
+  socialPlatformLabel,
+  socialProfileUrl,
+} from "../../../../../utils/schoolSocialLinks";
 
 // ── Resource upload/edit panel ────────────────────────────────────────────
 const SchoolResourceFormPanel = ({ isShow, onClose, resourceData, onSubmit, isEditMode }) => {
@@ -134,19 +141,53 @@ const SchoolData = ({ defaultTab = "profile", hideInternalTabs = false }) => {
     name: school.school_name || "", slogan: school.motto || "",
     address: school.address || "", phone: school.phone_number || "",
     email: school.email || "", website: school.website || "",
-    instagram: school.instagram || "", state: school.state || "",
+    state: school.state || "",
     country: school.country || "", logo: typeof school.logo_url === "string" ? school.logo_url : null,
+    social_links: normalizeSocialLinks(school),
   });
+  const [socialDraft, setSocialDraft] = useState({ platform: "instagram", handle: "" });
 
   useEffect(() => {
     if (!schoolId) return;
     getProfile(schoolId).then((res) => {
       if (res.success && res.data) {
         const d = res.data;
-        setProfile({ name: d.school_name || "", slogan: d.motto || "", address: d.address || "", phone: d.phone_number || "", email: d.email || "", website: d.website || "", instagram: d.instagram || "", state: d.state || "", country: d.country || "", logo: typeof d.logo_url === "string" ? d.logo_url : null });
+        setProfile({
+          name: d.school_name || "",
+          slogan: d.motto || "",
+          address: d.address || "",
+          phone: d.phone_number || "",
+          email: d.email || "",
+          website: d.website || "",
+          state: d.state || "",
+          country: d.country || "",
+          logo: typeof d.logo_url === "string" ? d.logo_url : (d.logo_url?.url || d.logo_url?.secure_url || null),
+          social_links: normalizeSocialLinks(d),
+        });
       }
     });
   }, [schoolId]);
+
+  const addSocialLink = () => {
+    const platform = socialDraft.platform;
+    const handle = normalizeSocialHandle(socialDraft.handle);
+    if (!platform || !handle) {
+      addNotification("Select a platform and enter a handle.", "error");
+      return;
+    }
+    setProfile((p) => {
+      const without = (p.social_links || []).filter((s) => s.platform !== platform);
+      return { ...p, social_links: [...without, { platform, handle }] };
+    });
+    setSocialDraft((d) => ({ ...d, handle: "" }));
+  };
+
+  const removeSocialLink = (platform) => {
+    setProfile((p) => ({
+      ...p,
+      social_links: (p.social_links || []).filter((s) => s.platform !== platform),
+    }));
+  };
 
   // ── Bio ───────────────────────────────────────────────────────────────────
   const bioImageRef = useRef();
@@ -322,24 +363,65 @@ const SchoolData = ({ defaultTab = "profile", hideInternalTabs = false }) => {
             </div>
 
             {!profileEditing ? (
-              <div className="sd-info-grid">
-                {[
-                  { label: "School Name", value: profile.name },
-                  { label: "Slogan",      value: profile.slogan },
-                  { label: "Email",       value: profile.email },
-                  { label: "Phone",       value: profile.phone },
-                  { label: "Website",     value: profile.website },
-                  { label: "Instagram",   value: profile.instagram },
-                  { label: "State",       value: profile.state },
-                  { label: "Country",     value: profile.country },
-                  { label: "Address",     value: profile.address },
-                ].map(({ label, value }) => (
-                  <div key={label} className="sd-info-card">
-                    <span className="sd-info-label">{label}</span>
-                    <span className="sd-info-value">{value || "—"}</span>
+              <>
+                <div className="sd-info-grid">
+                  {[
+                    { label: "School Name", value: profile.name },
+                    { label: "Slogan",      value: profile.slogan },
+                    { label: "Email",       value: profile.email },
+                    { label: "Phone",       value: profile.phone },
+                    { label: "State",       value: profile.state },
+                    { label: "Country",     value: profile.country },
+                    { label: "Address",     value: profile.address },
+                  ].map(({ label, value }) => (
+                    <div key={label} className="sd-info-card">
+                      <span className="sd-info-label">{label}</span>
+                      <span className="sd-info-value">{value || "—"}</span>
+                    </div>
+                  ))}
+                  <div className="sd-info-card">
+                    <span className="sd-info-label">Website</span>
+                    {profile.website ? (
+                      <a
+                        className="sd-info-link"
+                        href={/^https?:\/\//i.test(profile.website) ? profile.website : `https://${profile.website}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        title={profile.website}
+                      >
+                        {profile.website.replace(/^https?:\/\/(www\.)?/i, "")}
+                      </a>
+                    ) : (
+                      <span className="sd-info-value">—</span>
+                    )}
                   </div>
-                ))}
-              </div>
+                </div>
+
+                <div className="sd-social-section">
+                  <h4 className="sd-social-title">Social</h4>
+                  {(profile.social_links || []).length === 0 ? (
+                    <p className="sd-social-empty">No social profiles added yet.</p>
+                  ) : (
+                    <div className="sd-social-list">
+                      {(profile.social_links || []).map((item) => {
+                        const href = socialProfileUrl(item.platform, item.handle);
+                        return (
+                          <a
+                            key={item.platform}
+                            className="sd-social-chip"
+                            href={href || undefined}
+                            target="_blank"
+                            rel="noreferrer"
+                          >
+                            <span className="sd-social-chip-platform">{socialPlatformLabel(item.platform)}</span>
+                            <span className="sd-social-chip-handle">@{item.handle}</span>
+                          </a>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              </>
             ) : (
               <div className="sd-edit-form">
                 <div className="sd-form-grid">
@@ -374,16 +456,83 @@ const SchoolData = ({ defaultTab = "profile", hideInternalTabs = false }) => {
                   <FormInput label="Phone Number" type="text" value={profile.phone} onChange={(v) => setProfile(p => ({ ...p, phone: v }))} />
                   <FormInput label="Email Address" type="email" value={profile.email} onChange={(v) => setProfile(p => ({ ...p, email: v }))} />
                   <FormInput label="Website URL" type="url" value={profile.website} onChange={(v) => setProfile(p => ({ ...p, website: v }))} placeholder="https://www.yourschool.com" />
-                  <FormInput label="Instagram Handle" type="text" value={profile.instagram} onChange={(v) => setProfile(p => ({ ...p, instagram: v }))} placeholder="@yourschool" />
                   <FormInput label="State" type="text" value={profile.state} onChange={(v) => setProfile(p => ({ ...p, state: v }))} />
                   <FormInput label="Country" type="text" value={profile.country} onChange={(v) => setProfile(p => ({ ...p, country: v }))} />
                 </div>
                 <FormInput label="Address" type="textarea" value={profile.address} onChange={(v) => setProfile(p => ({ ...p, address: v }))} height="80px" />
+
+                <div className="sd-social-section sd-social-section--edit">
+                  <h4 className="sd-social-title">Social</h4>
+                  <p className="sd-social-hint">Add Facebook, Instagram, TikTok, or LinkedIn handles.</p>
+                  {(profile.social_links || []).length > 0 && (
+                    <div className="sd-social-list">
+                      {(profile.social_links || []).map((item) => (
+                        <div key={item.platform} className="sd-social-chip sd-social-chip--edit">
+                          <span className="sd-social-chip-platform">{socialPlatformLabel(item.platform)}</span>
+                          <span className="sd-social-chip-handle">@{item.handle}</span>
+                          <button type="button" className="sd-social-remove" onClick={() => removeSocialLink(item.platform)}>
+                            Remove
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  <div className="sd-social-add-row">
+                    <select
+                      className="sd-social-select"
+                      value={socialDraft.platform}
+                      onChange={(e) => setSocialDraft((d) => ({ ...d, platform: e.target.value }))}
+                    >
+                      {SOCIAL_PLATFORMS.map((p) => (
+                        <option key={p.id} value={p.id}>{p.label}</option>
+                      ))}
+                    </select>
+                    <input
+                      className="sd-social-handle-input"
+                      type="text"
+                      value={socialDraft.handle}
+                      onChange={(e) => setSocialDraft((d) => ({ ...d, handle: e.target.value }))}
+                      placeholder={
+                        SOCIAL_PLATFORMS.find((p) => p.id === socialDraft.platform)?.placeholder || "handle"
+                      }
+                    />
+                    <Button type="button" variant="secondary" onClick={addSocialLink}>
+                      Add
+                    </Button>
+                  </div>
+                </div>
+
                 <div className="sd-form-actions">
                   <Button variant="secondary" onClick={() => setProfileEditing(false)}>Cancel</Button>
                   <Button disabled={schoolLoading} onClick={async () => {
-                    const res = await saveProfile(schoolId, { school_name: profile.name, motto: profile.slogan, address: profile.address, phone_number: profile.phone, email: profile.email, website: profile.website, instagram: profile.instagram, state: profile.state, country: profile.country }, logoFile);
-                    if (res.success) { setProfileEditing(false); setLogoFile(null); if (res.data?.logo_url) setProfile(p => ({ ...p, logo: res.data.logo_url })); }
+                    const res = await saveProfile(
+                      schoolId,
+                      {
+                        school_name: profile.name,
+                        motto: profile.slogan,
+                        address: profile.address,
+                        phone_number: profile.phone,
+                        email: profile.email,
+                        website: profile.website,
+                        state: profile.state,
+                        country: profile.country,
+                        social_links: profile.social_links || [],
+                      },
+                      logoFile
+                    );
+                    if (res.success) {
+                      setProfileEditing(false);
+                      setLogoFile(null);
+                      const logo =
+                        typeof res.data?.logo_url === "string"
+                          ? res.data.logo_url
+                          : res.data?.logo_url?.url || res.data?.logo_url?.secure_url || null;
+                      setProfile((p) => ({
+                        ...p,
+                        ...(logo ? { logo } : {}),
+                        social_links: normalizeSocialLinks(res.data || p),
+                      }));
+                    }
                   }}>
                     {schoolLoading ? "Saving..." : "Save Changes"}
                   </Button>

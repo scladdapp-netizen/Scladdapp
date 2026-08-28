@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Routes, Route, Navigate, useLocation, useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../../../../context/AuthContext/AuthContext";
 import { useNotification } from "../../../../context/NotificationProvider/NotificationProvider";
@@ -83,20 +83,43 @@ const IdentityTab = ({ staff, logout, navigate }) => {
 
           {/* Body */}
           <div className="si-body">
-            <SectionCard title="Personal Information">
+            <SectionCard title="Staff Information">
               <InfoField label="Full Name"     value={staff.full_name} />
               <InfoField label="Staff ID"      value={staff.staff_id} />
               <InfoField label="Date of Birth" value={fmt(staff.date_of_birth)} />
               <InfoField label="Gender"        value={staff.gender} />
-              <InfoField label="Nationality"   value={staff.nationality} />
+              <InfoField label="Email"         value={staff.email} />
+              <InfoField label="Phone"         value={staff.phone} />
+              <InfoField label="WhatsApp"      value={staff.whatsapp} />
               <InfoField label="Religion"      value={staff.religion} />
-              <InfoField label="Blood Group"   value={staff.blood_group} />
+              <InfoField label="Marital Status" value={staff.marital_status} />
+              <InfoField label="Nationality"   value={staff.nationality} />
             </SectionCard>
 
-            <SectionCard title="Contact">
-              <InfoField label="Email"   value={staff.email} />
-              <InfoField label="Phone"   value={staff.phone} />
-              <InfoField label="Address" value={staff.address} />
+            <SectionCard title="Identity / bio">
+              <InfoField label="Place of Birth"       value={staff.place_of_birth} />
+              <InfoField label="LGA of Origin"        value={staff.lga_of_origin} />
+              <InfoField label="State of Origin"      value={staff.state_of_origin} />
+              <InfoField label="Tribe / Ethnic Group" value={staff.tribe} />
+              <InfoField label="NIN"                  value={staff.nin || staff.national_id} />
+              <InfoField label="Blood Group"          value={staff.blood_group} />
+              <InfoField label="Genotype"             value={staff.genotype} />
+            </SectionCard>
+
+            <SectionCard title="Residence">
+              <InfoField label="House Number / Street" value={staff.house_number_street} />
+              <InfoField label="Area / Estate"         value={staff.area_estate} />
+              <InfoField label="City"                  value={staff.city} />
+              <InfoField label="LGA of Residence"      value={staff.lga_of_residence} />
+              <InfoField label="State of Residence"    value={staff.state_of_residence} />
+              <InfoField label="Landmark"              value={staff.landmark} />
+            </SectionCard>
+
+            <SectionCard title="Emergency Contact">
+              <InfoField label="Name"         value={staff.emergency_contact_name} />
+              <InfoField label="Relationship" value={staff.emergency_contact_relationship} />
+              <InfoField label="Phone"        value={staff.emergency_contact_phone} />
+              <InfoField label="WhatsApp"     value={staff.emergency_contact_whatsapp} />
             </SectionCard>
 
             <SectionCard title="Employment Details">
@@ -105,7 +128,6 @@ const IdentityTab = ({ staff, logout, navigate }) => {
               <InfoField label="Employment Type" value={staff.employment_type} />
               <InfoField label="Joining Date"    value={fmt(staff.joining_date)} />
               <InfoField label="Qualification"   value={staff.qualification} />
-              <InfoField label="Status"          value={staff.employment_status} />
             </SectionCard>
           </div>
         </div>
@@ -269,9 +291,18 @@ const Profile = () => {
   const { schoolId } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
+  const { getStaffById } = useStaffInfo();
 
-  const staff  = user?.staff  || {};
+  const [staff, setStaff] = useState(user?.staff || {});
   const basePath = `/teacher/${schoolId}/profile`;
+
+  useEffect(() => {
+    const id = user?.staff?.staff_id;
+    if (!id) return;
+    getStaffById(id).then((res) => {
+      if (res.success && res.data) setStaff(res.data.staff || res.data);
+    });
+  }, [user?.staff?.staff_id]);
 
   return (
     <StudentDetailTopTab

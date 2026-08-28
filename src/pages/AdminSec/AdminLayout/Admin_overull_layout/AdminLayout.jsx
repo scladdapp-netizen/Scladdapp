@@ -1,11 +1,20 @@
 // AdminLayout.jsx
 import React, { useState } from "react";
+import { useParams } from "react-router-dom";
 import "./AdminLayout.css";
 import Saidbar from "../../Admin_components/saidbar/Saidbar";
 import Topbar from "../../Admin_components/topbar/Topbar";
+import SubscriptionExpiredBanner from "../../../../components/SubscriptionExpiredBanner/SubscriptionExpiredBanner";
+import { useBlockExpiredMutations } from "../../../../hooks/useBlockExpiredMutations";
+import { useSubscriptionAccess } from "../../../../hooks/useSubscriptionAccess";
 
 const AdminLayout = ({ children, schoolId }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { schoolId: paramSchoolId } = useParams();
+  const resolvedSchoolId = paramSchoolId || schoolId;
+  const { canMutate } = useSubscriptionAccess();
+
+  useBlockExpiredMutations();
 
   const handleMenuClick = () => {
     setIsMobileMenuOpen((prev) => !prev);
@@ -16,23 +25,26 @@ const AdminLayout = ({ children, schoolId }) => {
   };
 
   return (
-    <div className="AdminLayout">
-      {/* Topbar */}
+    <div className={`AdminLayout${!canMutate ? " AdminLayout--sub-banner" : ""}`}>
       <Topbar
         isMobileMenuOpen={isMobileMenuOpen}
         onMenuClick={handleMenuClick}
       />
 
-      {/* Sidebar and Content */}
       <div className="al_saidNContentSec">
-        {/* Sidebar - pass schoolId */}
         <Saidbar isMobileOpen={isMobileMenuOpen} onClose={handleCloseSidebar} />
 
-        {/* Content */}
         <div
           className="al_content"
           onClick={() => isMobileMenuOpen && handleCloseSidebar()}
         >
+          <SubscriptionExpiredBanner
+            settingsPath={
+              resolvedSchoolId
+                ? `/admin/${resolvedSchoolId}/settings/subscriptions?tab=upgrade`
+                : undefined
+            }
+          />
           {children}
         </div>
       </div>

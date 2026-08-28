@@ -156,8 +156,9 @@ function TreeNode({
   onSelect, onHover, onHoverClear,
   onAdd, onDelete, onDuplicate, onMove,
   dragState, setDragState, onOpenModal,
+  expandAll,
 }) {
-  const [open,        setOpen]        = useState(depth < 2);
+  const [open,        setOpen]        = useState(false);
   const [showActions, setShowActions] = useState(false);
   const [addOpen,     setAddOpen]     = useState(false);
   const [dropZone,    setDropZone]    = useState(null); // "before"|"inside"|"after"|null
@@ -183,6 +184,10 @@ function TreeNode({
       setOpen(true);
     }
   }, [selectedSelector]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (hasChildren) setOpen(!!expandAll);
+  }, [expandAll]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleClick  = (e) => { e.stopPropagation(); onSelect(node); };
   const handleToggle = (e) => { e.stopPropagation(); if (hasChildren) setOpen(o => !o); };
@@ -376,6 +381,7 @@ function TreeNode({
               dragState={dragState}
               setDragState={setDragState}
               onOpenModal={onOpenModal}
+              expandAll={expandAll}
             />
           ))}
         </div>
@@ -396,7 +402,7 @@ function TreeNode({
  *   onDelete         – fn(selector)
  *   onMove           – fn(fromSelector, toSelector, "before"|"after")
  */
-export default function LayoutTree({ html, selectedSelector, onSelect, onHover, onHoverClear, onAdd, onDelete, onDuplicate, onMove, onOpenModal }) {
+export default function LayoutTree({ html, selectedSelector, onSelect, onHover, onHoverClear, onAdd, onDelete, onDuplicate, onMove, onOpenModal, expandAll = false }) {
   const tree = useMemo(() => parseLayoutTree(html), [html]);
   const [dragState, setDragState] = useState(null);
 
@@ -422,6 +428,7 @@ export default function LayoutTree({ html, selectedSelector, onSelect, onHover, 
           dragState={dragState}
           setDragState={setDragState}
           onOpenModal={onOpenModal}
+          expandAll={expandAll}
         />
       ))}
     </div>

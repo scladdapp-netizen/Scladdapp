@@ -32,6 +32,62 @@ import {
 } from "../../../../../api_call";
 import "./Students.css";
 
+const EMPTY_NEW_STUDENT_FORM = {
+  fullName: "",
+  dateOfBirth: "",
+  gender: "",
+  email: "",
+  phone: "",
+  whatsapp: "",
+  religion: "",
+  nationality: "",
+  stateOfOrigin: "",
+  placeOfBirth: "",
+  lgaOfOrigin: "",
+  tribe: "",
+  nin: "",
+  numberOfSiblings: "",
+  familyPosition: "",
+  livesWith: "",
+  bloodGroup: "",
+  genotype: "",
+  houseNumberStreet: "",
+  areaEstate: "",
+  city: "",
+  lgaOfResidence: "",
+  stateOfResidence: "",
+  landmark: "",
+  emergencyContactName: "",
+  emergencyContactPhone: "",
+  emergencyContactWhatsapp: "",
+  emergencyContactRelationship: "",
+};
+
+const emptyGuardian = (isPrimary = true) => ({
+  id: Date.now() + Math.random(),
+  guardianName: "",
+  guardianRelationship: "",
+  guardianPhone: "",
+  guardianWhatsapp: "",
+  guardianEmail: "",
+  guardianAddress: "",
+  guardianOccupation: "",
+  isPrimary,
+});
+
+const composeResidenceAddress = (f) =>
+  [
+    f.houseNumberStreet,
+    f.areaEstate,
+    f.city,
+    f.lgaOfResidence,
+    f.stateOfResidence,
+    f.landmark,
+  ]
+    .map((v) => (v || "").trim())
+    .filter(Boolean)
+    .join(", ") || null;
+
 const Students = () => {
   const { schoolId } = useParams();
   const navigate = useNavigate();
@@ -96,43 +152,10 @@ const Students = () => {
   const [selectedSubsessionForStudent, setSelectedSubsessionForStudent] = useState("");
 
   // New student form data
-  const [newStudentForm, setNewStudentForm] = useState({
-    // Basic Information
-    fullName: "",
-    dateOfBirth: "",
-    gender: "",
-    email: "",
-    phone: "",
-
-    // Personal Details
-    religion: "",
-    nationality: "",
-    stateOfOrigin: "",
-    bloodGroup: "",
-    genotype: "",
-
-    // Address
-    address: "",
-
-    // Emergency Contact
-    emergencyContactName: "",
-    emergencyContactPhone: "",
-    emergencyContactRelationship: "",
-  });
+  const [newStudentForm, setNewStudentForm] = useState({ ...EMPTY_NEW_STUDENT_FORM });
 
   // Multiple guardians state
-  const [guardians, setGuardians] = useState([
-    {
-      id: Date.now(),
-      guardianName: "",
-      guardianRelationship: "",
-      guardianPhone: "",
-      guardianEmail: "",
-      guardianAddress: "",
-      guardianOccupation: "",
-      isPrimary: true, // First guardian is primary by default
-    }
-  ]);
+  const [guardians, setGuardians] = useState([emptyGuardian(true)]);
 
   // Memoize class options to prevent infinite re-renders
   const classOptions = useMemo(() => {
@@ -654,10 +677,24 @@ const Students = () => {
 
         // Personal information
         phone: newStudentForm.phone.trim() || null,
+        whatsapp: newStudentForm.whatsapp.trim() || null,
         religion: newStudentForm.religion.trim() || null,
         nationality: newStudentForm.nationality.trim() || null,
         stateOfOrigin: newStudentForm.stateOfOrigin.trim() || null,
-        address: newStudentForm.address.trim() || null,
+        placeOfBirth: newStudentForm.placeOfBirth.trim() || null,
+        lgaOfOrigin: newStudentForm.lgaOfOrigin.trim() || null,
+        tribe: newStudentForm.tribe.trim() || null,
+        nin: newStudentForm.nin.trim() || null,
+        numberOfSiblings: newStudentForm.numberOfSiblings.trim() || null,
+        familyPosition: newStudentForm.familyPosition.trim() || null,
+        livesWith: newStudentForm.livesWith || null,
+        address: composeResidenceAddress(newStudentForm),
+        houseNumberStreet: newStudentForm.houseNumberStreet.trim() || null,
+        areaEstate: newStudentForm.areaEstate.trim() || null,
+        city: newStudentForm.city.trim() || null,
+        lgaOfResidence: newStudentForm.lgaOfResidence.trim() || null,
+        stateOfResidence: newStudentForm.stateOfResidence.trim() || null,
+        landmark: newStudentForm.landmark.trim() || null,
         bloodGroup: newStudentForm.bloodGroup || null,
         genotype: newStudentForm.genotype || null,
 
@@ -671,6 +708,7 @@ const Students = () => {
           guardianName: guardian.guardianName.trim(),
           guardianRelationship: guardian.guardianRelationship || null,
           guardianPhone: guardian.guardianPhone.trim(),
+          guardianWhatsapp: (guardian.guardianWhatsapp || "").trim() || null,
           guardianEmail: guardian.guardianEmail.trim() || null,
           guardianAddress: guardian.guardianAddress.trim() || null,
           guardianOccupation: guardian.guardianOccupation.trim() || null,
@@ -682,6 +720,8 @@ const Students = () => {
           newStudentForm.emergencyContactName.trim() || null,
         emergencyContactPhone:
           newStudentForm.emergencyContactPhone.trim() || null,
+        emergencyContactWhatsapp:
+          newStudentForm.emergencyContactWhatsapp.trim() || null,
         emergencyContactRelationship:
           newStudentForm.emergencyContactRelationship || null,
 
@@ -750,36 +790,10 @@ const Students = () => {
 
         // Reset form and close menu
         setShowNewStudentMenu(false);
-        setNewStudentForm({
-          fullName: "",
-          dateOfBirth: "",
-          gender: "",
-          email: "",
-          phone: "",
-          religion: "",
-          nationality: "",
-          stateOfOrigin: "",
-          bloodGroup: "",
-          genotype: "",
-          address: "",
-          emergencyContactName: "",
-          emergencyContactPhone: "",
-          emergencyContactRelationship: "",
-        });
+        setNewStudentForm({ ...EMPTY_NEW_STUDENT_FORM });
         
         // Reset guardians to single empty guardian
-        setGuardians([
-          {
-            id: Date.now(),
-            guardianName: "",
-            guardianRelationship: "",
-            guardianPhone: "",
-            guardianEmail: "",
-            guardianAddress: "",
-            guardianOccupation: "",
-            isPrimary: true,
-          }
-        ]);
+        setGuardians([emptyGuardian(true)]);
         setEnrollmentMethod("");
         setSelectedClass("");
         setSelectedSessionForStudent("");
@@ -832,16 +846,7 @@ const Students = () => {
   const addGuardian = () => {
     setGuardians(prev => [
       ...prev,
-      {
-        id: Date.now(),
-        guardianName: "",
-        guardianRelationship: "",
-        guardianPhone: "",
-        guardianEmail: "",
-        guardianAddress: "",
-        guardianOccupation: "",
-        isPrimary: false, // New guardians are not primary by default
-      }
+      emptyGuardian(false),
     ]);
   };
 
@@ -915,35 +920,9 @@ const Students = () => {
           setSelectedSessionForStudent("");
           setSelectedSubsessionForStudent("");
           setAllSubsessions([]);
-          setNewStudentForm({
-            fullName: "",
-            dateOfBirth: "",
-            gender: "",
-            email: "",
-            phone: "",
-            religion: "",
-            nationality: "",
-            stateOfOrigin: "",
-            bloodGroup: "",
-            genotype: "",
-            address: "",
-            emergencyContactName: "",
-            emergencyContactPhone: "",
-            emergencyContactRelationship: "",
-          });
+          setNewStudentForm({ ...EMPTY_NEW_STUDENT_FORM });
           // Reset guardians to single empty guardian
-          setGuardians([
-            {
-              id: Date.now(),
-              guardianName: "",
-              guardianRelationship: "",
-              guardianPhone: "",
-              guardianEmail: "",
-              guardianAddress: "",
-              guardianOccupation: "",
-              isPrimary: true,
-            }
-          ]);
+          setGuardians([emptyGuardian(true)]);
           clearError();
           setProfilePhotoFile(null);
           setProfilePhotoPreview(null);
@@ -1376,13 +1355,22 @@ const Students = () => {
                     />
                   </div>
 
-                  <FormInput
-                    label="Phone"
-                    type="tel"
-                    value={newStudentForm.phone}
-                    onChange={handleFormChange("phone")}
-                    placeholder="+234 801 234 5678"
-                  />
+                  <div className="ns-form-row">
+                    <FormInput
+                      label="Phone"
+                      type="tel"
+                      value={newStudentForm.phone}
+                      onChange={handleFormChange("phone")}
+                      placeholder="+234 801 234 5678"
+                    />
+                    <FormInput
+                      label="WhatsApp number"
+                      type="tel"
+                      value={newStudentForm.whatsapp}
+                      onChange={handleFormChange("whatsapp")}
+                      placeholder="+234 801 234 5678"
+                    />
+                  </div>
 
                   {/* Class Selection */}
                   <div className="ns-class-select">
@@ -1405,9 +1393,9 @@ const Students = () => {
                   </div>
                 </div>
 
-                {/* Personal Details */}
+                {/* Identity / bio */}
                 <div className="ns-form-section">
-                  <div className="ns-form-section-title">Personal Details</div>
+                  <div className="ns-form-section-title">Identity / bio</div>
 
                   <div className="ns-form-row">
                     <FormInput
@@ -1441,6 +1429,74 @@ const Students = () => {
                       placeholder="e.g., Lagos"
                     />
                     <FormInput
+                      label="LGA of origin"
+                      type="text"
+                      value={newStudentForm.lgaOfOrigin}
+                      onChange={handleFormChange("lgaOfOrigin")}
+                      placeholder="e.g., Ikeja"
+                    />
+                  </div>
+
+                  <div className="ns-form-row">
+                    <FormInput
+                      label="Place of birth"
+                      type="text"
+                      value={newStudentForm.placeOfBirth}
+                      onChange={handleFormChange("placeOfBirth")}
+                      placeholder="Town or city of birth"
+                    />
+                    <FormInput
+                      label="Tribe / ethnic group"
+                      type="text"
+                      value={newStudentForm.tribe}
+                      onChange={handleFormChange("tribe")}
+                      placeholder="e.g., Yoruba"
+                    />
+                  </div>
+
+                  <FormInput
+                    label="National Identification Number (NIN)"
+                    type="text"
+                    value={newStudentForm.nin}
+                    onChange={handleFormChange("nin")}
+                    placeholder="11-digit NIN"
+                  />
+
+                  <div className="ns-form-row">
+                    <FormInput
+                      label="Number of siblings"
+                      type="text"
+                      value={newStudentForm.numberOfSiblings}
+                      onChange={handleFormChange("numberOfSiblings")}
+                      placeholder="e.g., 3"
+                    />
+                    <FormInput
+                      label="Position in the family"
+                      type="text"
+                      value={newStudentForm.familyPosition}
+                      onChange={handleFormChange("familyPosition")}
+                      placeholder="e.g., 3rd of 5"
+                    />
+                  </div>
+
+                  <FormInput
+                    label="Lives with"
+                    type="select"
+                    value={newStudentForm.livesWith}
+                    onChange={handleFormChange("livesWith")}
+                    options={[
+                      { value: "", label: "Select..." },
+                      { value: "Both parents", label: "Both parents" },
+                      { value: "Father", label: "Father" },
+                      { value: "Mother", label: "Mother" },
+                      { value: "Guardian", label: "Guardian" },
+                      { value: "Single parent", label: "Single parent" },
+                      { value: "Orphan", label: "Orphan" },
+                    ]}
+                  />
+
+                  <div className="ns-form-row">
+                    <FormInput
                       label="Blood Group"
                       type="select"
                       value={newStudentForm.bloodGroup}
@@ -1457,36 +1513,77 @@ const Students = () => {
                         { value: "O-", label: "O-" },
                       ]}
                     />
+                    <FormInput
+                      label="Genotype"
+                      type="select"
+                      value={newStudentForm.genotype}
+                      onChange={handleFormChange("genotype")}
+                      options={[
+                        { value: "", label: "Select genotype..." },
+                        { value: "AA", label: "AA" },
+                        { value: "AS", label: "AS" },
+                        { value: "AC", label: "AC" },
+                        { value: "SS", label: "SS" },
+                        { value: "SC", label: "SC" },
+                      ]}
+                    />
                   </div>
-
-                  <FormInput
-                    label="Genotype"
-                    type="select"
-                    value={newStudentForm.genotype}
-                    onChange={handleFormChange("genotype")}
-                    options={[
-                      { value: "", label: "Select genotype..." },
-                      { value: "AA", label: "AA" },
-                      { value: "AS", label: "AS" },
-                      { value: "AC", label: "AC" },
-                      { value: "SS", label: "SS" },
-                      { value: "SC", label: "SC" },
-                    ]}
-                  />
                 </div>
 
-                {/* Address Information */}
+                {/* Residence */}
                 <div className="ns-form-section">
-                  <div className="ns-form-section-title">Address Information</div>
+                  <div className="ns-form-section-title">Residence</div>
 
-                  <FormInput
-                    label="Home Address"
-                    type="textarea"
-                    value={newStudentForm.address}
-                    onChange={handleFormChange("address")}
-                    placeholder="Enter complete home address..."
-                    height="60px"
-                  />
+                  <div className="ns-form-row">
+                    <FormInput
+                      label="House number / street"
+                      type="text"
+                      value={newStudentForm.houseNumberStreet}
+                      onChange={handleFormChange("houseNumberStreet")}
+                      placeholder="e.g., 12 Adeola Street"
+                    />
+                    <FormInput
+                      label="Area / estate"
+                      type="text"
+                      value={newStudentForm.areaEstate}
+                      onChange={handleFormChange("areaEstate")}
+                      placeholder="e.g., Magodo GRA"
+                    />
+                  </div>
+
+                  <div className="ns-form-row">
+                    <FormInput
+                      label="City"
+                      type="text"
+                      value={newStudentForm.city}
+                      onChange={handleFormChange("city")}
+                      placeholder="e.g., Lagos"
+                    />
+                    <FormInput
+                      label="LGA of residence"
+                      type="text"
+                      value={newStudentForm.lgaOfResidence}
+                      onChange={handleFormChange("lgaOfResidence")}
+                      placeholder="e.g., Kosofe"
+                    />
+                  </div>
+
+                  <div className="ns-form-row">
+                    <FormInput
+                      label="State of residence"
+                      type="text"
+                      value={newStudentForm.stateOfResidence}
+                      onChange={handleFormChange("stateOfResidence")}
+                      placeholder="e.g., Lagos"
+                    />
+                    <FormInput
+                      label="Landmark"
+                      type="text"
+                      value={newStudentForm.landmark}
+                      onChange={handleFormChange("landmark")}
+                      placeholder="e.g., Near Shoprite"
+                    />
+                  </div>
                 </div>
 
                 {/* Guardian Information */}
@@ -1573,15 +1670,22 @@ const Students = () => {
                           placeholder="+234 801 234 5678"
                         />
                         <FormInput
+                          label="Guardian WhatsApp number"
+                          type="tel"
+                          value={guardian.guardianWhatsapp}
+                          onChange={(value) => updateGuardian(guardian.id, 'guardianWhatsapp', value)}
+                          placeholder="+234 801 234 5678"
+                        />
+                      </div>
+
+                      <div className="ns-form-row">
+                        <FormInput
                           label="Guardian Email"
                           type="email"
                           value={guardian.guardianEmail}
                           onChange={(value) => updateGuardian(guardian.id, 'guardianEmail', value)}
                           placeholder="guardian@example.com"
                         />
-                      </div>
-
-                      <div className="ns-form-row">
                         <FormInput
                           label="Guardian Occupation"
                           type="text"
@@ -1610,37 +1714,72 @@ const Students = () => {
 
                   <div className="ns-form-row">
                     <FormInput
-                      label="Emergency Contact Name"
+                      label="Name"
                       type="text"
                       value={newStudentForm.emergencyContactName}
                       onChange={handleFormChange("emergencyContactName")}
                       placeholder="Enter emergency contact name"
                     />
                     <FormInput
-                      label="Emergency Contact Phone"
+                      label="Relationship"
+                      type="select"
+                      value={newStudentForm.emergencyContactRelationship}
+                      onChange={handleFormChange("emergencyContactRelationship")}
+                      options={[
+                        { value: "", label: "Select relationship..." },
+                        { value: "Father", label: "Father" },
+                        { value: "Mother", label: "Mother" },
+                        { value: "Guardian", label: "Guardian" },
+                        { value: "Uncle", label: "Uncle" },
+                        { value: "Aunt", label: "Aunt" },
+                        { value: "Sibling", label: "Sibling" },
+                        { value: "Other", label: "Other" },
+                      ]}
+                    />
+                  </div>
+                  <div className="ns-form-row">
+                    <FormInput
+                      label="Phone"
                       type="tel"
                       value={newStudentForm.emergencyContactPhone}
                       onChange={handleFormChange("emergencyContactPhone")}
                       placeholder="+234 809 876 5432"
                     />
+                    <FormInput
+                      label="WhatsApp number"
+                      type="tel"
+                      value={newStudentForm.emergencyContactWhatsapp}
+                      onChange={handleFormChange("emergencyContactWhatsapp")}
+                      placeholder="+234 809 876 5432"
+                    />
                   </div>
+                </div>
 
-                  <FormInput
-                    label="Emergency Contact Relationship"
-                    type="select"
-                    value={newStudentForm.emergencyContactRelationship}
-                    onChange={handleFormChange("emergencyContactRelationship")}
-                    options={[
-                      { value: "", label: "Select relationship..." },
-                      { value: "Father", label: "Father" },
-                      { value: "Mother", label: "Mother" },
-                      { value: "Guardian", label: "Guardian" },
-                      { value: "Uncle", label: "Uncle" },
-                      { value: "Aunt", label: "Aunt" },
-                      { value: "Sibling", label: "Sibling" },
-                      { value: "Other", label: "Other" },
-                    ]}
-                  />
+                <div className="ns-form-section">
+                  <div className="ns-form-section-title">Security & Access</div>
+                  <div className="ns-invite-note">
+                    <div className="ns-invite-note-icon" aria-hidden="true">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                        <rect x="3" y="5" width="18" height="14" rx="2.5" stroke="currentColor" strokeWidth="1.7" />
+                        <path d="M4 7.5 12 13l8-5.5" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    </div>
+                    <div className="ns-invite-note-text">
+                      <p className="ns-invite-note-title">Password setup via email</p>
+                      <p className="ns-invite-note-body">
+                        A secure link will be sent to{" "}
+                        <strong>{newStudentForm.email || "the student's email"}</strong> after
+                        account creation. They'll use it to set their own password.
+                      </p>
+                      <span className="ns-invite-note-meta">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                          <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.8" />
+                          <path d="M12 7v5.5l3.5 2" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                        Link expires in 48 hours
+                      </span>
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -1650,18 +1789,7 @@ const Students = () => {
                   onClick={() => {
                     setEnrollmentMethod("");
                     // Reset guardians to single empty guardian
-                    setGuardians([
-                      {
-                        id: Date.now(),
-                        guardianName: "",
-                        guardianRelationship: "",
-                        guardianPhone: "",
-                        guardianEmail: "",
-                        guardianAddress: "",
-                        guardianOccupation: "",
-                        isPrimary: true,
-                      }
-                    ]);
+                    setGuardians([emptyGuardian(true)]);
                   }}
                 >
                   Back

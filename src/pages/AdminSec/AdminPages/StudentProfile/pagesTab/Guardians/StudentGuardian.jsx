@@ -34,6 +34,7 @@ const StudentGuardian = () => {
   const [form, setForm] = useState({
     guardian_name: "",
     guardian_phone: "",
+    guardian_whatsapp: "",
     guardian_relationship: "",
     guardian_email: "",
     guardian_address: "",
@@ -69,6 +70,7 @@ const StudentGuardian = () => {
     setEditForm({
       guardian_name: guardian.guardian_name || "",
       guardian_phone: guardian.guardian_phone || "",
+      guardian_whatsapp: guardian.guardian_whatsapp || "",
       guardian_relationship: guardian.guardian_relationship || "",
       guardian_email: guardian.guardian_email || "",
       guardian_address: guardian.guardian_address || "",
@@ -115,7 +117,7 @@ const StudentGuardian = () => {
       addNotification("You do not have permission to add guardians.", "error");
       return;
     }
-    setForm({ guardian_name: "", guardian_phone: "", guardian_relationship: "", guardian_email: "", guardian_address: "", guardian_occupation: "", guardian_workplace: "", is_primary: false });
+    setForm({ guardian_name: "", guardian_phone: "", guardian_whatsapp: "", guardian_relationship: "", guardian_email: "", guardian_address: "", guardian_occupation: "", guardian_workplace: "", is_primary: false });
     setIsAddOpen(true);
   };
 
@@ -206,9 +208,10 @@ const StudentGuardian = () => {
   };
 
   const handleWhatsAppMessage = (guardian) => {
-    const phoneNumber = guardian.guardian_phone?.replace(/[\s\-\(\)]/g, "") || "";
+    const raw = guardian.guardian_whatsapp || "";
+    const phoneNumber = raw.replace(/[^\d]/g, "");
     if (!phoneNumber) {
-      alert("No phone number available for this guardian");
+      addNotification("No WhatsApp number available for this guardian", "error");
       return;
     }
     const message = `Hello ${guardian.guardian_name}, this is regarding your ward's school matters.`;
@@ -288,9 +291,9 @@ const StudentGuardian = () => {
       // Fields grid (2 columns)
       const fields = [
         ["Phone", g.guardian_phone || "N/A"],
+        ["WhatsApp", g.guardian_whatsapp || "N/A"],
         ["Email", g.guardian_email || "N/A"],
         ["Occupation", g.guardian_occupation || "N/A"],
-        ["Address", g.guardian_address || "N/A"],
       ];
       const colW = (pageW - margin * 2 - 8) / 2;
       fields.forEach((f, fi) => {
@@ -353,6 +356,7 @@ const StudentGuardian = () => {
             </div>
             <div class="body">
               <div class="field"><label>Phone</label><span>${g.guardian_phone || "N/A"}</span></div>
+              <div class="field"><label>WhatsApp</label><span>${g.guardian_whatsapp || "N/A"}</span></div>
               <div class="field"><label>Email</label><span>${g.guardian_email || "N/A"}</span></div>
               <div class="field"><label>Occupation</label><span>${g.guardian_occupation || "N/A"}</span></div>
               <div class="field"><label>Address</label><span>${g.guardian_address || "N/A"}</span></div>
@@ -432,11 +436,11 @@ const StudentGuardian = () => {
         <div className="guardianDetails">
           <div className="guardianDetailRow">
             <InfoField label="Phone" value={guardian.guardian_phone || "N/A"} />
+            <InfoField label="WhatsApp number" value={guardian.guardian_whatsapp || "N/A"} />
             <InfoField label="Email" value={guardian.guardian_email || "N/A"} />
             <InfoField label="Occupation" value={guardian.guardian_occupation || "N/A"} />
             <InfoField label="Workplace" value={guardian.guardian_workplace || "N/A"} />
             <InfoField label="Address" value={guardian.guardian_address || "N/A"} />
-            <InfoField label="Emergency Contact" value={guardian.guardian_emergency_contact || guardian.guardian_phone || "N/A"} />
           </div>
         </div>
       </div>
@@ -496,6 +500,7 @@ const StudentGuardian = () => {
             <div className="gp-body">
               <FormInput label="Full Name *" type="text" value={form.guardian_name} onChange={set("guardian_name")} placeholder="e.g. John Doe" />
               <FormInput label="Phone Number *" type="text" value={form.guardian_phone} onChange={set("guardian_phone")} placeholder="e.g. +234 801 234 5678" />
+              <FormInput label="WhatsApp number" type="text" value={form.guardian_whatsapp} onChange={set("guardian_whatsapp")} placeholder="e.g. +234 801 234 5678" />
               <FormInput label="Relationship" type="select" value={form.guardian_relationship} onChange={set("guardian_relationship")}
                 options={[{value:"",label:"— Select —"},{value:"Father",label:"Father"},{value:"Mother",label:"Mother"},{value:"Uncle",label:"Uncle"},{value:"Aunt",label:"Aunt"},{value:"Grandparent",label:"Grandparent"},{value:"Sibling",label:"Sibling"},{value:"Guardian",label:"Guardian"},{value:"Other",label:"Other"}]}
               />
@@ -540,6 +545,7 @@ const StudentGuardian = () => {
             <div className="gp-body">
               <FormInput label="Full Name *" type="text" value={editForm.guardian_name || ""} onChange={setEdit("guardian_name")} placeholder="e.g. John Doe" />
               <FormInput label="Phone Number *" type="text" value={editForm.guardian_phone || ""} onChange={setEdit("guardian_phone")} placeholder="e.g. +234 801 234 5678" />
+              <FormInput label="WhatsApp number" type="text" value={editForm.guardian_whatsapp || ""} onChange={setEdit("guardian_whatsapp")} placeholder="e.g. +234 801 234 5678" />
               <FormInput label="Relationship" type="select" value={editForm.guardian_relationship || ""} onChange={setEdit("guardian_relationship")}
                 options={[{value:"",label:"— Select —"},{value:"Father",label:"Father"},{value:"Mother",label:"Mother"},{value:"Uncle",label:"Uncle"},{value:"Aunt",label:"Aunt"},{value:"Grandparent",label:"Grandparent"},{value:"Sibling",label:"Sibling"},{value:"Guardian",label:"Guardian"},{value:"Other",label:"Other"}]}
               />

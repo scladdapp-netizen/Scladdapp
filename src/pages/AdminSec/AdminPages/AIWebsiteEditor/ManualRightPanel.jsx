@@ -4,9 +4,9 @@
 //   Attributes — content/link/source/alt specific to the element type
 //   Style      — visual CSS properties with friendly controls
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useParams } from "react-router-dom";
-import { patchAttribute, patchStyle, patchTextContent, patchMediaStyle, readMediaStyles } from "./htmlPatcher";
+import { patchAttribute, patchStyle, patchStyles, patchTextContent, patchMediaStyle, readMediaStyles, applyTableTemplate } from "./htmlPatcher";
 import { uploadWebsiteImage } from "../../../../api_call/useAIWebsiteEditor";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -24,19 +24,124 @@ const IconMobile  = () => <svg width="12" height="12" viewBox="0 0 24 24" fill="
 // ─────────────────────────────────────────────────────────────────────────────
 
 /** Parse inline style string "color:red;background-image:url(...)" → { color:"red", ... }
- *  Handles url(...) values that contain colons and semicolons safely. */
+ *  Handles nested parentheses (linear-gradient, rgba, url). */
 function parseInlineStyle(styleStr) {
   const map = {};
   if (!styleStr) return map;
-  // Use a regex that matches prop: value pairs, handling url(...) blobs
-  const re = /([a-z-]+)\s*:\s*((?:[^;(]|\([^)]*\))*)/gi;
-  let m;
-  while ((m = re.exec(styleStr)) !== null) {
-    const prop = m[1].trim();
-    const val  = m[2].trim();
+  let i = 0;
+  const s = styleStr;
+  while (i < s.length) {
+    const colon = s.indexOf(":", i);
+    if (colon === -1) break;
+    const prop = s.slice(i, colon).trim().toLowerCase();
+    let j = colon + 1;
+    let depth = 0;
+    while (j < s.length) {
+      const ch = s[j];
+      if (ch === "(") depth++;
+      else if (ch === ")") depth = Math.max(0, depth - 1);
+      else if (ch === ";" && depth === 0) break;
+      j++;
+    }
+    const val = s.slice(colon + 1, j).trim();
     if (prop) map[prop] = val;
+    i = j + 1;
   }
   return map;
+}
+
+function extractBgImageUrl(bgImage) {
+  if (!bgImage) return "";
+  const decoded = bgImage.replace(/&quot;/g, '"').replace(/&#39;/g, "'");
+  const m = decoded.match(/url\(\s*(['"]?)(.*?)\1\s*\)/i);
+  return m ? m[2].trim() : "";
+}
+
+/** Read inline styles from a live element, including CSSOM (survives `background` shorthand). */
+function readInlineStyleMap(el) {
+  if (!el) return {};
+  const map = parseInlineStyle(el.getAttribute("style") || "");
+  const cssomKeys = [
+    "background-image", "background-size", "background-position", "background-repeat",
+    "background-color", "background",
+    "color", "padding", "margin", "width", "height", "border-radius", "opacity",
+  ];
+  cssomKeys.forEach((prop) => {
+    const v = el.style.getPropertyValue(prop);
+    if (v) map[prop] = v;
+  });
+  if (!map["background-image"] && map["background"]) {
+    const url = extractBgImageUrl(map["background"]);
+    if (url || /gradient/i.test(map["background"])) {
+      map["background-image"] = el.style.backgroundImage || map["background"];
+    }
+  }
+  return map;
+}
+
+function hexToRgb(hex) {
+  let h = (hex || "#000000").replace("#", "").trim();
+  if (h.length === 3) h = h.split("").map((c) => c + c).join("");
+  if (h.length !== 6) return { r: 0, g: 0, b: 0 };
+  const n = parseInt(h, 16);
+  if (Number.isNaN(n)) return { r: 0, g: 0, b: 0 };
+  return { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255 };
+}
+
+function rgbToHex(r, g, b) {
+  return "#" + [r, g, b].map((x) => Math.max(0, Math.min(255, x)).toString(16).padStart(2, "0")).join("");
+}
+
+/** Read overlay colour/opacity from a layered background-image value. */
+function parseBgOverlay(bgImage) {
+  if (!bgImage) return { color: "#000000", opacity: 0 };
+  const m = bgImage.match(
+    /linear-gradient\(\s*rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*(?:,\s*([\d.]+))?\s*\)/i
+  );
+  if (!m) return { color: "#000000", opacity: 0 };
+  const a = m[4] !== undefined ? parseFloat(m[4]) : 1;
+  return {
+    color: rgbToHex(+m[1], +m[2], +m[3]),
+    opacity: Math.round(Math.max(0, Math.min(1, a)) * 100),
+  };
+}
+
+function composeBgImage(url, overlayColor, overlayOpacity) {
+  if (!url) return "";
+  const quoted = `url("${url}")`;
+  const pct = Number(overlayOpacity) || 0;
+  if (pct <= 0) return quoted;
+  const { r, g, b } = hexToRgb(overlayColor || "#000000");
+  const a = Math.max(0, Math.min(100, pct)) / 100;
+  return `linear-gradient(rgba(${r}, ${g}, ${b}, ${a}), rgba(${r}, ${g}, ${b}, ${a})), ${quoted}`;
+}
+
+/** Last comma-separated layer (the photo), ignoring commas inside (). */
+function lastBgLayer(val) {
+  if (!val) return "";
+  const parts = [];
+  let depth = 0;
+  let buf = "";
+  for (const ch of val) {
+    if (ch === "(") depth++;
+    else if (ch === ")") depth = Math.max(0, depth - 1);
+    if (ch === "," && depth === 0) {
+      parts.push(buf.trim());
+      buf = "";
+      continue;
+    }
+    buf += ch;
+  }
+  if (buf.trim()) parts.push(buf.trim());
+  return parts[parts.length - 1] || "";
+}
+
+/** Overlay is layer 0; the photo is layer 1 — size/position/repeat must target the photo. */
+function imageLayerCss(userVal, overlayOn, kind) {
+  if (!userVal) return "";
+  if (!overlayOn) return userVal;
+  const gradDefault = kind === "size" ? "auto" : kind === "repeat" ? "repeat" : "0 0";
+  return `${gradDefault}, ${userVal}`;
 }
 
 /** Extract a single attribute from an outerHTML string. Uses DOM for 'style' to handle complex values. */
@@ -92,7 +197,7 @@ const ATTR_DEFS = {
     { key: "_text", label: "Link text (label)", type: "text",
       hint: "What the visitor clicks on, e.g. \"Learn More\"." },
     { key: "href",  label: "Where it leads (URL)", type: "text",
-      hint: "Paste a web address or use # for same-page links.", placeholder: "https://..." },
+      hint: "Paste a web address, or pick a # section on this page.", placeholder: "https://... or #about" },
     { key: "target", label: "Open in", type: "select",
       options: [
         { value: "",       label: "Same tab" },
@@ -332,6 +437,17 @@ const STYLE_DEFAULTS_MAP = {
     "opacity",
   ],
 
+  // ── Tables ───────────────────────────────────────────────────────────────
+  table: [
+    "width",
+    "border-collapse",
+    "font-size",
+    "background-color",
+    "color",
+    "border",
+    "margin",
+  ],
+
   // ── Table cells td/th ────────────────────────────────────────────────────
   cell: [
     "color",
@@ -391,6 +507,8 @@ function getDefaultStyleProps(tagName) {
 
   if (["ul","ol"].includes(t)) return STYLE_DEFAULTS_MAP.list;
   if (["li"].includes(t))      return STYLE_DEFAULTS_MAP.text;
+  if (t === "table" || ["thead","tbody","tfoot","tr"].includes(t))
+    return STYLE_DEFAULTS_MAP.table;
   if (["td","th"].includes(t)) return STYLE_DEFAULTS_MAP.cell;
 
   if (["video","audio","iframe","canvas"].includes(t))
@@ -832,20 +950,80 @@ function PositionRow({ styleVals, onStyle, onRemove }) {
   );
 }
 
-function BackgroundRow({ styleVals, onStyle, onRemove, schoolId }) {
+const OVERLAY_PRESETS = [
+  { id: "off",     label: "Off",     color: "#000000", opacity: 0  },
+  { id: "darken",  label: "Darken",  color: "#000000", opacity: 45 },
+  { id: "lighten", label: "Lighten", color: "#ffffff", opacity: 45 },
+  { id: "navy",    label: "Navy",    color: "#0f172a", opacity: 55 },
+  { id: "purple",  label: "Purple",  color: "#2e1065", opacity: 50 },
+  { id: "green",   label: "Green",   color: "#14532d", opacity: 50 },
+  { id: "red",     label: "Red",     color: "#7f1d1d", opacity: 50 },
+  { id: "gold",    label: "Gold",    color: "#78350f", opacity: 40 },
+];
+
+function BackgroundRow({ styleVals, onStyle, onStyles, onRemove, schoolId }) {
+  const writeStyles = onStyles || ((props) => {
+    Object.entries(props).forEach(([p, v]) => onStyle(p, v));
+  });
+
   const colorVal = styleVals["background-color"] || "";
-  const imgVal   = styleVals["background-image"]  || "";
+  const imgVal   = styleVals["background-image"] || styleVals["background"] || "";
 
-  // showImg is true whenever there's already a bg-image set, or user manually toggled it on
   const [showImgManual, setShowImgManual] = useState(false);
-  const showImg = showImgManual || !!imgVal;
+  const showImg = showImgManual || !!extractBgImageUrl(imgVal);
 
-  // Extract raw URL from css url("...") wrapper
-  const rawImgUrl = imgVal.replace(/^url\(["']?/, "").replace(/["']?\)$/, "");
+  const rawImgUrl = extractBgImageUrl(imgVal);
+  const overlay   = parseBgOverlay(imgVal);
+
+  const sizeSelect = lastBgLayer(styleVals["background-size"]);
+  const posSelect  = lastBgLayer(styleVals["background-position"]);
+  const repSelect  = lastBgLayer(styleVals["background-repeat"]) || "no-repeat";
+
+  const writeBg = (url, color, opacity, extras = {}) => {
+    if (!url) {
+      writeStyles({
+        "background-image": "",
+        "background-size": "",
+        "background-position": "",
+        "background-repeat": "",
+      });
+      return;
+    }
+    const ov = (Number(opacity) || 0) > 0;
+    const size = extras.size !== undefined ? extras.size : sizeSelect;
+    const pos  = extras.pos  !== undefined ? extras.pos  : posSelect;
+    const rep  = extras.rep  !== undefined ? extras.rep  : (repSelect || "no-repeat");
+    writeStyles({
+      "background-image":    composeBgImage(url, color, opacity),
+      "background-size":     imageLayerCss(size || "cover", ov, "size"),
+      "background-position": imageLayerCss(pos || "center", ov, "position"),
+      "background-repeat":   imageLayerCss(rep || "no-repeat", ov, "repeat"),
+    });
+  };
 
   const handleBgImageChange = (url) => {
-    onStyle("background-image", url ? `url("${url}")` : "");
+    writeBg(url, overlay.color, overlay.opacity);
   };
+
+  const handleOverlayColor = (hex) => {
+    if (!rawImgUrl) return;
+    writeBg(rawImgUrl, hex, overlay.opacity > 0 ? overlay.opacity : 40);
+  };
+
+  const handleOverlayOpacity = (pct) => {
+    if (!rawImgUrl) return;
+    writeBg(rawImgUrl, overlay.color || "#000000", pct);
+  };
+
+  const applyPreset = (preset) => {
+    if (!rawImgUrl) return;
+    writeBg(rawImgUrl, preset.color, preset.opacity);
+  };
+
+  const activePresetId = OVERLAY_PRESETS.find((p) => {
+    if (p.opacity === 0) return overlay.opacity === 0;
+    return p.color.toLowerCase() === overlay.color.toLowerCase() && p.opacity === overlay.opacity;
+  })?.id || (overlay.opacity > 0 ? "custom" : "off");
 
   return (
     <div className="mrp-field mrp-field--style">
@@ -886,23 +1064,106 @@ function BackgroundRow({ styleVals, onStyle, onRemove, schoolId }) {
             schoolId={schoolId}
           />
 
+          {rawImgUrl && (
+            <div className="mrp-bg-overlay">
+              <div className="mrp-bg-overlay__title">Image overlay</div>
+              <p className="mrp-bg-overlay__hint">Darken, lighten, or tint the photo so text stays readable.</p>
+
+              <div className="mrp-bg-overlay__presets">
+                {OVERLAY_PRESETS.map((p) => (
+                  <button
+                    key={p.id}
+                    type="button"
+                    className={`mrp-bg-overlay__chip ${activePresetId === p.id ? "mrp-bg-overlay__chip--active" : ""}`}
+                    onClick={() => applyPreset(p)}
+                    title={p.label}
+                  >
+                    <span
+                      className="mrp-bg-overlay__chip-swatch"
+                      style={{
+                        background: p.opacity === 0
+                          ? "repeating-conic-gradient(#333 0% 25%, #1a1a1a 0% 50%) 50% / 8px 8px"
+                          : p.color,
+                        opacity: p.opacity === 0 ? 1 : 0.35 + p.opacity / 150,
+                      }}
+                    />
+                    {p.label}
+                  </button>
+                ))}
+              </div>
+
+              <label className="mrp-side-label">Overlay colour</label>
+              <div className="mrp-color-row">
+                <input
+                  type="color"
+                  className="mrp-color-swatch"
+                  value={overlay.color || "#000000"}
+                  onChange={(e) => handleOverlayColor(e.target.value)}
+                />
+                <input
+                  type="text"
+                  className="mrp-text-input"
+                  value={overlay.color || "#000000"}
+                  onChange={(e) => handleOverlayColor(e.target.value)}
+                />
+              </div>
+
+              <label className="mrp-side-label" style={{ marginTop: 8 }}>
+                Strength — {overlay.opacity}%
+              </label>
+              <div className="mrp-slider-row">
+                <input
+                  type="range"
+                  className="mrp-slider"
+                  min="0"
+                  max="85"
+                  step="1"
+                  value={overlay.opacity}
+                  onChange={(e) => handleOverlayOpacity(Number(e.target.value))}
+                />
+                <span className="mrp-slider-val">{overlay.opacity}%</span>
+              </div>
+            </div>
+          )}
+
           <label className="mrp-side-label" style={{marginTop:8}}>How it fits</label>
-          <select className="mrp-select" value={styleVals["background-size"] || ""}
-            onChange={e => onStyle("background-size", e.target.value)}>
+          <select className="mrp-select" value={sizeSelect || ""}
+            onChange={e => {
+              const v = e.target.value;
+              if (!rawImgUrl) {
+                writeStyles({ "background-size": v });
+                return;
+              }
+              writeBg(rawImgUrl, overlay.color, overlay.opacity, { size: v });
+            }}>
             <option value="">— choose —</option>
             {BG_SIZE_OPTIONS2.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
           </select>
 
           <label className="mrp-side-label" style={{marginTop:8}}>Position</label>
-          <select className="mrp-select" value={styleVals["background-position"] || ""}
-            onChange={e => onStyle("background-position", e.target.value)}>
+          <select className="mrp-select" value={posSelect || ""}
+            onChange={e => {
+              const v = e.target.value;
+              if (!rawImgUrl) {
+                writeStyles({ "background-position": v });
+                return;
+              }
+              writeBg(rawImgUrl, overlay.color, overlay.opacity, { pos: v });
+            }}>
             <option value="">— choose —</option>
             {BG_POSITION_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
           </select>
 
           <label className="mrp-side-label" style={{marginTop:8}}>Repeat</label>
-          <select className="mrp-select" value={styleVals["background-repeat"] || "no-repeat"}
-            onChange={e => onStyle("background-repeat", e.target.value)}>
+          <select className="mrp-select" value={repSelect || "no-repeat"}
+            onChange={e => {
+              const v = e.target.value;
+              if (!rawImgUrl) {
+                writeStyles({ "background-repeat": v });
+                return;
+              }
+              writeBg(rawImgUrl, overlay.color, overlay.opacity, { rep: v });
+            }}>
             {BG_REPEAT_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
           </select>
         </div>
@@ -1078,7 +1339,7 @@ function countActive(propList, vals) {
 }
 
 // ── Single accordion section ──────────────────────────────────────────────────
-function StyleAccordion({ group, props, currentVals, commitStyle, removeStyleProp, showFlexArrows, schoolId }) {
+function StyleAccordion({ group, props, currentVals, commitStyle, commitStyles, removeStyleProp, showFlexArrows, schoolId }) {
   const [open, setOpen] = useState(group.defaultOpen);
   const active = countActive(props, currentVals);
 
@@ -1179,6 +1440,7 @@ function StyleAccordion({ group, props, currentVals, commitStyle, removeStylePro
             <BackgroundRow
               styleVals={currentVals}
               onStyle={commitStyle}
+              onStyles={commitStyles}
               onRemove={() => removeStyleProp("background-color")}
               schoolId={schoolId} />
           )}
@@ -1202,6 +1464,204 @@ function StyleAccordion({ group, props, currentVals, commitStyle, removeStylePro
             if (group.id === "background") return null; // handled above
             return renderField(prop);
           })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+const TABLE_CLEAR_ROW = { "background-color": "transparent" };
+
+const TABLE_STYLE_TEMPLATES = [
+  {
+    id: "classic",
+    label: "Classic",
+    table: { width: "100%", "border-collapse": "collapse", "font-size": "10px" },
+    thead: { background: "transparent", "background-color": "transparent", color: "#111111" },
+    tfoot: { background: "transparent", "background-color": "transparent", color: "#111111" },
+    th: { padding: "6px 8px", "font-weight": "700", "font-size": "9px", "text-align": "left", border: "1px solid #dddddd", color: "#111111", "background-color": "transparent" },
+    td: { padding: "6px 8px", border: "1px solid #dddddd", "background-color": "transparent", color: "#111111" },
+    trOdd: TABLE_CLEAR_ROW,
+    trEven: TABLE_CLEAR_ROW,
+  },
+  {
+    id: "lined",
+    label: "Lined",
+    table: { width: "100%", "border-collapse": "collapse", "font-size": "10px" },
+    thead: { "background-color": "transparent", color: "#111111" },
+    tfoot: { "background-color": "transparent", color: "#111111" },
+    th: { padding: "6px 8px", "font-weight": "700", "font-size": "9px", "text-align": "left", border: "none", "border-bottom": "2px solid #111111", color: "#111111", "background-color": "transparent" },
+    td: { padding: "6px 8px", border: "none", "border-bottom": "1px solid #e5e5e5", "background-color": "transparent", color: "#111111" },
+    trOdd: TABLE_CLEAR_ROW,
+    trEven: TABLE_CLEAR_ROW,
+  },
+  {
+    id: "striped",
+    label: "Striped",
+    table: { width: "100%", "border-collapse": "collapse", "font-size": "10px" },
+    thead: { "background-color": "#1f2937", color: "#ffffff" },
+    tfoot: { "background-color": "#1f2937", color: "#ffffff" },
+    th: { padding: "6px 8px", "font-weight": "700", "font-size": "9px", "text-align": "left", border: "none", color: "#ffffff", "background-color": "transparent" },
+    td: { padding: "6px 8px", border: "none", "background-color": "transparent", color: "#111111" },
+    trOdd: { "background-color": "#ffffff" },
+    trEven: { "background-color": "#f3f4f6" },
+  },
+  {
+    id: "soft",
+    label: "Soft",
+    table: { width: "100%", "border-collapse": "collapse", "font-size": "10px", "border-radius": "6px", overflow: "hidden" },
+    thead: { "background-color": "#6d28d9", color: "#ffffff" },
+    tfoot: { "background-color": "#5b21b6", color: "#ffffff" },
+    th: { padding: "7px 8px", "font-weight": "700", "font-size": "9px", "text-align": "left", border: "1px solid #c4b5fd", color: "#ffffff", "background-color": "transparent" },
+    td: { padding: "7px 8px", border: "1px solid #ede9fe", "background-color": "#faf5ff", color: "#1f1635" },
+    trOdd: TABLE_CLEAR_ROW,
+    trEven: TABLE_CLEAR_ROW,
+  },
+  {
+    id: "outlined",
+    label: "Outlined",
+    table: {
+      width: "100%",
+      "border-collapse": "separate",
+      "border-spacing": "0",
+      "font-size": "10px",
+      border: "2px solid #333333",
+      overflow: "visible",
+      "border-radius": "0",
+    },
+    thead: { "background-color": "#ffffff", color: "#111111" },
+    tfoot: { "background-color": "#f9fafb", color: "#111111" },
+    th: { padding: "6px 8px", "font-weight": "700", "font-size": "9px", "text-align": "left", border: "1px solid #333333", color: "#111111", "background-color": "#ffffff" },
+    td: { padding: "6px 8px", border: "1px solid #333333", "background-color": "#ffffff", color: "#111111" },
+    trOdd: TABLE_CLEAR_ROW,
+    trEven: TABLE_CLEAR_ROW,
+  },
+  {
+    id: "navy",
+    label: "Navy",
+    table: { width: "100%", "border-collapse": "collapse", "font-size": "10px" },
+    thead: { "background-color": "#1e3a5f", color: "#ffffff" },
+    tfoot: { "background-color": "#1e3a5f", color: "#ffffff" },
+    th: { padding: "6px 8px", "font-weight": "700", "font-size": "9px", "text-align": "left", border: "1px solid #94a3b8", color: "#ffffff", "background-color": "transparent" },
+    td: { padding: "6px 8px", border: "1px solid #cbd5e1", "background-color": "#f8fafc", color: "#0f172a" },
+    trOdd: TABLE_CLEAR_ROW,
+    trEven: TABLE_CLEAR_ROW,
+  },
+  {
+    id: "compact",
+    label: "Compact",
+    table: { width: "100%", "border-collapse": "collapse", "font-size": "9px" },
+    thead: { "background-color": "#111111", color: "#ffffff" },
+    tfoot: { "background-color": "#111111", color: "#ffffff" },
+    th: { padding: "3px 5px", "font-weight": "700", "font-size": "8px", "text-align": "left", border: "1px solid #dddddd", color: "#ffffff", "background-color": "transparent" },
+    td: { padding: "3px 5px", border: "1px solid #dddddd", "background-color": "transparent", color: "#111111" },
+    trOdd: TABLE_CLEAR_ROW,
+    trEven: TABLE_CLEAR_ROW,
+  },
+  {
+    id: "minimal",
+    label: "Minimal",
+    table: { width: "100%", "border-collapse": "collapse", "font-size": "10px" },
+    thead: { "background-color": "transparent", color: "#6b7280" },
+    tfoot: { "background-color": "transparent", color: "#111111" },
+    th: { padding: "4px 6px", "font-weight": "600", "font-size": "8px", "text-align": "left", "text-transform": "uppercase", "letter-spacing": "0.04em", border: "none", "border-bottom": "1px solid #d1d5db", color: "#6b7280", "background-color": "transparent" },
+    td: { padding: "5px 6px", border: "none", "background-color": "transparent", color: "#111111" },
+    trOdd: TABLE_CLEAR_ROW,
+    trEven: TABLE_CLEAR_ROW,
+  },
+];
+
+function cssMapToReact(map) {
+  if (!map) return {};
+  const out = {};
+  Object.entries(map).forEach(([k, v]) => {
+    const camel = k.replace(/-([a-z])/g, (_, c) => c.toUpperCase());
+    out[camel] = v;
+  });
+  return out;
+}
+
+function MiniTablePreview({ template }) {
+  const th = cssMapToReact(template.th);
+  const td = cssMapToReact(template.td);
+  const thead = cssMapToReact(template.thead);
+  const odd = cssMapToReact(template.trOdd);
+  const even = cssMapToReact(template.trEven);
+  return (
+    <table className="mrp-table-theme__mini" style={cssMapToReact(template.table)}>
+      <thead style={thead}>
+        <tr>
+          <th style={th}>A</th>
+          <th style={th}>B</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr style={odd}>
+          <td style={td}>1</td>
+          <td style={td}>2</td>
+        </tr>
+        <tr style={even}>
+          <td style={td}>3</td>
+          <td style={td}>4</td>
+        </tr>
+      </tbody>
+    </table>
+  );
+}
+
+function TableStylePicker({ html, selector, onHtmlChange }) {
+  const [open, setOpen] = useState(false);
+  const activeId = useMemo(() => {
+    if (!html || !selector) return "";
+    try {
+      const doc = new DOMParser().parseFromString(html, "text/html");
+      let el = doc.querySelector(selector) ||
+        doc.querySelector(selector.replace(/:nth-of-type\(\d+\)/g, ""));
+      const table = el?.tagName === "TABLE" ? el : el?.closest?.("table");
+      return table?.getAttribute("data-table-theme") || "";
+    } catch {
+      return "";
+    }
+  }, [html, selector]);
+
+  const activeLabel = TABLE_STYLE_TEMPLATES.find((t) => t.id === activeId)?.label;
+
+  return (
+    <div className={`mrp-accordion ${open ? "mrp-accordion--open" : ""}`}>
+      <button
+        type="button"
+        className="mrp-accordion__header"
+        onClick={() => setOpen((o) => !o)}
+        aria-expanded={open}
+      >
+        <span className="mrp-accordion__icon">▦</span>
+        <span className="mrp-accordion__label">Table style</span>
+        {activeLabel && (
+          <span className="mrp-accordion__badge">{activeLabel}</span>
+        )}
+        <span className="mrp-accordion__chevron">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none"
+            style={{ transform: open ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.2s" }}>
+            <path d="M6 9l6 6 6-6" stroke="currentColor" strokeWidth="2.5"
+              strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </span>
+      </button>
+      {open && (
+        <div className="mrp-accordion__body">
+          <div className="mrp-table-themes__grid">
+            {TABLE_STYLE_TEMPLATES.map((tpl) => (
+              <button
+                key={tpl.id}
+                type="button"
+                className={`mrp-table-theme ${activeId === tpl.id ? "mrp-table-theme--active" : ""}`}
+                onClick={() => onHtmlChange(applyTableTemplate(html, selector, tpl))}
+              >
+                <MiniTablePreview template={tpl} />
+                <span className="mrp-table-theme__label">{tpl.label}</span>
+              </button>
+            ))}
+          </div>
         </div>
       )}
     </div>
@@ -1237,19 +1697,24 @@ function StyleTab({ selectedElement, html, onHtmlChange }) {
     // html change (which would reset the color picker mid-edit).
     const currentHtml = htmlRef.current;
 
-    let liveOuterHTML = selectedElement.outerHTML || "";
+    let inlineMap = {};
     if (currentHtml && selectedElement.selector) {
       try {
         const parser = new DOMParser();
         const doc    = parser.parseFromString(currentHtml, "text/html");
         const liveEl = doc.querySelector(selectedElement.selector) ||
                        doc.querySelector(selectedElement.selector.replace(/:nth-of-type\(\d+\)/g, ""));
-        if (liveEl) liveOuterHTML = liveEl.outerHTML;
+        if (liveEl) inlineMap = readInlineStyleMap(liveEl);
       } catch (_) {}
     }
-
-    const inlineStyleStr = getAttrFromHtml(liveOuterHTML, "style");
-    const inlineMap      = parseInlineStyle(inlineStyleStr);
+    if (!Object.keys(inlineMap).length && selectedElement.outerHTML) {
+      try {
+        const parser = new DOMParser();
+        const doc    = parser.parseFromString(selectedElement.outerHTML, "text/html");
+        const el     = doc.body?.firstElementChild;
+        if (el) inlineMap = readInlineStyleMap(el);
+      } catch (_) {}
+    }
     const extraInline    = Object.keys(inlineMap).filter(p =>
       !defaults.includes(p) &&
       !["padding-top","padding-right","padding-bottom","padding-left",
@@ -1264,6 +1729,12 @@ function StyleTab({ selectedElement, html, onHtmlChange }) {
     }
     ["position","top","bottom","left","right","z-index"].forEach(p => {
       if (!(p in vals)) vals[p] = inlineMap[p] || "";
+    });
+    if (inlineMap["background-image"] && !("background-image" in vals)) {
+      vals["background-image"] = inlineMap["background-image"];
+    }
+    ["background-size","background-position","background-repeat"].forEach((p) => {
+      if (inlineMap[p] && !vals[p]) vals[p] = inlineMap[p];
     });
     setStyleVals(vals);
 
@@ -1291,6 +1762,20 @@ function StyleTab({ selectedElement, html, onHtmlChange }) {
         setStyleVals(v => ({ ...v, display: "flex" }));
       }
       onHtmlChange(newHtml);
+    }
+  }, [html, sel, onHtmlChange, viewMode, setCurrentVals]);
+
+  const commitStyles = useCallback((props) => {
+    if (!props || !Object.keys(props).length) return;
+    setCurrentVals((v) => ({ ...v, ...props }));
+    if (viewMode === "mobile") {
+      let next = html;
+      Object.entries(props).forEach(([p, value]) => {
+        next = patchMediaStyle(next, sel, p, value);
+      });
+      onHtmlChange(next);
+    } else {
+      onHtmlChange(patchStyles(html, sel, props));
     }
   }, [html, sel, onHtmlChange, viewMode, setCurrentVals]);
 
@@ -1323,6 +1808,8 @@ function StyleTab({ selectedElement, html, onHtmlChange }) {
   const showFlexArrows = isContainer || currentVals["display"] === "flex";
 
   const grouped = groupProps(activeProps);
+  const tableTag = (selectedElement.tagName || "").toLowerCase();
+  const showTableThemes = ["table", "thead", "tbody", "tfoot", "tr", "td", "th"].includes(tableTag);
 
   return (
     <div className="mrp-style-tab">
@@ -1352,6 +1839,9 @@ function StyleTab({ selectedElement, html, onHtmlChange }) {
 
       {/* ── Accordion groups ────────────────────────────────────── */}
       <div className="mrp-accordions">
+        {showTableThemes && viewMode === "desktop" && sel && (
+          <TableStylePicker html={html} selector={sel} onHtmlChange={onHtmlChange} />
+        )}
         {STYLE_GROUPS.map(group => (
           <StyleAccordion
             key={group.id}
@@ -1359,6 +1849,7 @@ function StyleTab({ selectedElement, html, onHtmlChange }) {
             props={grouped[group.id] || []}
             currentVals={currentVals}
             commitStyle={commitStyle}
+            commitStyles={commitStyles}
             removeStyleProp={removeStyleProp}
             showFlexArrows={showFlexArrows}
             schoolId={schoolId}
@@ -1484,6 +1975,67 @@ function ImageUploadField({ value, onChange, schoolId }) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+function collectPageAnchors(html) {
+  if (!html) return [];
+  try {
+    const doc = new DOMParser().parseFromString(html, "text/html");
+    const seen = new Set();
+    const list = [];
+    doc.querySelectorAll("[id]").forEach((el) => {
+      const id = (el.getAttribute("id") || "").trim();
+      if (!id || id.startsWith("__aie") || seen.has(id)) return;
+      const tag = el.tagName.toLowerCase();
+      if (["script", "style", "meta", "link"].includes(tag)) return;
+      seen.add(id);
+      const text = (el.innerText || el.textContent || "").replace(/\s+/g, " ").trim().slice(0, 42);
+      list.push({
+        value: `#${id}`,
+        label: text ? `#${id}  ·  ${text}` : `#${id}  (${tag})`,
+      });
+    });
+    return list;
+  } catch {
+    return [];
+  }
+}
+
+function HrefField({ value, onChange, html, placeholder }) {
+  const anchors = useMemo(() => collectPageAnchors(html), [html]);
+  const hashVal = (value || "").startsWith("#") ? value : "";
+
+  return (
+    <div className="mrp-href-field">
+      {anchors.length > 0 && (
+        <>
+          <div className="mrp-href-field__label">On this page</div>
+          <div className="mrp-anchor-list" role="listbox" aria-label="Page sections">
+            {anchors.map((a) => (
+              <button
+                key={a.value}
+                type="button"
+                role="option"
+                aria-selected={hashVal === a.value}
+                className={`mrp-anchor-chip ${hashVal === a.value ? "mrp-anchor-chip--active" : ""}`}
+                onClick={() => onChange(a.value)}
+                title={a.value}
+              >
+                {a.label}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
+      <input
+        type="text"
+        className="mrp-text-input"
+        value={value ?? ""}
+        placeholder={placeholder || "https://... or #section"}
+        onChange={(e) => onChange(e.target.value)}
+      />
+    </div>
+  );
+}
+
 function AttributesTab({ selectedElement, html, onHtmlChange, schoolId }) {
   const defs = getAttrDefs(selectedElement?.tagName);
   const sel  = selectedElement?.selector;
@@ -1565,6 +2117,13 @@ function AttributesTab({ selectedElement, html, onHtmlChange, schoolId }) {
                 onChange={e => commit(def.key, e.target.value)}
               />
             </div>
+          ) : def.type === "text" && def.key === "href" ? (
+            <HrefField
+              value={vals[def.key] ?? ""}
+              onChange={(v) => commit(def.key, v)}
+              html={html}
+              placeholder={def.placeholder}
+            />
           ) : def.type === "text" ? (
             <input
               type="text"
@@ -1644,23 +2203,20 @@ export default function ManualRightPanel({ selectedElement, html, onHtmlChange }
       </div>
 
       {/* tabs */}
-      {!noSelection && (
-        <div className="msp-tabs" role="tablist">
-          {TABS.map(({ id, label, Icon }) => (
-            <button
-              key={id}
-              role="tab"
-              aria-selected={activeTab === id}
-              className={`msp-tab ${activeTab === id ? "msp-tab--active" : ""}`}
-              onClick={() => setActiveTab(id)}
-            >
-              <Icon />{label}
-            </button>
-          ))}
-        </div>
-      )}
+      <div className="msp-tabs" role="tablist">
+        {!noSelection && TABS.map(({ id, label, Icon }) => (
+          <button
+            key={id}
+            role="tab"
+            aria-selected={activeTab === id}
+            className={`msp-tab ${activeTab === id ? "msp-tab--active" : ""}`}
+            onClick={() => setActiveTab(id)}
+          >
+            <Icon />{label}
+          </button>
+        ))}
+      </div>
 
-      {/* body */}
       <div className="msp-content">
         {noSelection ? (
           <div className="manual-side-panel__empty">

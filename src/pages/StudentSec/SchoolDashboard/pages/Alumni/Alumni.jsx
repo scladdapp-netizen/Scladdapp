@@ -125,21 +125,45 @@ const IdentityTab = ({ studentData, alumni, graduationSession, certificates, onA
 
           {/* Body */}
           <div className="si-body">
-            <SectionCard title="Personal Information">
+            <SectionCard title="Student Information">
               <InfoField label="Full Name"        value={s.full_name} />
               <InfoField label="Admission No."    value={s.admission_number} />
               <InfoField label="Date of Birth"    value={fmt(s.date_of_birth)} />
               <InfoField label="Gender"           value={s.gender} />
+              <InfoField label="Email"            value={s.email} />
+              <InfoField label="Phone"            value={s.phone} />
+              <InfoField label="WhatsApp"         value={s.whatsapp} />
               <InfoField label="Religion"         value={s.religion} />
               <InfoField label="Nationality"      value={s.nationality} />
-              <InfoField label="State of Origin"  value={s.state_of_origin} />
-              <InfoField label="Blood Group"      value={s.blood_group} />
             </SectionCard>
 
-            <SectionCard title="Contact">
-              <InfoField label="Email"   value={s.email} />
-              <InfoField label="Phone"   value={s.phone} />
-              <InfoField label="Address" value={s.address} />
+            <SectionCard title="Identity / bio">
+              <InfoField label="Place of Birth"       value={s.place_of_birth} />
+              <InfoField label="LGA of Origin"        value={s.lga_of_origin} />
+              <InfoField label="State of Origin"      value={s.state_of_origin} />
+              <InfoField label="Tribe / Ethnic Group" value={s.tribe} />
+              <InfoField label="NIN"                  value={s.nin} />
+              <InfoField label="Number of Siblings"   value={s.number_of_siblings} />
+              <InfoField label="Position in Family"   value={s.family_position} />
+              <InfoField label="Lives With"           value={s.lives_with} />
+              <InfoField label="Blood Group"          value={s.blood_group} />
+              <InfoField label="Genotype"             value={s.genotype} />
+            </SectionCard>
+
+            <SectionCard title="Residence">
+              <InfoField label="House Number / Street" value={s.house_number_street} />
+              <InfoField label="Area / Estate"         value={s.area_estate} />
+              <InfoField label="City"                  value={s.city} />
+              <InfoField label="LGA of Residence"      value={s.lga_of_residence} />
+              <InfoField label="State of Residence"    value={s.state_of_residence} />
+              <InfoField label="Landmark"              value={s.landmark} />
+            </SectionCard>
+
+            <SectionCard title="Emergency Contact">
+              <InfoField label="Name"         value={s.emergency_contact_name} />
+              <InfoField label="Relationship" value={s.emergency_contact_relationship} />
+              <InfoField label="Phone"        value={s.emergency_contact_phone} />
+              <InfoField label="WhatsApp"     value={s.emergency_contact_whatsapp} />
             </SectionCard>
 
             {isGraduated && (

@@ -956,6 +956,7 @@
 [data-theme="dark"] .sotsit::before { border-color: rgba(255,255,255,0.04); }
 [data-theme="dark"] .sotsit::after  { border-color: rgba(255,255,255,0.03); }
 [data-theme="dark"] .soticonsec { background: #f0f0f0; color: #111111; }
+[data-theme="dark"] .soticonsec .so-term-num { color: #111111; }
 [data-theme="dark"] .sottitlesec h2 { color: #f0f0f0; }
 [data-theme="dark"] .sottitlesec p  { color: #555555; }
 

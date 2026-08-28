@@ -232,11 +232,11 @@ export default function StepFour({
             <div className="s4-features-list">
               <div className="s4-feature-item">
                 <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 8l4 4 6-6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                Up to {selectedPlan.max_students} students
+                Unlimited students
               </div>
               <div className="s4-feature-item">
                 <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 8l4 4 6-6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                Up to {selectedPlan.max_teachers} teachers
+                Unlimited staff
               </div>
               {selectedPlan.features_enabled?.split(",").map((f, i) => (
                 <div key={i} className="s4-feature-item">

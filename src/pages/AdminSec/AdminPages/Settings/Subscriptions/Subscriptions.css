@@ -265,6 +265,15 @@
   flex-wrap: wrap;
 }
 
+.sub-cancel-btn {
+  border-color: #dc2626 !important;
+  color: #dc2626 !important;
+}
+
+.sub-cancel-btn:hover:not(:disabled) {
+  background: #fef2f2 !important;
+}
+
 /* Upgrade Section */
 .upgrade-section {
   display: flex;

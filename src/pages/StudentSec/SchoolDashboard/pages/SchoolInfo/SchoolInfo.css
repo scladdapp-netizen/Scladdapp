@@ -22,6 +22,23 @@
   word-break: break-word;
 }
 
+.si-link-text {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #111111;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+.si-link-text:hover {
+  color: #374151;
+}
+
 /* ── Resource grid ────────────────────────────────────────────────────────── */
 .shi-resource-grid {
   display: grid;
@@ -156,6 +173,39 @@
   font-size: 14px; color: #374151;
 }
 
+.shi-social-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.shi-social-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  border: 1px solid #e8e8e8;
+  background: #f7f7f7;
+  text-decoration: none;
+  color: inherit;
+}
+
+.shi-social-platform {
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #111111;
+}
+
+.shi-social-handle {
+  font-size: 12px;
+  font-weight: 600;
+  color: #555555;
+}
+
 /* ── Responsive ───────────────────────────────────────────────────────────── */
 @media (max-width: 640px) {
   .shi-resource-grid { grid-template-columns: 1fr; }
@@ -163,6 +213,8 @@
 }
 [data-theme="dark"] .shi-card { background: #1e1e1e; border-color: #2a2a2a; }
 [data-theme="dark"] .si-value-text { color: #f0f0f0; }
+[data-theme="dark"] .si-link-text { color: #f0f0f0; }
+[data-theme="dark"] .si-link-text:hover { color: #cccccc; }
 [data-theme="dark"] .shi-bio-content { color: #cccccc; }
 [data-theme="dark"] .shi-bio-content strong,
 [data-theme="dark"] .shi-bio-content b { color: #f0f0f0; }
@@ -179,3 +231,6 @@
 [data-theme="dark"] .shi-gallery-caption { background: #1e1e1e; border-top-color: #2a2a2a; color: #555555; }
 [data-theme="dark"] .shi-page-info { color: #555555; }
 [data-theme="dark"] .shi-lightbox-caption { color: #cccccc; }
+[data-theme="dark"] .shi-social-chip { background: #252525; border-color: #2a2a2a; }
+[data-theme="dark"] .shi-social-platform { color: #f0f0f0; }
+[data-theme="dark"] .shi-social-handle { color: #cccccc; }

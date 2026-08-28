@@ -8,6 +8,8 @@ import { PaystackButton } from "react-paystack";
 import { getPriceDetails } from "../../../../../components/ProductPricing/getPriceDetails";
 import useSubscription from "../../../../../api_call/useSubscription";
 import { useAuth } from "../../../../../context/AuthContext/AuthContext";
+import { useAlert } from "../../../../../context/AlertProvider/AlertProvider";
+import { useNotification } from "../../../../../context/NotificationProvider/NotificationProvider";
 import jsPDF from "jspdf";
 import {
   FaCreditCard,
@@ -17,8 +19,6 @@ import {
   FaCheck,
   FaTimes,
   FaCrown,
-  FaUsers,
-  FaChalkboardTeacher,
   FaDatabase,
   FaCalendarAlt,
   FaExclamationTriangle,
@@ -37,8 +37,11 @@ const Subscriptions = () => {
   const location = useLocation();
   const { schoolId } = useParams();
   const { user, updateSubscription } = useAuth();
-  const { getSubscriptionDashboard, getPlans, upgradeSubscription, getPaymentsPaginated } = useSubscription();
+  const { showAlert } = useAlert();
+  const { addNotification } = useNotification();
+  const { getSubscriptionDashboard, getPlans, upgradeSubscription, cancelSubscription, getPaymentsPaginated } = useSubscription();
   const publicKey = import.meta.env.VITE_PAYSTACK_PUBLIC_KEY;
+  const [cancelling, setCancelling] = useState(false);
 
   const getActiveTabFromUrl = () => {
     const searchParams = new URLSearchParams(location.search);
@@ -146,6 +149,7 @@ const Subscriptions = () => {
   ];
 
   const getUsagePercentage = (current, limit) => {
+    if (limit == null || limit <= 0) return 0;
     return Math.round((current / limit) * 100);
   };
 
@@ -223,6 +227,24 @@ const Subscriptions = () => {
     handleViewBilling(row);
   };
 
+  const handleCancelSubscription = () => {
+    showAlert(
+      "Cancel this subscription? You will keep view access, but add, edit, and delete will be locked until you renew.",
+      async () => {
+        setCancelling(true);
+        const res = await cancelSubscription(schoolId);
+        setCancelling(false);
+        if (res.success) {
+          updateSubscription(res.data.subscription);
+          addNotification("Subscription cancelled.", "success");
+          loadDashboard();
+        } else {
+          addNotification(res.message || "Failed to cancel subscription.", "error");
+        }
+      }
+    );
+  };
+
   const renderDashboard = () => {
     if (dashboardLoading) return <div style={{ padding: 24 }}>Loading...</div>;
     if (!dashboardData) return <div style={{ padding: 24 }}>No subscription data found.</div>;
@@ -287,48 +309,6 @@ const Subscriptions = () => {
 
         {/* Usage Statistics */}
         <div className="usage-stats">
-          <div className="usage-item">
-            <div className="usage-header">
-              <FaUsers className="usage-icon" />
-              <span>Students</span>
-            </div>
-            <div className="usage-bar">
-              <div className="usage-numbers">
-                {usage.students.current} / {usage.students.limit}
-              </div>
-              <div className="progress-bar">
-                <div
-                  className="progress-fill"
-                  style={{
-                    width: `${getUsagePercentage(usage.students.current, usage.students.limit)}%`,
-                    backgroundColor: getUsageColor(getUsagePercentage(usage.students.current, usage.students.limit)),
-                  }}
-                />
-              </div>
-            </div>
-          </div>
-
-          <div className="usage-item">
-            <div className="usage-header">
-              <FaChalkboardTeacher className="usage-icon" />
-              <span>Staff</span>
-            </div>
-            <div className="usage-bar">
-              <div className="usage-numbers">
-                {usage.staff.current} / {usage.staff.limit}
-              </div>
-              <div className="progress-bar">
-                <div
-                  className="progress-fill"
-                  style={{
-                    width: `${getUsagePercentage(usage.staff.current, usage.staff.limit)}%`,
-                    backgroundColor: getUsageColor(getUsagePercentage(usage.staff.current, usage.staff.limit)),
-                  }}
-                />
-              </div>
-            </div>
-          </div>
-
           <div className="usage-item">
             <div className="usage-header">
               <FaCrown className="usage-icon" />
@@ -397,6 +377,18 @@ const Subscriptions = () => {
           >
             <FaHistory /> View Billing History
           </Button>
+          {!isExpired && (
+            <Button
+              variant="secondary"
+              className="sub-cancel-btn"
+              onClick={handleCancelSubscription}
+              disabled={cancelling}
+              loading={cancelling}
+              loadingText="Cancelling..."
+            >
+              <FaTimes /> Cancel Subscription
+            </Button>
+          )}
         </div>
       </div>
     </div>
@@ -404,8 +396,6 @@ const Subscriptions = () => {
 
   const renderUpgrade = () => {
     const currentPlanName = dashboardData?.plan?.plan_name || "";
-    const currentStudentLimit = dashboardData?.usage?.students?.limit || 0;
-    const currentStaffLimit = dashboardData?.usage?.staff?.limit || 0;
     const endDate = dashboardData?.subscription?.end_date
       ? new Date(dashboardData.subscription.end_date).toLocaleDateString()
       : "—";
@@ -487,8 +477,8 @@ const Subscriptions = () => {
 
             <div className="mkml-plan-features">
               {[
-                { icon: <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round"/><circle cx="9" cy="7" r="4" stroke="currentColor" strokeWidth="1.7"/></svg>, text: `Up to ${plan.max_students} students` },
-                { icon: <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><rect x="2" y="7" width="20" height="14" rx="2" stroke="currentColor" strokeWidth="1.7"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round"/></svg>, text: `Up to ${plan.max_staff} staff` },
+                { icon: <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round"/><circle cx="9" cy="7" r="4" stroke="currentColor" strokeWidth="1.7"/></svg>, text: "Unlimited students" },
+                { icon: <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><rect x="2" y="7" width="20" height="14" rx="2" stroke="currentColor" strokeWidth="1.7"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round"/></svg>, text: "Unlimited staff" },
                 { icon: <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round"/></svg>, text: `Up to ${plan.max_subadmin} sub-admins` },
                 { icon: <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><polyline points="20,6 9,17 4,12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>, text: "Dashboard access" },
                 { icon: <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><polyline points="20,6 9,17 4,12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>, text: "Email support" },
@@ -554,11 +544,11 @@ const Subscriptions = () => {
                   <div className="up-plan-limits">
                     <div className="up-limit-row">
                       <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round"/><circle cx="9" cy="7" r="4" stroke="currentColor" strokeWidth="1.7"/></svg>
-                      <span>{currentStudentLimit} students</span>
+                      <span>Unlimited students</span>
                     </div>
                     <div className="up-limit-row">
                       <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><rect x="2" y="7" width="20" height="14" rx="2" stroke="currentColor" strokeWidth="1.7"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round"/></svg>
-                      <span>{currentStaffLimit} staff</span>
+                      <span>Unlimited staff</span>
                     </div>
                     <div className="up-limit-row">
                       <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round"/></svg>
@@ -576,11 +566,11 @@ const Subscriptions = () => {
                   <div className="up-plan-limits">
                     <div className="up-limit-row">
                       <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round"/><circle cx="9" cy="7" r="4" stroke="currentColor" strokeWidth="1.7"/></svg>
-                      <span>{selectedPlan.max_students} students</span>
+                      <span>Unlimited students</span>
                     </div>
                     <div className="up-limit-row">
                       <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><rect x="2" y="7" width="20" height="14" rx="2" stroke="currentColor" strokeWidth="1.7"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round"/></svg>
-                      <span>{selectedPlan.max_staff} staff</span>
+                      <span>Unlimited staff</span>
                     </div>
                     <div className="up-limit-row">
                       <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round"/></svg>
@@ -594,8 +584,6 @@ const Subscriptions = () => {
                 <span className="up-benefits-title">What you'll get</span>
                 <div className="up-benefits-grid">
                   {[
-                    { icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round"/><circle cx="9" cy="7" r="4" stroke="currentColor" strokeWidth="1.7"/></svg>, title: "More Students", desc: `Up to ${selectedPlan.max_students}`, inc: `+${parseInt(selectedPlan.max_students) - currentStudentLimit}` },
-                    { icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><rect x="2" y="7" width="20" height="14" rx="2" stroke="currentColor" strokeWidth="1.7"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round"/></svg>, title: "More Staff", desc: `Up to ${selectedPlan.max_staff}`, inc: `+${parseInt(selectedPlan.max_staff) - currentStaffLimit}` },
                     { icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round"/></svg>, title: "More Sub-Admins", desc: `Up to ${selectedPlan.max_subadmin}`, inc: `+${parseInt(selectedPlan.max_subadmin) - (dashboardData?.usage?.subadmins?.limit || 0)}` },
                     { icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><ellipse cx="12" cy="5" rx="9" ry="3" stroke="currentColor" strokeWidth="1.7"/><path d="M21 12c0 1.66-4.03 3-9 3S3 13.66 3 12" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round"/><path d="M3 5v14c0 1.66 4.03 3 9 3s9-1.34 9-3V5" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round"/></svg>, title: "More Storage", desc: "Enhanced capacity", inc: null },
                     { icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="1.7"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round"/></svg>, title: "Priority Support", desc: "24/7 support", inc: null },

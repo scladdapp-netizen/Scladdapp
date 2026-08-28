@@ -567,24 +567,24 @@
   margin-bottom: 20px;
 }
 
-.archive-info-item {
+.archive-session-info .archive-info-item {
   display: flex;
   justify-content: space-between;
   padding: 8px 0;
   border-bottom: 1px solid #e5e7eb;
 }
 
-.archive-info-item:last-child {
+.archive-session-info .archive-info-item:last-child {
   border-bottom: none;
 }
 
-.archive-info-label {
+.archive-session-info .archive-info-label {
   font-size: 13px;
   color: #6b7280;
   font-weight: 500;
 }
 
-.archive-info-value {
+.archive-session-info .archive-info-value {
   font-size: 13px;
   color: #1f2937;
   font-weight: 600;

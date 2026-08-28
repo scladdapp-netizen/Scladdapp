@@ -15,6 +15,7 @@ import Docs from "../pages/Docs/Docs";
 import ContactUs from "../pages/ContactUs/ContactUs";
 import PricingPage from "../pages/PricingPage/PricingPage";
 import Landing from "../pages/Landing/Landing";
+import ReportDownload from "../pages/ReportDownload/ReportDownload";
 
 export default function Nav() {
   const { isAuthenticated, user } = useAuth();
@@ -54,6 +55,7 @@ export default function Nav() {
         <Route path="/docs" element={<Docs />} />
         <Route path="/contact" element={<ContactUs />} />
         <Route path="/pricing" element={<PricingPage />} />
+        <Route path="/report-download" element={<ReportDownload />} />
 
         {/* Public routes - accessible when not authenticated */}
         <Route

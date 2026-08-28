@@ -61,27 +61,31 @@ const ArchiveSessionPanel = ({
         {/* ── Body (scrollable) ── */}
         <div className="archive-session-panel-content">
 
-          {/* Info grid */}
           <div className="archive-session-panel-info">
-            <div className="archive-info-item">
-              <span className="archive-info-label">Name</span>
-              <span className="archive-info-value">{name}</span>
-            </div>
-            {code && (
+            <p className="archive-info-heading">Details</p>
+            <div className="archive-info-grid">
               <div className="archive-info-item">
-                <span className="archive-info-label">Code</span>
-                <span className="archive-info-value">{code}</span>
+                <span className="archive-info-label">Name</span>
+                <span className="archive-info-value">{name || "—"}</span>
               </div>
-            )}
-            <div className="archive-info-item">
-              <span className="archive-info-label">Period</span>
-              <span className="archive-info-value">
-                {formatDate(startDate)} – {formatDate(endDate)}
-              </span>
-            </div>
-            <div className="archive-info-item">
-              <span className="archive-info-label">Status</span>
-              <span className={`archive-status-pill ${status}`}>{status}</span>
+              {code && (
+                <div className="archive-info-item">
+                  <span className="archive-info-label">Code</span>
+                  <span className="archive-info-value">{code}</span>
+                </div>
+              )}
+              <div className="archive-info-item archive-info-item--period">
+                <span className="archive-info-label">Period</span>
+                <span className="archive-info-value">
+                  {formatDate(startDate)}
+                  <span className="archive-info-sep">→</span>
+                  {formatDate(endDate)}
+                </span>
+              </div>
+              <div className="archive-info-item">
+                <span className="archive-info-label">Status</span>
+                <span className={`archive-status-pill ${(status || "").toLowerCase()}`}>{status}</span>
+              </div>
             </div>
           </div>
 

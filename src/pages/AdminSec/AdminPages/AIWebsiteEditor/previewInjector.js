@@ -184,7 +184,7 @@ const INJECT_SCRIPT = `
           type:         type,
           label:        buildLabel(el),
           selector:     buildSelector(el),
-          outerHTML:    el.outerHTML.slice(0, 2000),
+          outerHTML:    el.outerHTML.slice(0, 20000),
           textContent:  getTextSnippet(el),
           tagName:      el.tagName.toLowerCase(),
           sectionId:    nearestSectionId(el),
@@ -328,6 +328,27 @@ const INJECT_SCRIPT = `
               document.head.appendChild(clone);
             }
           });
+
+          // Copy <html> / <body> class, style, and other attrs.
+          // Page background often lives here; innerHTML alone leaves a white canvas.
+          function copyAttrs(fromEl, toEl) {
+            if (!fromEl || !toEl) return;
+            var keep = {};
+            Array.from(toEl.attributes).forEach(function(a) {
+              if (a.name === "id" && String(a.value).indexOf("__aie") === 0) keep[a.name] = a.value;
+            });
+            Array.from(toEl.attributes).forEach(function(a) {
+              toEl.removeAttribute(a.name);
+            });
+            Array.from(fromEl.attributes).forEach(function(a) {
+              toEl.setAttribute(a.name, a.value);
+            });
+            Object.keys(keep).forEach(function(name) {
+              if (!toEl.hasAttribute(name)) toEl.setAttribute(name, keep[name]);
+            });
+          }
+          copyAttrs(newDoc.documentElement, document.documentElement);
+          copyAttrs(newDoc.body, document.body);
 
           // ── Update <body> ──
           document.body.innerHTML = newDoc.body.innerHTML;

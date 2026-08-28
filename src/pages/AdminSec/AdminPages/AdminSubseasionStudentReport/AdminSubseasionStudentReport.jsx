@@ -43,6 +43,12 @@ const IcoEye = () => (
     <circle cx="11" cy="11" r="2.5" stroke="currentColor" strokeWidth="1.5"/>
   </svg>
 );
+const IcoEmail = () => (
+  <svg width="13" height="13" viewBox="0 0 22 22" fill="none">
+    <rect x="3" y="5" width="16" height="12" rx="2" stroke="currentColor" strokeWidth="1.7" fill="none"/>
+    <path d="M4 7.2 11 12l7-4.8" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+);
 const IcoTrash = () => (
   <svg width="13" height="13" viewBox="0 0 22 22" fill="none">
     <path d="M3 6h16M8 6V4h6v2M5 6l1 13h10l1-13M9 10v5M13 10v5" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"/>
@@ -207,6 +213,61 @@ const AdminSubseasionStudentReport = ({ setsetsubId }) => {
     clearSel(); reload();
   };
 
+  const handleSendEmail = async (ids, clearSel, reload) => {
+    if (!canEdit) { addNotification("No permission to send result emails.", "error"); return; }
+    const selected = tableData.filter((r) => ids.includes(r.id));
+    const published = selected.filter((r) => r.has_report && r.is_published);
+    const notPublished = selected.filter((r) => r.has_report && !r.is_published);
+    const noReport = selected.filter((r) => !r.has_report);
+    const noEmail = published.filter((r) => !r.email);
+    const toSend = published.filter((r) => r.email);
+
+    let quota = null;
+    try {
+      const qRes = await fetch(`${API}/api/student-report/email-quota`);
+      const qData = await qRes.json();
+      if (qData.success) quota = qData.data;
+    } catch (_) {}
+
+    setModalType("email");
+    setModalContext({ clearSel, reload, toSend, notPublished, noReport, noEmail, published, quota });
+    setModalOpen(true);
+  };
+
+  const handleSendEmailConfirm = async () => {
+    const { toSend, clearSel, reload } = modalContext || {};
+    if (!toSend?.length) { setModalOpen(false); return; }
+    setBulkLoading(true); setModalOpen(false);
+    try {
+      const res = await fetch(`${API}/api/student-report/subsession/${subseasionId}/send-emails`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          student_ids: toSend.map((r) => r.student_id),
+          modified_by: user?.admin?.admin_id || user?.user_id,
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        const d = data.data || {};
+        setBulkMsg({
+          type: "success",
+          text: `Emails: ${d.sent || 0} sent, ${d.queued || 0} queued. Skipped ${d.skipped_not_published || 0} not published, ${d.skipped_no_email || 0} without email.`,
+        });
+        addNotification(data.message || "Result emails processed", "success");
+      } else {
+        setBulkMsg({ type: "error", text: data.message || "Failed to send emails" });
+        addNotification(data.message || "Failed to send emails", "error");
+      }
+    } catch (err) {
+      setBulkMsg({ type: "error", text: err.message || "Failed to send emails" });
+      addNotification("Failed to send emails", "error");
+    }
+    setBulkLoading(false);
+    clearSel?.();
+    reload?.();
+  };
+
   const handleViewDetails = (row) => {
     navigate(`/admin/${schoolId}/Profile/${row.student_id}/${subseasionId}/report`);
   };
@@ -274,6 +335,11 @@ const AdminSubseasionStudentReport = ({ setsetsubId }) => {
       label: bulkLoading ? "Working..." : "Publish Results",
       className: "btn-success", disabled: bulkLoading,
       onClick: (ids, clearSel, reload) => handlePublish(ids, clearSel, reload),
+    },
+    {
+      label: bulkLoading ? "Working..." : "Send Email",
+      className: "btn-primary", disabled: bulkLoading,
+      onClick: (ids, clearSel, reload) => handleSendEmail(ids, clearSel, reload),
     },
     {
       label: "Clear", className: "", disabled: bulkLoading,
@@ -381,6 +447,60 @@ const AdminSubseasionStudentReport = ({ setsetsubId }) => {
               <button className="asr-modal-btn asr-modal-btn-secondary" onClick={() => setModalOpen(false)}>Cancel</button>
               {modalContext?.toPublish?.length > 0 && (
                 <button className="asr-modal-btn asr-modal-btn-publish" onClick={handlePublishConfirm} disabled={bulkLoading}>Publish</button>
+              )}
+            </div>
+          </div>
+        )}
+
+        {modalType === "email" && (
+          <div className="asr-modal">
+            <div className="asr-modal-header">
+              <span className="asr-modal-deco" aria-hidden="true" />
+              <div className="asr-modal-header-content">
+                <div className="asr-modal-icon"><IcoEmail /></div>
+                <div>
+                  <h3>Send Result Emails</h3>
+                  <p>
+                    <strong>{modalContext?.toSend?.length || 0}</strong> published report(s) will receive email
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div className="asr-modal-body">
+              {modalContext?.notPublished?.length > 0 && (
+                <div className="asr-modal-info">
+                  <span className="asr-warn">{modalContext.notPublished.length} not published</span> — email will not be sent.
+                </div>
+              )}
+              {modalContext?.noReport?.length > 0 && (
+                <div className="asr-modal-info">
+                  <span className="asr-warn">{modalContext.noReport.length} have no report</span> — will be skipped.
+                </div>
+              )}
+              {modalContext?.noEmail?.length > 0 && (
+                <div className="asr-modal-info">
+                  <span className="asr-warn">{modalContext.noEmail.length} published with no email</span> — will be skipped.
+                </div>
+              )}
+              {modalContext?.quota && (
+                <div className="asr-modal-info">
+                  Email quota today: <strong>{modalContext.quota.remaining}</strong> of {modalContext.quota.daily_limit} remaining
+                  {modalContext.quota.queued > 0 && <> · {modalContext.quota.queued} already queued</>}
+                  {(modalContext.toSend?.length || 0) > (modalContext.quota.remaining || 0) && (
+                    <> — extras will be queued for the next period.</>
+                  )}
+                </div>
+              )}
+              {(!modalContext?.toSend || modalContext.toSend.length === 0) && (
+                <div className="asr-modal-info asr-warn">Nothing to email in this selection. Publish results first.</div>
+              )}
+            </div>
+            <div className="asr-modal-footer">
+              <button className="asr-modal-btn asr-modal-btn-secondary" onClick={() => setModalOpen(false)}>Cancel</button>
+              {modalContext?.toSend?.length > 0 && (
+                <button className="asr-modal-btn asr-modal-btn-primary" onClick={handleSendEmailConfirm} disabled={bulkLoading}>
+                  {bulkLoading ? "Sending..." : "Send Email"}
+                </button>
               )}
             </div>
           </div>

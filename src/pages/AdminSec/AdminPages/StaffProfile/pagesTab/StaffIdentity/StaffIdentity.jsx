@@ -30,40 +30,36 @@ const StaffIdentity = ({ staffData: propStaffData, onStaffUpdate, refreshStaffDa
     fullName: staffData.full_name || "",
     email: staffData.email || "",
     phone: staffData.phone || "",
-    alternatePhone: staffData.alternate_phone || "",
+    whatsapp: staffData.whatsapp || "",
     position: staffData.position || "",
-    jobTitle: staffData.job_title || "",
     department: staffData.department || "",
     qualification: staffData.qualification || "",
     experienceYears: staffData.experience_years || "",
+    experience: staffData.experience_years ?? "",
     employmentType: staffData.employment_type || "",
-    employmentStatus: staffData.employment_status || "",
-    recordStatus: staffData.record_status || "active",
-    role: staffData.role || "",
-    salary: staffData.salary || "",
-    salaryGrade: staffData.salary_grade || "",
     joiningDate: staffData.joining_date || "",
-    confirmationDate: staffData.confirmation_date || "",
     emergencyContact: staffData.emergency_contact_name || "",
     emergencyContactPhone: staffData.emergency_contact_phone || "",
     emergencyContactRelationship: staffData.emergency_contact_relationship || "",
-    address: staffData.address || "",
-    nationalId: staffData.national_id || "",
-    taxNumber: staffData.tax_number || "",
-    bankAccount: staffData.bank_account || "",
-    bankName: staffData.bank_name || "",
-    nextOfKin: staffData.next_of_kin_name || "",
-    nextOfKinPhone: staffData.next_of_kin_phone || "",
-    nextOfKinRelationship: staffData.next_of_kin_relationship || "",
+    emergencyContactWhatsapp: staffData.emergency_contact_whatsapp || "",
     dateOfBirth: staffData.date_of_birth || "",
     gender: staffData.gender || "",
     religion: staffData.religion || "",
     maritalStatus: staffData.marital_status || "",
     nationality: staffData.nationality || "",
     stateOfOrigin: staffData.state_of_origin || "",
+    placeOfBirth: staffData.place_of_birth || "",
+    lgaOfOrigin: staffData.lga_of_origin || "",
+    tribe: staffData.tribe || "",
+    nin: staffData.nin || staffData.national_id || "",
+    houseNumberStreet: staffData.house_number_street || "",
+    areaEstate: staffData.area_estate || "",
+    city: staffData.city || "",
+    lgaOfResidence: staffData.lga_of_residence || "",
+    stateOfResidence: staffData.state_of_residence || "",
+    landmark: staffData.landmark || "",
     bloodGroup: staffData.blood_group || "",
     genotype: staffData.genotype || "",
-    medicalConditions: staffData.medical_conditions || "",
     staffPhoto: staffData.staff_photo || "",
   } : null;
 
@@ -157,62 +153,52 @@ const StaffIdentity = ({ staffData: propStaffData, onStaffUpdate, refreshStaffDa
         y += lines.length > 1 ? lines.length * 13 : 16;
       };
 
-      section("Personal Information");
+      section("Staff Information");
       row("Full Name",        staffData.full_name);
       row("Staff ID",         staffData.staff_id);
       row("Date of Birth",    staffData.date_of_birth);
       row("Gender",           staffData.gender);
+      row("Email",            staffData.email);
+      row("Phone",            staffData.phone);
+      row("WhatsApp",         staffData.whatsapp);
       row("Religion",         staffData.religion);
       row("Marital Status",   staffData.marital_status);
       row("Nationality",      staffData.nationality);
-      row("State of Origin",  staffData.state_of_origin);
-      row("Blood Group",      staffData.blood_group);
-      row("Genotype",         staffData.genotype);
-      row("Medical Conditions", staffData.medical_conditions);
-      row("Address",          staffData.address);
       y += 6;
 
-      section("Contact Information");
-      row("Email",            staffData.email);
-      row("Phone",            staffData.phone);
-      row("Alternate Phone",  staffData.alternate_phone);
+      section("Identity / bio");
+      row("Place of Birth",   staffData.place_of_birth);
+      row("LGA of Origin",    staffData.lga_of_origin);
+      row("State of Origin",  staffData.state_of_origin);
+      row("Tribe / Ethnic Group", staffData.tribe);
+      row("NIN",              staffData.nin || staffData.national_id);
+      row("Blood Group",      staffData.blood_group);
+      row("Genotype",         staffData.genotype);
+      y += 6;
+
+      section("Residence");
+      row("House / Street",     staffData.house_number_street);
+      row("Area / Estate",      staffData.area_estate);
+      row("City",               staffData.city);
+      row("LGA of Residence",   staffData.lga_of_residence);
+      row("State of Residence", staffData.state_of_residence);
+      row("Landmark",           staffData.landmark);
       y += 6;
 
       section("Employment Information");
       row("Position",         staffData.position);
-      row("Job Title",        staffData.job_title);
       row("Department",       staffData.department);
-      row("Role",             staffData.role);
       row("Qualification",    staffData.qualification);
       row("Experience",       staffData.experience_years ? `${staffData.experience_years} years` : null);
       row("Employment Type",  staffData.employment_type);
-      row("Employment Status",staffData.employment_status);
-      row("Record Status",    staffData.record_status);
       row("Joining Date",     staffData.joining_date);
-      row("Confirmation Date",staffData.confirmation_date);
-      row("Salary",           staffData.salary ? `₦${Number(staffData.salary).toLocaleString()}` : null);
-      row("Salary Grade",     staffData.salary_grade);
-      y += 6;
-
-      section("Financial Information");
-      row("Bank Name",        staffData.bank_name);
-      row("Bank Account",     staffData.bank_account);
-      row("National ID",      staffData.national_id);
-      row("Tax Number",       staffData.tax_number);
       y += 6;
 
       section("Emergency Contact");
       row("Name",             staffData.emergency_contact_name);
-      row("Phone",            staffData.emergency_contact_phone);
       row("Relationship",     staffData.emergency_contact_relationship);
-      row("Address",          staffData.emergency_contact_address);
-      y += 6;
-
-      section("Next of Kin");
-      row("Name",             staffData.next_of_kin_name);
-      row("Phone",            staffData.next_of_kin_phone);
-      row("Relationship",     staffData.next_of_kin_relationship);
-      row("Address",          staffData.next_of_kin_address);
+      row("Phone",            staffData.emergency_contact_phone);
+      row("WhatsApp",         staffData.emergency_contact_whatsapp);
 
       doc.save(`staff_${(staffData.full_name || "profile").replace(/\s+/g,"_")}.pdf`);
       addNotification("Staff profile exported as PDF", "success");
@@ -341,67 +327,56 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   <!-- Content -->
   <div class="card">
 
-    ${section("Personal Information",
+    ${section("Staff Information",
       '<circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>',
       field("Full Name", staffData.full_name) +
       field("Date of Birth", staffData.date_of_birth) +
       field("Gender", staffData.gender) +
-      field("Religion", staffData.religion) +
-      field("Marital Status", staffData.marital_status) +
-      field("Nationality", staffData.nationality) +
-      field("State of Origin", staffData.state_of_origin) +
-      field("Blood Group", staffData.blood_group) +
-      field("Genotype", staffData.genotype) +
-      field("Medical Conditions", staffData.medical_conditions) +
-      field("Address", staffData.address)
-    )}
-
-    ${section("Contact Information",
-      '<path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/>',
       field("Email", staffData.email) +
       field("Phone", staffData.phone) +
-      field("Alternate Phone", staffData.alternate_phone)
+      field("WhatsApp", staffData.whatsapp) +
+      field("Religion", staffData.religion) +
+      field("Marital Status", staffData.marital_status) +
+      field("Nationality", staffData.nationality)
+    )}
+
+    ${section("Identity / bio",
+      '<circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>',
+      field("Place of Birth", staffData.place_of_birth) +
+      field("LGA of Origin", staffData.lga_of_origin) +
+      field("State of Origin", staffData.state_of_origin) +
+      field("Tribe / Ethnic Group", staffData.tribe) +
+      field("NIN", staffData.nin || staffData.national_id) +
+      field("Blood Group", staffData.blood_group) +
+      field("Genotype", staffData.genotype)
+    )}
+
+    ${section("Residence",
+      '<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>',
+      field("House Number / Street", staffData.house_number_street) +
+      field("Area / Estate", staffData.area_estate) +
+      field("City", staffData.city) +
+      field("LGA of Residence", staffData.lga_of_residence) +
+      field("State of Residence", staffData.state_of_residence) +
+      field("Landmark", staffData.landmark)
     )}
 
     ${section("Employment Information",
       '<rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/>',
       field("Position", staffData.position) +
-      field("Job Title", staffData.job_title) +
       field("Department", staffData.department) +
-      field("Role", staffData.role) +
       field("Qualification", staffData.qualification) +
       field("Experience", staffData.experience_years ? staffData.experience_years + " years" : null) +
       field("Employment Type", staffData.employment_type) +
-      field("Employment Status", staffData.employment_status) +
-      field("Record Status", staffData.record_status) +
-      field("Joining Date", staffData.joining_date) +
-      field("Confirmation Date", staffData.confirmation_date) +
-      field("Salary", staffData.salary ? "₦" + Number(staffData.salary).toLocaleString() : null) +
-      field("Salary Grade", staffData.salary_grade)
-    )}
-
-    ${section("Financial Information",
-      '<rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/>',
-      field("Bank Name", staffData.bank_name) +
-      field("Bank Account", staffData.bank_account) +
-      field("National ID", staffData.national_id) +
-      field("Tax Number", staffData.tax_number)
+      field("Joining Date", staffData.joining_date)
     )}
 
     ${section("Emergency Contact",
       '<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 2.18h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.18 6.18l.95-.95a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>',
       field("Name", staffData.emergency_contact_name) +
-      field("Phone", staffData.emergency_contact_phone) +
       field("Relationship", staffData.emergency_contact_relationship) +
-      field("Address", staffData.emergency_contact_address)
-    )}
-
-    ${section("Next of Kin",
-      '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
-      field("Name", staffData.next_of_kin_name) +
-      field("Phone", staffData.next_of_kin_phone) +
-      field("Relationship", staffData.next_of_kin_relationship) +
-      field("Address", staffData.next_of_kin_address)
+      field("Phone", staffData.emergency_contact_phone) +
+      field("WhatsApp", staffData.emergency_contact_whatsapp)
     )}
 
   </div>

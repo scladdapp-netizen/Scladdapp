@@ -6,6 +6,14 @@ import "./Landing.css";
 
 const API_BASE_URL = `${import.meta.env.VITE_API_BASE_URL}`;
 
+const INTRO_SECTION_BG = { r: 26, g: 26, b: 26 }; // #1a1a1a — matches .intro-video-section
+const FEATURES_SECTION_BG = { r: 0, g: 0, b: 0 };
+const HSCROLL_ENTER_VIEWS = 1;     // extra viewport of scroll for enter/exit bg fade
+const HSCROLL_BG_DONE = 0.24;      // engagement at which bg reaches full black
+const HSCROLL_CONTENT_START = 0.24;
+const HSCROLL_CONTENT_DONE = 0.34;
+const HSCROLL_MOVE_START = 0.34;
+
 const TYPEWRITER_PHRASES = [
   "Students Stay Informed",
   "Schools Stay Connected",
@@ -149,6 +157,7 @@ const Landing = () => {
   const [plans, setPlans] = useState([]);
   const [plansLoading, setPlansLoading] = useState(true);
   const [billingCycle, setBillingCycle] = useState("monthly");
+  const [navDark, setNavDark] = useState(false);
 
   useEffect(() => {
     fetch(`${API_BASE_URL}/api/subscription/plans`)
@@ -160,13 +169,10 @@ const Landing = () => {
 
   const getPrice = (plan) => {
     if (plan.plan_type === "Free") return "Free";
-    const multiplier = billingCycle === "monthly" ? 1 : billingCycle === "quarterly" ? 3 : 12;
     const base = billingCycle === "monthly" ? plan.monthly_price
       : billingCycle === "quarterly" ? plan.quataly_price
       : plan.yearly_price;
-    // mark up 3x for display
-    const marked = Math.ceil(Number(base) * 3 / 100) * 100;
-    return `₦${marked.toLocaleString()}`;
+    return `₦${(Number(base) || 0).toLocaleString()}`;
   };
 
   const getPeriod = () =>
@@ -176,40 +182,111 @@ const Landing = () => {
     navigate("/setup/1", { state: { plan } });
   };
 
+  const getHscrollEngagement = (wrapper) => {
+    const vh = window.innerHeight;
+    const rect = wrapper.getBoundingClientRect();
+    const scrollRange = Math.max(1, wrapper.offsetHeight - vh);
+
+    // Section not in view yet (below fold)
+    if (rect.top >= vh) return 0;
+    // Scrolled past section (above fold)
+    if (rect.bottom <= 0) return 1;
+
+    // Approaching sticky — bg fades in before content can appear
+    if (rect.top > 0) {
+      return (1 - rect.top / vh) * 0.18;
+    }
+
+    // Sticky zone — extra lead-in scroll, then horizontal section
+    const raw = Math.max(0, Math.min(1, -rect.top / scrollRange));
+    return 0.18 + raw * 0.82;
+  };
+
+  const applyHscrollSection = (wrapper, track, sticky) => {
+    const maxTranslate = track.scrollWidth - window.innerWidth;
+    const engagement = getHscrollEngagement(wrapper);
+
+    const bgT = Math.min(1, engagement / HSCROLL_BG_DONE);
+    const r = Math.round(INTRO_SECTION_BG.r + (FEATURES_SECTION_BG.r - INTRO_SECTION_BG.r) * bgT);
+    const g = Math.round(INTRO_SECTION_BG.g + (FEATURES_SECTION_BG.g - INTRO_SECTION_BG.g) * bgT);
+    const b = Math.round(INTRO_SECTION_BG.b + (FEATURES_SECTION_BG.b - INTRO_SECTION_BG.b) * bgT);
+    wrapper.style.backgroundColor = `rgb(${r}, ${g}, ${b})`;
+
+    let contentOpacity = 0;
+    if (engagement > HSCROLL_CONTENT_START) {
+      contentOpacity = Math.min(
+        1,
+        (engagement - HSCROLL_CONTENT_START) / (HSCROLL_CONTENT_DONE - HSCROLL_CONTENT_START)
+      );
+    }
+
+    let scrollT = 0;
+    if (engagement > HSCROLL_MOVE_START) {
+      scrollT = Math.min(1, (engagement - HSCROLL_MOVE_START) / (1 - HSCROLL_MOVE_START));
+    }
+
+    if (maxTranslate > 0) {
+      const move = scrollT * maxTranslate;
+      track.style.transform = `translateX(-${move}px)`;
+    } else {
+      track.style.transform = "translateX(0)";
+    }
+
+    if (sticky) {
+      sticky.style.opacity = String(contentOpacity);
+      sticky.style.pointerEvents = contentOpacity > 0.05 ? "" : "none";
+    }
+
+    const handle = wrapper.querySelector(".hscroll-pull-handle");
+    if (handle) {
+      let handleOpacity = 0;
+      if (engagement > 0.02 && engagement < HSCROLL_CONTENT_DONE) {
+        handleOpacity = engagement <= HSCROLL_CONTENT_START
+          ? Math.min(1, (engagement - 0.02) / 0.1)
+          : Math.max(0, 1 - contentOpacity);
+      }
+      handle.style.opacity = String(handleOpacity);
+      const dragOffset = Math.min(engagement / HSCROLL_BG_DONE, 1) * -18;
+      handle.style.transform = `translateX(-50%) translateY(${dragOffset}px)`;
+    }
+
+    if (hProgressRef.current) {
+      hProgressRef.current.style.width = `${scrollT * 100}%`;
+    }
+  };
+
   // Horizontal scroll handler
   useEffect(() => {
     const wrapper = hWrapperRef.current;
     const track = hTrackRef.current;
+    const totalViews = FEATURES.length + HSCROLL_ENTER_VIEWS;
 
     const updateHeight = () => {
       if (!wrapper || !track) return;
+      const sticky = wrapper.querySelector(".hscroll-sticky");
       const maxTranslate = track.scrollWidth - window.innerWidth;
       if (maxTranslate <= 0) {
         wrapper.style.height = "auto";
+        wrapper.style.backgroundColor = `rgb(${INTRO_SECTION_BG.r}, ${INTRO_SECTION_BG.g}, ${INTRO_SECTION_BG.b})`;
         track.style.transform = "translateX(0)";
-        const sticky = wrapper.querySelector(".hscroll-sticky");
-        if (sticky) sticky.style.opacity = "1";
+        if (sticky) {
+          sticky.style.opacity = "1";
+          sticky.style.pointerEvents = "";
+        }
       } else {
-        wrapper.style.height = `${FEATURES.length * 100}vh`;
+        wrapper.style.height = `${totalViews * 100}vh`;
+        applyHscrollSection(wrapper, track, sticky);
       }
     };
 
     const onScroll = () => {
       if (!wrapper || !track) return;
-      const maxTranslate = track.scrollWidth - window.innerWidth;
-      if (maxTranslate <= 0) return;
-      const rect = wrapper.getBoundingClientRect();
-      const progress = -rect.top / (wrapper.offsetHeight - window.innerHeight);
-      const move = Math.max(0, Math.min(progress * maxTranslate, maxTranslate));
-      track.style.transform = `translateX(-${move}px)`;
       const sticky = wrapper.querySelector(".hscroll-sticky");
-      if (sticky) sticky.style.opacity = Math.min(progress / 0.08, 1);
-      if (hProgressRef.current) {
-        hProgressRef.current.style.width = `${Math.max(0, Math.min(progress * 100, 100))}%`;
-      }
+      applyHscrollSection(wrapper, track, sticky);
     };
 
     updateHeight();
+    onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("resize", updateHeight);
     return () => {
@@ -297,24 +374,34 @@ const Landing = () => {
     };
   }, [plans]);
 
-  // Header color based on scroll section
+  // Landing navbar — white text when overlapping dark sections
   useEffect(() => {
-    const header = document.querySelector(".pub-header");
+    const introVideo = document.querySelector(".intro-video-section");
+
     const onScroll = () => {
-      if (!header) return;
-      const darkSelectors = [
+      const headerBottom = 72;
+      const darkSections = [
+        introVideo,
         hWrapperRef.current,
         h2WrapperRef.current,
-        ...Array.from(document.querySelectorAll(".stack-section--3, .stack-section--4, .stack-section--5")),
+        document.querySelector(".cta-section"),
       ];
-      const isDark = darkSelectors.filter(Boolean).some((el) => {
+
+      const overDark = darkSections.filter(Boolean).some((el) => {
         const r = el.getBoundingClientRect();
-        return r.top <= 0 && r.bottom > 0;
+        return r.top < headerBottom && r.bottom > 0;
       });
-      header.classList.toggle("pub-header--white", isDark);
+
+      setNavDark(overDark);
     };
+
+    onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    window.addEventListener("resize", onScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+    };
   }, []);
   useEffect(() => {
     const sections = document.querySelectorAll(".stack-section");
@@ -358,7 +445,7 @@ const Landing = () => {
 
   return (
     <div className="landing">
-      <PublicHeader />
+      <PublicHeader dark={navDark} />
 
       {/* Stacking scroll wrapper starts here — hero is layer 1 */}
       <div className="stack-scroll">
@@ -368,7 +455,12 @@ const Landing = () => {
 
         {/* TOP — left-aligned text block */}
         <div className="landing__hero-text">
-          <span className="landing__hero-tag">All-In-One School Platform</span>
+          <div className="landing__hero-perk" role="note">
+            <span className="landing__hero-perk-pulse" aria-hidden="true" />
+            <span className="landing__hero-perk-text">
+              <strong>Free school website</strong> created and hosted for you
+            </span>
+          </div>
           <h1>The Smarter Way to <br /> Experience Education</h1>
           <div className="landing__hero-typewriter">
             <span>{displayed}</span>
@@ -425,12 +517,54 @@ const Landing = () => {
         </div>
       </section>
 
+      {/* Intro Video */}
+      <div className="intro-video-section">
+        <div className="ivs-noise" />
+        <div className="ivs-grid" />
+
+        <div className="intro-video-inner">
+          {/* Video — left */}
+          <div className="intro-video-frame-wrap">
+            <div className="ivs-glow" />
+            <div className="intro-video-frame">
+              <iframe
+                src="https://www.youtube.com/embed/dQw4w9WgXcQ"
+                title="Scladapp Introduction Video"
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              />
+            </div>
+          </div>
+
+          {/* Text — right */}
+          <div className="intro-video-text">
+            <span className="ivs-eyebrow">See It In Action</span>
+            <h2 className="ivs-heading">
+              Watch how<br />Scladapp<br />works
+            </h2>
+            <p className="ivs-sub">
+              A 2-minute walkthrough of the platform — from onboarding to daily use, for admins, teachers, and students.
+            </p>
+            <div className="ivs-divider" />
+            <span className="ivs-runtime">2 min watch</span>
+          </div>
+        </div>
+      </div>
+
         {/* Stack 1 — Horizontal feature scroll */}
         <div
           className="hscroll-wrapper stack-section--1"
           ref={hWrapperRef}
-          style={{ height: `${FEATURES.length * 100}vh`, zIndex: 2 }}
+          style={{ height: `${(FEATURES.length + HSCROLL_ENTER_VIEWS) * 100}vh`, zIndex: 2 }}
         >
+          <div className="hscroll-pull-handle-wrap" aria-hidden="true">
+            <div className="hscroll-pull-handle">
+              <span className="hscroll-pull-handle__dot" />
+              <span className="hscroll-pull-handle__line" />
+            </div>
+          </div>
+
           <div className="hscroll-sticky">
 
             {/* Section title — fixed at top of sticky viewport */}
@@ -506,21 +640,21 @@ const Landing = () => {
                   title: "Students Stay Informed Anywhere.",
                   desc: "From exam results to announcements, students access everything from one secure portal.",
                   features: ["Result checking","Notifications","Timetable","Assignments"],
-                  visual: "both", store: true,
+                  visual: "both",
                 },
                 {
                   key: "admin", badge: "Admin Portal", accent: "#6c5ce7",
                   title: "Complete Control for School Administrators.",
                   desc: "Command your entire school from one powerful dashboard.",
                   features: ["Student records","Payroll","Finance tracking","Reports","Sessions & terms","Analytics"],
-                  visual: "desktop", store: false, center: true,
+                  visual: "desktop", center: true,
                 },
                 {
                   key: "staff", badge: "Staff Portal", accent: "#fd79a8",
                   title: "Teaching Management Made Simple.",
                   desc: "Everything a teacher needs to manage their day — in one clean view.",
                   features: ["Assigned classes","Attendance","Upload scores","Class schedules","Head-of-class management"],
-                  visual: "both", store: true,
+                  visual: "both",
                 },
               ].map((p, i) => {
                 const isUp = i % 2 === 0;
@@ -562,6 +696,7 @@ const Landing = () => {
                             <div className="pm-phone-row"><div/><div/></div>
                             <div className="pm-phone-card pm-phone-card--sm"/>
                           </div>
+                          <span className="pm-coming-soon">Coming Soon</span>
                         </div>
                       )}
                       {p.visual === "both" && (
@@ -582,16 +717,8 @@ const Landing = () => {
                               <div className="pm-phone-header"/>
                               <div className="pm-phone-card"/><div className="pm-phone-card pm-phone-card--sm"/>
                             </div>
+                            <span className="pm-coming-soon">Coming Soon</span>
                           </div>
-                        </div>
-                      )}
-
-                      {p.store && (
-                        <div className="portal-card__store-btns">
-                          <a className="store-btn" href="#" aria-label="Google Play">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M3.18 23.76a2 2 0 0 0 2.09-.22l11.67-6.74-2.55-2.55L3.18 23.76zm-1.1-20.5C2 3.6 2 4.1 2 4.6v14.8c0 .5 0 1 .08 1.34l10.3-10.3L2.08 3.26zM20.4 10.4l-2.6-1.5-2.87 2.87 2.87 2.87 2.62-1.51A1.5 1.5 0 0 0 20.4 10.4zM5.27.46A2 2 0 0 0 3.18.24L14.39 11.5l2.55-2.55L5.27.46z"/></svg>
-                            <div><span>GET IT ON</span><strong>Google Play</strong></div>
-                          </a>
                         </div>
                       )}
                     </div>
@@ -612,41 +739,6 @@ const Landing = () => {
         </div>
 
       </div>{/* end stack-scroll */}
-
-      {/* Intro Video */}
-      <div className="intro-video-section">
-        <div className="ivs-noise" />
-        <div className="ivs-grid" />
-
-        <div className="intro-video-inner">
-          {/* Left — text */}
-          <div className="intro-video-text">
-            <span className="ivs-eyebrow">See It In Action</span>
-            <h2 className="ivs-heading">
-              Watch how<br />Scladapp<br />works
-            </h2>
-            <p className="ivs-sub">
-              A 2-minute walkthrough of the platform — from onboarding to daily use, for admins, teachers, and students.
-            </p>
-            <div className="ivs-divider" />
-            <span className="ivs-runtime">2 min watch</span>
-          </div>
-
-          {/* Right — video */}
-          <div className="intro-video-frame-wrap">
-            <div className="ivs-glow" />
-            <div className="intro-video-frame">
-              <iframe
-                src="https://www.youtube.com/embed/dQw4w9WgXcQ"
-                title="Scladapp Introduction Video"
-                frameBorder="0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-              />
-            </div>
-          </div>
-        </div>
-      </div>
 
       {/* Pricing — horizontal scroll (left-to-right) */}
       <div
@@ -694,8 +786,9 @@ const Landing = () => {
                     {plan.plan_type !== "Free" && <span className="pricing-card__period">{getPeriod()}</span>}
                   </div>
                   <div className="pricing-card__limits">
-                    <span>{plan.max_students} students</span>
-                    <span>{plan.max_staff} staff</span>
+                    <span>Unlimited students</span>
+                    <span>Unlimited staff</span>
+                    <span>{plan.max_subadmin} sub-admins</span>
                     <span>{plan.max_storage_gb}GB</span>
                     {plan.ai_assistant && <span>AI</span>}
                   </div>
@@ -729,8 +822,7 @@ const Landing = () => {
               Ready to simplify<br />your school?
             </h2>
             <p className="cta-section__sub">
-                      Scladapp simplifies education management by bringing student records, teacher schedules, and administrative tools together in one place.
-
+              Scladapp simplifies education management by bringing student records, teacher schedules, and administrative tools together in one place.
             </p>
             <div className="cta-section__actions">
               <button className="cta-section__btn cta-section__btn--primary" onClick={() => navigate("/setup/1")}>
@@ -760,13 +852,15 @@ const Landing = () => {
           <div className="faq-grid">
             {[
               { q: "How long does setup take?", a: "Most schools are fully set up within 30 minutes using our guided wizard." },
-              { q: "Can students access it on mobile?", a: "Yes — students and staff have dedicated mobile apps available on Google Play." },
-              { q: "Is my school's data secure?", a: "All data is encrypted in transit and at rest. We follow industry-standard security practices." },
-              { q: "Can I import existing student data?", a: "Yes, you can bulk import students via CSV from any spreadsheet." },
-              { q: "What happens when I exceed my plan limit?", a: "We'll notify you before you hit the limit and offer a seamless upgrade path." },
-              { q: "Do you offer a free trial?", a: "The Starter plan is free forever. Paid plans come with a 14-day free trial." },
-              { q: "Can multiple admins use the same account?", a: "Yes, you can invite multiple staff members with different roles and permissions." },
-              { q: "What payment methods are supported?", a: "We support bank transfers, card payments, and major Nigerian payment gateways." },
+              { q: "Do I get a school website?", a: "Yes. A free school website is created and hosted for your school as part of ScladApp." },
+              { q: "Is everything documented?", a: "Yes. Features and workflows are documented so your team can learn and use the platform with clear guides." },
+              { q: "Is there a mobile app?", a: "Not yet. Mobile apps are not available at the moment. You can use ScladApp fully in the browser on desktop or mobile web." },
+              { q: "Can I import existing students?", a: "No bulk import. Students must be enrolled manually, or you can admit them using an existing student ID if they already have one." },
+              { q: "What happens when my subscription expires?", a: "Your data stays safe. You can still view previous school data, but you cannot add, edit, or delete until you renew your subscription." },
+              { q: "Can I see previous school data?", a: "Yes. Your past records remain available to view even after a subscription ends." },
+              { q: "Do you offer a free trial?", a: "Yes. You get one month free. After that, continued use is on a paid subscription plan." },
+              { q: "Can multiple admins use the same school?", a: "Yes. You can invite staff and admins with different roles and permissions." },
+              { q: "What payment methods are supported?", a: "We support card payments and major Nigerian payment gateways." },
             ].map((item, i) => (
               <details key={i} className="faq-item">
                 <summary className="faq-question">

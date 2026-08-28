@@ -182,6 +182,30 @@
 .ns-form-sections { display: flex; flex-direction: column; gap: 0; }
 .ns-form-section { margin-bottom: 24px; }
 .ns-form-section-title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #888888; padding-bottom: 10px; border-bottom: 1px solid #f0f0f0; margin-bottom: 16px; display: block; }
+
+.ns-invite-note {
+  display: flex; align-items: flex-start; gap: 14px;
+  padding: 16px; border-radius: 12px;
+  background: #f7f7f7; border: 1px solid #e8e8e8;
+}
+.ns-invite-note-icon {
+  width: 40px; height: 40px; border-radius: 10px; flex-shrink: 0;
+  background: #111111; color: #ffffff;
+  display: flex; align-items: center; justify-content: center;
+}
+.ns-invite-note-text { min-width: 0; flex: 1; }
+.ns-invite-note-title {
+  margin: 0 0 4px; font-size: 13px; font-weight: 700; color: #111111; letter-spacing: -0.02em;
+}
+.ns-invite-note-body {
+  margin: 0; font-size: 12.5px; font-weight: 500; color: #666666; line-height: 1.55;
+}
+.ns-invite-note-body strong { color: #111111; font-weight: 700; }
+.ns-invite-note-meta {
+  display: inline-flex; align-items: center; gap: 6px;
+  margin-top: 10px; font-size: 11px; font-weight: 700; color: #888888;
+  letter-spacing: 0.02em;
+}
 .ns-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
 .ns-form-row:last-child { margin-bottom: 0; }
 
@@ -261,6 +285,12 @@
 [data-theme="dark"] .ns-info-extra { background: #252525; border-top-color: #2a2a2a; }
 [data-theme="dark"] .ns-class-select { background: #252525; border-top-color: #2a2a2a; }
 [data-theme="dark"] .ns-form-section-title { color: #555555; border-bottom-color: #2a2a2a; }
+[data-theme="dark"] .ns-invite-note { background: #1e1e1e; border-color: #2a2a2a; }
+[data-theme="dark"] .ns-invite-note-icon { background: #f0f0f0; color: #111111; }
+[data-theme="dark"] .ns-invite-note-title { color: #f0f0f0; }
+[data-theme="dark"] .ns-invite-note-body { color: #888888; }
+[data-theme="dark"] .ns-invite-note-body strong { color: #f0f0f0; }
+[data-theme="dark"] .ns-invite-note-meta { color: #555555; }
 [data-theme="dark"] .ns-guardian-card { background: #1e1e1e; border-color: #2a2a2a; }
 [data-theme="dark"] .ns-guardian-card--primary { border-color: #f0f0f0; }
 [data-theme="dark"] .ns-guardian-card-header { background: #252525; border-bottom-color: #2a2a2a; }

@@ -56,8 +56,9 @@ const ProductPricing = () => {
               {plan.plan_type === "Free" ? "Get Started" : "Choose Plan"}
             </button>
             <ul className="plan-features">
-              <li>Up to {plan.max_students} students</li>
-              <li>Up to {plan.max_staff} staff</li>
+              <li>Unlimited students</li>
+              <li>Unlimited staff</li>
+              <li>Up to {plan.max_subadmin} sub-admins</li>
               {plan.features?.map((feature, i) => (
                 <li key={i}>{feature}</li>
               ))}

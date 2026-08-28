@@ -18,11 +18,10 @@ import Underline                                     from "@tiptap/extension-und
 import TextAlign                                     from "@tiptap/extension-text-align";
 import { TextStyle }                                 from "@tiptap/extension-text-style";
 import { Color }                                     from "@tiptap/extension-color";
-import Image                                         from "@tiptap/extension-image";
-
 import { useAnnouncementTemplate } from "../../../../../api_call/useAnnouncementTemplate";
 import { useAuth }                  from "../../../../../context/AuthContext/AuthContext";
 import { useNotification }          from "../../../../../context/NotificationProvider/NotificationProvider";
+import ResizableImage               from "./ResizableImage";
 import "./EditAnnouncementTemplatePage.css";
 
 // ── TipTap extensions ─────────────────────────────────────────────────────────
@@ -31,7 +30,16 @@ const EXTENSIONS = [
   Underline,
   TextStyle,
   Color,
-  Image.configure({ inline: false, allowBase64: true }),
+  ResizableImage.configure({
+    inline: false,
+    allowBase64: true,
+    resize: {
+      enabled: true,
+      minWidth: 48,
+      minHeight: 48,
+      alwaysPreserveAspectRatio: true,
+    },
+  }),
   TextAlign.configure({ types: ["heading", "paragraph"] }),
 ];
 
@@ -158,9 +166,15 @@ const docToHtml = (doc) => {
       return t;
     }
     if (node.type === "image") {
-      const w = node.attrs?.width  ? ` width="${node.attrs.width}"`  : "";
-      const h = node.attrs?.height ? ` height="${node.attrs.height}"` : "";
-      return `<img src="${node.attrs?.src||""}" alt="${node.attrs?.alt||""}"${w}${h} style="max-width:100%;height:auto;border-radius:4px;display:block;margin:6px auto"/>`;
+      const align = node.attrs?.align || "center";
+      const w = node.attrs?.width ? `width:${node.attrs.width}px;` : "max-width:100%;";
+      let extra = "display:block;";
+      let margin = "6px auto";
+      if (align === "left") margin = "6px auto 6px 0";
+      else if (align === "right") margin = "6px 0 6px auto";
+      else if (align === "float-left") { extra = "float:left;"; margin = "0 8px 0 0"; }
+      else if (align === "float-right") { extra = "float:right;"; margin = "0 0 0 8px"; }
+      return `<img src="${node.attrs?.src||""}" alt="${node.attrs?.alt||""}" data-align="${align}" style="${w}height:auto;${extra}margin:${margin};border-radius:4px;max-width:100%"/>`;
     }
     const inner = (node.content||[]).map(renderNode).join("");
     const align = node.attrs?.textAlign;
@@ -260,15 +274,31 @@ const Toolbar = ({
   onInsertContentImg, contentImgUploading,
   onBgUpload, bgUploading,
 }) => {
+  const [, tick] = useState(0);
+  useEffect(() => {
+    if (!editor) return;
+    const bump = () => tick((n) => n + 1);
+    editor.on("selectionUpdate", bump);
+    editor.on("transaction", bump);
+    return () => {
+      editor.off("selectionUpdate", bump);
+      editor.off("transaction", bump);
+    };
+  }, [editor]);
+
   if (!editor) return null;
 
   const isTop = focusedSection === "top";
+  const isBody = focusedSection === "content";
+  const imageAlign = editor.getAttributes("image")?.align || "center";
+  const imageActive = editor.isActive("image");
+  const setImageAlign = (align) => editor.chain().focus().updateAttributes("image", { align }).run();
 
   return (
     <div className="eat-toolbar">
       {/* Section indicator */}
       <span className="eat-toolbar-section-label">
-        {isTop ? "Header" : "Footer"} ▸
+        {isTop ? "Header" : isBody ? "Body" : "Footer"} ▸
       </span>
 
       {/* Paragraph style */}
@@ -328,15 +358,26 @@ const Toolbar = ({
 
       <div className="eat-tb-sep" />
 
-      {/* Insert content image */}
-      {/* <TbBtn onClick={onInsertContentImg} title="Insert image into content" disabled={contentImgUploading}>
+      <TbBtn onClick={onInsertContentImg} title="Upload image" disabled={contentImgUploading}>
         {contentImgUploading ? "⏳" : "🖼"} {contentImgUploading ? "Uploading…" : "Image"}
-      </TbBtn> */}
+      </TbBtn>
 
-      {/* <div className="eat-tb-sep" /> */}
+      {imageActive && (
+        <>
+          <div className="eat-tb-sep" />
+          <span className="eat-bg-hint">Position</span>
+          <TbBtn active={imageAlign === "left"} onClick={() => setImageAlign("left")} title="Align left">◀</TbBtn>
+          <TbBtn active={imageAlign === "center"} onClick={() => setImageAlign("center")} title="Align center">▬</TbBtn>
+          <TbBtn active={imageAlign === "right"} onClick={() => setImageAlign("right")} title="Align right">▶</TbBtn>
+          <TbBtn active={imageAlign === "float-left"} onClick={() => setImageAlign("float-left")} title="Float left — text wraps">↩ L</TbBtn>
+          <TbBtn active={imageAlign === "float-right"} onClick={() => setImageAlign("float-right")} title="Float right — text wraps">R ↪</TbBtn>
+        </>
+      )}
+
+      <div className="eat-tb-sep" />
 
       {/* Section background panel */}
-      {isTop
+      {isBody ? null : isTop
         ? <BgPanel
             label="Header"
             bg={topBg}               onBgChange={onTopBgChange}
@@ -365,7 +406,7 @@ export default function EditAnnouncementTemplatePage() {
   const navigate                 = useNavigate();
   const { user }                 = useAuth();
   const { addNotification }      = useNotification();
-  const { getAnnouncementTemplateById, saveHtmlDraft, publishHtmlDraft, uploadImage } = useAnnouncementTemplate();
+  const { getAnnouncementTemplateById, saveHtmlDraft, publishHtmlDraft, uploadImage, updateAnnouncementTemplate } = useAnnouncementTemplate();
 
   const [template,   setTemplate]   = useState(null);
   const [loadError,  setLoadError]  = useState(null);
@@ -384,6 +425,7 @@ export default function EditAnnouncementTemplatePage() {
 
   // ── Focus + upload state ──────────────────────────────────────────────────
   const [focusedSection,    setFocusedSection]    = useState("top");
+  const [viewMode,          setViewMode]          = useState("edit");
   const [contentImgUploading, setContentImgUploading] = useState(false);
   const [bgUploading,         setBgUploading]         = useState(false);
 
@@ -405,6 +447,7 @@ export default function EditAnnouncementTemplatePage() {
   // ── Build initial docs ────────────────────────────────────────────────────
   const [initialTop,    setInitialTop]    = useState(null);
   const [initialBottom, setInitialBottom] = useState(null);
+  const [initialContent, setInitialContent] = useState(null);
 
   useEffect(() => {
     if (!template) return;
@@ -416,6 +459,7 @@ export default function EditAnnouncementTemplatePage() {
       setHasDraft(!!template.html_template_draft);
       setInitialTop(stored.top_doc       || defaultTopDoc(template.name, schoolName, logoUrl));
       setInitialBottom(stored.bottom_doc || defaultBottomDoc(schoolName));
+      setInitialContent(template.content || "<p></p>");
       if (stored.top_bg)       setTopBg(stored.top_bg);
       if (stored.top_bg_img)   setTopBgImg(stored.top_bg_img);
       if (stored.top_overlay   !== undefined) setTopOverlay(stored.top_overlay);
@@ -425,6 +469,7 @@ export default function EditAnnouncementTemplatePage() {
     } else {
       setInitialTop(defaultTopDoc(template.name, schoolName, logoUrl));
       setInitialBottom(defaultBottomDoc(schoolName));
+      setInitialContent(template.content || "<p></p>");
     }
   }, [template, user]);
 
@@ -445,39 +490,50 @@ export default function EditAnnouncementTemplatePage() {
     editorProps: { attributes: { class: "eat-bottom-editor" } },
   }, [initialBottom]);
 
+  const contentEditor = useEditor({
+    extensions: EXTENSIONS,
+    content: initialContent || "<p></p>",
+    editorProps: { attributes: { class: "eat-content-editor" } },
+  }, [initialContent]);
+
   // Mark editors as ready once both have been seeded with real initial content
   useEffect(() => {
-    if (initialTop && initialBottom && topEditor && bottomEditor) {
-      // Small delay to let TipTap finish rendering the new content
+    if (initialTop && initialBottom && initialContent != null && topEditor && bottomEditor && contentEditor) {
       const t = setTimeout(() => { editorReadyRef.current = true; }, 300);
       return () => clearTimeout(t);
     }
-    // Reset ready flag when initial docs change (e.g. on reset)
     editorReadyRef.current = false;
-  }, [initialTop, initialBottom, topEditor, bottomEditor]);
+  }, [initialTop, initialBottom, initialContent, topEditor, bottomEditor, contentEditor]);
 
-  const activeEditor = focusedSection === "top" ? topEditor : bottomEditor;
+  const activeEditor =
+    focusedSection === "top" ? topEditor
+    : focusedSection === "content" ? contentEditor
+    : bottomEditor;
 
   // ── Auto-save ─────────────────────────────────────────────────────────────
   const doAutoSave = useCallback(async () => {
-    // Never save until editors are fully seeded — prevents wiping content on load
     if (!editorReadyRef.current) return;
-    if (!templateId || !topEditor || !bottomEditor) return;
+    if (!templateId || !topEditor || !bottomEditor || !contentEditor) return;
     setSaveStatus("Saving…");
     await saveHtmlDraft(templateId, JSON.stringify({
       top_doc: topEditor.getJSON(), bottom_doc: bottomEditor.getJSON(),
       top_bg: topBg, top_bg_img: topBgImg, top_overlay: topOverlay,
       bottom_bg: bottomBg, bottom_bg_img: bottomBgImg, bottom_overlay: bottomOverlay,
     }));
+    await updateAnnouncementTemplate(templateId, {
+      content: contentEditor.getHTML(),
+      modified_by: user?.admin?.admin_id || user?.user_id,
+    });
     setHasDraft(true);
     setSaveStatus("Draft saved");
     setTimeout(() => setSaveStatus(""), 2500);
-  }, [templateId, topEditor, bottomEditor, topBg, topBgImg, topOverlay, bottomBg, bottomBgImg, bottomOverlay, saveHtmlDraft]);
+  }, [templateId, topEditor, bottomEditor, contentEditor, topBg, topBgImg, topOverlay, bottomBg, bottomBgImg, bottomOverlay, saveHtmlDraft, updateAnnouncementTemplate, user]);
 
   const debouncedSave = useDebounce(doAutoSave, 2000);
 
-  useEffect(() => { if (!topEditor)    return; topEditor.on("update",    debouncedSave); return () => topEditor.off("update",    debouncedSave); }, [topEditor,    debouncedSave]);
-  useEffect(() => { if (!bottomEditor) return; bottomEditor.on("update", debouncedSave); return () => bottomEditor.off("update", debouncedSave); }, [bottomEditor, debouncedSave]);
+  useEffect(() => { if (!topEditor)     return; topEditor.on("update",     debouncedSave); return () => topEditor.off("update",     debouncedSave); }, [topEditor,     debouncedSave]);
+  useEffect(() => { if (!bottomEditor)  return; bottomEditor.on("update",  debouncedSave); return () => bottomEditor.off("update",  debouncedSave); }, [bottomEditor,  debouncedSave]);
+  useEffect(() => { if (!contentEditor) return; contentEditor.on("update", debouncedSave); return () => contentEditor.off("update", debouncedSave); }, [contentEditor, debouncedSave]);
   // Auto-save when bg settings change — but only after editors are ready
   useEffect(() => {
     if (editorReadyRef.current) debouncedSave();
@@ -485,18 +541,22 @@ export default function EditAnnouncementTemplatePage() {
 
   // ── Publish ───────────────────────────────────────────────────────────────
   const handleSave = useCallback(async () => {
-    if (!templateId || !topEditor || !bottomEditor) return;
+    if (!templateId || !topEditor || !bottomEditor || !contentEditor) return;
     setSaving(true);
     await saveHtmlDraft(templateId, JSON.stringify({
       top_doc: topEditor.getJSON(), bottom_doc: bottomEditor.getJSON(),
       top_bg: topBg, top_bg_img: topBgImg, top_overlay: topOverlay,
       bottom_bg: bottomBg, bottom_bg_img: bottomBgImg, bottom_overlay: bottomOverlay,
     }));
+    await updateAnnouncementTemplate(templateId, {
+      content: contentEditor.getHTML(),
+      modified_by: user?.admin?.admin_id || user?.user_id,
+    });
     await publishHtmlDraft(templateId);
     setHasDraft(false);
     setSaving(false);
     addNotification("Email layout saved", "success");
-  }, [templateId, topEditor, bottomEditor, topBg, topBgImg, topOverlay, bottomBg, bottomBgImg, bottomOverlay, saveHtmlDraft, publishHtmlDraft, addNotification]);
+  }, [templateId, topEditor, bottomEditor, contentEditor, topBg, topBgImg, topOverlay, bottomBg, bottomBgImg, bottomOverlay, saveHtmlDraft, publishHtmlDraft, updateAnnouncementTemplate, addNotification, user]);
 
   useEffect(() => {
     const h = (e) => { if ((e.ctrlKey||e.metaKey) && e.key==="s") { e.preventDefault(); handleSave(); } };
@@ -539,7 +599,7 @@ export default function EditAnnouncementTemplatePage() {
     const res = await uploadImage(file);
     setContentImgUploading(false);
     if (res.success && res.url) {
-      activeEditor?.chain().focus().setImage({ src: res.url }).run();
+      activeEditor?.chain().focus().setImage({ src: res.url, align: "center" }).run();
       addNotification("Image inserted", "success");
     } else {
       addNotification(res.message || "Upload failed", "error");
@@ -571,6 +631,7 @@ export default function EditAnnouncementTemplatePage() {
   // ── Preview HTML ──────────────────────────────────────────────────────────
   const topHtml    = topEditor    ? docToHtml(topEditor.getJSON())    : "";
   const bottomHtml = bottomEditor ? docToHtml(bottomEditor.getJSON()) : "";
+  const bodyHtml   = contentEditor ? contentEditor.getHTML() : (template?.content || "");
 
   const buildPreviewSection = (html, bg, bgImg, overlay, extraStyle = "") => {
     if (bgImg) {
@@ -587,8 +648,8 @@ export default function EditAnnouncementTemplatePage() {
     return `<div style="background:${bg};padding:22px 28px${extraStyle};color:${isDark(bg)?"#ffffff":"#1e293b"}">${html}</div>`;
   };
 
-  const sampleContent = template?.content
-    ? `<p style="margin:0 0 8px;color:#374151;font-size:14px">${template.content}</p>`
+  const sampleContent = bodyHtml && bodyHtml !== "<p></p>"
+    ? `<div style="color:#374151;font-size:14px;line-height:1.6">${bodyHtml}</div>`
     : `<p style="color:#9ca3af;font-style:italic;font-size:13px">Announcement content will appear here.</p>`;
 
   const previewHtml = `
@@ -628,6 +689,26 @@ export default function EditAnnouncementTemplatePage() {
           <span className="eat-name">{template.name}</span>
           {hasDraft && <span className="eat-draft-badge">Draft</span>}
         </div>
+        <div className="eat-mode-switch" role="tablist" aria-label="Editor mode">
+          <button
+            type="button"
+            role="tab"
+            aria-selected={viewMode === "edit"}
+            className={`eat-mode-btn${viewMode==="edit"?" active":""}`}
+            onClick={()=>setViewMode("edit")}
+          >
+            Edit
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={viewMode === "preview"}
+            className={`eat-mode-btn${viewMode==="preview"?" active":""}`}
+            onClick={()=>setViewMode("preview")}
+          >
+            Preview
+          </button>
+        </div>
         <div className="eat-topbar-right">
           {saveStatus && <span className="eat-save-status">{saveStatus}</span>}
           <button className="eat-reset-btn" onClick={handleReset} disabled={resetting||saving}>
@@ -642,7 +723,7 @@ export default function EditAnnouncementTemplatePage() {
       {/* ── Body ── */}
       <div className="eat-body">
 
-        <div className="eat-editor-pane">
+        <div className={`eat-editor-pane${viewMode==="preview"?" is-hidden":""}`}>
 
           <Toolbar
             editor={activeEditor}
@@ -686,11 +767,12 @@ export default function EditAnnouncementTemplatePage() {
               </div>
 
               {/* LOCKED */}
-              <div className="eat-locked-zone">
-                <span className="eat-locked-badge">🔒 Announcement Content — read only</span>
-                <div className="eat-locked-content">
-                  {template.content || <em style={{color:"#9ca3af"}}>Announcement content inserted here when sending.</em>}
-                </div>
+              <div
+                className={`eat-locked-zone${focusedSection==="content"?" focused":""}`}
+                onClick={()=>{ contentEditor?.commands.focus(); setFocusedSection("content"); }}
+              >
+                <span className="eat-locked-badge">Announcement body — click to edit</span>
+                <EditorContent editor={contentEditor} />
               </div>
 
               {/* BOTTOM */}
@@ -716,10 +798,8 @@ export default function EditAnnouncementTemplatePage() {
           </div>
         </div>
 
-        {/* Preview */}
-        <div className="eat-preview-pane">
-          <div className="eat-preview-title">Live Preview</div>
-          <div className="eat-preview-scroll">
+        <div className={`eat-preview-pane${viewMode==="edit"?" is-hidden":""}`}>
+          <div className="eat-preview-scroll eat-preview-scroll--full">
             <div dangerouslySetInnerHTML={{__html: previewHtml}} />
           </div>
         </div>

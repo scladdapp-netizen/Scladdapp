@@ -87,87 +87,254 @@ const StudentIdentity = () => {
       const primaryGuardian =
         guardians?.find((g) => g.is_primary) || guardians?.[0];
       const activeAdmission =
-        admissions?.find((a) => a.active_status) || admissions?.[0];
+        admissions?.find((a) => a.school_id === schoolId) ||
+        admissions?.find((a) => a.active_status) ||
+        admissions?.[0];
+      const schoolName =
+        user?.school?.school_name ||
+        activeAdmission?.school_name ||
+        "School";
+      const classLabel =
+        activeAdmission?.admission_class || student.current_class || "";
+      const initials = (student.full_name || "?")
+        .split(" ")
+        .map((w) => w[0])
+        .join("")
+        .substring(0, 2)
+        .toUpperCase();
 
-      // Create PDF content using jsPDF
+      const loadPhotoDataUrl = async (url) => {
+        if (!url) return null;
+        if (String(url).startsWith("data:")) return url;
+        try {
+          const res = await fetch(url, { mode: "cors", credentials: "omit" });
+          if (!res.ok) throw new Error("fetch failed");
+          const blob = await res.blob();
+          return await new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = reject;
+            reader.readAsDataURL(blob);
+          });
+        } catch {
+          try {
+            const img = new Image();
+            img.crossOrigin = "anonymous";
+            await new Promise((resolve, reject) => {
+              img.onload = resolve;
+              img.onerror = reject;
+              img.src = url;
+            });
+            const canvas = document.createElement("canvas");
+            canvas.width = img.naturalWidth || 128;
+            canvas.height = img.naturalHeight || 128;
+            canvas.getContext("2d").drawImage(img, 0, 0);
+            return canvas.toDataURL("image/jpeg", 0.92);
+          } catch {
+            return null;
+          }
+        }
+      };
+
+      const photoDataUrl = await loadPhotoDataUrl(student.student_photo);
+
       const { jsPDF } = await import("jspdf");
       const doc = new jsPDF({ orientation: "portrait", unit: "pt", format: "a4" });
       const pageW = doc.internal.pageSize.getWidth();
+      const pageH = doc.internal.pageSize.getHeight();
       const margin = 40;
-      let y = 50;
+      const contentW = pageW - margin * 2;
+      let y = 0;
 
-      // Header
+      const ensureSpace = (need = 40) => {
+        if (y + need > pageH - 48) {
+          doc.addPage();
+          y = 40;
+        }
+      };
+
+      // ── Black header with photo ──
       doc.setFillColor(17, 17, 17);
-      doc.rect(0, 0, pageW, 80, "F");
+      doc.rect(0, 0, pageW, 110, "F");
+
+      const avatarX = margin + 32;
+      const avatarY = 55;
+      const avatarR = 28;
+
+      if (photoDataUrl) {
+        try {
+          const canvas = document.createElement("canvas");
+          canvas.width = 112;
+          canvas.height = 112;
+          const ctx = canvas.getContext("2d");
+          const img = new Image();
+          await new Promise((resolve, reject) => {
+            img.onload = resolve;
+            img.onerror = reject;
+            img.src = photoDataUrl;
+          });
+          ctx.beginPath();
+          ctx.arc(56, 56, 56, 0, Math.PI * 2);
+          ctx.closePath();
+          ctx.clip();
+          ctx.drawImage(img, 0, 0, 112, 112);
+          doc.addImage(canvas.toDataURL("image/jpeg", 0.92), "JPEG", margin, 27, 56, 56);
+        } catch {
+          doc.setFillColor(255, 255, 255);
+          doc.circle(avatarX, avatarY, avatarR, "F");
       doc.setFont("helvetica", "bold");
-      doc.setFontSize(20);
-      doc.setTextColor(255, 255, 255);
-      doc.text("Student Profile", margin, 35);
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(11);
-      doc.setTextColor(200, 200, 200);
-      doc.text(`${student.full_name}  ·  ID: ${student.student_id?.substring(0, 16) || "N/A"}`, margin, 58);
-      y = 110;
-
-      const section = (title) => {
+          doc.setFontSize(14);
+          doc.setTextColor(17, 17, 17);
+          doc.text(initials, avatarX, avatarY + 5, { align: "center" });
+        }
+      } else {
+        doc.setFillColor(255, 255, 255);
+        doc.circle(avatarX, avatarY, avatarR, "F");
         doc.setFont("helvetica", "bold");
-        doc.setFontSize(9);
-        doc.setTextColor(136, 136, 136);
-        doc.text(title.toUpperCase(), margin, y);
-        doc.setDrawColor(230, 230, 230);
-        doc.line(margin, y + 4, pageW - margin, y + 4);
-        y += 18;
-      };
-
-      const row = (label, value) => {
-        if (y > 760) { doc.addPage(); y = 40; }
-        doc.setFont("helvetica", "bold");
-        doc.setFontSize(9);
-        doc.setTextColor(136, 136, 136);
-        doc.text(label, margin, y);
-        doc.setFont("helvetica", "normal");
-        doc.setFontSize(10);
-        doc.setTextColor(34, 34, 34);
-        doc.text(String(value || "N/A"), margin + 140, y);
-        y += 18;
-      };
-
-      section("Personal Information");
-      row("Full Name",      student.full_name);
-      row("Date of Birth",  student.date_of_birth);
-      row("Gender",         student.gender);
-      row("Email",          student.email);
-      row("Phone",          student.phone);
-      row("Religion",       student.religion);
-      row("Nationality",    student.nationality);
-      row("Blood Group",    student.blood_group);
-      row("Genotype",       student.genotype);
-      y += 8;
-
-      section("Academic Information");
-      row("Admission Number", student.admission_number);
-      row("Current Class",    activeAdmission?.admission_class || student.current_class);
-      row("Admission Date",   activeAdmission?.admitted_date);
-      row("Session",          activeAdmission?.admission_session);
-      y += 8;
-
-      if (primaryGuardian) {
-        section("Guardian Information");
-        row("Guardian Name",  primaryGuardian.guardian_name);
-        row("Relationship",   primaryGuardian.guardian_relationship);
-        row("Phone",          primaryGuardian.guardian_phone);
-        row("Email",          primaryGuardian.guardian_email);
-        row("Occupation",     primaryGuardian.guardian_occupation);
-        y += 8;
+        doc.setFontSize(14);
+        doc.setTextColor(17, 17, 17);
+        doc.text(initials, avatarX, avatarY + 5, { align: "center" });
       }
 
-      // Footer
+      const textX = margin + 72;
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(18);
+      doc.setTextColor(255, 255, 255);
+      doc.text(student.full_name || "Student Profile", textX, 42);
       doc.setFont("helvetica", "normal");
-      doc.setFontSize(8);
-      doc.setTextColor(170, 170, 170);
-      doc.text(`Generated on ${new Date().toLocaleString()}`, margin, doc.internal.pageSize.getHeight() - 20);
+      doc.setFontSize(10);
+      doc.setTextColor(190, 190, 190);
+      doc.text(
+        [student.admission_number, classLabel, student.gender].filter(Boolean).join("  ·  ") || "Student",
+        textX,
+        60
+      );
+      doc.setFontSize(8.5);
+      doc.setTextColor(150, 150, 150);
+      doc.text(
+        `ID ${student.student_id?.substring(0, 16) || "N/A"}  ·  ${new Date().toLocaleString()}`,
+        textX,
+        76
+      );
+      y = 130;
 
-      doc.save(`student_${student.full_name.replace(/\s+/g, "_")}.pdf`);
+      const drawSection = (title) => {
+        ensureSpace(36);
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(8);
+        doc.setTextColor(120, 120, 120);
+        doc.text(title.toUpperCase(), margin, y);
+        doc.setDrawColor(230, 230, 230);
+        doc.line(margin, y + 5, pageW - margin, y + 5);
+        y += 18;
+      };
+
+      // 2-column professional field grid
+      const drawFields = (pairs) => {
+        const colW = contentW / 2;
+        const rowH = 28;
+        for (let i = 0; i < pairs.length; i += 2) {
+          ensureSpace(rowH + 4);
+          const left = pairs[i];
+          const right = pairs[i + 1];
+          const drawOne = (item, x) => {
+            if (!item) return;
+        doc.setFont("helvetica", "bold");
+            doc.setFontSize(7.5);
+            doc.setTextColor(150, 150, 150);
+            doc.text(String(item[0]).toUpperCase(), x, y);
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(10);
+            doc.setTextColor(17, 17, 17);
+            const lines = doc.splitTextToSize(String(item[1] || "—"), colW - 12);
+            doc.text(lines[0], x, y + 12);
+          };
+          drawOne(left, margin);
+          if (right) drawOne(right, margin + colW);
+          y += rowH;
+        }
+      y += 8;
+      };
+
+      drawSection("Student Information");
+      drawFields([
+        ["Full Name", student.full_name],
+        ["Admission No.", student.admission_number],
+        ["Date of Birth", student.date_of_birth],
+        ["Gender", student.gender],
+        ["Email", student.email],
+        ["Phone", student.phone],
+        ["WhatsApp", student.whatsapp],
+        ["Religion", student.religion],
+        ["Nationality", student.nationality],
+      ]);
+
+      drawSection("Identity / bio");
+      drawFields([
+        ["Place of Birth", student.place_of_birth],
+        ["LGA of Origin", student.lga_of_origin],
+        ["State of Origin", student.state_of_origin],
+        ["Tribe / Ethnic Group", student.tribe],
+        ["NIN", student.nin],
+        ["Number of Siblings", student.number_of_siblings],
+        ["Position in Family", student.family_position],
+        ["Lives With", student.lives_with],
+        ["Blood Group", student.blood_group],
+        ["Genotype", student.genotype],
+      ]);
+
+      drawSection("Residence");
+      drawFields([
+        ["House / Street", student.house_number_street],
+        ["Area / Estate", student.area_estate],
+        ["City", student.city],
+        ["LGA of Residence", student.lga_of_residence],
+        ["State of Residence", student.state_of_residence],
+        ["Landmark", student.landmark],
+      ]);
+
+      drawSection("Emergency Contact");
+      drawFields([
+        ["Name", student.emergency_contact_name],
+        ["Relationship", student.emergency_contact_relationship],
+        ["Phone", student.emergency_contact_phone],
+        ["WhatsApp", student.emergency_contact_whatsapp],
+      ]);
+
+      drawSection("Academic Information");
+      drawFields([
+        ["Admission Number", student.admission_number],
+        ["Current Class", classLabel],
+        ["Admission Date", activeAdmission?.admitted_date],
+        ["Session", activeAdmission?.admission_session],
+      ]);
+
+      if (primaryGuardian) {
+        drawSection("Guardian Information");
+        drawFields([
+          ["Guardian Name", primaryGuardian.guardian_name],
+          ["Relationship", primaryGuardian.guardian_relationship],
+          ["Phone", primaryGuardian.guardian_phone],
+          ["WhatsApp", primaryGuardian.guardian_whatsapp],
+          ["Email", primaryGuardian.guardian_email],
+          ["Occupation", primaryGuardian.guardian_occupation],
+        ]);
+      }
+
+      // Soft fade footer on every page
+      const pageCount = doc.getNumberOfPages();
+      for (let i = 1; i <= pageCount; i++) {
+        doc.setPage(i);
+        doc.setDrawColor(236, 236, 236);
+        doc.line(margin, pageH - 30, pageW - margin, pageH - 30);
+      doc.setFont("helvetica", "normal");
+        doc.setFontSize(7.5);
+        doc.setTextColor(180, 180, 180);
+        doc.text(schoolName, margin, pageH - 16);
+        doc.text("ScladApp", pageW - margin, pageH - 16, { align: "right" });
+      }
+
+      doc.save(`student_${(student.full_name || "profile").replace(/\s+/g, "_")}.pdf`);
       addNotification("Student profile exported as PDF", "success");
     } catch (error) {
       console.error("Export error:", error);
@@ -186,138 +353,174 @@ const StudentIdentity = () => {
       const primaryGuardian =
         guardians?.find((g) => g.is_primary) || guardians?.[0];
       const activeAdmission =
-        admissions?.find((a) => a.active_status) || admissions?.[0];
+        admissions?.find((a) => a.school_id === schoolId) ||
+        admissions?.find((a) => a.active_status) ||
+        admissions?.[0];
+      const schoolName =
+        user?.school?.school_name ||
+        activeAdmission?.school_name ||
+        "School";
+      const classLabel =
+        activeAdmission?.admission_class || student.current_class || "";
+      const isActive = activeAdmission?.active_status === true;
 
-      // Calculate age
-      const calculateAge = (dob) => {
-        if (!dob) return "N/A";
-        const birthDate = new Date(dob);
-        const today = new Date();
-        let age = today.getFullYear() - birthDate.getFullYear();
-        const monthDiff = today.getMonth() - birthDate.getMonth();
-        if (
-          monthDiff < 0 ||
-          (monthDiff === 0 && today.getDate() < birthDate.getDate())
-        ) {
-          age--;
-        }
-        return `${age} years`;
-      };
+      const esc = (v) =>
+        String(v || "")
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;");
+      const val = (v) => (v ? esc(v) : '<span style="color:#bbb">—</span>');
 
-      // Create a new window for printing
-      const printWindow = window.open("", "_blank");
-      const printContent = `
-        <html>
+      const field = (label, value) => `
+        <div class="field">
+          <div class="flabel">${esc(label)}</div>
+          <div class="fval">${val(value)}</div>
+        </div>`;
+
+      const section = (title, fields) => `
+        <div class="section">
+          <div class="section-head">
+            <span class="section-title">${esc(title)}</span>
+          </div>
+          <div class="grid">${fields}</div>
+        </div>`;
+
+      const photo = student.student_photo
+        ? `<img src="${esc(student.student_photo)}" class="avatar" alt="photo" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>
+           <div class="avatar-placeholder" style="display:none">${esc((student.full_name || "?").charAt(0).toUpperCase())}</div>`
+        : `<div class="avatar-placeholder">${esc((student.full_name || "?").charAt(0).toUpperCase())}</div>`;
+
+      const html = `<!DOCTYPE html>
+<html lang="en">
           <head>
-            <title>Student Profile - ${student.full_name}</title>
+<meta charset="UTF-8"/>
+<title>Student Profile — ${esc(student.full_name)}</title>
             <style>
-              body { font-family: Arial, sans-serif; margin: 20px; }
-              .header { text-align: center; margin-bottom: 30px; }
-              .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
-              .info-item { padding: 8px; border-bottom: 1px solid #eee; }
-              .label { font-weight: bold; color: #666; }
-              .value { color: #333; }
-              .section-title { font-size: 18px; font-weight: bold; margin: 20px 0 10px 0; color: #333; border-bottom: 2px solid #4f46e5; padding-bottom: 5px; }
-              @media print { body { margin: 0; } }
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f5f5;color:#111;padding:32px 24px}
+.wrap{max-width:820px;margin:0 auto}
+.header{background:#111;border-radius:16px;padding:28px 32px;overflow:hidden;margin-bottom:20px;position:relative}
+.header::before{content:"";position:absolute;width:160px;height:160px;border-radius:50%;border:20px solid rgba(255,255,255,0.05);top:-50px;right:-40px}
+.header-inner{position:relative;z-index:1;display:flex;align-items:center;gap:20px}
+.avatar{width:72px;height:72px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,0.18);flex-shrink:0}
+.avatar-placeholder{width:72px;height:72px;border-radius:50%;background:rgba(255,255,255,0.1);border:2px solid rgba(255,255,255,0.14);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#fff;font-size:24px;font-weight:700}
+.header-name{font-size:22px;font-weight:800;color:#fff;letter-spacing:-.03em;line-height:1.15;margin-bottom:6px}
+.header-meta{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px}
+.badge{display:inline-flex;align-items:center;background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.85);font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;border:1px solid rgba(255,255,255,0.12)}
+.header-id{font-size:11px;color:rgba(255,255,255,0.4);font-weight:600;letter-spacing:.06em;text-transform:uppercase}
+.print-date{font-size:10px;color:rgba(255,255,255,0.3);margin-top:4px}
+.card{background:#fff;border-radius:16px;padding:28px 32px;border:1px solid #e8e8e8}
+.section{margin-bottom:24px}
+.section:last-child{margin-bottom:0}
+.section-head{margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid #e8e8e8}
+.section-title{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#111}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px 16px}
+.flabel{font-size:9.5px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:#aaa;margin-bottom:3px}
+.fval{font-size:12.5px;font-weight:600;color:#111;line-height:1.4}
+.footer{margin-top:18px;display:flex;align-items:center;justify-content:space-between;padding:10px 4px;opacity:.35}
+.footer-school{font-size:10px;font-weight:600;color:#111;letter-spacing:.02em}
+.footer-brand{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#111}
+@media print{
+  body{background:#fff;padding:0}
+  .header{border-radius:0;margin-bottom:0}
+  .card{border-radius:0;border:none;border-top:1px solid #e8e8e8}
+  .section{page-break-inside:avoid}
+  .footer{opacity:.28}
+}
+@media (max-width:640px){.grid{grid-template-columns:1fr 1fr}}
             </style>
           </head>
           <body>
+<div class="wrap">
             <div class="header">
-              <h1>Student Profile</h1>
-              <h2>${student.full_name}</h2>
-              <p>Student ID: ${student.student_id}</p>
+    <div class="header-inner">
+      ${photo}
+      <div>
+        <div class="header-name">${esc(student.full_name || "Student Profile")}</div>
+        <div class="header-meta">
+          ${student.admission_number ? `<span class="badge">${esc(student.admission_number)}</span>` : ""}
+          ${classLabel ? `<span class="badge">${esc(classLabel)}</span>` : ""}
+          ${student.gender ? `<span class="badge">${esc(student.gender)}</span>` : ""}
+          <span class="badge">${isActive ? "● Active" : "○ Inactive"}</span>
             </div>
-            
-            <div class="section-title">Personal Information</div>
-            <div class="info-grid">
-              <div class="info-item"><span class="label">Full Name:</span> <span class="value">${
-                student.full_name
-              }</span></div>
-              <div class="info-item"><span class="label">Date of Birth:</span> <span class="value">${
-                student.date_of_birth || "N/A"
-              }</span></div>
-              <div class="info-item"><span class="label">Age:</span> <span class="value">${calculateAge(
-                student.date_of_birth
-              )}</span></div>
-              <div class="info-item"><span class="label">Gender:</span> <span class="value">${
-                student.gender || "N/A"
-              }</span></div>
-              <div class="info-item"><span class="label">Email:</span> <span class="value">${
-                student.email || "N/A"
-              }</span></div>
-              <div class="info-item"><span class="label">Phone:</span> <span class="value">${
-                student.phone || "N/A"
-              }</span></div>
-              <div class="info-item"><span class="label">Religion:</span> <span class="value">${
-                student.religion || "N/A"
-              }</span></div>
-              <div class="info-item"><span class="label">Nationality:</span> <span class="value">${
-                student.nationality || "N/A"
-              }</span></div>
-              <div class="info-item"><span class="label">Blood Group:</span> <span class="value">${
-                student.blood_group || "N/A"
-              }</span></div>
-              <div class="info-item"><span class="label">Genotype:</span> <span class="value">${
-                student.genotype || "N/A"
-              }</span></div>
+        <div class="header-id">ID: ${esc(student.student_id?.substring(0, 16) || "N/A")}</div>
+        <div class="print-date">Printed ${new Date().toLocaleString()}</div>
+            </div>
+    </div>
             </div>
 
-            <div class="section-title">Academic Information</div>
-            <div class="info-grid">
-              <div class="info-item"><span class="label">Admission Number:</span> <span class="value">${
-                student.admission_number || "N/A"
-              }</span></div>
-              <div class="info-item"><span class="label">Current Class:</span> <span class="value">${
-                activeAdmission?.admission_class ||
-                student.current_class ||
-                "N/A"
-              }</span></div>
-              <div class="info-item"><span class="label">Admission Date:</span> <span class="value">${
-                activeAdmission?.admitted_date || "N/A"
-              }</span></div>
-              <div class="info-item"><span class="label">Session:</span> <span class="value">${
-                activeAdmission?.admission_session || "N/A"
-              }</span></div>
-            </div>
-
+  <div class="card">
+    ${section("Student Information",
+      field("Full Name", student.full_name) +
+      field("Admission No.", student.admission_number) +
+      field("Date of Birth", student.date_of_birth) +
+      field("Gender", student.gender) +
+      field("Email", student.email) +
+      field("Phone", student.phone) +
+      field("WhatsApp", student.whatsapp) +
+      field("Religion", student.religion) +
+      field("Nationality", student.nationality)
+    )}
+    ${section("Identity / bio",
+      field("Place of Birth", student.place_of_birth) +
+      field("LGA of Origin", student.lga_of_origin) +
+      field("State of Origin", student.state_of_origin) +
+      field("Tribe / Ethnic Group", student.tribe) +
+      field("NIN", student.nin) +
+      field("Number of Siblings", student.number_of_siblings) +
+      field("Position in Family", student.family_position) +
+      field("Lives With", student.lives_with) +
+      field("Blood Group", student.blood_group) +
+      field("Genotype", student.genotype)
+    )}
+    ${section("Residence",
+      field("House Number / Street", student.house_number_street) +
+      field("Area / Estate", student.area_estate) +
+      field("City", student.city) +
+      field("LGA of Residence", student.lga_of_residence) +
+      field("State of Residence", student.state_of_residence) +
+      field("Landmark", student.landmark)
+    )}
+    ${section("Emergency Contact",
+      field("Name", student.emergency_contact_name) +
+      field("Relationship", student.emergency_contact_relationship) +
+      field("Phone", student.emergency_contact_phone) +
+      field("WhatsApp", student.emergency_contact_whatsapp)
+    )}
+    ${section("Academic Information",
+      field("Admission Number", student.admission_number) +
+      field("Current Class", classLabel) +
+      field("Admission Date", activeAdmission?.admitted_date) +
+      field("Session", activeAdmission?.admission_session)
+    )}
             ${
               primaryGuardian
-                ? `
-            <div class="section-title">Guardian Information</div>
-            <div class="info-grid">
-              <div class="info-item"><span class="label">Guardian Name:</span> <span class="value">${
-                primaryGuardian.guardian_name || "N/A"
-              }</span></div>
-              <div class="info-item"><span class="label">Relationship:</span> <span class="value">${
-                primaryGuardian.guardian_relationship || "N/A"
-              }</span></div>
-              <div class="info-item"><span class="label">Phone:</span> <span class="value">${
-                primaryGuardian.guardian_phone || "N/A"
-              }</span></div>
-              <div class="info-item"><span class="label">Email:</span> <span class="value">${
-                primaryGuardian.guardian_email || "N/A"
-              }</span></div>
-              <div class="info-item"><span class="label">Occupation:</span> <span class="value">${
-                primaryGuardian.guardian_occupation || "N/A"
-              }</span></div>
-            </div>
-            `
-                : ""
-            }
+        ? section(
+            "Guardian Information",
+            field("Guardian Name", primaryGuardian.guardian_name) +
+              field("Relationship", primaryGuardian.guardian_relationship) +
+              field("Phone", primaryGuardian.guardian_phone) +
+              field("WhatsApp", primaryGuardian.guardian_whatsapp) +
+              field("Email", primaryGuardian.guardian_email) +
+              field("Occupation", primaryGuardian.guardian_occupation)
+          )
+        : ""
+    }
+  </div>
 
-            <p style="text-align: center; margin-top: 30px; color: #666; font-size: 12px;">
-              Generated on ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}
-            </p>
+  <div class="footer">
+    <span class="footer-school">${esc(schoolName)}</span>
+    <span class="footer-brand">ScladApp</span>
+  </div>
+</div>
+<script>window.onload=()=>{window.print();}</script>
           </body>
-        </html>
-      `;
+</html>`;
 
-      printWindow.document.write(printContent);
-      printWindow.document.close();
-      printWindow.focus();
-      printWindow.print();
-      printWindow.close();
-
+      const w = window.open("", "_blank");
+      w.document.open();
+      w.document.write(html);
+      w.document.close();
       addNotification("Print dialog opened", "success");
     } catch (error) {
       console.error("Print error:", error);
@@ -381,16 +584,30 @@ const StudentIdentity = () => {
       fullName: s.full_name || "",
       email: s.email || "",
       phone: s.phone || "",
+      whatsapp: s.whatsapp || "",
       dateOfBirth: s.date_of_birth || "",
       gender: s.gender || "",
       religion: s.religion || "",
       nationality: s.nationality || "",
       stateOfOrigin: s.state_of_origin || "",
-      address: s.address || "",
+      placeOfBirth: s.place_of_birth || "",
+      lgaOfOrigin: s.lga_of_origin || "",
+      tribe: s.tribe || "",
+      nin: s.nin || "",
+      numberOfSiblings: s.number_of_siblings || "",
+      familyPosition: s.family_position || "",
+      livesWith: s.lives_with || "",
       bloodGroup: s.blood_group || "",
       genotype: s.genotype || "",
+      houseNumberStreet: s.house_number_street || "",
+      areaEstate: s.area_estate || "",
+      city: s.city || "",
+      lgaOfResidence: s.lga_of_residence || "",
+      stateOfResidence: s.state_of_residence || "",
+      landmark: s.landmark || "",
       emergencyContactName: s.emergency_contact_name || "",
       emergencyContactPhone: s.emergency_contact_phone || "",
+      emergencyContactWhatsapp: s.emergency_contact_whatsapp || "",
       emergencyContactRelationship: s.emergency_contact_relationship || "",
       studentPhoto: s.student_photo || null,
     });
@@ -685,19 +902,14 @@ const StudentIdentity = () => {
               </div>
             </div>
 
-            {/* Personal info */}
             <div className="si-edit-section-title">Personal Information</div>
             <div className="si-edit-grid">
               {[
-                { label: "Full Name *", key: "fullName",    type: "text" },
-                { label: "Email",       key: "email",       type: "email" },
-                { label: "Phone",       key: "phone",       type: "text" },
+                { label: "Full Name *", key: "fullName", type: "text" },
                 { label: "Date of Birth", key: "dateOfBirth", type: "date" },
-                { label: "Religion",    key: "religion",    type: "text" },
-                { label: "Nationality", key: "nationality", type: "text" },
-                { label: "State of Origin", key: "stateOfOrigin", type: "text" },
-                { label: "Blood Group", key: "bloodGroup",  type: "text" },
-                { label: "Genotype",    key: "genotype",    type: "text" },
+                { label: "Email", key: "email", type: "email" },
+                { label: "Phone", key: "phone", type: "text" },
+                { label: "WhatsApp number", key: "whatsapp", type: "text" },
               ].map(({ label, key, type }) => (
                 <div key={key} className="si-edit-field">
                   <label>{label}</label>
@@ -714,18 +926,64 @@ const StudentIdentity = () => {
               </div>
             </div>
 
+            <div className="si-edit-section-title">Identity / bio</div>
+            <div className="si-edit-grid">
+              {[
+                { label: "Religion", key: "religion", type: "text" },
+                { label: "Nationality", key: "nationality", type: "text" },
+                { label: "State of Origin", key: "stateOfOrigin", type: "text" },
+                { label: "LGA of origin", key: "lgaOfOrigin", type: "text" },
+                { label: "Place of birth", key: "placeOfBirth", type: "text" },
+                { label: "Tribe / ethnic group", key: "tribe", type: "text" },
+                { label: "NIN", key: "nin", type: "text" },
+                { label: "Number of siblings", key: "numberOfSiblings", type: "text" },
+                { label: "Position in the family", key: "familyPosition", type: "text" },
+                { label: "Blood Group", key: "bloodGroup", type: "text" },
+                { label: "Genotype", key: "genotype", type: "text" },
+              ].map(({ label, key, type }) => (
+                <div key={key} className="si-edit-field">
+                  <label>{label}</label>
+                  <input type={type} value={editForm[key] || ""} onChange={e => setEditForm(p => ({ ...p, [key]: e.target.value }))} />
+                </div>
+              ))}
             <div className="si-edit-field">
-              <label>Address</label>
-              <textarea value={editForm.address || ""} onChange={e => setEditForm(p => ({ ...p, address: e.target.value }))} rows={2} />
+                <label>Lives with</label>
+                <select value={editForm.livesWith || ""} onChange={e => setEditForm(p => ({ ...p, livesWith: e.target.value }))}>
+                  <option value="">— Select —</option>
+                  <option value="Both parents">Both parents</option>
+                  <option value="Father">Father</option>
+                  <option value="Mother">Mother</option>
+                  <option value="Guardian">Guardian</option>
+                  <option value="Single parent">Single parent</option>
+                  <option value="Orphan">Orphan</option>
+                </select>
+              </div>
             </div>
 
-            {/* Emergency contact */}
-            <div className="si-edit-section-title">Emergency Contact</div>
-            <div className="si-edit-grid-3">
+            <div className="si-edit-section-title">Residence</div>
+            <div className="si-edit-grid">
               {[
-                { label: "Name",         key: "emergencyContactName" },
-                { label: "Phone",        key: "emergencyContactPhone" },
+                { label: "House number / street", key: "houseNumberStreet" },
+                { label: "Area / estate", key: "areaEstate" },
+                { label: "City", key: "city" },
+                { label: "LGA of residence", key: "lgaOfResidence" },
+                { label: "State of residence", key: "stateOfResidence" },
+                { label: "Landmark", key: "landmark" },
+              ].map(({ label, key }) => (
+                <div key={key} className="si-edit-field">
+                  <label>{label}</label>
+                  <input type="text" value={editForm[key] || ""} onChange={e => setEditForm(p => ({ ...p, [key]: e.target.value }))} />
+                </div>
+              ))}
+            </div>
+
+            <div className="si-edit-section-title">Emergency Contact</div>
+            <div className="si-edit-grid">
+              {[
+                { label: "Name", key: "emergencyContactName" },
                 { label: "Relationship", key: "emergencyContactRelationship" },
+                { label: "Phone", key: "emergencyContactPhone" },
+                { label: "WhatsApp number", key: "emergencyContactWhatsapp" },
               ].map(({ label, key }) => (
                 <div key={key} className="si-edit-field">
                   <label>{label}</label>

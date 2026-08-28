@@ -20,6 +20,16 @@ const IconPlus = () => (
     <line x1="5" y1="12" x2="19" y2="12" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
   </svg>
 );
+const IconCollapseAll = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+    <path d="M4 6h16M4 12h10M4 18h6" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+  </svg>
+);
+const IconExpandAll = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+    <path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+  </svg>
+);
 
 /**
  * Props:
@@ -40,6 +50,8 @@ export default function ManualLeftPanel({
   onAdd, onDelete, onDuplicate, onMove,
   onOpenModal,
 }) {
+  const [expandAll, setExpandAll] = useState(false);
+
   return (
     <div className="manual-side-panel manual-side-panel--left">
 
@@ -66,9 +78,17 @@ export default function ManualLeftPanel({
         >
           <IconPlus /> Add section
         </button>
+        <button
+          type="button"
+          className="msp-icon-btn"
+          onClick={() => setExpandAll((e) => !e)}
+          title={expandAll ? "Collapse all elements" : "Expand all elements"}
+          aria-label={expandAll ? "Collapse all elements" : "Expand all elements"}
+        >
+          {expandAll ? <IconCollapseAll /> : <IconExpandAll />}
+        </button>
       </div>
 
-      {/* ── Content ─────────────────────────────────────────────── */}
       <div className="msp-content">
         <LayoutTree
           html={html}
@@ -81,6 +101,7 @@ export default function ManualLeftPanel({
           onDuplicate={onDuplicate}
           onMove={onMove}
           onOpenModal={onOpenModal}
+          expandAll={expandAll}
         />
       </div>
     </div>

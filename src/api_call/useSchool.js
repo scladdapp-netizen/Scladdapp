@@ -30,7 +30,10 @@ const useSchool = () => {
       let headers = {};
       if (logoFile) {
         body = new FormData();
-        Object.entries(profileData).forEach(([k, v]) => { if (v !== null && v !== undefined) body.append(k, v); });
+        Object.entries(profileData).forEach(([k, v]) => {
+          if (v === null || v === undefined) return;
+          body.append(k, typeof v === "object" ? JSON.stringify(v) : v);
+        });
         body.append("school_logo", logoFile);
       } else {
         body = JSON.stringify(profileData);

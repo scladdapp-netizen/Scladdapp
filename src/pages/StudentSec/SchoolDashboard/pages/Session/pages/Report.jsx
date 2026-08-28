@@ -5,7 +5,7 @@ import useStudentReport from "../../../../../../api_call/useStudentReport";
 import InnerTabCon from "../../../../../../components/InnerTabCon/InnerTabCon";
 import LoadingData from "../../../../../../components/LoadingData/LoadingData";
 import { exportReportPDF } from "../../../../../../utils/exportReportPDF";
-import { exportReportHtml } from "../../../../../../utils/exportReportHtml";
+import { exportReportHtml, resolveReportExportTemplate } from "../../../../../../utils/exportReportHtml";
 import "../../../../../AdminSec/AdminPages/StudentProfile/pagesTab/ReportStudentInfo/ReportStudentInfo.css";
 
 const Report = () => {
@@ -53,7 +53,7 @@ const Report = () => {
   const classPos = rankings.findIndex((r) => r.student_id === studentId) + 1;
 
   // ── PDF Export ────────────────────────────────────────────────────────────
-  const handleExportPDF = () => {
+  const handleExportPDF = async () => {
     const studentName = previewData?.student?.studentName
       || subsessionData?.student_name
       || classData?.student_name
@@ -64,34 +64,46 @@ const Report = () => {
     const termName    = subsessionData?.term_name || classData?.subsession_name || previewData?.student?.term || "—";
     const profileImg  = previewData?.student?.profileImg || null;
 
-    // ── Use html_template if the admin designed a custom layout ─────────────
-    if (templateData?.html_template) {
-      exportReportHtml({
-        htmlTemplate: templateData.html_template,
-        template:     templateData,
-        school,
-        studentData: {
-          studentName,
-          class:          className,
-          session:        sessionName,
-          term:           termName,
-          admissionId:    previewData?.student?.admissionId ?? "—",
-          position:       classPos > 0 ? `${classPos} / ${rankings.length}` : "—",
-          gender:         previewData?.student?.gender ?? "—",
-          dob:            previewData?.student?.dob    ?? "—",
-          profileImg,
-          teacherRemark:   reportCard?.teacher_remark   ?? "",
-          principalRemark: reportCard?.principal_remark ?? "",
-          attendance:      previewData?.student?.attendance ?? null,
-        },
-        tableRows,
-        traitScores:    traitScore?.traits ?? {},
-        classAverage,
-        classPos,
-        totalStudents:  rankings.length,
-        grandTotal,
-      });
-      return;
+    const exportRows = tableRows.map((row) => ({
+      ...row,
+      position: subjectPositions?.[row.subject_id]
+        ? String(subjectPositions[row.subject_id])
+        : "—",
+    }));
+
+    const tpl = previewData?.template || templateData;
+    if (tpl) {
+      const resolved = await resolveReportExportTemplate(tpl, school);
+      if (resolved?.htmlTemplate) {
+        await exportReportHtml({
+          htmlTemplate: resolved.htmlTemplate,
+          themeCss:     resolved.themeCss,
+          template:     tpl,
+          school,
+          studentData: {
+            studentName,
+            class:          className,
+            session:        sessionName,
+            term:           termName,
+            admissionId:    previewData?.student?.admissionId ?? "—",
+            position:       classPos > 0 ? `${classPos} / ${rankings.length}` : "—",
+            gender:         previewData?.student?.gender ?? "—",
+            dob:            previewData?.student?.dob    ?? "—",
+            profileImg,
+            teacherRemark:   reportCard?.teacher_remark   ?? "",
+            principalRemark: reportCard?.principal_remark ?? "",
+            attendance:      previewData?.student?.attendance ?? null,
+          },
+          tableRows:         exportRows,
+          traitScores:       traitScore?.traits ?? {},
+          classAverage,
+          classPos,
+          totalStudents:     rankings.length,
+          grandTotal,
+          subjectPositions,
+        });
+        return;
+      }
     }
 
     // ── Fallback: jsPDF programmatic export ───────────────────────────────────
@@ -106,7 +118,7 @@ const Report = () => {
       gradingScheme,
       behavioralTraits,
       traitScores: traitScore?.traits ?? {},
-      tableRows,
+      tableRows: exportRows,
       subjectPositions,
       grandTotal,
       classAverage,

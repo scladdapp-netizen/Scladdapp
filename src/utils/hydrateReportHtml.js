@@ -64,20 +64,18 @@ export const hydrateReportHtml = (html, template) => {
   });
 
   // ── Build {{subjectTableRows}} ──────────────────────────────────────────
-  const subjectTableRows = mockSubjects.map((row, i) => {
-    const even = i % 2 === 0;
-    const bg = even ? "#f9fafb" : "#ffffff";
+  const subjectTableRows = mockSubjects.map((row) => {
     const scoreCells = gradingFields
-      .map((f) => `<td style="padding:5px 8px;border-bottom:1px solid #f3f4f6;text-align:center;font-size:10px;background:${bg}">${row.scores[f.field_name] ?? "—"}</td>`)
+      .map((f) => `<td style="text-align:center">${row.scores[f.field_name] ?? "—"}</td>`)
       .join("");
     return `<tr>
-      <td style="padding:5px 8px;border-bottom:1px solid #f3f4f6;text-align:left;font-size:10px;font-weight:500;background:${bg}">${row.name}</td>
+      <td style="text-align:left;font-weight:500">${row.name}</td>
       ${scoreCells}
-      <td style="padding:5px 8px;border-bottom:1px solid #f3f4f6;text-align:center;font-size:10px;font-weight:700;background:${bg}">${row.total}</td>
-      <td style="padding:5px 8px;border-bottom:1px solid #f3f4f6;text-align:center;font-size:10px;background:${bg}">
+      <td style="text-align:center;font-weight:700">${row.total}</td>
+      <td style="text-align:center">
         <span style="display:inline-block;padding:1px 5px;border-radius:8px;background:#111111;color:#ffffff;font-weight:700;font-size:9px">${row.grade}</span>
       </td>
-      <td style="padding:5px 8px;border-bottom:1px solid #f3f4f6;text-align:center;font-size:10px;color:#6b7280;background:${bg}">${row.position}</td>
+      <td style="text-align:center">${row.position}</td>
     </tr>`;
   }).join("");
 

@@ -289,6 +289,145 @@ export function patchStyle(html, selector, prop, value) {
 }
 
 /**
+ * Set several CSS properties on the same element in one parse, so later
+ * writes are not applied to stale HTML.
+ */
+export function patchStyles(html, selector, props) {
+  if (!html || !selector || !props) return html || "";
+  return withDoc(html, (doc) => {
+    let el = findEl(doc, selector);
+    if (!el) {
+      const simplified = selector.replace(/:nth-of-type\(\d+\)/g, "");
+      if (simplified !== selector) el = findEl(doc, simplified);
+    }
+    if (!el) {
+      console.warn("[patchStyles] Element not found for selector:", selector);
+      return;
+    }
+    Object.entries(props).forEach(([prop, value]) => {
+      if (value === null || value === undefined || value === "") {
+        el.style.removeProperty(prop);
+      } else {
+        el.style.setProperty(prop, value);
+      }
+    });
+  });
+}
+
+function applyStyleMap(el, map) {
+  if (!el || !map) return;
+  Object.entries(map).forEach(([prop, value]) => {
+    if (value === null || value === undefined || value === "") {
+      el.style.removeProperty(prop);
+    } else {
+      el.style.setProperty(prop, value);
+    }
+  });
+}
+
+function cssDecls(map) {
+  if (!map) return "";
+  return Object.entries(map)
+    .filter(([, v]) => v !== null && v !== undefined && v !== "")
+    .map(([k, v]) => `${k}: ${v} !important`)
+    .join("; ");
+}
+
+function rowTdMap(template, rowMap) {
+  const out = { ...(template.td || {}) };
+  const bg = rowMap?.["background-color"];
+  if (bg && bg !== "transparent") out["background-color"] = bg;
+  return out;
+}
+
+/**
+ * Body rows for scores are often {{subjectTableRows}} — they have no <td>
+ * until preview/export hydrates them, and those cells ship their own inline
+ * styles. A <style> next to the table wins with !important so tbody matches.
+ */
+function upsertTableThemeCss(doc, table, template) {
+  let id = table.getAttribute("data-hle-id");
+  if (!id) {
+    id = `tbl-theme-${template.id || "custom"}`;
+    table.setAttribute("data-hle-id", id);
+  }
+
+  const sel = `table[data-hle-id="${id}"]`;
+  const rules = [
+    `${sel} thead { ${cssDecls(template.thead)} }`,
+    `${sel} tfoot { ${cssDecls(template.tfoot)} }`,
+    `${sel} th { ${cssDecls(template.th)} }`,
+    `${sel} td { ${cssDecls(template.td)} }`,
+    `${sel} tbody tr:nth-child(odd) td { ${cssDecls(rowTdMap(template, template.trOdd))} }`,
+    `${sel} tbody tr:nth-child(even) td { ${cssDecls(rowTdMap(template, template.trEven))} }`,
+    `${sel} tfoot td { ${cssDecls(template.td)} }`,
+  ].filter((r) => !r.endsWith("{  }"));
+
+  const css = rules.join("\n");
+  let styleEl = null;
+  doc.querySelectorAll("style[data-hle-table-css]").forEach((s) => {
+    if (s.getAttribute("data-hle-table-css") === id) styleEl = s;
+  });
+  if (!styleEl) {
+    styleEl = doc.createElement("style");
+    styleEl.setAttribute("data-hle-table-css", id);
+    table.parentNode?.insertBefore(styleEl, table);
+  }
+  styleEl.textContent = css;
+}
+
+/**
+ * Restyle a <table> (or the table that contains the selected cell/row)
+ * using a preset of inline styles on the table, header, cells, and rows.
+ */
+export function applyTableTemplate(html, selector, template) {
+  if (!html || !selector || !template) return html || "";
+  return withDoc(html, (doc) => {
+    let el = findEl(doc, selector);
+    if (!el) {
+      const simplified = selector.replace(/:nth-of-type\(\d+\)/g, "");
+      if (simplified !== selector) el = findEl(doc, simplified);
+    }
+    if (!el) {
+      console.warn("[applyTableTemplate] Element not found for selector:", selector);
+      return;
+    }
+    const table = el.tagName === "TABLE" ? el : el.closest("table");
+    if (!table) return;
+
+    table.setAttribute("data-table-theme", template.id || "");
+    // Clear chrome left over from other presets (overflow clips an outer border).
+    applyStyleMap(table, {
+      overflow: "visible",
+      "border-radius": "0",
+      outline: "none",
+      border: "none",
+      "border-spacing": "0",
+    });
+    applyStyleMap(table, template.table);
+
+    table.querySelectorAll("thead").forEach((n) => {
+      n.style.removeProperty("background");
+      applyStyleMap(n, template.thead);
+    });
+    table.querySelectorAll("tfoot").forEach((n) => {
+      n.style.removeProperty("background");
+      applyStyleMap(n, template.tfoot);
+    });
+    table.querySelectorAll("th").forEach((n) => applyStyleMap(n, template.th));
+    table.querySelectorAll("td").forEach((n) => applyStyleMap(n, template.td));
+
+    const bodyRows = table.querySelectorAll("tbody tr");
+    bodyRows.forEach((tr, i) => {
+      const even = i % 2 === 1;
+      applyStyleMap(tr, even ? (template.trEven || template.tr) : (template.trOdd || template.tr));
+    });
+
+    upsertTableThemeCss(doc, table, template);
+  });
+}
+
+/**
  * Replace the visible text content (textContent) of the element matching
  * `selector`. For elements that contain only text (no child elements) this
  * is equivalent to editing the label. For elements with mixed content the

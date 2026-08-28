@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import "./LogIn.css";
 import { useNavigate, useParams } from "react-router-dom";
 import FormInput from "../../components/FormInput";
@@ -7,12 +7,25 @@ import RoleSelectionModal from "../../components/RoleSelectionModal/RoleSelectio
 import { uselogin } from "./uselogin";
 import { useTheme } from "../../context/ThemeContext/ThemeContext";
 import LoginLeftPanel from "./LoginLeftPanel";
+import useSchool from "../../api_call/useSchool";
 
 const LogIn = ({ schoolId: propSchoolId = null }) => {
   const navigate = useNavigate();
   const { schoolId: paramSchoolId } = useParams();
   const schoolId = propSchoolId || paramSchoolId || null;
   const { theme, setTheme, resolved } = useTheme();
+  const { getProfile } = useSchool();
+  const [schoolProfile, setSchoolProfile] = useState(null);
+
+  useEffect(() => {
+    if (!schoolId) {
+      setSchoolProfile(null);
+      return;
+    }
+    getProfile(schoolId).then((res) => {
+      if (res?.success) setSchoolProfile(res.data);
+    });
+  }, [schoolId]);
 
   const {
     email, setEmail,
@@ -47,6 +60,10 @@ const LogIn = ({ schoolId: propSchoolId = null }) => {
     );
   };
 
+  const brandName = schoolProfile?.school_name || "Scladapp";
+  const brandLogo = schoolProfile?.logo_url || null;
+  const brandInitial = (brandName || "S").charAt(0).toUpperCase();
+
   return (
     <div className="login-page">
       {/* Theme toggle */}
@@ -64,14 +81,20 @@ const LogIn = ({ schoolId: propSchoolId = null }) => {
         <div className="login-card">
           {/* Mobile brand */}
           <div className="login-card-brand">
-            <div className="login-card-brand-icon">
-              <svg width="20" height="20" viewBox="0 0 16 16" fill="none">
-                <path d="M8 1l7 3.5-7 3.5-7-3.5L8 1z" fill="white" />
-                <path d="M1 8l7 3.5L15 8" stroke="white" strokeWidth="1.4" strokeLinecap="round" opacity="0.7" />
-                <path d="M1 11.5l7 3.5 7-3.5" stroke="white" strokeWidth="1.4" strokeLinecap="round" opacity="0.4" />
-              </svg>
+            <div className={`login-card-brand-icon${brandLogo ? " login-card-brand-icon--logo" : ""}`}>
+              {brandLogo ? (
+                <img src={brandLogo} alt={brandName} />
+              ) : schoolId && schoolProfile ? (
+                <span className="login-card-brand-initial">{brandInitial}</span>
+              ) : (
+                <svg width="20" height="20" viewBox="0 0 16 16" fill="none">
+                  <path d="M8 1l7 3.5-7 3.5-7-3.5L8 1z" fill="white" />
+                  <path d="M1 8l7 3.5L15 8" stroke="white" strokeWidth="1.4" strokeLinecap="round" opacity="0.7" />
+                  <path d="M1 11.5l7 3.5 7-3.5" stroke="white" strokeWidth="1.4" strokeLinecap="round" opacity="0.4" />
+                </svg>
+              )}
             </div>
-            <span className="login-card-brand-name">Scladapp</span>
+            <span className="login-card-brand-name">{brandName}</span>
           </div>
 
           {/* Header */}

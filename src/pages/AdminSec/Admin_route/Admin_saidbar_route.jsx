@@ -35,7 +35,7 @@ const SchoolPage = () => (
     subtitle="Manage your school profile, bio, resources and gallery"
     route={[
       { label: "Profile",   link: "/profile" },
-      { label: "Bio",       link: "/bio" },
+      // { label: "Bio",       link: "/bio" },
       { label: "Resources", link: "/resources" },
       { label: "Gallery",   link: "/gallery" },
       { label: "Website",   link: "/website" },

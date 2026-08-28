@@ -108,8 +108,9 @@ const PricingPage = () => {
             </div>
 
             <ul className="pricing-pg__features">
-              <li>Up to {plan.max_students} students</li>
-              <li>Up to {plan.max_staff} staff</li>
+              <li>Unlimited students</li>
+              <li>Unlimited staff</li>
+              <li>Up to {plan.max_subadmin} sub-admins</li>
               {plan.features?.map((f, j) => <li key={j}>{f}</li>)}
             </ul>
 

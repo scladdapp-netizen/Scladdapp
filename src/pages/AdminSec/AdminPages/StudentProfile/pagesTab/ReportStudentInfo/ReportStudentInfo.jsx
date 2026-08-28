@@ -10,7 +10,7 @@ import useStudentReport from "../../../../../../api_call/useStudentReport";
 import { useAuth } from "../../../../../../context/AuthContext/AuthContext";
 import { useNotification } from "../../../../../../context/NotificationProvider/NotificationProvider";
 import { exportReportPDF } from "../../../../../../utils/exportReportPDF";
-import { exportReportHtml } from "../../../../../../utils/exportReportHtml";
+import { exportReportHtml, resolveReportExportTemplate } from "../../../../../../utils/exportReportHtml";
 
 /**
  * A single touch-tap tracker shared across cells.
@@ -90,6 +90,7 @@ const ReportStudentInfo = () => {
 
   const [publishPanel, setPublishPanel] = useState(false);
   const [publishing, setPublishing] = useState(false);
+  const [sendingEmail, setSendingEmail] = useState(false);
 
   const [previewOpen, setPreviewOpen] = useState(false);
   const [creating, setCreating] = useState(false);
@@ -346,6 +347,38 @@ const ReportStudentInfo = () => {
     reload();
   };
 
+  const handleSendResultEmail = async () => {
+    if (!reportCard?.is_published) {
+      addNotification("Publish the report card before sending email", "error");
+      return;
+    }
+    if (!canEdit) {
+      permNotify("You do not have permission to send result emails.");
+      return;
+    }
+    setSendingEmail(true);
+    try {
+      const res = await fetch(
+        `${import.meta.env.VITE_API_BASE_URL}/api/student-report/student/${studentId}/subsession/${subseasion}/send-email`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ modified_by: user?.admin?.admin_id || user?.user_id }),
+        }
+      );
+      const data = await res.json();
+      if (data.success) {
+        addNotification(data.message || "Result email sent", "success");
+      } else {
+        addNotification(data.message || "Failed to send result email", "error");
+      }
+    } catch {
+      addNotification("Failed to send result email", "error");
+    } finally {
+      setSendingEmail(false);
+    }
+  };
+
   const grandTotal = tableRows.reduce((sum, row) => {
     if (!row.scores) return sum;
     return sum + gradingFields.reduce((s, f) => s + (Number(row.scores[f.field_name]) || 0), 0);
@@ -355,7 +388,7 @@ const ReportStudentInfo = () => {
   const classPos = rankings.findIndex((r) => r.student_id === studentId) + 1;
 
   // ── PDF Export ────────────────────────────────────────────────────────────
-  const handleExportPDF = () => {
+  const handleExportPDF = async () => {
     const school = user?.school || {};
     const studentName = previewData?.student?.studentName
       || subsessionData?.student_name
@@ -375,6 +408,9 @@ const ReportStudentInfo = () => {
       scores: row.scores
         ? { ...row.scores, ...(scoreOverrides[row.subject_id] ?? {}) }
         : (scoreOverrides[row.subject_id] ? { ...scoreOverrides[row.subject_id] } : null),
+      position: subjectPositions?.[row.subject_id]
+        ? String(subjectPositions[row.subject_id])
+        : "—",
     }));
 
     const exportGrandTotal = exportRows.reduce((sum, row) => {
@@ -385,36 +421,39 @@ const ReportStudentInfo = () => {
     // Merge local trait overrides
     const exportTraitScores = { ...(traitScore?.traits ?? {}), ...traitOverrides };
 
-    // ── Use html_template from the grading template if available ─────────────
-    // html_template is the published custom layout the admin designed in the editor.
-    // Falls back to the jsPDF programmatic export when no custom HTML exists.
-    if (templateData?.html_template) {
-      exportReportHtml({
-        htmlTemplate: templateData.html_template,
-        template:     templateData,
-        school,
-        studentData: {
-          studentName,
-          class:          className,
-          session:        sessionName,
-          term:           termName,
-          admissionId:    previewData?.student?.admissionId ?? "—",
-          position:       classPosN > 0 ? `${classPosN} / ${rankings.length}` : "—",
-          gender:         previewData?.student?.gender ?? "—",
-          dob:            previewData?.student?.dob    ?? "—",
-          profileImg,
-          teacherRemark:   reportCard?.teacher_remark   ?? "",
-          principalRemark: reportCard?.principal_remark ?? "",
-          attendance:      previewData?.student?.attendance ?? null,
-        },
-        tableRows:      exportRows,
-        traitScores:    exportTraitScores,
-        classAverage,
-        classPos:       classPosN,
-        totalStudents:  rankings.length,
-        grandTotal:     exportGrandTotal,
-      });
-      return;
+    const tpl = previewData?.template || templateData;
+    if (tpl) {
+      const resolved = await resolveReportExportTemplate(tpl, school);
+      if (resolved?.htmlTemplate) {
+        await exportReportHtml({
+          htmlTemplate: resolved.htmlTemplate,
+          themeCss:     resolved.themeCss,
+          template:     tpl,
+          school,
+          studentData: {
+            studentName,
+            class:          className,
+            session:        sessionName,
+            term:           termName,
+            admissionId:    previewData?.student?.admissionId ?? "—",
+            position:       classPosN > 0 ? `${classPosN} / ${rankings.length}` : "—",
+            gender:         previewData?.student?.gender ?? "—",
+            dob:            previewData?.student?.dob    ?? "—",
+            profileImg,
+            teacherRemark:   reportCard?.teacher_remark   ?? "",
+            principalRemark: reportCard?.principal_remark ?? "",
+            attendance:      previewData?.student?.attendance ?? null,
+          },
+          tableRows:         exportRows,
+          traitScores:       exportTraitScores,
+          classAverage,
+          classPos:          classPosN,
+          totalStudents:     rankings.length,
+          grandTotal:        exportGrandTotal,
+          subjectPositions,
+        });
+        return;
+      }
     }
 
     // ── Fallback: jsPDF programmatic export ───────────────────────────────────
@@ -480,6 +519,18 @@ const ReportStudentInfo = () => {
               ) : (
                 <button className="rsi-btn rsi-btn-create" onClick={openCreatePanel} disabled={creating}>
                   {creating ? "Creating..." : "Create Report Card"}
+                </button>
+              )}
+              {reportCard?.is_published && (
+                <button
+                  className="rsi-btn rsi-btn-outline"
+                  onClick={handleSendResultEmail}
+                  disabled={sendingEmail}
+                >
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="3" y="5" width="18" height="14" rx="2"/><path d="M4 7.5 12 13l8-5.5"/>
+                  </svg>
+                  {sendingEmail ? "Sending..." : "Send Email"}
                 </button>
               )}
               <button
