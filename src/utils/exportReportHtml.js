@@ -19,6 +19,8 @@
  * @param {number}   params.grandTotal
  * @param {object}   [params.subjectPositions] - { [subject_id]: number }
  */
+import { buildWatermarkContent } from "./generateDefaultReportHtml";
+
 export const exportReportHtml = async ({
   htmlTemplate,
   themeCss = "",
@@ -154,6 +156,7 @@ export const exportReportHtml = async ({
     schoolAddress: school?.address || "",
     schoolPhone: school?.phone_number || "",
     schoolEmail: school?.email || "",
+    watermarkContent: buildWatermarkContent(school),
     studentInitial: studentInitialHtml,
     studentName: studentData?.studentName ?? "—",
     gender: studentData?.gender ?? "—",

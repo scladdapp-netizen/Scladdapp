@@ -1,4 +1,5 @@
 import { useEffect, useState, useId } from "react";
+import { buildWatermarkContent } from "../../utils/generateDefaultReportHtml";
 import "./ReportCardPreview.css";
 
 const API_BASE = `${import.meta.env.VITE_API_BASE_URL}`;
@@ -94,6 +95,10 @@ const renderTemplate = (html, data, template) => {
     schoolAddress:   data.schoolAddress   ?? "—",
     schoolPhone:     data.schoolPhone     ?? "—",
     schoolEmail:     data.schoolEmail     ?? "—",
+    watermarkContent: buildWatermarkContent({
+      logo_url: data.schoolLogo || "",
+      school_name: data.schoolName || "",
+    }),
     studentInitial,
     studentName:     data.studentName     ?? "—",
     gender:          data.gender          ?? "—",

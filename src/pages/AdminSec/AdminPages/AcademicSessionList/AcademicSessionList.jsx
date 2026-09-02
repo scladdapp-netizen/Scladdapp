@@ -466,7 +466,7 @@ const AcademicSessionList = () => {
                 </div>
                 <div className="asl-card-header-right">
                   <div className={getStatusClass(session.session_status)}>
-                    {getStatusIcon(session.session_status)}
+                    {/* {getStatusIcon(session.session_status)} */}
                     <span>{session.session_status}</span>
                   </div>
                   <div className="session-actions-dropdown">

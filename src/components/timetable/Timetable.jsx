@@ -211,15 +211,23 @@ const TimetableListView = ({ days, groupedByDay, onEntryClick }) => {
 
             <div className="timetable-list-entries">
               {entries.map((subj) => {
-                const isMulti = subj.subjects && subj.subjects.length > 1;
-                const accentColor = subj.streamColor || getColorForTopic(subj.name);
+                const isBreak = !!subj.isBreak || /break|lunch|recess|interval/i.test(subj.name || "");
+                const isMulti = !isBreak && subj.subjects && subj.subjects.length > 1;
+                const accentColor = isBreak
+                  ? "#9ca3af"
+                  : (subj.streamColor || getColorForTopic(subj.name));
 
                 let displayName = subj.name;
                 let teacherName = subj.teacher || null;
                 let streamLabel = subj.streamName || null;
                 let streamColor = accentColor;
 
-                if (!isMulti && subj.subjects && subj.subjects[0]) {
+                if (isBreak) {
+                  displayName = subj.name || "Break";
+                  teacherName = null;
+                  streamLabel = "Break";
+                  streamColor = "#9ca3af";
+                } else if (!isMulti && subj.subjects && subj.subjects[0]) {
                   const s = subj.subjects[0];
                   displayName = s.displayName || `${s.name} (${s.streamName || "General"})`;
                   teacherName = s.teacher || null;
@@ -230,7 +238,7 @@ const TimetableListView = ({ days, groupedByDay, onEntryClick }) => {
                 return (
                   <div
                     key={subj.id}
-                    className="timetable-list-entry"
+                    className={`timetable-list-entry${isBreak ? " is-break" : ""}`}
                     onClick={() => onEntryClick(subj)}
                   >
                     {/* Left accent bar */}
@@ -242,7 +250,6 @@ const TimetableListView = ({ days, groupedByDay, onEntryClick }) => {
                     {/* Time column */}
                     <div className="timetable-list-entry-time">
                       <span className="timetable-list-time-start">{subj.start}</span>
-                      <span className="timetable-list-time-sep">↓</span>
                       <span className="timetable-list-time-end">{subj.end}</span>
                     </div>
 
@@ -272,24 +279,21 @@ const TimetableListView = ({ days, groupedByDay, onEntryClick }) => {
                       ) : (
                         <>
                           <span className="timetable-list-subject-name">{displayName}</span>
-                          {teacherName && (
-                            <span className="timetable-list-subject-teacher">{teacherName}</span>
-                          )}
-                          {streamLabel && (
-                            <span
-                              className="timetable-list-subject-stream"
-                              style={{ backgroundColor: streamColor }}
-                            >
-                              {streamLabel}
-                            </span>
-                          )}
+                          <div className="timetable-list-meta-row">
+                            {teacherName && (
+                              <span className="timetable-list-subject-teacher">{teacherName}</span>
+                            )}
+                            {streamLabel && (
+                              <span
+                                className="timetable-list-subject-stream"
+                                style={{ backgroundColor: streamColor }}
+                              >
+                                {streamLabel}
+                              </span>
+                            )}
+                          </div>
                         </>
                       )}
-                    </div>
-
-                    {/* Arrow */}
-                    <div className="timetable-list-entry-arrow">
-                      <ChevronRight />
                     </div>
                   </div>
                 );
@@ -332,19 +336,31 @@ const TimetableTableView = ({ days, groupedByDay, hours, startMinutes, totalMinu
             <div className="day-label">{dayShort[day]}</div>
             <div className="day-track">
               {groupedByDay[day].map((subj) => {
-                const isMulti = subj.subjects && subj.subjects.length > 1;
+                const isBreak = !!subj.isBreak || /break|lunch|recess|interval/i.test(subj.name || "");
+                const isMulti = !isBreak && subj.subjects && subj.subjects.length > 1;
                 return (
                   <div
                     key={subj.id}
-                    className={`subject ${isMulti ? "multi-subject" : "single-subject"}`}
+                    className={`subject ${isBreak ? "break-period" : isMulti ? "multi-subject" : "single-subject"}`}
                     style={{
                       ...getStyle(subj.start, subj.end),
-                      border: `2px solid ${subj.streamColor || getColorForTopic(subj.name)}`,
+                      border: `2px solid ${isBreak ? "#9ca3af" : (subj.streamColor || getColorForTopic(subj.name))}`,
                       cursor: "pointer",
+                      ...(isBreak
+                        ? {
+                            background: "repeating-linear-gradient(135deg, #f3f4f6, #f3f4f6 6px, #e5e7eb 6px, #e5e7eb 12px)",
+                            opacity: 0.95,
+                          }
+                        : {}),
                     }}
                     onClick={() => onPeriodClick(subj)}
                   >
-                    {isMulti ? (
+                    {isBreak ? (
+                      <div className="single-subject-content break-content">
+                        <div className="subject-title">{subj.name || "Break"}</div>
+                        <div className="subject-time">{subj.start} – {subj.end}</div>
+                      </div>
+                    ) : isMulti ? (
                       <AnimatedSubjectCell
                         subjects={subj.subjects}
                         start={subj.start}
@@ -375,8 +391,8 @@ const TimetableTableView = ({ days, groupedByDay, hours, startMinutes, totalMinu
 };
 
 // ---- Main export ----
-export default function Timetable({ timetableData = [] }) {
-  const [view, setView] = useState("list"); // "list" is default
+export default function Timetable({ timetableData = [], defaultView = "table" }) {
+  const [view, setView] = useState(defaultView); // "table" is default
   const [selectedPeriod, setSelectedPeriod] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 

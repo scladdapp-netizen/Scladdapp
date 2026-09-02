@@ -16,6 +16,7 @@ import ContactUs from "../pages/ContactUs/ContactUs";
 import PricingPage from "../pages/PricingPage/PricingPage";
 import Landing from "../pages/Landing/Landing";
 import ReportDownload from "../pages/ReportDownload/ReportDownload";
+import ApplicationForm from "../pages/ApplicationForm/ApplicationForm";
 
 export default function Nav() {
   const { isAuthenticated, user } = useAuth();
@@ -52,7 +53,8 @@ export default function Nav() {
 
         {/* Public route - always accessible */}
         <Route path="/" element={<Landing />} />
-        <Route path="/docs" element={<Docs />} />
+        <Route path="/docs" element={<Navigate to="/docs/quick-start" replace />} />
+        <Route path="/docs/:topicId" element={<Docs />} />
         <Route path="/contact" element={<ContactUs />} />
         <Route path="/pricing" element={<PricingPage />} />
         <Route path="/report-download" element={<ReportDownload />} />
@@ -89,6 +91,7 @@ export default function Nav() {
             )
           }
         />
+        <Route path="/school/:schoolId/apply" element={<ApplicationForm />} />
         <Route
           path="/forgot-password"
           element={

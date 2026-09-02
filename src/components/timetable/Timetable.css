@@ -522,22 +522,22 @@ overflow: hidden;
   display: flex;
   align-items: center;
   gap: 4px;
-  margin-bottom: 16px;
+  margin-bottom: 10px;
   background: #f4f4f4;
   border: 1px solid #e8e8e8;
   border-radius: 8px;
-  padding: 4px;
+  padding: 3px;
   width: fit-content;
 }
 
 .toggle-btn {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 6px 14px;
+  gap: 5px;
+  padding: 5px 11px;
   border: none;
   border-radius: 6px;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   cursor: pointer;
   background: transparent;
@@ -556,43 +556,43 @@ overflow: hidden;
   flex-shrink: 0;
 }
 
-/* ── List View ────────────────────────────────────────────────────────────── */
+/* ── List View (compact) ──────────────────────────────────────────────────── */
 .timetable-list-wrapper {
   width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 8px;
 }
 
 .timetable-list-day {
   background: #ffffff;
   border: 1px solid #e8e8e8;
-  border-radius: 12px;
+  border-radius: 8px;
   overflow: hidden;
 }
 
 .timetable-list-day-header {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 12px 16px;
+  gap: 8px;
+  padding: 6px 10px;
   background: #fafafa;
   border-bottom: 1px solid #e8e8e8;
 }
 
 .timetable-list-day-name {
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 800;
   color: #111111;
   letter-spacing: -0.01em;
 }
 
 .timetable-list-day-count {
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 600;
   color: #888888;
   background: #efefef;
-  padding: 2px 8px;
+  padding: 1px 7px;
   border-radius: 20px;
 }
 
@@ -603,8 +603,9 @@ overflow: hidden;
 
 .timetable-list-entry {
   display: flex;
-  align-items: stretch;
+  align-items: center;
   gap: 0;
+  min-height: 36px;
   border-bottom: 1px solid #f0f0f0;
   cursor: pointer;
   transition: background 0.15s ease;
@@ -618,100 +619,135 @@ overflow: hidden;
   background: #fafafa;
 }
 
+.timetable-list-entry.is-break {
+  background: #f9fafb;
+}
+
+.timetable-list-entry.is-break .timetable-list-subject-name {
+  color: #6b7280;
+  font-style: italic;
+  font-weight: 600;
+}
+
+.subject.break-period .subject-title {
+  color: #6b7280;
+  font-style: italic;
+}
+
 .timetable-list-entry-accent {
-  width: 4px;
+  width: 3px;
+  align-self: stretch;
   flex-shrink: 0;
   border-radius: 0;
 }
 
 .timetable-list-entry-time {
   display: flex;
-  flex-direction: column;
-  justify-content: center;
+  flex-direction: row;
+  justify-content: flex-start;
   align-items: center;
-  padding: 12px 16px;
-  min-width: 80px;
+  gap: 4px;
+  padding: 6px 10px;
+  min-width: 92px;
   flex-shrink: 0;
   border-right: 1px solid #f0f0f0;
 }
 
 .timetable-list-time-start {
-  font-size: 13px;
+  font-size: 11px;
   font-weight: 700;
   color: #111111;
+  font-variant-numeric: tabular-nums;
 }
 
 .timetable-list-time-sep {
-  font-size: 10px;
-  color: #cccccc;
-  margin: 1px 0;
+  display: none;
 }
 
 .timetable-list-time-end {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 500;
   color: #888888;
+  font-variant-numeric: tabular-nums;
+}
+
+.timetable-list-time-end::before {
+  content: "–";
+  margin-right: 4px;
+  color: #cccccc;
 }
 
 .timetable-list-entry-content {
   flex: 1;
-  padding: 12px 16px;
+  min-width: 0;
+  padding: 5px 10px;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 4px;
+  gap: 1px;
+}
+
+.timetable-list-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
 }
 
 .timetable-list-subject-name {
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 700;
   color: #111111;
-  line-height: 1.3;
+  line-height: 1.25;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .timetable-list-subject-teacher {
-  font-size: 12px;
+  font-size: 10px;
   color: #888888;
   font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .timetable-list-subject-stream {
   display: inline-flex;
   align-items: center;
-  padding: 2px 8px;
+  padding: 1px 6px;
   border-radius: 20px;
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.4px;
   color: white;
   width: fit-content;
-  margin-top: 2px;
+  margin-top: 0;
 }
 
 .timetable-list-multi-badge {
   display: flex;
   align-items: center;
   gap: 4px;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 600;
   color: #888888;
-  padding: 2px 0;
+  padding: 0;
+  white-space: nowrap;
+  overflow: hidden;
 }
 
 .timetable-list-multi-dot {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
   border-radius: 50%;
   flex-shrink: 0;
 }
 
 .timetable-list-entry-arrow {
-  display: flex;
-  align-items: center;
-  padding: 0 12px 0 4px;
-  color: #cccccc;
-  flex-shrink: 0;
+  display: none;
 }
 
 /* ── Dark theme ───────────────────────────────────────────────────────────── */

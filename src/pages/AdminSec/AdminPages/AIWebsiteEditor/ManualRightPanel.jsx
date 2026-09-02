@@ -7,12 +7,23 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useParams } from "react-router-dom";
 import { patchAttribute, patchStyle, patchStyles, patchTextContent, patchMediaStyle, readMediaStyles, applyTableTemplate } from "./htmlPatcher";
+import { TABLE_STYLE_TEMPLATES } from "../../../../utils/tableStyleTemplates";
+import { detectReportSection } from "../../../../utils/reportSectionTemplates";
+import ReportTemplateTab from "../../../../components/HtmlEditor/ReportTemplateTab";
 import { uploadWebsiteImage } from "../../../../api_call/useAIWebsiteEditor";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Tiny SVG icons
 // ─────────────────────────────────────────────────────────────────────────────
 const IconType    = () => <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M4 7V5h16v2M9 19h6M12 5v14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>;
+const IconTemplate = () => (
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
+    <rect x="3" y="3" width="7" height="7" rx="1.5" stroke="currentColor" strokeWidth="2"/>
+    <rect x="14" y="3" width="7" height="7" rx="1.5" stroke="currentColor" strokeWidth="2"/>
+    <rect x="3" y="14" width="7" height="7" rx="1.5" stroke="currentColor" strokeWidth="2"/>
+    <rect x="14" y="14" width="7" height="7" rx="1.5" stroke="currentColor" strokeWidth="2"/>
+  </svg>
+);
 const IconPaint   = () => <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M18.37 2.63L14 7l-1.59-1.59a2 2 0 00-2.82 0L8 7l9 9 1.59-1.59a2 2 0 000-2.82L17 10l4.37-4.37a2.12 2.12 0 00-3-3z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M9 8c-2 3-4 3.5-7 4l8 8c1-.5 3.5-2 4-7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>;
 const IconPlus    = () => <svg width="11" height="11" viewBox="0 0 24 24" fill="none"><line x1="12" y1="5" x2="12" y2="19" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/><line x1="5" y1="12" x2="19" y2="12" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/></svg>;
 const IconTrash   = () => <svg width="11" height="11" viewBox="0 0 24 24" fill="none"><polyline points="3,6 5,6 21,6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M10 11v6M14 11v6" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>;
@@ -1470,106 +1481,7 @@ function StyleAccordion({ group, props, currentVals, commitStyle, commitStyles, 
   );
 }
 
-const TABLE_CLEAR_ROW = { "background-color": "transparent" };
-
-const TABLE_STYLE_TEMPLATES = [
-  {
-    id: "classic",
-    label: "Classic",
-    table: { width: "100%", "border-collapse": "collapse", "font-size": "10px" },
-    thead: { background: "transparent", "background-color": "transparent", color: "#111111" },
-    tfoot: { background: "transparent", "background-color": "transparent", color: "#111111" },
-    th: { padding: "6px 8px", "font-weight": "700", "font-size": "9px", "text-align": "left", border: "1px solid #dddddd", color: "#111111", "background-color": "transparent" },
-    td: { padding: "6px 8px", border: "1px solid #dddddd", "background-color": "transparent", color: "#111111" },
-    trOdd: TABLE_CLEAR_ROW,
-    trEven: TABLE_CLEAR_ROW,
-  },
-  {
-    id: "lined",
-    label: "Lined",
-    table: { width: "100%", "border-collapse": "collapse", "font-size": "10px" },
-    thead: { "background-color": "transparent", color: "#111111" },
-    tfoot: { "background-color": "transparent", color: "#111111" },
-    th: { padding: "6px 8px", "font-weight": "700", "font-size": "9px", "text-align": "left", border: "none", "border-bottom": "2px solid #111111", color: "#111111", "background-color": "transparent" },
-    td: { padding: "6px 8px", border: "none", "border-bottom": "1px solid #e5e5e5", "background-color": "transparent", color: "#111111" },
-    trOdd: TABLE_CLEAR_ROW,
-    trEven: TABLE_CLEAR_ROW,
-  },
-  {
-    id: "striped",
-    label: "Striped",
-    table: { width: "100%", "border-collapse": "collapse", "font-size": "10px" },
-    thead: { "background-color": "#1f2937", color: "#ffffff" },
-    tfoot: { "background-color": "#1f2937", color: "#ffffff" },
-    th: { padding: "6px 8px", "font-weight": "700", "font-size": "9px", "text-align": "left", border: "none", color: "#ffffff", "background-color": "transparent" },
-    td: { padding: "6px 8px", border: "none", "background-color": "transparent", color: "#111111" },
-    trOdd: { "background-color": "#ffffff" },
-    trEven: { "background-color": "#f3f4f6" },
-  },
-  {
-    id: "soft",
-    label: "Soft",
-    table: { width: "100%", "border-collapse": "collapse", "font-size": "10px", "border-radius": "6px", overflow: "hidden" },
-    thead: { "background-color": "#6d28d9", color: "#ffffff" },
-    tfoot: { "background-color": "#5b21b6", color: "#ffffff" },
-    th: { padding: "7px 8px", "font-weight": "700", "font-size": "9px", "text-align": "left", border: "1px solid #c4b5fd", color: "#ffffff", "background-color": "transparent" },
-    td: { padding: "7px 8px", border: "1px solid #ede9fe", "background-color": "#faf5ff", color: "#1f1635" },
-    trOdd: TABLE_CLEAR_ROW,
-    trEven: TABLE_CLEAR_ROW,
-  },
-  {
-    id: "outlined",
-    label: "Outlined",
-    table: {
-      width: "100%",
-      "border-collapse": "separate",
-      "border-spacing": "0",
-      "font-size": "10px",
-      border: "2px solid #333333",
-      overflow: "visible",
-      "border-radius": "0",
-    },
-    thead: { "background-color": "#ffffff", color: "#111111" },
-    tfoot: { "background-color": "#f9fafb", color: "#111111" },
-    th: { padding: "6px 8px", "font-weight": "700", "font-size": "9px", "text-align": "left", border: "1px solid #333333", color: "#111111", "background-color": "#ffffff" },
-    td: { padding: "6px 8px", border: "1px solid #333333", "background-color": "#ffffff", color: "#111111" },
-    trOdd: TABLE_CLEAR_ROW,
-    trEven: TABLE_CLEAR_ROW,
-  },
-  {
-    id: "navy",
-    label: "Navy",
-    table: { width: "100%", "border-collapse": "collapse", "font-size": "10px" },
-    thead: { "background-color": "#1e3a5f", color: "#ffffff" },
-    tfoot: { "background-color": "#1e3a5f", color: "#ffffff" },
-    th: { padding: "6px 8px", "font-weight": "700", "font-size": "9px", "text-align": "left", border: "1px solid #94a3b8", color: "#ffffff", "background-color": "transparent" },
-    td: { padding: "6px 8px", border: "1px solid #cbd5e1", "background-color": "#f8fafc", color: "#0f172a" },
-    trOdd: TABLE_CLEAR_ROW,
-    trEven: TABLE_CLEAR_ROW,
-  },
-  {
-    id: "compact",
-    label: "Compact",
-    table: { width: "100%", "border-collapse": "collapse", "font-size": "9px" },
-    thead: { "background-color": "#111111", color: "#ffffff" },
-    tfoot: { "background-color": "#111111", color: "#ffffff" },
-    th: { padding: "3px 5px", "font-weight": "700", "font-size": "8px", "text-align": "left", border: "1px solid #dddddd", color: "#ffffff", "background-color": "transparent" },
-    td: { padding: "3px 5px", border: "1px solid #dddddd", "background-color": "transparent", color: "#111111" },
-    trOdd: TABLE_CLEAR_ROW,
-    trEven: TABLE_CLEAR_ROW,
-  },
-  {
-    id: "minimal",
-    label: "Minimal",
-    table: { width: "100%", "border-collapse": "collapse", "font-size": "10px" },
-    thead: { "background-color": "transparent", color: "#6b7280" },
-    tfoot: { "background-color": "transparent", color: "#111111" },
-    th: { padding: "4px 6px", "font-weight": "600", "font-size": "8px", "text-align": "left", "text-transform": "uppercase", "letter-spacing": "0.04em", border: "none", "border-bottom": "1px solid #d1d5db", color: "#6b7280", "background-color": "transparent" },
-    td: { padding: "5px 6px", border: "none", "background-color": "transparent", color: "#111111" },
-    trOdd: TABLE_CLEAR_ROW,
-    trEven: TABLE_CLEAR_ROW,
-  },
-];
+// TABLE_STYLE_TEMPLATES imported from utils/tableStyleTemplates.js
 
 function cssMapToReact(map) {
   if (!map) return {};
@@ -2168,8 +2080,9 @@ function AttributesTab({ selectedElement, html, onHtmlChange, schoolId }) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 const TABS = [
-  { id: "attrs",  label: "Content",  Icon: IconType  },
-  { id: "styles", label: "Style",    Icon: IconPaint },
+  { id: "attrs",     label: "Content",  Icon: IconType    },
+  { id: "styles",    label: "Style",    Icon: IconPaint   },
+  { id: "template",  label: "Template", Icon: IconTemplate },
 ];
 
 /**
@@ -2177,15 +2090,27 @@ const TABS = [
  *   selectedElement  – { selector, tagName, label, textContent, outerHTML } | null
  *   html             – current full HTML string
  *   onHtmlChange     – fn(newHtml) commit to history
+ *   reportMode       – when true, show Template tab for report card sections
  */
-export default function ManualRightPanel({ selectedElement, html, onHtmlChange }) {
+export default function ManualRightPanel({ selectedElement, html, onHtmlChange, reportMode = false }) {
   const { schoolId } = useParams();
   const [activeTab, setActiveTab] = useState("attrs");
 
-  // When selection changes, default to "Content" tab
-  useEffect(() => { setActiveTab("attrs"); }, [selectedElement?.selector]);
+  // When selection changes, open Template tab in report mode if a section is selected
+  useEffect(() => {
+    if (
+      reportMode &&
+      selectedElement?.selector &&
+      detectReportSection(html, selectedElement.selector)
+    ) {
+      setActiveTab("template");
+    } else {
+      setActiveTab("attrs");
+    }
+  }, [selectedElement?.selector, reportMode, html]);
 
   const noSelection = !selectedElement;
+  const visibleTabs = reportMode ? TABS : TABS.filter((t) => t.id !== "template");
 
   return (
     <div className="manual-side-panel manual-side-panel--right mrp-root">
@@ -2204,7 +2129,7 @@ export default function ManualRightPanel({ selectedElement, html, onHtmlChange }
 
       {/* tabs */}
       <div className="msp-tabs" role="tablist">
-        {!noSelection && TABS.map(({ id, label, Icon }) => (
+        {!noSelection && visibleTabs.map(({ id, label, Icon }) => (
           <button
             key={id}
             role="tab"
@@ -2240,6 +2165,13 @@ export default function ManualRightPanel({ selectedElement, html, onHtmlChange }
             )}
             {activeTab === "styles" && (
               <StyleTab
+                selectedElement={selectedElement}
+                html={html}
+                onHtmlChange={onHtmlChange}
+              />
+            )}
+            {activeTab === "template" && reportMode && (
+              <ReportTemplateTab
                 selectedElement={selectedElement}
                 html={html}
                 onHtmlChange={onHtmlChange}

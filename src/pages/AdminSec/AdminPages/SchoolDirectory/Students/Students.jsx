@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useCallback, useMemo } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 import ServerSmartTable from "../../../../../components/ServerSmartTable/ServerSmartTable";
 import SlideInMenu from "../../../../../components/SlideInMenu/SlideInMenu";
 import FormInput from "../../../../../components/FormInput";
@@ -30,6 +30,8 @@ import {
   useSession,
   useSubsession,
 } from "../../../../../api_call";
+import { updateApplicationStatus } from "../../../../../api_call/useApplicationForm";
+import { buildStudentPrefillFromApplication } from "../../../../../utils/applicationToStudentPrefill";
 import "./Students.css";
 
 const EMPTY_NEW_STUDENT_FORM = {
@@ -91,6 +93,8 @@ const composeResidenceAddress = (f) =>
 const Students = () => {
   const { schoolId } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
+  const admitHandledRef = useRef(false);
   const { addNotification } = useNotification();
   const { user } = useAuth();
 
@@ -156,6 +160,7 @@ const Students = () => {
 
   // Multiple guardians state
   const [guardians, setGuardians] = useState([emptyGuardian(true)]);
+  const [admitApplicationId, setAdmitApplicationId] = useState(null);
 
   // Memoize class options to prevent infinite re-renders
   const classOptions = useMemo(() => {
@@ -420,22 +425,73 @@ const Students = () => {
     try {
       const result = await getClassesBySchoolId(schoolId);
       if (result.success) {
-        setClasses(result.data || []);
-      } else {
-        addNotification(
-          result.message || "Failed to load classes",
-          "error"
-        );
-        setClasses([]);
+        const classList = result.data || [];
+        setClasses(classList);
+        return classList;
       }
+      addNotification(result.message || "Failed to load classes", "error");
+      setClasses([]);
+      return [];
     } catch (error) {
       console.error("Error loading classes:", error);
       addNotification("Failed to load classes", "error");
       setClasses([]);
+      return [];
     } finally {
       setLoadingClasses(false);
     }
   };
+
+  useEffect(() => {
+    const payload = location.state?.admitFromApplication;
+    if (!payload?.applicationId || admitHandledRef.current) return;
+
+    admitHandledRef.current = true;
+
+    const openAdmitFlow = async () => {
+      if (!canCreate) {
+        addNotification("You do not have permission to add students.", "error");
+        return;
+      }
+
+      setShowNewStudentMenu(true);
+      await checkActiveSession();
+      const classList = await loadClasses();
+
+      const prefill = buildStudentPrefillFromApplication(
+        {
+          application_id: payload.applicationId,
+          data: payload.data || {},
+          files: payload.files || {},
+        },
+        classList
+      );
+
+      setNewStudentForm({ ...EMPTY_NEW_STUDENT_FORM, ...prefill.form });
+      setGuardians(prefill.guardians);
+      setSelectedClass(prefill.selectedClassId || "");
+      setAdmitApplicationId(prefill.applicationId);
+      setEnrollmentMethod("create");
+
+      if (prefill.photoUrl) {
+        try {
+          const res = await fetch(prefill.photoUrl);
+          const blob = await res.blob();
+          const ext = blob.type?.includes("png") ? "png" : "jpg";
+          const file = new File([blob], `application-photo.${ext}`, { type: blob.type || "image/jpeg" });
+          setProfilePhotoFile(file);
+          setProfilePhotoPreview(prefill.photoUrl);
+        } catch (_) {
+          setProfilePhotoPreview(prefill.photoUrl);
+        }
+      }
+
+      navigate(location.pathname, { replace: true, state: {} });
+      addNotification("Application data loaded. Review and complete admission.", "success");
+    };
+
+    openAdmitFlow();
+  }, [location.state, schoolId, canCreate, navigate, location.pathname, addNotification]);
 
   const handleAddStudent = () => {
     console.log("Add Student button clicked");
@@ -788,6 +844,14 @@ const Students = () => {
           "success"
         );
 
+        if (admitApplicationId) {
+          try {
+            await updateApplicationStatus(schoolId, admitApplicationId, { status: "approved" });
+          } catch (_) {
+            // Student created; don't block success flow if status update fails
+          }
+        }
+
         // Reset form and close menu
         setShowNewStudentMenu(false);
         setNewStudentForm({ ...EMPTY_NEW_STUDENT_FORM });
@@ -800,6 +864,7 @@ const Students = () => {
         setSelectedSubsessionForStudent("");
         setProfilePhotoFile(null);
         setProfilePhotoPreview(null);
+        setAdmitApplicationId(null);
 
         // Refresh student list
         setRefreshTable((prev) => prev + 1);
@@ -923,6 +988,7 @@ const Students = () => {
           setNewStudentForm({ ...EMPTY_NEW_STUDENT_FORM });
           // Reset guardians to single empty guardian
           setGuardians([emptyGuardian(true)]);
+          setAdmitApplicationId(null);
           clearError();
           setProfilePhotoFile(null);
           setProfilePhotoPreview(null);
@@ -1264,7 +1330,11 @@ const Students = () => {
             <div className="ns-enroll-form">
               <div className="ns-form-info-box ns-form-info-box--green">
                 <strong>Create New Student</strong>
-                <p>Fill in all the required information to create a new student profile. A temporary password will be generated.</p>
+                <p>
+                  {admitApplicationId
+                    ? "Application details have been pre-filled. Review the information, then complete admission."
+                    : "Fill in all the required information to create a new student profile. A temporary password will be generated."}
+                </p>
               </div>
 
               <div className="ns-form-sections">

@@ -1,0 +1,278 @@
+/* Application form fields panel — extends sd-panel (SchoolData.css) */
+
+.affp-panel.sd-panel {
+  flex: 1;
+  min-height: 0;
+  height: 100%;
+  overflow: hidden;
+}
+
+.sd-panel-body.affp-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.affp-error {
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #991b1b;
+  font-size: 13px;
+  flex-shrink: 0;
+}
+
+.affp-body {
+  gap: 16px;
+}
+
+.affp-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 40px 0;
+  color: #888888;
+  font-size: 13px;
+}
+
+.affp-spinner {
+  width: 28px;
+  height: 28px;
+  border: 3px solid #e8e8e8;
+  border-top-color: #111111;
+  border-radius: 50%;
+  animation: affp-spin 0.8s linear infinite;
+}
+
+@keyframes affp-spin {
+  to { transform: rotate(360deg); }
+}
+
+.affp-section {
+  border: 1px solid #e8e8e8;
+  border-radius: 12px;
+  background: #ffffff;
+  flex-shrink: 0;
+}
+
+.affp-section-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  background: #f7f7f7;
+  border-bottom: 1px solid #e8e8e8;
+}
+
+.affp-section-head h4 {
+  margin: 0 0 2px;
+  font-size: 12px;
+  font-weight: 800;
+  color: #111111;
+  letter-spacing: -0.01em;
+}
+
+.affp-section-count {
+  font-size: 11px;
+  color: #888888;
+  font-weight: 600;
+}
+
+.affp-section-toggle {
+  border: 1px solid #e8e8e8;
+  background: #ffffff;
+  color: #111111;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 6px 10px;
+  border-radius: 7px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.affp-section-toggle:hover {
+  border-color: #111111;
+  background: #f0f0f0;
+}
+
+.affp-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.affp-field {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 11px 14px;
+  border-bottom: 1px solid #f0f0f0;
+  cursor: pointer;
+  transition: background 0.12s;
+  position: relative;
+}
+
+.affp-field:last-child {
+  border-bottom: none;
+}
+
+.affp-field:hover {
+  background: #fafafa;
+}
+
+.affp-field--on {
+  background: #f7f7f7;
+}
+
+.affp-field input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.affp-field-check {
+  width: 18px;
+  height: 18px;
+  border-radius: 5px;
+  border: 1.5px solid #d1d5db;
+  background: #fff;
+  flex-shrink: 0;
+  margin-top: 1px;
+  position: relative;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.affp-field--on .affp-field-check {
+  background: #111111;
+  border-color: #111111;
+}
+
+.affp-field--on .affp-field-check::after {
+  content: "";
+  position: absolute;
+  left: 5px;
+  top: 2px;
+  width: 5px;
+  height: 9px;
+  border: solid #fff;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+.affp-field-content strong {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #111111;
+  line-height: 1.35;
+}
+
+.affp-field-content small {
+  display: inline-block;
+  margin-top: 3px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #888888;
+  background: #f0f0f0;
+  padding: 2px 7px;
+  border-radius: 999px;
+}
+
+.affp-field--on .affp-field-content small {
+  background: #e8e8e8;
+  color: #555555;
+}
+
+/* ── Dark theme ─────────────────────────────────────────────────────────── */
+[data-theme="dark"] .affp-error {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.25);
+  color: #fca5a5;
+}
+
+[data-theme="dark"] .affp-loading {
+  color: #555555;
+}
+
+[data-theme="dark"] .affp-spinner {
+  border-color: #2a2a2a;
+  border-top-color: #f0f0f0;
+}
+
+[data-theme="dark"] .affp-section {
+  background: #1e1e1e;
+  border-color: #2a2a2a;
+}
+
+[data-theme="dark"] .affp-section-head {
+  background: #252525;
+  border-bottom-color: #2a2a2a;
+}
+
+[data-theme="dark"] .affp-section-head h4 {
+  color: #f0f0f0;
+}
+
+[data-theme="dark"] .affp-section-count {
+  color: #555555;
+}
+
+[data-theme="dark"] .affp-section-toggle {
+  background: #2a2a2a;
+  border-color: #3a3a3a;
+  color: #e0e0e0;
+}
+
+[data-theme="dark"] .affp-section-toggle:hover {
+  border-color: #f0f0f0;
+  background: #333333;
+}
+
+[data-theme="dark"] .affp-field {
+  border-bottom-color: #2a2a2a;
+}
+
+[data-theme="dark"] .affp-field:hover {
+  background: #252525;
+}
+
+[data-theme="dark"] .affp-field--on {
+  background: #222222;
+}
+
+[data-theme="dark"] .affp-field-check {
+  background: #1a1a1a;
+  border-color: #3a3a3a;
+}
+
+[data-theme="dark"] .affp-field--on .affp-field-check {
+  background: #f0f0f0;
+  border-color: #f0f0f0;
+}
+
+[data-theme="dark"] .affp-field--on .affp-field-check::after {
+  border-color: #111111;
+}
+
+[data-theme="dark"] .affp-field-content strong {
+  color: #e0e0e0;
+}
+
+[data-theme="dark"] .affp-field-content small {
+  background: #2a2a2a;
+  color: #666666;
+}
+
+[data-theme="dark"] .affp-field--on .affp-field-content small {
+  background: #333333;
+  color: #888888;
+}

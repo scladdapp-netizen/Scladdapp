@@ -302,6 +302,7 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.04em;
+  position: relative;
 }
 
 .session-status.active {

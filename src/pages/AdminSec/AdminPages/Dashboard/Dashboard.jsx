@@ -38,19 +38,22 @@ import {
   Cell,
   AreaChart,
   Area,
+  BarChart,
+  Bar,
 } from "recharts";
 import dashboardData from "../../../../data/DashboardData.json";
 import useDashboard from "../../../../api_call/useDashboard";
 import { useAuth } from "../../../../context/AuthContext/AuthContext";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import LoadingData from "../../../../components/LoadingData/LoadingData";
 import "./Dashboard.css";
 
 const Dashboard = () => {
   const { schoolId } = useParams();
+  const navigate = useNavigate();
   const { user } = useAuth();
   const school = user?.school; // already in auth context — no fetch needed
-  const { stats: liveStats, statsLoading, activeSession, sessionLoading, todayAttendance, attendanceLoading, upcomingEvents: liveEvents, eventsLoading, feePayments, feeLoading, feeRange, changeFeeRange, genderData: liveGender, genderLoading, enrollmentTrend: liveEnrollment, enrollmentLoading, recentActivities: liveActivities, activitiesLoading, monthlyFinancials, financialsLoading } = useDashboard(schoolId || school?.school_id);
+  const { stats: liveStats, statsLoading, activeSession, sessionLoading, todayAttendance, attendanceLoading, applicationsTrend, applicationsLoading, feePayments, feeLoading, feeRange, changeFeeRange, genderData: liveGender, genderLoading, enrollmentTrend: liveEnrollment, enrollmentLoading, recentActivities: liveActivities, activitiesLoading, monthlyFinancials, financialsLoading } = useDashboard(schoolId || school?.school_id);
 
   const [activitiesOpen] = useState(false);
 
@@ -91,44 +94,6 @@ const Dashboard = () => {
     { icon: FaTable, label: "View Timetable", color: "#8b5cf6" },
     { icon: FaMoneyBillWave, label: "Fee Management", color: "#ef4444" },
     { icon: FaUsers, label: "Manage Staff", color: "#06b6d4" },
-  ];
-
-  const upcomingEvents = [
-    {
-      title: "Parent-Teacher Meeting",
-      date: "Jan 28",
-      time: "9:00 AM",
-      type: "meeting",
-      color: "#10b981",
-    },
-    {
-      title: "Mid-term Exams Begin",
-      date: "Feb 5",
-      time: "8:00 AM",
-      type: "exam",
-      color: "#f59e0b",
-    },
-    {
-      title: "Sports Day",
-      date: "Feb 15",
-      time: "10:00 AM",
-      type: "event",
-      color: "#3b82f6",
-    },
-    {
-      title: "Staff Meeting",
-      date: "Feb 20",
-      time: "2:00 PM",
-      type: "meeting",
-      color: "#8b5cf6",
-    },
-    {
-      title: "Science Fair",
-      date: "Feb 25",
-      time: "11:00 AM",
-      type: "event",
-      color: "#ec4899",
-    },
   ];
 
   const feeCollectionData = {
@@ -419,41 +384,75 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* Upcoming Events Widget */}
-        <div className="events-card card">
-          <div className="events-card-header">
-            <span className="events-eyebrow"><FaCalendarAlt /> Upcoming Events</span>
+        {/* Applications Widget */}
+        <div
+          className="applications-card card"
+          onClick={() => navigate(`/admin/${schoolId}/applications`)}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => e.key === "Enter" && navigate(`/admin/${schoolId}/applications`)}
+        >
+          <div className="applications-card-header">
+            <span className="applications-eyebrow"><FaFileAlt /> Applications</span>
+            <span className="applications-link">View all →</span>
           </div>
-          <div className="events-list">
-            {eventsLoading ? (
-              <LoadingData message="Loading events..." />
-            ) : liveEvents.length === 0 ? (
-              <div className="events-empty">
-                <FaCalendarAlt size={28} color="#d1d5db" />
-                <p>No upcoming events</p>
-              </div>
+          <div className="applications-body">
+            {applicationsLoading ? (
+              <LoadingData message="Loading applications..." />
             ) : (
-              liveEvents.map((event, idx) => {
-                const d = new Date(event.event_date);
-                const day = d.getDate();
-                const month = d.toLocaleString("default", { month: "short" });
-                const isFirst = idx === 0;
-                return (
-                  <div key={event.event_id} className={`event-item${isFirst ? " event-item-featured" : ""}`}>
-                    <div className="event-date-badge">
-                      <span className="event-day">{day}</span>
-                      <span className="event-month">{month}</span>
-                    </div>
-                    <div className="event-details">
-                      <h4 className="event-title">{event.title}</h4>
-                      <div className="event-meta">
-                        <span className="event-time"><FaClock />{event.event_time || "All day"}</span>
-                        <span className="event-type">{event.category || event.status || "Event"}</span>
-                      </div>
-                    </div>
+              <>
+                <div className="applications-hero">
+                  <div className="applications-hero-stat">
+                    <span className="applications-hero-val">
+                      {(applicationsTrend?.currentMonth ?? 0).toLocaleString()}
+                    </span>
+                    <span className="applications-hero-lbl">This month</span>
                   </div>
-                );
-              })
+                  <div className="applications-hero-divider" />
+                  <div className="applications-hero-stat">
+                    <span className="applications-hero-val applications-hero-val--muted">
+                      {(applicationsTrend?.total ?? 0).toLocaleString()}
+                    </span>
+                    <span className="applications-hero-lbl">Last 12 months</span>
+                  </div>
+                </div>
+
+                {(applicationsTrend?.months?.length ?? 0) > 0 ? (
+                  <div className="applications-chart-wrap">
+                    <ResponsiveContainer width="100%" height={120}>
+                      <BarChart
+                        data={applicationsTrend.months}
+                        margin={{ top: 8, right: 4, left: -22, bottom: 0 }}
+                      >
+                        <CartesianGrid strokeDasharray="4 4" stroke="#e8e8e8" vertical={false} />
+                        <XAxis
+                          dataKey="label"
+                          tick={{ fontSize: 9, fill: "#aaaaaa" }}
+                          axisLine={false}
+                          tickLine={false}
+                          interval={1}
+                        />
+                        <YAxis
+                          allowDecimals={false}
+                          tick={{ fontSize: 9, fill: "#aaaaaa" }}
+                          axisLine={false}
+                          tickLine={false}
+                        />
+                        <Tooltip
+                          formatter={(v) => [v, "Applications"]}
+                          contentStyle={{ fontSize: 11, borderRadius: 8, border: "1px solid #e5e7eb" }}
+                        />
+                        <Bar dataKey="count" fill="#111111" radius={[4, 4, 0, 0]} maxBarSize={28} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                ) : (
+                  <div className="applications-empty">
+                    <FaFileAlt size={28} color="#d1d5db" />
+                    <p>No applications yet</p>
+                  </div>
+                )}
+              </>
             )}
           </div>
         </div>

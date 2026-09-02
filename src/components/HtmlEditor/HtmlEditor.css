@@ -162,3 +162,334 @@
   min-width: 0;
   overflow: hidden;
 }
+
+/* ── Report template tab (EditTemplatePage) ─────────────────── */
+.rtp-tab {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 4px 2px 12px;
+}
+
+.rtp-tab__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.rtp-reset-btn {
+  padding: 5px 10px;
+  border-radius: 6px;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  font-size: 10px;
+  font-weight: 700;
+  color: #555555;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.rtp-reset-btn:hover {
+  background: #f9fafb;
+  border-color: #d1d5db;
+  color: #111111;
+}
+
+.rtp-section-badge {
+  display: inline-flex;
+  align-self: flex-start;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  font-size: 11px;
+  font-weight: 700;
+  color: #111111;
+}
+
+.rtp-block__head {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 10px;
+}
+
+.rtp-block__title {
+  font-size: 12px;
+  font-weight: 800;
+  color: #111111;
+}
+
+.rtp-block__hint {
+  font-size: 10px;
+  color: #888888;
+}
+
+.rtp-layout-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.rtp-layout-card {
+  min-height: 88px;
+}
+
+.rtp-colors {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.rtp-color-swatch {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid #ffffff;
+  box-shadow: 0 0 0 1px #d1d5db;
+  cursor: pointer;
+  padding: 0;
+}
+
+.rtp-color-swatch--active {
+  box-shadow: 0 0 0 2px #111111;
+}
+
+.rtp-color-swatch--auto {
+  background:
+    linear-gradient(45deg, #e5e7eb 25%, transparent 25%),
+    linear-gradient(-45deg, #e5e7eb 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #e5e7eb 75%),
+    linear-gradient(-45deg, transparent 75%, #e5e7eb 75%);
+  background-size: 8px 8px;
+  background-position: 0 0, 0 4px, 4px -4px, -4px 0;
+  background-color: #ffffff;
+}
+
+.rtp-color-swatch--transparent {
+  background:
+    linear-gradient(45deg, #fca5a5 25%, transparent 25%),
+    linear-gradient(-45deg, #fca5a5 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #fca5a5 75%),
+    linear-gradient(-45deg, transparent 75%, #fca5a5 75%);
+  background-size: 8px 8px;
+  background-position: 0 0, 0 4px, 4px -4px, -4px 0;
+  background-color: #ffffff;
+}
+
+.rtp-color-custom {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 10px;
+  font-weight: 600;
+  color: #555555;
+  cursor: pointer;
+}
+
+.rtp-color-custom input {
+  width: 24px;
+  height: 24px;
+  border: none;
+  padding: 0;
+  background: none;
+  cursor: pointer;
+}
+
+.rtp-empty {
+  padding: 24px 12px;
+  text-align: center;
+}
+
+.rtp-empty__title {
+  margin: 0 0 6px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #111111;
+}
+
+.rtp-empty__desc {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.5;
+  color: #888888;
+}
+
+.rtp-footnote {
+  margin: 0;
+  font-size: 10px;
+  line-height: 1.45;
+  color: #9ca3af;
+}
+
+.rtp-mini {
+  width: 100%;
+  min-height: 42px;
+}
+
+.rtp-mini--header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px;
+}
+
+.rtp-mini--split {
+  align-items: flex-start;
+}
+
+.rtp-mini--col {
+  flex-direction: column;
+  align-items: center;
+}
+
+.rtp-mini--student {
+  display: flex;
+  gap: 6px;
+  padding: 4px;
+}
+
+.rtp-mini--inline {
+  align-items: center;
+  justify-content: space-between;
+}
+
+.rtp-mini__logo {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.rtp-mini__logo--sm {
+  width: 10px;
+  height: 10px;
+}
+
+.rtp-mini__bar {
+  height: 6px;
+  border-radius: 3px;
+  background: #d1d5db;
+}
+
+.rtp-mini__bar--thin {
+  height: 4px;
+}
+
+.rtp-mini__line {
+  height: 4px;
+  border-radius: 2px;
+  background: #e5e7eb;
+  margin-top: 3px;
+}
+
+.rtp-mini__line--short {
+  width: 60%;
+}
+
+.rtp-mini__line--thin {
+  height: 3px;
+}
+
+.rtp-mini__pill {
+  width: 18px;
+  height: 10px;
+  border-radius: 4px;
+  border: 1px solid #d1d5db;
+  flex-shrink: 0;
+}
+
+.rtp-mini__stack {
+  flex: 1;
+  min-width: 0;
+}
+
+.rtp-mini__photo {
+  width: 16px;
+  height: 20px;
+  border: 1px solid #d1d5db;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.rtp-mini__grid {
+  flex: 1;
+  display: grid;
+  gap: 3px;
+  min-height: 28px;
+  background:
+    linear-gradient(#e5e7eb 0 0) 0 0 / 100% 4px no-repeat,
+    linear-gradient(#e5e7eb 0 0) 0 8px / 100% 4px no-repeat,
+    linear-gradient(#e5e7eb 0 0) 0 16px / 70% 4px no-repeat;
+}
+
+.rtp-mini__grid--2 {
+  grid-template-columns: 1fr 1fr;
+}
+
+.rtp-mini__grid--3 {
+  grid-template-columns: 1fr 1fr 1fr;
+}
+
+.rtp-mini__vdiv {
+  width: 1px;
+  height: 18px;
+  background: #e5e7eb;
+}
+
+.rtp-mini--remarks {
+  display: flex;
+  gap: 6px;
+  padding: 4px;
+  width: 100%;
+}
+
+.rtp-mini__remark-block {
+  flex: 1;
+  min-height: 34px;
+  border: 1px solid #e5e7eb;
+  border-radius: 3px;
+  background:
+    linear-gradient(#d1d5db 0 0) 6px 6px / 70% 3px no-repeat,
+    linear-gradient(#e5e7eb 0 0) 6px 14px / 90% 2px no-repeat,
+    linear-gradient(#e5e7eb 0 0) 6px 20px / 60% 2px no-repeat;
+}
+
+.rtp-mini__remark-box {
+  flex: 1;
+  min-height: 34px;
+  border: 1px solid #e5e7eb;
+  background: #fafafa;
+}
+
+.rtp-mini__remark-sig {
+  flex: 1;
+  min-height: 34px;
+  border-bottom: 2px solid #d1d5db;
+  background:
+    linear-gradient(#9ca3af 0 0) 4px 4px / 50% 3px no-repeat,
+    linear-gradient(#e5e7eb 0 0) 4px 12px / 80% 2px no-repeat;
+}
+
+.rtp-mini__remark-accent {
+  flex: 1;
+  min-height: 34px;
+  border-left: 3px solid #111111;
+  padding-left: 4px;
+  background:
+    linear-gradient(#d1d5db 0 0) 4px 4px / 70% 3px no-repeat,
+    linear-gradient(#e5e7eb 0 0) 4px 12px / 85% 2px no-repeat;
+}
+
+.rtp-mini__remark-min {
+  flex: 1;
+  min-height: 34px;
+  opacity: 0.35;
+  border-radius: 2px;
+  background:
+    linear-gradient(#ffffff 0 0) 4px 4px / 60% 3px no-repeat,
+    linear-gradient(#ffffff 0 0) 4px 12px / 80% 2px no-repeat;
+}

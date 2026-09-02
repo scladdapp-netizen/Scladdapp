@@ -13,12 +13,13 @@
  */
 import ManualRightPanel from "../../pages/AdminSec/AdminPages/AIWebsiteEditor/ManualRightPanel";
 
-export default function HtmlPropertiesPanel({ selectedElement, html, onHtmlChange }) {
+export default function HtmlPropertiesPanel({ selectedElement, html, onHtmlChange, reportMode = false }) {
   return (
     <ManualRightPanel
       selectedElement={selectedElement}
       html={html}
       onHtmlChange={onHtmlChange}
+      reportMode={reportMode}
     />
   );
 }

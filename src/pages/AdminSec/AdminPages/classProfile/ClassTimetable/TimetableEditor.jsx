@@ -1,10 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Button from "../../../../../components/Button/Button";
 import SearchableSelect from "../../../../../components/SearchableSelect/SearchableSelect";
 import LoadingData from "../../../../../components/LoadingData/LoadingData";
 import SlideInMenu from "../../../../../components/SlideInMenu/SlideInMenu";
-// import { useTimetableTemplate } from "../../../../../api_call";
-// import useAITimetable from "../../../../../api_call/useAITimetable";
+import { useTimetableTemplate } from "../../../../../api_call";
+import useAITimetable, { useAITimetableModels } from "../../../../../api_call/useAITimetable";
 import { useNotification } from "../../../../../context/NotificationProvider/NotificationProvider";
 import "./TimetableEditor.css";
 
@@ -70,45 +70,57 @@ const TimetableEditor = ({
   const [editingId, setEditingId] = useState(null);
   const [availableSubjects, setAvailableSubjects] = useState([]);
   const [loadingSubjects, setLoadingSubjects] = useState(false);
+  const formRef = useRef(null);
+  const contentRef = useRef(null);
+  const daySelectRef = useRef(null);
 
   // AI panel state
-  // const [aiPanelOpen, setAiPanelOpen] = useState(false);
-  // const [templates, setTemplates] = useState([]);
-  // const [templatesLoading, setTemplatesLoading] = useState(false);
-  // const [selectedTemplateId, setSelectedTemplateId] = useState("");
-  // const [aiNotes, setAiNotes] = useState("");
-  // const { generating, generate } = useAITimetable();
-  // const { getTimetableTemplatesBySchool } = useTimetableTemplate();
+  const [aiPanelOpen, setAiPanelOpen] = useState(false);
+  const [templates, setTemplates] = useState([]);
+  const [templatesLoading, setTemplatesLoading] = useState(false);
+  const [selectedTemplateId, setSelectedTemplateId] = useState("");
+  const [aiNotes, setAiNotes] = useState("");
+  const [configId, setConfigId] = useState("");
+  const { generating, generate } = useAITimetable();
+  const { models } = useAITimetableModels();
+  const { getTimetableTemplatesBySchool } = useTimetableTemplate();
   const { addNotification } = useNotification();
 
-  // useEffect(() => {
-  //   if (!aiPanelOpen || !schoolId) return;
-  //   setTemplatesLoading(true);
-  //   getTimetableTemplatesBySchool(schoolId)
-  //     .then((res) => { if (res.success) setTemplates(res.data || []); })
-  //     .finally(() => setTemplatesLoading(false));
-  // }, [aiPanelOpen, schoolId]);
+  useEffect(() => {
+    if (models.length > 0 && !configId) {
+      const active = models.find((m) => m.is_active) || models[0];
+      if (active) setConfigId(active.config_id);
+    }
+  }, [models, configId]);
 
-  // const handleAIGenerate = async () => {
-  //   const result = await generate({
-  //     templateId: selectedTemplateId,
-  //     schoolId,
-  //     subsessionId,
-  //     classId,
-  //     notes: aiNotes,
-  //     generatedBy: generatedBy || null,
-  //   });
-  //   if (result.success && result.entries) {
-  //     // Apply generated entries directly into the editor
-  //     const updated = result.entries.filter((e) => e.start && e.end);
-  //     setEntries(updated);
-  //     onTimetableChange && onTimetableChange(updated);
-  //     addNotification("AI timetable generated — review and save.", "success");
-  //     setAiPanelOpen(false);
-  //   } else {
-  //     addNotification(result.message || "AI generation failed.", "error");
-  //   }
-  // };
+  useEffect(() => {
+    if (!aiPanelOpen || !schoolId) return;
+    setTemplatesLoading(true);
+    getTimetableTemplatesBySchool(schoolId)
+      .then((res) => { if (res.success) setTemplates(res.data || []); })
+      .finally(() => setTemplatesLoading(false));
+  }, [aiPanelOpen, schoolId]);
+
+  const handleAIGenerate = async () => {
+    const result = await generate({
+      templateId: selectedTemplateId,
+      schoolId,
+      subsessionId,
+      classId,
+      notes: aiNotes,
+      generatedBy: generatedBy || null,
+      configId: configId || null,
+    });
+    if (result.success && result.entries) {
+      const updated = result.entries.filter((e) => e.start && e.end);
+      setEntries(updated);
+      onTimetableChange && onTimetableChange(updated);
+      addNotification("AI timetable generated — review and save.", "success");
+      setAiPanelOpen(false);
+    } else {
+      addNotification(result.message || "AI generation failed.", "error");
+    }
+  };
 
   const parseField = (v) => {
     if (!v || typeof v === "object") return v;
@@ -151,12 +163,16 @@ const TimetableEditor = ({
   }));
 
   const getSelectedSubjects = () =>
-    availableSubjects.filter((s) => form.subjectIds.includes(s.subjectId));
+    availableSubjects.filter((s) =>
+      form.subjectIds.some((id) => String(id) === String(s.subjectId))
+    );
 
   const updateEntries = (next) => {
     setEntries(next);
     onTimetableChange && onTimetableChange(next);
   };
+
+  const sameEntryId = (a, b) => a != null && b != null && String(a) === String(b);
 
   const handleAddOrEdit = () => {
     if (!form.day || !form.start || !form.end) return;
@@ -164,7 +180,7 @@ const TimetableEditor = ({
     if (form.isBreak) {
       if (!form.breakName) return;
       const breakEntry = {
-        id: editingId || Date.now(),
+        id: editingId != null ? editingId : Date.now(),
         day: form.day,
         start: form.start,
         end: form.end,
@@ -176,8 +192,8 @@ const TimetableEditor = ({
         subjects: [],
         isBreak: true,
       };
-      if (editingId) {
-        updateEntries(entries.map((e) => (e.id === editingId ? breakEntry : e)));
+      if (editingId != null) {
+        updateEntries(entries.map((e) => (sameEntryId(e.id, editingId) ? breakEntry : e)));
         setEditingId(null);
       } else {
         updateEntries([breakEntry, ...entries]);
@@ -189,7 +205,24 @@ const TimetableEditor = ({
     if (form.subjectIds.length === 0) return;
 
     const selected = getSelectedSubjects();
-    const streamIds = [...new Set(selected.map((s) => s.stream))];
+    // Keep editing even if catalog lookup failed — rebuild from previous entry + form ids
+    const resolved =
+      selected.length > 0
+        ? selected
+        : form.subjectIds.map((sid) => {
+            const existing = entries
+              .find((e) => sameEntryId(e.id, editingId))
+              ?.subjects?.find((s) => String(s.id) === String(sid));
+            return {
+              subjectId: existing?.id || sid,
+              subjectName: existing?.name || String(sid),
+              subjectCode: existing?.code || "",
+              teacher: existing?.teacher || "Not assigned",
+              stream: existing?.stream || "general",
+            };
+          });
+
+    const streamIds = [...new Set(resolved.map((s) => s.stream))];
     let primaryStream, streamColor, streamName;
 
     if (streamIds.length === 1) {
@@ -207,7 +240,7 @@ const TimetableEditor = ({
       day: form.day,
       start: form.start,
       end: form.end,
-      subjects: selected.map((s) => {
+      subjects: resolved.map((s) => {
         const st = streams.find((x) => x.id === s.stream);
         return {
           id: s.subjectId,
@@ -223,14 +256,17 @@ const TimetableEditor = ({
       streamName,
       streamColor,
       name:
-        selected.length === 1
-          ? `${selected[0].subjectName} (${streams.find((s) => s.id === selected[0].stream)?.name || "General"})`
-          : `${selected.length} Subjects`,
-      teacher: selected.length === 1 ? selected[0].teacher : "Multiple Teachers",
+        resolved.length === 1
+          ? `${resolved[0].subjectName} (${streams.find((s) => s.id === resolved[0].stream)?.name || "General"})`
+          : `${resolved.length} Subjects`,
+      teacher: resolved.length === 1 ? resolved[0].teacher : "Multiple Teachers",
+      isBreak: false,
     };
 
-    if (editingId) {
-      updateEntries(entries.map((e) => (e.id === editingId ? { ...e, ...entryData } : e)));
+    if (editingId != null) {
+      updateEntries(
+        entries.map((e) => (sameEntryId(e.id, editingId) ? { ...e, ...entryData, id: e.id } : e))
+      );
       setEditingId(null);
     } else {
       updateEntries([{ id: Date.now(), ...entryData }, ...entries]);
@@ -239,7 +275,8 @@ const TimetableEditor = ({
     setForm({ day: "", subjectIds: [], start: "", end: "", isBreak: false, breakName: "Break" });
   };
 
-  const handleDelete = (id) => updateEntries(entries.filter((e) => e.id !== id));
+  const handleDelete = (id) =>
+    updateEntries(entries.filter((e) => !sameEntryId(e.id, id)));
 
   const handleEdit = (item) => {
     if (item.isBreak) {
@@ -252,9 +289,21 @@ const TimetableEditor = ({
         breakName: item.name,
       });
     } else {
+      // Prefer catalog subject_id matches so Update can resolve subjects
+      const subjectIds = (item.subjects || [])
+        .map((s) => {
+          const byId = availableSubjects.find((a) => String(a.subjectId) === String(s.id));
+          if (byId) return byId.subjectId;
+          const byName = availableSubjects.find(
+            (a) =>
+              String(a.subjectName || "").toLowerCase() === String(s.name || "").toLowerCase()
+          );
+          return byName?.subjectId || s.id;
+        })
+        .filter((id) => id != null && id !== "");
       setForm({
         day: item.day,
-        subjectIds: item.subjects ? item.subjects.map((s) => s.id) : [],
+        subjectIds,
         start: item.start,
         end: item.end,
         isBreak: false,
@@ -262,19 +311,43 @@ const TimetableEditor = ({
       });
     }
     setEditingId(item.id);
+
+    // Scroll form into view so the user can edit immediately
+    requestAnimationFrame(() => {
+      const content = contentRef.current;
+      const formEl = formRef.current;
+      if (content && formEl) {
+        content.scrollTo({ top: 0, behavior: "smooth" });
+        formEl.scrollIntoView({ behavior: "smooth", block: "start" });
+      } else if (formEl) {
+        formEl.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+      setTimeout(() => daySelectRef.current?.focus?.(), 280);
+    });
+  };
+
+  const handleCancelEdit = () => {
+    setEditingId(null);
+    setForm({ day: "", subjectIds: [], start: "", end: "", isBreak: false, breakName: "Break" });
   };
 
   const handleSubjectToggle = (val) => {
-    setForm((prev) => ({
-      ...prev,
-      subjectIds: prev.subjectIds.includes(val)
-        ? prev.subjectIds.filter((id) => id !== val)
-        : [...prev.subjectIds, val],
-    }));
+    setForm((prev) => {
+      const has = prev.subjectIds.some((id) => String(id) === String(val));
+      return {
+        ...prev,
+        subjectIds: has
+          ? prev.subjectIds.filter((id) => String(id) !== String(val))
+          : [...prev.subjectIds, val],
+      };
+    });
   };
 
   const removeSubject = (id) =>
-    setForm((prev) => ({ ...prev, subjectIds: prev.subjectIds.filter((x) => x !== id) }));
+    setForm((prev) => ({
+      ...prev,
+      subjectIds: prev.subjectIds.filter((x) => String(x) !== String(id)),
+    }));
 
   const isFormComplete = form.day && form.start && form.end &&
     (form.isBreak ? !!form.breakName : form.subjectIds.length > 0);
@@ -293,50 +366,112 @@ const TimetableEditor = ({
         </div>
       </div>
 
-      <div className="te-content">
-        {/* Unified form */}
-        <div className="te-form">
-
-          {/* Day */}
-          <div className="te-field te-full">
-            <label className="te-field-label">Day</label>
-            <select value={form.day} onChange={(e) => setForm({ ...form, day: e.target.value })} className="te-select">
-              <option value="">Select day</option>
-              {days.map((d) => <option key={d} value={d}>{d}</option>)}
-            </select>
+      <div className="te-content" ref={contentRef}>
+        <div
+          ref={formRef}
+          className={`te-form${editingId != null ? " te-form--editing" : ""}`}
+        >
+          <div className="te-form-head">
+            <div className="te-form-head-text">
+              <h3 className="te-form-title">
+                {editingId != null ? "Edit entry" : "Add entry"}
+              </h3>
+              <p className="te-form-sub">
+                {editingId != null
+                  ? "Update the fields below, then click Update Entry."
+                  : "Choose day, subject or break, and time."}
+              </p>
+            </div>
+            {editingId != null && (
+              <button type="button" className="te-form-cancel-edit" onClick={handleCancelEdit}>
+                Cancel edit
+              </button>
+            )}
           </div>
 
-          {/* Subject / Break selector */}
-          <div className="te-field te-full">
-            <label className="te-field-label">Subject</label>
-            {loadingSubjects ? (
-              <LoadingData message="Loading subjects..." />
-            ) : (
-              <>
-                {/* Break option pinned at the top */}
-                <div
-                  className={`te-break-option${form.isBreak ? " selected" : ""}`}
-                  onClick={() => setForm((prev) => ({ ...prev, isBreak: !prev.isBreak, subjectIds: [] }))}
-                >
-                  <span className="te-break-option-dot" />
-                  Break / Interval
-                  {form.isBreak && <span className="te-break-option-check">✓</span>}
+          <div className="te-form-sections">
+            {/* When */}
+            <section className="te-form-section">
+              <div className="te-form-section-label">When</div>
+              <div className="te-form-section-body">
+                <div className="te-field te-full">
+                  <label className="te-field-label" htmlFor="te-day">Day</label>
+                  <select
+                    id="te-day"
+                    ref={daySelectRef}
+                    value={form.day}
+                    onChange={(e) => setForm({ ...form, day: e.target.value })}
+                    className="te-select"
+                  >
+                    <option value="">Select day</option>
+                    {days.map((d) => <option key={d} value={d}>{d}</option>)}
+                  </select>
                 </div>
 
-                {/* Break name input — only when break is selected */}
-                {form.isBreak && (
-                  <input
-                    type="text"
-                    value={form.breakName}
-                    onChange={(e) => setForm({ ...form, breakName: e.target.value })}
-                    placeholder="e.g. Lunch, Short Break"
-                    className="te-input te-break-name-input"
-                  />
-                )}
+                <div className="te-time-row">
+                  <div className="te-field">
+                    <label className="te-field-label" htmlFor="te-start">Start</label>
+                    <input
+                      id="te-start"
+                      type="time"
+                      value={form.start}
+                      onChange={(e) => setForm({ ...form, start: e.target.value })}
+                      className="te-input"
+                    />
+                  </div>
+                  <div className="te-time-arrow" aria-hidden="true">→</div>
+                  <div className="te-field">
+                    <label className="te-field-label" htmlFor="te-end">End</label>
+                    <input
+                      id="te-end"
+                      type="time"
+                      value={form.end}
+                      onChange={(e) => setForm({ ...form, end: e.target.value })}
+                      className="te-input"
+                    />
+                  </div>
+                </div>
+              </div>
+            </section>
 
-                {/* Subject search — hidden when break is selected */}
-                {!form.isBreak && (
-                  <>
+            {/* What */}
+            <section className="te-form-section">
+              <div className="te-form-section-label">What</div>
+              <div className="te-form-section-body">
+                <div className="te-type-toggle" role="group" aria-label="Entry type">
+                  <button
+                    type="button"
+                    className={`te-type-btn${!form.isBreak ? " active" : ""}`}
+                    onClick={() => setForm((prev) => ({ ...prev, isBreak: false }))}
+                  >
+                    Subject
+                  </button>
+                  <button
+                    type="button"
+                    className={`te-type-btn${form.isBreak ? " active" : ""}`}
+                    onClick={() => setForm((prev) => ({ ...prev, isBreak: true, subjectIds: [] }))}
+                  >
+                    Break / Interval
+                  </button>
+                </div>
+
+                {loadingSubjects ? (
+                  <LoadingData message="Loading subjects..." />
+                ) : form.isBreak ? (
+                  <div className="te-field te-full">
+                    <label className="te-field-label" htmlFor="te-break-name">Break name</label>
+                    <input
+                      id="te-break-name"
+                      type="text"
+                      value={form.breakName}
+                      onChange={(e) => setForm({ ...form, breakName: e.target.value })}
+                      placeholder="e.g. Morning Break, Lunch"
+                      className="te-input"
+                    />
+                  </div>
+                ) : (
+                  <div className="te-field te-full">
+                    <label className="te-field-label">Subjects</label>
                     <SearchableSelect
                       placeholder="Search and select subjects..."
                       options={subjectOptions}
@@ -350,7 +485,7 @@ const TimetableEditor = ({
                     {form.subjectIds.length > 0 && (
                       <div className="te-subjects-list">
                         {form.subjectIds.map((sid) => {
-                          const s = availableSubjects.find((x) => x.subjectId === sid);
+                          const s = availableSubjects.find((x) => String(x.subjectId) === String(sid));
                           return (
                             <div key={sid} className="te-subject-tag">
                               <span>{s?.subjectName || sid}</span>
@@ -362,32 +497,31 @@ const TimetableEditor = ({
                         })}
                       </div>
                     )}
-                  </>
+                  </div>
                 )}
-              </>
+              </div>
+            </section>
+          </div>
+
+          <div className="te-form-footer">
+            {editingId != null && (
+              <button type="button" className="te-secondary-btn" onClick={handleCancelEdit}>
+                Cancel
+              </button>
             )}
+            <button
+              type="button"
+              onClick={handleAddOrEdit}
+              disabled={!isFormComplete}
+              className={`te-add-btn${!isFormComplete ? " disabled" : ""}`}
+            >
+              {editingId != null
+                ? <><IcoEdit /> Update Entry</>
+                : form.isBreak
+                  ? <><IcoPlus /> Add Break</>
+                  : <><IcoPlus /> Add to Timetable</>}
+            </button>
           </div>
-
-          {/* Time fields */}
-          <div className="te-field">
-            <label className="te-field-label">Start Time</label>
-            <input type="time" value={form.start} onChange={(e) => setForm({ ...form, start: e.target.value })} className="te-input" />
-          </div>
-
-          <div className="te-field">
-            <label className="te-field-label">End Time</label>
-            <input type="time" value={form.end} onChange={(e) => setForm({ ...form, end: e.target.value })} className="te-input" />
-          </div>
-
-          <button onClick={handleAddOrEdit} disabled={!isFormComplete}
-            className={`te-add-btn te-full${!isFormComplete ? " disabled" : ""}`}>
-            {editingId
-              ? <><IcoEdit /> Update Entry</>
-              : form.isBreak
-                ? <><IcoPlus /> Add Break</>
-                : <><IcoPlus /> Add to Timetable</>}
-          </button>
-
         </div>
 
         {/* Entries list */}
@@ -401,7 +535,10 @@ const TimetableEditor = ({
               </div>
             ) : (
               entries.map((item) => (
-                <div key={item.id} className="te-entry-item">
+                <div
+                  key={item.id}
+                  className={`te-entry-item${editingId != null && String(editingId) === String(item.id) ? " is-editing" : ""}`}
+                >
                   <div className="te-entry-content">
                     <div className="te-entry-day">{item.day}</div>
                     <div className="te-entry-details">
@@ -444,16 +581,16 @@ const TimetableEditor = ({
         <Button variant="secondary" onClick={onClose} disabled={saving}>
           Cancel
         </Button>
-        {/* <button className="te-ai-btn" onClick={() => setAiPanelOpen(true)}>
+        <button className="te-ai-btn" onClick={() => setAiPanelOpen(true)}>
           <IcoAI /> AI Generate
-        </button> */}
+        </button>
         <Button variant="primary" onClick={() => onSave(entries)} disabled={saving}>
           {saving ? "Saving..." : "Save Timetable"}
         </Button>
       </div>
 
       {/* AI Generate Panel */}
-      {/* <SlideInMenu isShow={aiPanelOpen} onClose={() => setAiPanelOpen(false)} width="460px">
+      <SlideInMenu isShow={aiPanelOpen} onClose={() => setAiPanelOpen(false)} width="460px">
         <div className="te-ai-panel">
 
           <div className="te-ai-panel-header">
@@ -469,6 +606,23 @@ const TimetableEditor = ({
           </div>
 
           <div className="te-ai-panel-body">
+            {models.length > 0 && (
+              <div className="te-ai-field">
+                <label>AI Model</label>
+                <select
+                  value={configId}
+                  onChange={(e) => setConfigId(e.target.value)}
+                  className="te-ai-select"
+                >
+                  {models.map((m) => (
+                    <option key={m.config_id} value={m.config_id}>
+                      {m.label} ({m.model}){m.is_active ? " — active" : ""}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
             <div className="te-ai-field">
               <label>Timetable Template *</label>
               {templatesLoading ? (
@@ -528,7 +682,7 @@ const TimetableEditor = ({
             </button>
           </div>
         </div>
-      </SlideInMenu> */}
+      </SlideInMenu>
     </div>
   );
 };

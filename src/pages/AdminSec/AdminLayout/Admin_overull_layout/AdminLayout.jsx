@@ -5,6 +5,7 @@ import "./AdminLayout.css";
 import Saidbar from "../../Admin_components/saidbar/Saidbar";
 import Topbar from "../../Admin_components/topbar/Topbar";
 import SubscriptionExpiredBanner from "../../../../components/SubscriptionExpiredBanner/SubscriptionExpiredBanner";
+import SetupSchoolVideo from "../../AdminPages/SchoolDirectory/SetupSchoolVideo/SetupSchoolVideo";
 import { useBlockExpiredMutations } from "../../../../hooks/useBlockExpiredMutations";
 import { useSubscriptionAccess } from "../../../../hooks/useSubscriptionAccess";
 
@@ -48,6 +49,7 @@ const AdminLayout = ({ children, schoolId }) => {
           {children}
         </div>
       </div>
+      <SetupSchoolVideo />
     </div>
   );
 };

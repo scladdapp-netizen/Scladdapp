@@ -1,3 +1,5 @@
+import { buildWatermarkContent } from "./generateDefaultReportHtml";
+
 /**
  * Replaces all {{placeholders}} in a saved html_template with demo data
  * so it can be rendered as a preview in the detail panel.
@@ -10,7 +12,7 @@
  *  - Remarks
  *  - session / term
  */
-export const hydrateReportHtml = (html, template) => {
+export const hydrateReportHtml = (html, template, school = {}) => {
   if (!html) return "";
 
   const gradingFields   = template?.grading_fields   ?? [];
@@ -87,6 +89,7 @@ export const hydrateReportHtml = (html, template) => {
     ...mock,
     subjectTableRows,
     grandTotal: String(grandTotal),
+    watermarkContent: buildWatermarkContent(school),
   };
 
   // trait placeholders: {{trait_Self_Control}}, {{trait_Punctuality}}, etc.

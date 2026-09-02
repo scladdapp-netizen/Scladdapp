@@ -23,6 +23,7 @@ const MODULES = [
   { id: "school_calendar",          label: "School Calendar" },
   { id: "student_report",           label: "Student Reports" },
   { id: "students",                 label: "Students" },
+  { id: "applications",             label: "Applications" },
   { id: "classes",                  label: "Classes" },
   { id: "teachers",                 label: "Teachers" },
   { id: "staff",                    label: "Staff" },

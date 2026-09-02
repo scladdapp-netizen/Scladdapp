@@ -1,4 +1,4 @@
-﻿import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
 import PublicHeader from "../../components/PublicHeader/PublicHeader";
 import Footer from "../../components/Footer/Footer";
@@ -149,6 +149,7 @@ const Landing = () => {
   const hWrapperRef = useRef(null);
   const hTrackRef = useRef(null);
   const hProgressRef = useRef(null);
+  const introVideoRef = useRef(null);
   const h2WrapperRef = useRef(null);
   const h2TrackRef = useRef(null);
   const h3WrapperRef = useRef(null);
@@ -210,7 +211,11 @@ const Landing = () => {
     const r = Math.round(INTRO_SECTION_BG.r + (FEATURES_SECTION_BG.r - INTRO_SECTION_BG.r) * bgT);
     const g = Math.round(INTRO_SECTION_BG.g + (FEATURES_SECTION_BG.g - INTRO_SECTION_BG.g) * bgT);
     const b = Math.round(INTRO_SECTION_BG.b + (FEATURES_SECTION_BG.b - INTRO_SECTION_BG.b) * bgT);
-    wrapper.style.backgroundColor = `rgb(${r}, ${g}, ${b})`;
+    const bgColor = `rgb(${r}, ${g}, ${b})`;
+    wrapper.style.backgroundColor = bgColor;
+    if (introVideoRef.current) {
+      introVideoRef.current.style.backgroundColor = bgColor;
+    }
 
     let contentOpacity = 0;
     if (engagement > HSCROLL_CONTENT_START) {
@@ -266,8 +271,12 @@ const Landing = () => {
       const sticky = wrapper.querySelector(".hscroll-sticky");
       const maxTranslate = track.scrollWidth - window.innerWidth;
       if (maxTranslate <= 0) {
+        const introBg = `rgb(${INTRO_SECTION_BG.r}, ${INTRO_SECTION_BG.g}, ${INTRO_SECTION_BG.b})`;
         wrapper.style.height = "auto";
-        wrapper.style.backgroundColor = `rgb(${INTRO_SECTION_BG.r}, ${INTRO_SECTION_BG.g}, ${INTRO_SECTION_BG.b})`;
+        wrapper.style.backgroundColor = introBg;
+        if (introVideoRef.current) {
+          introVideoRef.current.style.backgroundColor = introBg;
+        }
         track.style.transform = "translateX(0)";
         if (sticky) {
           sticky.style.opacity = "1";
@@ -376,12 +385,10 @@ const Landing = () => {
 
   // Landing navbar — white text when overlapping dark sections
   useEffect(() => {
-    const introVideo = document.querySelector(".intro-video-section");
-
     const onScroll = () => {
       const headerBottom = 72;
       const darkSections = [
-        introVideo,
+        introVideoRef.current,
         hWrapperRef.current,
         h2WrapperRef.current,
         document.querySelector(".cta-section"),
@@ -518,7 +525,7 @@ const Landing = () => {
       </section>
 
       {/* Intro Video */}
-      <div className="intro-video-section">
+      <div className="intro-video-section" ref={introVideoRef}>
         <div className="ivs-noise" />
         <div className="ivs-grid" />
 

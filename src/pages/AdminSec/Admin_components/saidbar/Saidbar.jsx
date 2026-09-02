@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation, useParams } from "react-router-dom";
 import { useAuth } from "../../../../context/AuthContext/AuthContext";
+import { fetchUnseenApplicationsCount } from "../../../../api_call/useApplicationForm";
 import FeedbackPanel from "../../../../components/FeedbackPanel/FeedbackPanel";
 import "./saidbar.css";
 
@@ -54,6 +55,14 @@ const IconTemplates = () => (
     <rect x="3" y="3" width="16" height="16" rx="2.5" fill="#111111" opacity="0.12" stroke="#111111" strokeWidth="1.6" />
     <path d="M7 7h8M7 11h5M7 15h6" stroke="#111111" strokeWidth="1.6" strokeLinecap="round" />
     <rect x="14" y="11" width="3" height="4" rx="1" fill="#111111" opacity="0.4" />
+  </svg>
+);
+
+const IconApplications = () => (
+  <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+    <path d="M6 3h10a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V5a2 2 0 012-2z" fill="#111111" opacity="0.15" stroke="#111111" strokeWidth="1.6" />
+    <path d="M8 8h6M8 12h6M8 16h4" stroke="#111111" strokeWidth="1.6" strokeLinecap="round" />
+    <circle cx="16" cy="6" r="3" fill="#111111" opacity="0.35" />
   </svg>
 );
 
@@ -115,13 +124,14 @@ const mainNav = [
   { id: "fee_billing",      name: "Fee Billing",          path: "/fee_billing",       icon: <IconFee /> },
   { id: "templates",        name: "Templates",            path: "/templates",         icon: <IconTemplates /> },
   { id: "alumni",           name: "Alumni",               path: "/alumni",            icon: <IconAlumni /> },
+  { id: "applications",     name: "Applications",         path: "/applications",      icon: <IconApplications /> },
 ];
 
 const bottomNav = [
   { id: "school",         name: "School",                    path: "/school",   icon: <IconSchool /> },
   { id: "settings",       name: "Settings",                  path: "/settings", icon: <IconSettings /> },
   { id: "divider",        divider: true },
-  { id: "documentation",  name: "Documentation",             path: null,        icon: <IconDocs /> },
+  { id: "documentation",  name: "Documentation",             path: "/docs",     absolute: true, icon: <IconDocs /> },
   { id: "report",         name: "Help & Report",             path: null,        icon: <IconReport /> },
 ];
 
@@ -131,6 +141,7 @@ const Saidbar = ({ isMobileOpen, onClose }) => {
   const [expanded, setExpanded] = useState(false);
   const [hoverExpanded, setHoverExpanded] = useState(false);
   const [feedbackOpen, setFeedbackOpen] = useState(false);
+  const [unseenApplications, setUnseenApplications] = useState(0);
   const location = useLocation();
   const { user } = useAuth();
 
@@ -153,10 +164,32 @@ const Saidbar = ({ isMobileOpen, onClose }) => {
     if (isMobileOpen) setExpanded(true);
   }, [isMobileOpen]);
 
+  useEffect(() => {
+    if (!schoolId) return;
+
+    const loadUnseenCount = () => {
+      fetchUnseenApplicationsCount(schoolId)
+        .then((res) => {
+          if (res.success) setUnseenApplications(res.data?.count || 0);
+        })
+        .catch(() => setUnseenApplications(0));
+    };
+
+    loadUnseenCount();
+    window.addEventListener("applications-unseen-updated", loadUnseenCount);
+    return () => window.removeEventListener("applications-unseen-updated", loadUnseenCount);
+  }, [schoolId, location.pathname]);
+
   const handleMouseEnter = () => { if (!isMobileOpen && !expanded) setHoverExpanded(true); };
   const handleMouseLeave = () => { if (!isMobileOpen && !expanded) setHoverExpanded(false); };
 
   const isExpanded = expanded || hoverExpanded;
+
+  const renderBadge = (itemId) => {
+    if (itemId !== "applications" || unseenApplications <= 0) return null;
+    const label = unseenApplications > 99 ? "99+" : unseenApplications;
+    return <span className="nav-badge" aria-label={`${unseenApplications} unread applications`}>{label}</span>;
+  };
 
   const renderLink = (item) => {
     if (item.divider) {
@@ -170,21 +203,27 @@ const Saidbar = ({ isMobileOpen, onClose }) => {
           title={!isExpanded ? item.name : ""}
           onClick={() => { if (item.id === "report") setFeedbackOpen(true); }}
         >
-          <span className="nav-icon">{item.icon}</span>
-          {isExpanded && <span className="nav-text">{item.name}</span>}
-        </button>
+        <span className="nav-icon">{item.icon}</span>
+        {isExpanded && <span className="nav-text">{item.name}</span>}
+        {renderBadge(item.id)}
+      </button>
       );
     }
+    const linkTo = item.absolute ? item.path : `/admin/${schoolId}${item.path}`;
+    const linkActive = item.absolute
+      ? location.pathname.startsWith(item.path)
+      : isActive(item.path, item.exact);
     return (
       <Link
         key={item.id}
-        to={`/admin/${schoolId}${item.path}`}
-        className={`nav-link ${isActive(item.path, item.exact) ? "active" : ""}`}
+        to={linkTo}
+        className={`nav-link ${linkActive ? "active" : ""}`}
         title={!isExpanded ? item.name : ""}
         onClick={() => isMobileOpen && onClose()}
       >
         <span className="nav-icon">{item.icon}</span>
         {isExpanded && <span className="nav-text">{item.name}</span>}
+        {renderBadge(item.id)}
       </Link>
     );
   };

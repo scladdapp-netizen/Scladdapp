@@ -870,7 +870,7 @@ const WebsiteBriefPage = () => {
       setBriefData(null);
       setBrief({ primary_color: "#111111", secondary_color: "#6c5ce7", font_style: "modern", theme: "light", sections: buildDefaultSections(categories), final_notes: "" });
       addNotification("Request cancelled.", "success");
-      navigate(`/admin/${schoolId}/school/website`);
+      navigate(`/admin/${schoolId}/school/profile`);
     } else {
       addNotification("Failed to cancel request", "error");
     }
@@ -904,7 +904,7 @@ const WebsiteBriefPage = () => {
       {/* Top bar */}
       <header className="wbp-topbar">
         <div className="wbp-topbar-left">
-          <button className="wbp-back-btn" onClick={() => navigate(`/admin/${schoolId}/school/website`)} aria-label="Back">
+          <button className="wbp-back-btn" onClick={() => navigate(`/admin/${schoolId}/school/profile`)} aria-label="Back">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
               <path d="M19 12H5M12 5l-7 7 7 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
             </svg>

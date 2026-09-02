@@ -454,30 +454,12 @@ const ClassPromotionTemplates = () => {
                   </p>
                   <div className="template-details">
                     <div className="template-detail-item">
-                      <strong>Level:</strong> {template.level}
+                      <strong>Level:</strong> {template.level || "—"}
                     </div>
                     <div className="template-detail-item">
-                      <strong>Criteria:</strong>{" "}
-                      {
-                        template.criteria.filter(
-                          (c) => c.type && c.type.trim() !== ""
-                        ).length
-                      }{" "}
-                      rules
+                      <strong>Mappings:</strong>{" "}
+                      {template.classPromotions?.length || 0}
                     </div>
-                  </div>
-                  <div className="promotion-criteria-preview">
-                    <strong>Key Criteria:</strong>
-                    <ul>
-                      {template.criteria.slice(0, 2).map((criterion, index) => (
-                        <li key={index}>
-                          {criterion.type}: {criterion.weight}% weight
-                        </li>
-                      ))}
-                      {template.criteria.length > 2 && (
-                        <li>+{template.criteria.length - 2} more criteria</li>
-                      )}
-                    </ul>
                   </div>
                   <div className="template-card-meta">
                     <span>Modified: {template.lastModified}</span>
@@ -743,178 +725,95 @@ const ClassPromotionTemplates = () => {
               <div className="template-detail-container">
                 <div className="template-detail-header">
                   <div className="template-detail-title">
-                    <h2>{selectedTemplate.name}</h2>
+                    <h2>Promotion Template</h2>
                     <span
                       className={`template-card-status ${selectedTemplate.status}`}
                     >
                       {selectedTemplate.status}
                     </span>
                   </div>
-                  <p className="template-detail-description">
-                    {selectedTemplate.description}
-                  </p>
-                  <div className="template-detail-meta">
-                    <div className="template-meta-item">
-                      <strong>Last Modified:</strong>{" "}
-                      {selectedTemplate.lastModified}
-                    </div>
-                    <div className="template-meta-item">
-                      <strong>Created By:</strong> {selectedTemplate.createdBy}
-                    </div>
-                    <div className="template-meta-item">
-                      <strong>Grade Level:</strong> {selectedTemplate.level}
-                    </div>
-                  </div>
                 </div>
 
                 <div className="template-detail-content">
-                  {/* Promotion Criteria */}
-                  <div className="detail-section">
-                    <h3>Promotion Criteria</h3>
-                    <div className="criteria-detail-table">
-                      <div className="criteria-table-header">
-                        <span>Criterion Type</span>
-                        <span>Weight</span>
+                  <div className="detail-section cpm-info-section">
+                    <div className="cpm-info-hero">
+                      <span className="cpm-info-label">Template Name</span>
+                      <h3 className="cpm-info-name">{selectedTemplate.name || "Untitled"}</h3>
+                    </div>
+                    <div className="cpm-info-grid">
+                      <div className="cpm-info-card">
+                        <span className="cpm-info-label">Grade Level</span>
+                        <span className="cpm-info-level">
+                          {selectedTemplate.level || "Not set"}
+                        </span>
                       </div>
-                      {selectedTemplate.criteria.map((criterion, index) => (
-                        <div key={index} className="criteria-table-row">
-                          <span>{criterion.type}</span>
-                          <span>{criterion.weight}%</span>
-                        </div>
-                      ))}
-                      <div className="criteria-table-footer">
-                        <span>
-                          <strong>Total Weight</strong>
-                        </span>
-                        <span>
-                          <strong>
-                            {selectedTemplate.criteria.reduce(
-                              (sum, c) => sum + c.weight,
-                              0
-                            )}
-                            %
-                          </strong>
-                        </span>
+                      <div className="cpm-info-card cpm-info-card--wide">
+                        <span className="cpm-info-label">Description</span>
+                        <p className="cpm-info-desc">
+                          {selectedTemplate.description || "No description"}
+                        </p>
                       </div>
                     </div>
                   </div>
 
-                  {/* Class Promotion Mapping */}
-                  <div className="detail-section">
-                    <h3>Class Promotion Mapping</h3>
-                    <div className="promotion-mapping-display">
+                  <div className="detail-section cpm-detail-section">
+                    <div className="cpm-detail-head">
+                      <h3>Class Promotion Mapping</h3>
+                      <span className="cpm-detail-count">
+                        {selectedTemplate.classPromotions?.length || 0}{" "}
+                        {(selectedTemplate.classPromotions?.length || 0) === 1
+                          ? "rule"
+                          : "rules"}
+                      </span>
+                    </div>
+                    <p className="cpm-detail-hint">
+                      Progression path for students. Use <strong>ALUMNI</strong> for graduating classes.
+                    </p>
+                    <div className="cpm-mapping-list">
                       {selectedTemplate.classPromotions &&
                       selectedTemplate.classPromotions.length > 0 ? (
-                        <>
-                          <p className="mapping-note">
-                            <em>
-                              Class promotion mappings define the progression
-                              path for students. Use <strong>ALUMNI</strong> for
-                              graduating students.
-                            </em>
-                          </p>
-                          {classesLoading ? (
-                            <p>Loading class names...</p>
-                          ) : (
-                            <div className="sample-mapping">
-                              {selectedTemplate.classPromotions.map(
-                                (promotion, index) => {
-                                  const fromClass = classOptions.find(
-                                    (c) => c.value === promotion.fromClass
-                                  );
-                                  const toClass = classOptions.find(
-                                    (c) => c.value === promotion.toClass
-                                  );
+                        classesLoading ? (
+                          <p className="cpm-mapping-empty">Loading class names...</p>
+                        ) : (
+                          selectedTemplate.classPromotions.map((promotion, index) => {
+                            const fromClass = classOptions.find(
+                              (c) => c.value === promotion.fromClass
+                            );
+                            const toClass = classOptions.find(
+                              (c) => c.value === promotion.toClass
+                            );
+                            const isAlumni = promotion.toClass === "ALUMNI";
 
-                                  return (
-                                    <div
-                                      key={index}
-                                      className={`mapping-item ${
-                                        promotion.toClass === "ALUMNI"
-                                          ? "alumni-mapping"
-                                          : ""
-                                      }`}
-                                    >
-                                      <span className="from-class">
-                                        {fromClass?.label ||
-                                          promotion.fromClass}
-                                      </span>
-                                      <span className="arrow">→</span>
-                                      <span
-                                        className={`to-class ${
-                                          promotion.toClass === "ALUMNI"
-                                            ? "alumni"
-                                            : ""
-                                        }`}
-                                      >
-                                        {toClass?.label || promotion.toClass}
-                                      </span>
-                                    </div>
-                                  );
-                                }
-                              )}
-                            </div>
-                          )}
-                        </>
+                            return (
+                              <div
+                                key={index}
+                                className={`cpm-mapping-row ${isAlumni ? "cpm-mapping-row--alumni" : ""}`}
+                              >
+                                <span className="cpm-mapping-step">{index + 1}</span>
+                                <span className="cpm-mapping-chip cpm-mapping-chip--from">
+                                  {fromClass?.label || promotion.fromClass || "—"}
+                                </span>
+                                <span className="cpm-mapping-arrow" aria-hidden="true">
+                                  →
+                                </span>
+                                <span
+                                  className={`cpm-mapping-chip ${
+                                    isAlumni
+                                      ? "cpm-mapping-chip--alumni"
+                                      : "cpm-mapping-chip--to"
+                                  }`}
+                                >
+                                  {toClass?.label || promotion.toClass || "—"}
+                                </span>
+                              </div>
+                            );
+                          })
+                        )
                       ) : (
-                        <p>No class promotion mappings defined</p>
+                        <p className="cpm-mapping-empty">
+                          No class promotion mappings defined
+                        </p>
                       )}
-                    </div>
-                  </div>
-
-                  {/* Template Configuration */}
-                  <div className="detail-section">
-                    <h3>Template Configuration</h3>
-                    <div className="config-grid">
-                      <div className="config-item">
-                        <strong>Grade Level:</strong>
-                        <span>{selectedTemplate.level || "Not specified"}</span>
-                      </div>
-                      <div className="config-item">
-                        <strong>Total Criteria:</strong>
-                        <span>
-                          {selectedTemplate.criteria?.filter(
-                            (c) => c.type && c.type.trim() !== ""
-                          ).length || 0}{" "}
-                          rules
-                        </span>
-                      </div>
-                      <div className="config-item">
-                        <strong>Class Mappings:</strong>
-                        <span>
-                          {selectedTemplate.classPromotions?.length || 0}{" "}
-                          mappings
-                        </span>
-                      </div>
-                      <div className="config-item">
-                        <strong>Status:</strong>
-                        <span
-                          className={`status-badge ${selectedTemplate.status}`}
-                        >
-                          {selectedTemplate.status}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Policies & Procedures */}
-                  <div className="detail-section">
-                    <h3>Policies & Procedures</h3>
-                    <div className="policies-display">
-                      <div className="policy-item">
-                        <h4>Retention Policy</h4>
-                        <p>
-                          {selectedTemplate.retentionPolicy ||
-                            "No retention policy defined"}
-                        </p>
-                      </div>
-                      <div className="policy-item">
-                        <h4>Appeal Process</h4>
-                        <p>
-                          {selectedTemplate.appealProcess ||
-                            "No appeal process defined"}
-                        </p>
-                      </div>
                     </div>
                   </div>
                 </div>

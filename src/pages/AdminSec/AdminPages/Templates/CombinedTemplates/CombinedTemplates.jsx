@@ -153,25 +153,40 @@ const CombinedTemplates = () => {
     try {
       const gradingFields = formData.gradingFields.map((f) => ({ field_name: f.fieldName, weight: f.weight, max_score: f.maxScore || 0 }));
       const gradingScheme = formData.gradingScheme.map((s) => ({ grade_letter: s.gradeLetter, min_range: s.minRange, max_range: s.maxRange, grade_point: s.gradePoint, pass_fail: s.passFail }));
+      const modifiedBy = user?.admin?.admin_id || user?.user_id;
 
-      const payload = templateAssigned
-        ? { modified_by: user?.admin?.admin_id || user?.user_id }
-        : {
-            school_id: schoolId,
-            name: formData.name,
-            description: formData.description,
-            grading_fields: gradingFields,
-            grading_scheme: gradingScheme,
-            behavioral_traits: formData.behavioralTraits,
-            html_template: generateDefaultReportHtml({
+      let payload;
+      if (selectedTemplate) {
+        // Update — keep existing html_template / html_template_draft from the visual editor
+        payload = templateAssigned
+          ? { modified_by: modifiedBy }
+          : {
+              name: formData.name,
+              description: formData.description,
               grading_fields: gradingFields,
               grading_scheme: gradingScheme,
               behavioral_traits: formData.behavioralTraits,
-              school: user?.school || {},
-            }),
-            created_by: user?.admin?.admin_id || user?.user_id,
-            modified_by: user?.admin?.admin_id || user?.user_id,
-          };
+              modified_by: modifiedBy,
+            };
+      } else {
+        // Create — seed with default report HTML
+        payload = {
+          school_id: schoolId,
+          name: formData.name,
+          description: formData.description,
+          grading_fields: gradingFields,
+          grading_scheme: gradingScheme,
+          behavioral_traits: formData.behavioralTraits,
+          html_template: generateDefaultReportHtml({
+            grading_fields: gradingFields,
+            grading_scheme: gradingScheme,
+            behavioral_traits: formData.behavioralTraits,
+            school: user?.school || {},
+          }),
+          created_by: modifiedBy,
+          modified_by: modifiedBy,
+        };
+      }
 
       const result = selectedTemplate
         ? await updateTemplate(selectedTemplate.template_id, payload)
@@ -554,7 +569,7 @@ const CombinedTemplates = () => {
                       </Button>
                     </div>
                     {selectedTemplate.html_template
-                      ? <div dangerouslySetInnerHTML={{ __html: hydrateReportHtml(selectedTemplate.html_template, selectedTemplate) }} />
+                      ? <div dangerouslySetInnerHTML={{ __html: hydrateReportHtml(selectedTemplate.html_template, selectedTemplate, user?.school || {}) }} />
                       : <ReportCardPreview template={selectedTemplate} school={user?.school} />
                     }
                   </div>

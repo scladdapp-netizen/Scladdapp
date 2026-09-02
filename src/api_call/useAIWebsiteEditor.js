@@ -77,6 +77,10 @@ export function useAIWebsiteEdit(schoolId) {
         body:    JSON.stringify({ prompt, fullHtml, sectionId, sectionHtml, element, configId }),
       });
       const data = await res.json();
+      if (!res.ok && !data.message) {
+        data.message = `Request failed (${res.status})`;
+        data.success = false;
+      }
       if (!data.success) setError(data.message || "AI edit failed");
       return data;
     } catch (err) {

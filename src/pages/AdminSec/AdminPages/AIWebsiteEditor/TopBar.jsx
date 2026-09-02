@@ -124,7 +124,7 @@ export default function TopBar({
       <div className="aie-topbar-left">
         <button
           className="aie-back-btn"
-          onClick={() => navigate(`/admin/${schoolId}/school/website`)}
+          onClick={() => navigate(`/admin/${schoolId}/school/profile`)}
           aria-label="Back to website settings"
         >
           <IconArrowLeft />

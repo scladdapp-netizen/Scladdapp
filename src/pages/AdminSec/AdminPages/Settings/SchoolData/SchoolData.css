@@ -96,6 +96,17 @@
   background: #ffffff;
 }
 
+.sd-website-under-social {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.sd-website-under-social .sw-wrap {
+  gap: 16px;
+}
+
 .sd-social-title {
   margin: 0;
   font-size: 13px;

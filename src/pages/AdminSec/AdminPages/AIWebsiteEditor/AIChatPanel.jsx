@@ -40,20 +40,20 @@ const IconWarn = () => (
 // ── single message ────────────────────────────────────────────────────────────
 function Message({ msg }) {
   const isUser = msg.role === "user";
+  const isError = msg.isError;
 
-  // Detect element-targeted messages: "🎯 nav.logo — some prompt"
   let content = msg.content;
   let targetTag = null;
   if (isUser && typeof content === "string" && content.startsWith("🎯 ")) {
     const dashIdx = content.indexOf(" — ");
     if (dashIdx !== -1) {
-      targetTag = content.slice(2, dashIdx).trim();     // e.g. "nav.logo"
-      content   = content.slice(dashIdx + 3).trim();    // the actual prompt text
+      targetTag = content.slice(2, dashIdx).trim();
+      content   = content.slice(dashIdx + 3).trim();
     }
   }
 
   return (
-    <div className={`aie-msg ${isUser ? "aie-msg--user" : "aie-msg--ai"}`}>
+    <div className={`aie-msg ${isUser ? "aie-msg--user" : "aie-msg--ai"}${isError ? " aie-msg--error" : ""}`}>
       <div className="aie-msg-bubble">
         {targetTag && (
           <span className="aie-msg-target-tag">🎯 {targetTag}</span>

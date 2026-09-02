@@ -168,6 +168,7 @@ export default function AIWebsiteEditor() {
         setMessages((m) => [...m, {
           id:      Date.now() + 1,
           role:    "ai",
+          isError: true,
           content: isNoToken
             ? "You have no tokens left. Please purchase more to continue editing."
             : result.message || "Something went wrong. Please try again.",
@@ -176,15 +177,12 @@ export default function AIWebsiteEditor() {
         return;
       }
 
-      // Apply new HTML
       set(result.newHtml);
 
-      // Update token balance from server response
       if (result.newBalance !== undefined) {
         setBalance(result.newBalance);
       }
 
-      // Success message — mention token usage if backend returned it
       const usageNote = result.modelUsage?.total_tokens
         ? ` (${result.modelUsage.total_tokens} model tokens)`
         : "";
@@ -192,15 +190,16 @@ export default function AIWebsiteEditor() {
       setMessages((m) => [...m, {
         id:      Date.now() + 1,
         role:    "ai",
-        content: `Done! Changes applied${usageNote}. You have ${result.newBalance} edit token${result.newBalance === 1 ? "" : "s"} remaining.`,
+        content: `${result.message || "Section updated successfully."}${usageNote} ${result.newBalance} edit token${result.newBalance === 1 ? "" : "s"} remaining.`,
         time:    formatTime(),
       }]);
 
-    } catch {
+    } catch (err) {
       setMessages((m) => [...m, {
         id:      Date.now() + 1,
         role:    "ai",
-        content: "Something went wrong. Please try again.",
+        isError: true,
+        content: err?.message || "Something went wrong. Please try again.",
         time:    formatTime(),
       }]);
     } finally {

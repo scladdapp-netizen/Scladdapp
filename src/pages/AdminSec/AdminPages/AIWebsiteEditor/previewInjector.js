@@ -153,17 +153,17 @@ const INJECT_SCRIPT = `
       }
     }
 
-    // find nearest <section id="..."> ancestor and return its id
-    function nearestSectionId(el) {
+    // find nearest <section id="..."> ancestor — used for sectionId + sectionHtml
+    function nearestSectionElement(el) {
       var cur = el;
       while (cur && cur !== document.body) {
-        if (cur.tagName === 'SECTION' && cur.id) return cur.id;
+        if (cur.tagName === 'SECTION' && cur.id) return cur;
         cur = cur.parentElement;
       }
       return null;
     }
 
-    // find the nearest direct child of <body> (the top-level block that contains el)
+    // find the nearest direct child of <body> (fallback block scope)
     // this is what we send as sectionHtml so the backend edits only that block
     function nearestBodyChild(el) {
       var cur = el;
@@ -178,7 +178,9 @@ const INJECT_SCRIPT = `
     // post message to parent
     function post(type, el) {
       try {
+        var sectionEl = nearestSectionElement(el);
         var bodyChild = nearestBodyChild(el);
+        var scopeEl   = sectionEl || bodyChild;
         window.parent.postMessage({
           __aie: true,
           type:         type,
@@ -187,10 +189,8 @@ const INJECT_SCRIPT = `
           outerHTML:    el.outerHTML.slice(0, 20000),
           textContent:  getTextSnippet(el),
           tagName:      el.tagName.toLowerCase(),
-          sectionId:    nearestSectionId(el),
-          // full outerHTML of the direct body child that contains el
-          // backend uses this to know exactly which block to edit
-          sectionHtml:  bodyChild ? bodyChild.outerHTML : null,
+          sectionId:    sectionEl ? sectionEl.id : null,
+          sectionHtml:  scopeEl ? scopeEl.outerHTML.slice(0, 80000) : null,
         }, '*');
       } catch(e) {}
     }

@@ -13,7 +13,7 @@ import "./SubAdminGuard.css";
  *
  * Permission keys match the keys in admin.permissions object:
  *   academic_sessions, school_event, school_calendar,
- *   student_report, students, classes, teachers, staff, subject,
+ *   student_report, students, applications, classes, teachers, staff, subject,
  *   communication, bill_income_expense, school_account,
  *   report_template, fee_billing_template, timetable_template,
  *   announcement_template, class_promotion_template, graduate

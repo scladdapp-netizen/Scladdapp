@@ -1,4 +1,4 @@
-import { Route, Routes } from "react-router-dom";
+import { Route, Routes, Navigate } from "react-router-dom";
 import AdminPages from "./Admin_seasion_tab_raute";
 import AdminLayout from "../AdminLayout/Admin_overull_layout/AdminLayout.jsx";
 import StudentDetailRoute from "./Student_detail_sidebar_route.jsx";
@@ -11,10 +11,10 @@ import SchoolDirectoryRoute from "./School_directory_route.jsx";
 import CommunicationRoute from "./Communication_route.jsx";
 import FeeBillingRoute from "./Fee_billing_route.jsx";
 import AlumniRoute from "./Alumni_route.jsx";
+import ApplicationsRoute from "./Applications_route.jsx";
 import TemplatesRoute from "./Templates_route.jsx";
 import SettingsRoute from "./Settings_route.jsx";
 import SchoolData from "../AdminPages/Settings/SchoolData/SchoolData.jsx";
-import SchoolWebsite from "../AdminPages/Settings/SchoolData/SchoolWebsite.jsx";
 import StudentDetailTopTab from "../Admin_components/StudentDetailTopTab/StudentDetailTopTab.jsx";
 import Dashboard from "../AdminPages/Dashboard/Dashboard.jsx";
 import SubscriptionGuard from "../../../components/SubscriptionGuard/SubscriptionGuard.jsx";
@@ -38,7 +38,6 @@ const SchoolPage = () => (
       // { label: "Bio",       link: "/bio" },
       { label: "Resources", link: "/resources" },
       { label: "Gallery",   link: "/gallery" },
-      { label: "Website",   link: "/website" },
     ]}
   >
     <Routes>
@@ -47,7 +46,7 @@ const SchoolPage = () => (
       <Route path="/bio"       element={<SchoolData defaultTab="bio"       hideInternalTabs />} />
       <Route path="/resources" element={<SchoolData defaultTab="resources" hideInternalTabs />} />
       <Route path="/gallery"   element={<SchoolData defaultTab="gallery"   hideInternalTabs />} />
-      <Route path="/website"   element={<SchoolWebsite />} />
+      <Route path="/website"   element={<Navigate to="../profile" replace />} />
     </Routes>
   </StudentDetailTopTab>
 );
@@ -75,6 +74,7 @@ const Admin = () => {
             <Route path="/communication/*" element={<SubscriptionGuard><CommunicationRoute /></SubscriptionGuard>} />
             <Route path="/fee_billing/*" element={<SubscriptionGuard><FeeBillingRoute /></SubscriptionGuard>} />
             <Route path="/alumni/*" element={<SubscriptionGuard><AlumniRoute /></SubscriptionGuard>} />
+            <Route path="/applications/*" element={<SubscriptionGuard><ApplicationsRoute /></SubscriptionGuard>} />
             <Route path="/templates/*" element={<SubscriptionGuard><TemplatesRoute /></SubscriptionGuard>} />
             <Route path="/settings/*" element={<SubAdminGuard><SettingsRoute /></SubAdminGuard>} />
             <Route path="/school/*" element={<SubscriptionGuard><SubAdminGuard blockAll><SchoolPage /></SubAdminGuard></SubscriptionGuard>} />

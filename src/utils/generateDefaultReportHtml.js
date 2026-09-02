@@ -2,17 +2,27 @@
  * Generates the default report card HTML string from a template + school info.
  *
  * Layout:
- *   1. Header band  — logo | school name/address | session/term
- *   2. Dark banner  — "STUDENT REPORT CARD"
+ *   0. Watermark     — centered school logo (or initial letter fallback)
+ *   1. Header band   — logo | school name/address | session/term
+ *   2. Dark banner   — "STUDENT REPORT CARD"
  *   3. Student info strip
  *   4. Academic Scores table
  *   5. Behavioral Traits | Grading Scale
  *   6. Remarks
- *   7. Footer band
  *
  * Table header colours are set on <thead> so the admin can change them in one click.
- * All background colours use rgba so the school-logo watermark shows through.
+ * Section backgrounds use rgba so the watermark shows through lightly.
  */
+export function buildWatermarkContent(school = {}) {
+  const schoolLogo = school?.logo_url || "";
+  const schoolName = school?.school_name || "";
+  if (schoolLogo) {
+    return `<img data-hle-id="rc-watermark-img" src="${schoolLogo}" alt="" style="width:260px;height:260px;object-fit:contain;opacity:0.07;user-select:none" crossorigin="anonymous"/>`;
+  }
+  const letter = schoolName ? schoolName.charAt(0).toUpperCase() : "S";
+  return `<span data-hle-id="rc-watermark-fallback" style="font-size:200px;font-weight:900;color:#111111;opacity:0.04;line-height:1;user-select:none">${letter}</span>`;
+}
+
 export const generateDefaultReportHtml = ({
   grading_fields = [],
   grading_scheme = [],
@@ -30,16 +40,6 @@ export const generateDefaultReportHtml = ({
     : schoolName
       ? `<span>${schoolName.charAt(0).toUpperCase()}</span>`
       : `<span>S</span>`;
-
-  // ── Watermark ────────────────────────────────────────────────────────────
-  // Layered background on rc-content:
-  //   layer 1 (top): white at 94% opacity — dims the watermark to ~6% visible
-  //   layer 2 (bottom): the logo or SVG initial letter, centered 240×240px
-  const watermarkBg = schoolLogo
-    ? `url('${schoolLogo}')`
-    : `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dominant-baseline='central' font-family='Arial,sans-serif' font-weight='900' font-size='200' fill='%23111111'%3E${encodeURIComponent(schoolName ? schoolName.charAt(0).toUpperCase() : "S")}%3C/text%3E%3C/svg%3E")`;
-
-  const watermarkStyle = `background-image:linear-gradient(rgba(255,255,255,0.94),rgba(255,255,255,0.94)),${watermarkBg};background-repeat:repeat,no-repeat;background-position:0 0,center center;background-size:auto,240px 240px;`;
 
   // ── Score column headers ──────────────────────────────────────────────────
   const scoreCols = grading_fields
@@ -70,10 +70,13 @@ export const generateDefaultReportHtml = ({
   const hasSide = behavioral_traits.length > 0 || grading_scheme.length > 0;
 
   return `
-<div data-hle-id="rc-root" style="background:#ffffff;border:1px solid #d1d5db;border-radius:8px;overflow:hidden;font-size:11px;color:#111111;font-family:Arial,Helvetica,sans-serif">
+<div data-hle-id="rc-root" style="position:relative;background:#ffffff;border:1px solid #d1d5db;border-radius:8px;overflow:hidden;font-size:11px;color:#111111;font-family:Arial,Helvetica,sans-serif">
 
-  <!-- rc-content carries the watermark as a layered background -->
+  <div data-hle-id="rc-watermark" aria-hidden="true" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:0;overflow:hidden">
+    {{watermarkContent}}
+  </div>
 
+  <div data-hle-id="rc-content" style="position:relative;z-index:1">
 
     <!-- 1. Header band — rgba background so watermark shows through -->
     <div data-hle-id="rc-header" style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:rgba(255,255,255,0.88);border-bottom:1px solid #e5e7eb">
@@ -219,8 +222,7 @@ export const generateDefaultReportHtml = ({
 
     </div>
 
-
-
+  </div>
 
 </div>`.trim();
 };

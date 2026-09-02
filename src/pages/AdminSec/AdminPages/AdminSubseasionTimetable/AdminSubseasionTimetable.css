@@ -64,27 +64,74 @@
   white-space: nowrap; text-transform: uppercase; letter-spacing: 0.04em;
 }
 
-.ast-card-actions { flex-shrink: 0; }
+.ast-card-actions {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
 
 .ast-card-btn {
   display: inline-flex; align-items: center; gap: 6px;
   padding: 7px 14px; border-radius: 8px;
   font-size: 12px; font-weight: 700; cursor: pointer;
-  border: 1px solid transparent; transition: background 0.15s, color 0.15s;
+  border: 1px solid transparent; transition: background 0.15s, color 0.15s, opacity 0.15s;
+}
+
+.ast-card-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .ast-card-btn-edit {
   background: #f4f4f4; color: #111111; border-color: #e8e8e8;
 }
-.ast-card-btn-edit:hover { background: #111111; color: #ffffff; border-color: #111111; }
+.ast-card-btn-edit:hover:not(:disabled) { background: #111111; color: #ffffff; border-color: #111111; }
 
 .ast-card-btn-create {
   background: #111111; color: #ffffff; border-color: #111111;
 }
-.ast-card-btn-create:hover { opacity: 0.85; }
+.ast-card-btn-create:hover:not(:disabled) { opacity: 0.85; }
+
+.ast-card-btn-ai {
+  background: #111111; color: #ffffff; border-color: #111111;
+}
+.ast-card-btn-ai:hover:not(:disabled) { opacity: 0.88; }
 
 /* ── Timetable wrap ───────────────────────────────────────────────────────── */
-.ast-timetable-wrap { padding: 12px; overflow-x: auto; }
+.ast-timetable-wrap { padding: 10px; overflow-x: auto; }
+
+/* Compact timetable table inside class cards */
+.ast-timetable-wrap .timetable-view-toggle {
+  margin-bottom: 8px;
+}
+
+.ast-timetable-wrap .timetable-wrapper {
+  border-radius: 8px;
+}
+
+.ast-timetable-wrap .day-row {
+  min-height: 44px;
+}
+
+.ast-timetable-wrap .time-cell {
+  font-size: 10px;
+  padding: 5px 0;
+}
+
+.ast-timetable-wrap .day-label {
+  font-size: 11px;
+}
+
+.ast-timetable-wrap .subject-title {
+  font-size: 10px;
+}
+
+.ast-timetable-wrap .subject-teacher,
+.ast-timetable-wrap .subject-time {
+  font-size: 9px;
+}
 
 /* ── Empty state ──────────────────────────────────────────────────────────── */
 .ast-empty {
@@ -301,8 +348,10 @@
 [data-theme="dark"] .ast-class-name { color: #e0e0e0; }
 [data-theme="dark"] .ast-class-code { background: #252525; color: #888888; }
 [data-theme="dark"] .ast-card-btn-edit { background: #252525; color: #e0e0e0; border-color: #3a3a3a; }
-[data-theme="dark"] .ast-card-btn-edit:hover { background: #f0f0f0; color: #111111; border-color: #f0f0f0; }
+[data-theme="dark"] .ast-card-btn-edit:hover:not(:disabled) { background: #f0f0f0; color: #111111; border-color: #f0f0f0; }
 [data-theme="dark"] .ast-card-btn-create { background: #f0f0f0; color: #111111; }
+[data-theme="dark"] .ast-card-btn-ai { background: #f0f0f0; color: #111111; border-color: #f0f0f0; }
+[data-theme="dark"] .ast-card-btn-ai:hover:not(:disabled) { background: #ffffff; }
 [data-theme="dark"] .ast-empty-icon,
 [data-theme="dark"] .ast-no-classes-icon { background: #252525; border-color: #3a3a3a; color: #555555; }
 [data-theme="dark"] .ast-empty-text { color: #555555; }

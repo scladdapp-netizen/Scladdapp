@@ -20,6 +20,8 @@ import useSchoolGallery from "../../../../../api_call/useSchoolGallery";
 import { FaSchool, FaUpload, FaSave, FaBook, FaFileAlt, FaImages, FaBold, FaItalic, FaUnderline, FaListUl, FaListOl, FaImage, FaAlignLeft, FaAlignCenter, FaAlignRight, FaLink } from "react-icons/fa";
 import "./SchoolData.css";
 import SubscriptionLimitModal from "../../../../../components/SubscriptionLimitModal/SubscriptionLimitModal";
+import { SchoolWebsiteContent } from "./SchoolWebsite";
+import "./SchoolWebsite.css";
 
 import downloadFile from "../../../../../utils/downloadFile";
 import {
@@ -379,22 +381,6 @@ const SchoolData = ({ defaultTab = "profile", hideInternalTabs = false }) => {
                       <span className="sd-info-value">{value || "—"}</span>
                     </div>
                   ))}
-                  <div className="sd-info-card">
-                    <span className="sd-info-label">Website</span>
-                    {profile.website ? (
-                      <a
-                        className="sd-info-link"
-                        href={/^https?:\/\//i.test(profile.website) ? profile.website : `https://${profile.website}`}
-                        target="_blank"
-                        rel="noreferrer"
-                        title={profile.website}
-                      >
-                        {profile.website.replace(/^https?:\/\/(www\.)?/i, "")}
-                      </a>
-                    ) : (
-                      <span className="sd-info-value">—</span>
-                    )}
-                  </div>
                 </div>
 
                 <div className="sd-social-section">
@@ -455,7 +441,6 @@ const SchoolData = ({ defaultTab = "profile", hideInternalTabs = false }) => {
                   <FormInput label="School Slogan" type="text" value={profile.slogan} onChange={(v) => setProfile(p => ({ ...p, slogan: v }))} />
                   <FormInput label="Phone Number" type="text" value={profile.phone} onChange={(v) => setProfile(p => ({ ...p, phone: v }))} />
                   <FormInput label="Email Address" type="email" value={profile.email} onChange={(v) => setProfile(p => ({ ...p, email: v }))} />
-                  <FormInput label="Website URL" type="url" value={profile.website} onChange={(v) => setProfile(p => ({ ...p, website: v }))} placeholder="https://www.yourschool.com" />
                   <FormInput label="State" type="text" value={profile.state} onChange={(v) => setProfile(p => ({ ...p, state: v }))} />
                   <FormInput label="Country" type="text" value={profile.country} onChange={(v) => setProfile(p => ({ ...p, country: v }))} />
                 </div>
@@ -539,6 +524,10 @@ const SchoolData = ({ defaultTab = "profile", hideInternalTabs = false }) => {
                 </div>
               </div>
             )}
+
+            <div className="sd-website-under-social">
+              <SchoolWebsiteContent />
+            </div>
           </div>
         )}
 

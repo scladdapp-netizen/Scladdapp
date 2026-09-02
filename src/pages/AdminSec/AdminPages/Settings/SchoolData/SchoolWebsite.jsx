@@ -7,6 +7,11 @@ import useWebsiteRequest from "../../../../../api_call/useWebsiteRequest";
 import Button from "../../../../../components/Button/Button";
 import FormInput from "../../../../../components/FormInput";
 import InnerTabCon from "../../../../../components/InnerTabCon/InnerTabCon";
+import ApplicationFormFieldsPanel from "./ApplicationFormFieldsPanel";
+import {
+  fetchApplicationFormConfig,
+  saveApplicationFormConfig,
+} from "../../../../../api_call/useApplicationForm";
 import "./SchoolWebsite.css";
 
 // ── helpers ──────────────────────────────────────────────────────────────────
@@ -14,6 +19,9 @@ const isFree = (sub) => !sub || sub.subscription_type === "free";
 
 const loginUrl = (schoolId) =>
   `${window.location.origin}/school/${schoolId}/login`;
+
+const applicationUrl = (schoolId) =>
+  `${window.location.origin}/school/${schoolId}/apply`;
 
 const CopyBtn = ({ text }) => {
   const [copied, setCopied] = useState(false);
@@ -55,6 +63,96 @@ const LoginLinkCard = ({ schoolId, school }) => {
         <div>
           <h3 className="sw-section-title">School Login Link</h3>
           <p className="sw-section-sub">Share this link with your staff and teachers. It shows your school branding on the login screen.</p>
+        </div>
+      </div>
+
+      <div className="sw-link-preview">
+        <div className="sw-link-preview-left">
+          {school?.logo_url ? (
+            <img src={school.logo_url} alt={school.school_name} className="sw-link-logo" />
+          ) : (
+            <div className="sw-link-logo-placeholder">
+              {school?.school_name?.charAt(0)?.toUpperCase() || "S"}
+            </div>
+          )}
+          <div className="sw-link-info">
+            <span className="sw-link-name">{school?.school_name || "Your School"}</span>
+            <span className="sw-link-url">{url}</span>
+          </div>
+        </div>
+        <div className="sw-link-actions">
+          <CopyBtn text={url} />
+          <a href={url} target="_blank" rel="noreferrer" className="sw-open-btn">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
+              <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              <polyline points="15,3 21,3 21,9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              <line x1="10" y1="14" x2="21" y2="3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+            </svg>
+            Open
+          </a>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ── Application form link card ────────────────────────────────────────────────
+const ApplicationFormLinkCard = ({ schoolId, school, onConfigure, isActive, onActiveChange }) => {
+  const { addNotification } = useNotification();
+  const url = applicationUrl(schoolId);
+  const [toggling, setToggling] = useState(false);
+
+  const handleToggleActive = async () => {
+    if (!schoolId || toggling) return;
+    const next = !isActive;
+    setToggling(true);
+    try {
+      const current = await fetchApplicationFormConfig(schoolId);
+      if (!current.success) throw new Error(current.message || "Failed to load settings");
+      const fields = current.data.enabled_fields || [];
+      const res = await saveApplicationFormConfig(schoolId, {
+        enabled_fields: fields,
+        is_active: next,
+      });
+      if (!res.success) throw new Error(res.message || "Failed to update");
+      onActiveChange(next);
+      addNotification(next ? "Application form is now open" : "Application form is now closed", "success");
+    } catch (err) {
+      addNotification(err.message || "Could not update form status", "error");
+    } finally {
+      setToggling(false);
+    }
+  };
+
+  return (
+    <div className="sw-section">
+      <div className="sw-section-head">
+        <div className="sw-section-icon sw-icon-form">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+            <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            <polyline points="14,2 14,8 20,8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            <line x1="16" y1="13" x2="8" y2="13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+            <line x1="16" y1="17" x2="8" y2="17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+          </svg>
+        </div>
+        <div>
+          <h3 className="sw-section-title">School Application Form Link</h3>
+          <p className="sw-section-sub">Share this link with parents so they can apply online. Choose which fields appear on the form.</p>
+        </div>
+        <div className="sw-section-head-actions">
+          <label className={`sw-form-active-toggle${toggling ? " sw-form-active-toggle--busy" : ""}`}>
+            <input
+              type="checkbox"
+              checked={isActive}
+              disabled={toggling}
+              onChange={handleToggleActive}
+            />
+            <span className="sw-form-active-track" aria-hidden="true">
+              <span className="sw-form-active-thumb" />
+            </span>
+            <span className="sw-form-active-text">Accept new applications</span>
+          </label>
+          <Button variant="secondary" onClick={onConfigure}>Configure fields</Button>
         </div>
       </div>
 
@@ -287,7 +385,7 @@ const YourWebsiteSection = ({ schoolId, initialWebsite, onSaved, loading }) => {
 };
 
 // ── Custom Domain Section ─────────────────────────────────────────────────────
-const CustomDomainSection = ({ scladappWebsiteUrl, existingDomain, existingStatus }) => {
+const CustomDomainSection = ({ scladappWebsiteUrl, existingDomain, existingStatus, nested = false }) => {
   const [domain,   setDomain]   = useState(existingDomain || "");
   const [editing,  setEditing]  = useState(false);
   const [status,   setStatus]   = useState(existingStatus || null); // null | "pending" | "connected"
@@ -308,7 +406,7 @@ const CustomDomainSection = ({ scladappWebsiteUrl, existingDomain, existingStatu
   if (!scladappWebsiteUrl) return null; // only show once site is published
 
   return (
-    <div className="sw-section sw-section-domain">
+    <div className={nested ? "sw-domain-nested" : "sw-section sw-section-domain"}>
       <div className="sw-section-head">
         <div className="sw-section-icon sw-icon-domain">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
@@ -424,7 +522,7 @@ const CustomDomainSection = ({ scladappWebsiteUrl, existingDomain, existingStatu
     </div>
   );
 };
-const RequestWebsiteSection = ({ onRequest, onCancel, loading, alreadyRequested, briefStatus, scladappWebsiteUrl, onEditWithAI }) => {
+const RequestWebsiteSection = ({ onRequest, onCancel, loading, alreadyRequested, briefStatus, scladappWebsiteUrl, onEditWithAI, customDomain, customDomainStatus }) => {
   const features = [
     {
       icon: (
@@ -542,6 +640,13 @@ const RequestWebsiteSection = ({ onRequest, onCancel, loading, alreadyRequested,
             <p className="sw-edit-ai-desc">
               Your personal workspace for managing and improving your school website — edit content, update sections, and use AI to rewrite or generate new parts of your site.
             </p>
+
+            <CustomDomainSection
+              nested
+              scladappWebsiteUrl={scladappWebsiteUrl}
+              existingDomain={customDomain}
+              existingStatus={customDomainStatus}
+            />
           </div>
         ) : alreadyRequested ? (
           <div className="sw-requested-state">
@@ -579,7 +684,7 @@ const RequestWebsiteSection = ({ onRequest, onCancel, loading, alreadyRequested,
 };
 
 // ── Main component ─────────────────────────────────────────────────────────────
-const SchoolWebsite = () => {
+export const SchoolWebsiteContent = () => {
   const { schoolId } = useParams();
   const { user } = useAuth();
   const { addNotification } = useNotification();
@@ -590,23 +695,64 @@ const SchoolWebsite = () => {
   const [school, setSchool] = useState(null);
   const [websiteRequested, setWebsiteRequested] = useState(false);
   const [briefData, setBriefData] = useState(null);      // the WebsiteRequest doc
+  const [websiteLoading, setWebsiteLoading] = useState(true);
+  const [fieldsPanelOpen, setFieldsPanelOpen] = useState(false);
+  const [appFormIsActive, setAppFormIsActive] = useState(true);
 
   const subscription = user?.subscription;
   const isPaidPlan = subscription && subscription.subscription_type !== "free" &&
     (subscription.subscription_status === "active" || subscription.subscription_status === "trialing") &&
     new Date(subscription.end_date) > new Date();
 
+  // Hosted site URL — from WebsiteRequest first, then school.website fallback (same DB, not localStorage)
+  const scladappWebsiteUrl =
+    briefData?.scladapp_website_url ||
+    school?.scladapp_website_url ||
+    (briefData?.status === "published" && school?.website ? school.website : null) ||
+    null;
+
+  const alreadyRequested =
+    websiteRequested ||
+    !!briefData ||
+    !!school?.website_request ||
+    !!scladappWebsiteUrl;
+
   useEffect(() => {
     if (!schoolId) return;
-    getWebsite(schoolId).then((res) => {
-      if (res.success && res.data) {
-        setSchool(res.data);
-        setWebsiteRequested(!!res.data.website_requested);
-      }
-    });
-    getRequest(schoolId).then((res) => {
-      if (res.success) setBriefData(res.data);
-    });
+    let cancelled = false;
+    setWebsiteLoading(true);
+
+    Promise.all([
+      getWebsite(schoolId),
+      getRequest(schoolId),
+      fetchApplicationFormConfig(schoolId),
+    ])
+      .then(([websiteRes, requestRes, formRes]) => {
+        if (cancelled) return;
+
+        if (websiteRes.success && websiteRes.data) {
+          setSchool(websiteRes.data);
+          setWebsiteRequested(!!websiteRes.data.website_requested);
+          // Prefer embedded request from getWebsite when present
+          if (websiteRes.data.website_request) {
+            setBriefData(websiteRes.data.website_request);
+          }
+        }
+
+        if (requestRes.success && requestRes.data) {
+          setBriefData(requestRes.data);
+          setWebsiteRequested(true);
+        } else if (requestRes.success && requestRes.data === null && websiteRes?.data?.website_request) {
+          // keep website_request from getWebsite
+        }
+
+        if (formRes.success) setAppFormIsActive(formRes.data.is_active !== false);
+      })
+      .finally(() => {
+        if (!cancelled) setWebsiteLoading(false);
+      });
+
+    return () => { cancelled = true; };
   }, [schoolId]);
 
   const handleSaveWebsite = async (url) => {
@@ -626,14 +772,21 @@ const SchoolWebsite = () => {
   const handleCancelled = () => {
     setBriefData(null);
     setWebsiteRequested(false);
+    setSchool((prev) => prev ? { ...prev, website_requested: false, scladapp_website_url: null, website_request: null } : prev);
     addNotification("Request cancelled.", "success");
   };
 
   return (
-    <InnerTabCon>
-      <div className="sw-wrap">
+    <div className="sw-wrap">
         {/* Scladapp-hosted website request — paid plans only, shown first */}
-        {isPaidPlan ? (
+        {websiteLoading ? (
+          <div className="sw-section sw-section-request">
+            <div className="sw-request-header">
+              <h3 className="sw-request-title">Scladapp-Powered Website</h3>
+              <p className="sw-request-desc">Loading website status…</p>
+            </div>
+          </div>
+        ) : isPaidPlan ? (
           <RequestWebsiteSection
             onRequest={handleOpenPanel}
             onCancel={async () => {
@@ -642,10 +795,12 @@ const SchoolWebsite = () => {
               else addNotification("Failed to cancel request", "error");
             }}
             loading={briefLoading}
-            alreadyRequested={websiteRequested}
-            briefStatus={briefData?.status}
-            scladappWebsiteUrl={briefData?.scladapp_website_url || null}
+            alreadyRequested={alreadyRequested}
+            briefStatus={briefData?.status || school?.website_request_status}
+            scladappWebsiteUrl={scladappWebsiteUrl}
             onEditWithAI={() => navigate(`/admin/${schoolId}/school/website/ai-editor`)}
+            customDomain={briefData?.custom_domain || school?.custom_domain || null}
+            customDomainStatus={briefData?.custom_domain_status || school?.custom_domain_status || null}
           />
         ) : (
           <div className="sw-section sw-section-locked">
@@ -675,15 +830,26 @@ const SchoolWebsite = () => {
           </div>
         )}
 
-        {/* Custom domain — only shown when site is published */}
-          <CustomDomainSection
-            scladappWebsiteUrl={briefData?.scladapp_website_url || null}
-            existingDomain={briefData?.custom_domain || null}
-            existingStatus={briefData?.custom_domain_status || null}
-          />
-
           {/* Login link — always available */}
         <LoginLinkCard schoolId={schoolId} school={school} />
+
+        <ApplicationFormLinkCard
+          schoolId={schoolId}
+          school={school}
+          isActive={appFormIsActive}
+          onActiveChange={setAppFormIsActive}
+          onConfigure={() => setFieldsPanelOpen(true)}
+        />
+
+        <ApplicationFormFieldsPanel
+          schoolId={schoolId}
+          open={fieldsPanelOpen}
+          isActive={appFormIsActive}
+          onClose={(saved) => {
+            setFieldsPanelOpen(false);
+            if (saved) addNotification("Application form settings saved", "success");
+          }}
+        />
 
         {/* Your website URL — always available */}
         <YourWebsiteSection
@@ -693,8 +859,13 @@ const SchoolWebsite = () => {
           loading={false}
         />
       </div>
-    </InnerTabCon>
   );
 };
+
+const SchoolWebsite = () => (
+  <InnerTabCon>
+    <SchoolWebsiteContent />
+  </InnerTabCon>
+);
 
 export default SchoolWebsite;

@@ -12,8 +12,8 @@ const useDashboard = (schoolId) => {
   const [todayAttendance, setTodayAttendance] = useState(null);
   const [attendanceLoading, setAttendanceLoading] = useState(true);
 
-  const [upcomingEvents, setUpcomingEvents] = useState([]);
-  const [eventsLoading, setEventsLoading] = useState(true);
+  const [applicationsTrend, setApplicationsTrend] = useState(null);
+  const [applicationsLoading, setApplicationsLoading] = useState(true);
 
   const [feePayments, setFeePayments] = useState(null);
   const [feeLoading, setFeeLoading] = useState(true);
@@ -63,26 +63,9 @@ const useDashboard = (schoolId) => {
     get(`/api/schools/${schoolId}/attendance/today`, setTodayAttendance, setAttendanceLoading);
     get(`/api/schools/${schoolId}/gender-distribution`, setGenderData, setGenderLoading);
     get(`/api/schools/${schoolId}/enrollment-trend`, setEnrollmentTrend, setEnrollmentLoading);
+    get(`/api/schools/${schoolId}/applications-monthly-trend`, setApplicationsTrend, setApplicationsLoading);
     get(`/api/schools/${schoolId}/recent-activities?page=1&pageSize=4`, setRecentActivities, setActivitiesLoading);
     get(`/api/schools/${schoolId}/monthly-financials`, setMonthlyFinancials, setFinancialsLoading);
-
-    // Events — needs filtering
-    setEventsLoading(true);
-    fetch(`${API_BASE}/api/school-events/school/${schoolId}`)
-      .then((r) => r.json())
-      .then((res) => {
-        if (res.success) {
-          const today = new Date(); today.setHours(0, 0, 0, 0);
-          setUpcomingEvents(
-            (res.data || [])
-              .filter((e) => new Date(e.event_date) >= today)
-              .sort((a, b) => new Date(a.event_date) - new Date(b.event_date))
-              .slice(0, 3)
-          );
-        }
-      })
-      .catch(() => {})
-      .finally(() => setEventsLoading(false));
 
     fetchFeePayments("today");
 
@@ -92,7 +75,7 @@ const useDashboard = (schoolId) => {
     stats, statsLoading,
     activeSession, sessionLoading,
     todayAttendance, attendanceLoading,
-    upcomingEvents, eventsLoading,
+    applicationsTrend, applicationsLoading,
     feePayments, feeLoading, feeRange, changeFeeRange,
     genderData, genderLoading,
     enrollmentTrend, enrollmentLoading,

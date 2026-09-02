@@ -88,8 +88,8 @@ export default function EditTemplatePage() {
   // ── Keep previewHtml in sync with editor html ──────────────────────────────
   useEffect(() => {
     if (!template) return;
-    setPreviewHtml(hydrateReportHtml(html, template));
-  }, [html, template]);
+    setPreviewHtml(hydrateReportHtml(html, template, user?.school || {}));
+  }, [html, template, user?.school]);
 
   // ── Auto-save draft: debounced PATCH to html_template_draft ───────────────
   const draftSaveFn = useCallback(
@@ -282,6 +282,7 @@ export default function EditTemplatePage() {
           selectedElement={selectedElement}
           html={html}
           onHtmlChange={handleHtmlChange}
+          reportMode
         />
 
       </div>
