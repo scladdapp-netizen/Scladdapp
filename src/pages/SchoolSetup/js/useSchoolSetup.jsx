@@ -7,6 +7,7 @@ import { generateOTP, hashPassword } from "../../../utils/passwordUtils";
 import { isValidEmail } from "../../../services/isValidEmail";
 import { useOTP } from "../../../components/otp/OTPContext";
 import { useAuth } from "../../../context/AuthContext/AuthContext";
+import { getCycleTotal, getSubscriptionTotal } from "../../../utils/planPricing";
 
 export const useSchoolSetups = () => {
   const { addNotification } = useNotification();
@@ -17,30 +18,53 @@ export const useSchoolSetups = () => {
   const { openOTPModal } = useOTP();
   const { school_setup } = useAuth();
 
+  // Prefer plan id only — never trust cached price fields from session / location
   const [selectedPlan, setSelectedPlan] = useState(() => {
-    const saved = sessionStorage.getItem("selectedPlan");
-    return saved ? JSON.parse(saved) : null;
+    try {
+      const preferredId = sessionStorage.getItem("preferredPlanId");
+      if (preferredId) return { plan_id: preferredId };
+
+      const saved = sessionStorage.getItem("selectedPlan");
+      if (!saved) return null;
+      const parsed = JSON.parse(saved);
+      const id = parsed?.plan_id ?? parsed?.$id;
+      return id != null ? { plan_id: String(id) } : null;
+    } catch {
+      return null;
+    }
   });
 
   useEffect(() => {
     if (location?.state?.plan) {
-      setSelectedPlan(location.state.plan);
-      sessionStorage.setItem(
-        "selectedPlan",
-        JSON.stringify(location.state.plan)
-      );
+      const id = location.state.plan.plan_id ?? location.state.plan.$id;
+      if (id != null) {
+        const stub = { plan_id: String(id) };
+        setSelectedPlan(stub);
+        sessionStorage.setItem("preferredPlanId", String(id));
+        // Clear full cached plan so stale prices cannot resurface
+        sessionStorage.removeItem("selectedPlan");
+      }
     }
   }, [location]);
 
+  // Keep preferred id in sync once StepFour sets the live plan
   useEffect(() => {
-    if (selectedPlan) {
-      sessionStorage.setItem("selectedPlan", JSON.stringify(selectedPlan));
+    const id = selectedPlan?.plan_id ?? selectedPlan?.$id;
+    if (id != null) {
+      sessionStorage.setItem("preferredPlanId", String(id));
+      // Only persist full plan after it has live numeric prices from the API
+      if (
+        selectedPlan &&
+        (selectedPlan.monthly_price != null || String(selectedPlan.plan_type || "").toLowerCase() === "free")
+      ) {
+        sessionStorage.setItem("selectedPlan", JSON.stringify(selectedPlan));
+      }
     }
   }, [selectedPlan]);
 
   const [isLoading, setIsLoading] = useState(false);
 
-  const initialCycle = location.state?.priceView || "yearly";
+  const initialCycle = location.state?.priceView || "monthly";
   const currentStep = parseInt(params.step || "1", 10);
 
   const [billingCycle, setBillingCycle] = useState(initialCycle);
@@ -89,24 +113,9 @@ export const useSchoolSetups = () => {
     isSendingOtp: false,
   });
 
-  const getCyclePrice = () => {
-    const prices = {
-      monthly: selectedPlan?.monthly_price,
-      quarterly: selectedPlan?.quataly_price * 3,
-      yearly: selectedPlan?.yearly_price * 12,
-    };
+  const getCyclePrice = () => getCycleTotal(selectedPlan, billingCycle);
 
-    const price = prices[billingCycle] || prices.yearly || 0;
-    return Number(price) || 0;
-  };
-
-  const getTotalPrice = () => {
-    const cyclePrice = getCyclePrice();
-    const numDuration = Number(duration) || 1;
-
-    // Direct multiplication: cycle price × duration
-    return cyclePrice * numDuration;
-  };
+  const getTotalPrice = () => getSubscriptionTotal(selectedPlan, billingCycle, duration);
 
   const total_amount = getTotalPrice().toLocaleString();
 

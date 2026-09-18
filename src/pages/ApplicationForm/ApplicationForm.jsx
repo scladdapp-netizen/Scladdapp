@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import Button from "../../components/Button/Button";
 import FormInput from "../../components/FormInput";
@@ -6,6 +6,8 @@ import { useTheme } from "../../context/ThemeContext/ThemeContext";
 import {
   fetchPublicApplicationForm,
   submitApplicationForm,
+  sendApplicationEmailOtp,
+  verifyApplicationEmailOtp,
 } from "../../api_call/useApplicationForm";
 import "./ApplicationForm.css";
 
@@ -33,7 +35,138 @@ function ThemeToggle() {
   );
 }
 
-function FieldInput({ field, value, onChange }) {
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+function EmailVerifyField({ field, value, schoolId, verified, onChange, onVerifiedChange }) {
+  const [otp, setOtp] = useState("");
+  const [sent, setSent] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState("");
+  const [msgType, setMsgType] = useState(""); // ok | err
+
+  const email = String(value || "").trim();
+  const valid = EMAIL_RE.test(email);
+
+  const resetVerifyUi = () => {
+    setSent(false);
+    setOtp("");
+    setMsg("");
+    setMsgType("");
+  };
+
+  const handleEmailChange = (next) => {
+    onChange(next);
+    if (verified) onVerifiedChange(false);
+    resetVerifyUi();
+  };
+
+  const handleSend = async () => {
+    if (!valid) {
+      setMsg("Enter a valid email first.");
+      setMsgType("err");
+      return;
+    }
+    setBusy(true);
+    setMsg("");
+    setMsgType("");
+    try {
+      const res = await sendApplicationEmailOtp(schoolId, email);
+      if (!res.success) throw new Error(res.message || "Failed to send code");
+      setSent(true);
+      setMsg(res.message || "Code sent. Check your inbox.");
+      setMsgType("ok");
+      onVerifiedChange(false);
+    } catch (err) {
+      setMsg(err.message || "Failed to send code");
+      setMsgType("err");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handleVerify = async () => {
+    if (!otp.trim()) {
+      setMsg("Enter the code from your email.");
+      setMsgType("err");
+      return;
+    }
+    setBusy(true);
+    setMsg("");
+    setMsgType("");
+    try {
+      const res = await verifyApplicationEmailOtp(schoolId, email, otp.trim());
+      if (!res.success) throw new Error(res.message || "Verification failed");
+      onVerifiedChange(true);
+      setSent(false);
+      setOtp("");
+      setMsg("Email verified.");
+      setMsgType("ok");
+    } catch (err) {
+      setMsg(err.message || "Verification failed");
+      setMsgType("err");
+      onVerifiedChange(false);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div className="af-field af-email-verify">
+      <label className="af-label">
+        {field.label}
+        {verified && <span className="af-verified-pill">Verified</span>}
+      </label>
+      <div className="af-email-row">
+        <input
+          className="af-input af-email-input"
+          type="email"
+          value={value || ""}
+          onChange={(e) => handleEmailChange(e.target.value)}
+          placeholder="name@example.com"
+          autoComplete="email"
+        />
+        {!verified && (
+          <button
+            type="button"
+            className="af-verify-btn"
+            onClick={handleSend}
+            disabled={busy || !valid}
+          >
+            {busy && !sent ? "Sending…" : sent ? "Resend" : "Verify"}
+          </button>
+        )}
+      </div>
+
+      {sent && !verified && (
+        <div className="af-otp-row">
+          <input
+            className="af-input af-otp-input"
+            type="text"
+            inputMode="numeric"
+            maxLength={6}
+            value={otp}
+            onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
+            placeholder="Enter 6-digit code"
+          />
+          <button
+            type="button"
+            className="af-verify-btn af-verify-btn--confirm"
+            onClick={handleVerify}
+            disabled={busy || otp.length < 4}
+          >
+            {busy ? "Checking…" : "Confirm"}
+          </button>
+        </div>
+      )}
+
+      {msg && (
+        <span className={`af-email-msg af-email-msg--${msgType}`}>{msg}</span>
+      )}
+    </div>
+  );
+}
+
+function FieldInput({ field, value, onChange, schoolId, verified, onVerifiedChange }) {
   const common = {
     label: field.label,
     value: value ?? "",
@@ -41,6 +174,19 @@ function FieldInput({ field, value, onChange }) {
     width: "100%",
     isActive: true,
   };
+
+  if (field.type === "email") {
+    return (
+      <EmailVerifyField
+        field={field}
+        value={value}
+        schoolId={schoolId}
+        verified={verified}
+        onChange={onChange}
+        onVerifiedChange={onVerifiedChange}
+      />
+    );
+  }
 
   if (field.type === "textarea") {
     return (
@@ -108,7 +254,7 @@ function FieldInput({ field, value, onChange }) {
   return (
     <FormInput
       {...common}
-      type={field.type === "date" ? "date" : field.type === "email" ? "email" : field.type === "tel" ? "tel" : "text"}
+      type={field.type === "date" ? "date" : field.type === "tel" ? "tel" : "text"}
     />
   );
 }
@@ -126,7 +272,7 @@ function getGridItemClass(field, section) {
     return classes.join(" ");
   }
 
-  if (field.type === "textarea" || field.type === "file" || field.type === "checkbox") {
+  if (field.type === "textarea" || field.type === "file" || field.type === "checkbox" || field.type === "email") {
     classes.push("af-grid-item--full");
   }
 
@@ -143,6 +289,12 @@ export default function ApplicationForm() {
   const [sections, setSections] = useState([]);
   const [values, setValues] = useState({});
   const [files, setFiles] = useState({});
+  const [verifiedEmails, setVerifiedEmails] = useState({}); // fieldId -> true
+
+  const emailFields = useMemo(
+    () => sections.flatMap((s) => s.fields.filter((f) => f.type === "email")),
+    [sections]
+  );
 
   useEffect(() => {
     setLoading(true);
@@ -171,6 +323,22 @@ export default function ApplicationForm() {
     setSuccess(null);
 
     try {
+      for (const field of emailFields) {
+        const val = String(values[field.id] || "").trim();
+        if (!val) {
+          if (field.id === "email" || field.locked) {
+            throw new Error(`${field.label} is required and must be verified.`);
+          }
+          continue;
+        }
+        if (!EMAIL_RE.test(val)) {
+          throw new Error(`Please enter a valid ${field.label}.`);
+        }
+        if (!verifiedEmails[field.id]) {
+          throw new Error(`Please verify ${field.label} before submitting.`);
+        }
+      }
+
       const formData = new FormData();
       formData.append("data", JSON.stringify(values));
       Object.entries(files).forEach(([fieldId, file]) => {
@@ -183,6 +351,7 @@ export default function ApplicationForm() {
       setSuccess(res.message || "Application submitted successfully.");
       setValues({});
       setFiles({});
+      setVerifiedEmails({});
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (err) {
       setError(err.message || "Submission failed");
@@ -245,7 +414,7 @@ export default function ApplicationForm() {
             </div>
           </div>
           <p className="af-hero-desc">
-            Complete the form below to apply. All required information will be reviewed by the school admissions team. The school will contact you after your application is submitted.
+            Complete the form below to apply. Email addresses must be verified with a code before you submit.
           </p>
         </header>
 
@@ -296,8 +465,13 @@ export default function ApplicationForm() {
                       <div key={field.id} className={getGridItemClass(field, section)}>
                         <FieldInput
                           field={field}
+                          schoolId={schoolId}
                           value={field.type === "file" ? files[field.id] : values[field.id]}
+                          verified={!!verifiedEmails[field.id]}
                           onChange={(val) => setFieldValue(field.id, val, field.type === "file")}
+                          onVerifiedChange={(ok) =>
+                            setVerifiedEmails((prev) => ({ ...prev, [field.id]: ok }))
+                          }
                         />
                       </div>
                     ))}

@@ -2,7 +2,7 @@
 // Top navigation bar for the AI Website Editor.
 // Contains: back button, logo, site name, save status,
 // editor mode toggle (AI / Manual), view toggle, undo/redo,
-// reset-to-live, token badge, and publish button.
+// reset-to-live, and publish button.
 
 import { useNavigate, useParams } from "react-router-dom";
 
@@ -23,12 +23,6 @@ const IconRedo = () => (
   <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
     <path d="M21 7v6h-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
     <path d="M21 13C18.67 7.87 13 4 7 5A9 9 0 003.2 22.1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-  </svg>
-);
-const IconCoin = () => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-    <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2" />
-    <path d="M12 7v1m0 8v1M9 12h6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
   </svg>
 );
 const IconPublish = () => (
@@ -73,8 +67,7 @@ const IconHammer = () => (
  *   saveStatus    – "saved" | "saving" | "unsaved"
  *   editorMode    – "ai" | "manual"
  *   onEditorMode  – fn("ai" | "manual")
- *   tokenCount    – number  (only relevant in AI mode)
- *   onBuyTokens   – fn()
+ *   aiModeChecking – bool (plan check in progress)
  *   canUndo       – bool
  *   canRedo       – bool
  *   onUndo        – fn()
@@ -91,8 +84,7 @@ export default function TopBar({
   saveStatus,
   editorMode,
   onEditorMode,
-  tokenCount,
-  onBuyTokens,
+  aiModeChecking = false,
   canUndo,
   canRedo,
   onUndo,
@@ -103,6 +95,9 @@ export default function TopBar({
   publishing,
   onResetToLive,
   resetting,
+  pages = [],
+  activePageId = "home",
+  onSwitchPage,
 }) {
   const navigate     = useNavigate();
   const { schoolId } = useParams();
@@ -140,12 +135,29 @@ export default function TopBar({
           <span className="aie-logo-text">Website Editor</span>
         </div>
 
-        {/* {siteName && <span className="aie-site-name">{siteName}</span>} */}
-
         <div className="aie-save-status">
           <span className={saveDotClass} />
           <span>{saveLabel}</span>
         </div>
+
+        {pages.length > 0 && (
+          <div className="aie-page-tabs" role="tablist" aria-label="Site pages">
+            {pages.map((page) => (
+              <button
+                key={page.id}
+                type="button"
+                role="tab"
+                aria-selected={activePageId === page.id}
+                className={`aie-page-tab ${activePageId === page.id ? "aie-page-tab--active" : ""}`}
+                onClick={() => onSwitchPage?.(page.id)}
+                title={page.slug}
+              >
+                <span className="aie-page-tab-title">{page.title}</span>
+                <span className="aie-page-tab-slug">{page.slug}</span>
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* ── Center: editor mode toggle + view toggle ──────────────────────── */}
@@ -156,10 +168,11 @@ export default function TopBar({
           <button
             className={`aie-mode-btn ${editorMode === "ai" ? "aie-mode-btn--active" : ""}`}
             onClick={() => onEditorMode("ai")}
-            title="AI editing mode"
+            disabled={aiModeChecking}
+            title="AI editing mode (Standard Plan or above)"
           >
             <IconAI />
-            AI Mode
+            {aiModeChecking ? "Checking…" : "AI Mode"}
           </button>
           <button
             className={`aie-mode-btn ${editorMode === "manual" ? "aie-mode-btn--active" : ""}`}
@@ -192,7 +205,7 @@ export default function TopBar({
         </div>
       </div>
 
-      {/* ── Right: undo/redo, reset, tokens, publish ──────────────────────── */}
+      {/* ── Right: undo/redo, reset, publish ──────────────────────── */}
       <div className="aie-topbar-right">
 
         {/* Undo / Redo */}
@@ -228,15 +241,6 @@ export default function TopBar({
           >
             {resetting ? <span className="aie-publish-spinner" /> : <IconReset />}
             {resetting ? "Loading…" : "Reset to live"}
-          </button>
-        )}
-
-        {/* Token badge — only shown in AI mode */}
-        {editorMode === "ai" && (
-          <button className="aie-token-badge" onClick={onBuyTokens} aria-label="Token balance">
-            <span className="aie-token-icon"><IconCoin /></span>
-            <span className="aie-token-count">{tokenCount}</span>
-            <span className="aie-token-label">tokens</span>
           </button>
         )}
 

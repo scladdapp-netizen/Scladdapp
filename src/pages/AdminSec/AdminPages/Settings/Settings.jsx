@@ -2,7 +2,6 @@ import { Routes, Route } from "react-router-dom";
 import StudentDetailTopTab from "../../Admin_components/StudentDetailTopTab/StudentDetailTopTab";
 import Subscriptions from "./Subscriptions/Subscriptions";
 import SystemSettings from "./SystemSettings/SystemSettings";
-import SchoolData from "./SchoolData/SchoolData";
 
 const Settings = () => {
   const routes = [

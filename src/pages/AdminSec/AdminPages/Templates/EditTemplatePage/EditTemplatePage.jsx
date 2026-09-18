@@ -160,10 +160,10 @@ export default function EditTemplatePage() {
   );
   const handleMove = useCallback(
     (from, to, position) => {
-      const newHtml = position === "inside"
+      const result = position === "inside"
         ? moveIntoParent(html, from, to)
         : moveElement(html, from, to, position);
-      set(newHtml);
+      set(typeof result === "string" ? result : result.html);
     },
     [html, set]
   );

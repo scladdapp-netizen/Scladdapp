@@ -23,7 +23,7 @@ const CreateTeacherPanel = ({ isShow, onClose, onTeacherCreated }) => {
   const { user } = useAuth();
   const { addNotification } = useNotification();
   const { getStaffBySchoolId, loading: staffLoading } = useStaffInfo();
-  const { createTeacher, loading: teacherLoading } = useTeacherInfo();
+  const { createTeacher, getTeachersBySchoolId, loading: teacherLoading } = useTeacherInfo();
 
   const [teacherCode, setTeacherCode] = useState("");
   const [selectedStaffId, setSelectedStaffId] = useState("");
@@ -37,9 +37,24 @@ const CreateTeacherPanel = ({ isShow, onClose, onTeacherCreated }) => {
   const loadStaffData = async () => {
     try {
       setLoading(true);
-      const result = await getStaffBySchoolId(schoolId);
-      if (result.success) {
-        setStaffList(result.data.filter(s => s.is_active && s.record_status === "active"));
+      const [staffResult, teachersResult] = await Promise.all([
+        getStaffBySchoolId(schoolId),
+        getTeachersBySchoolId(schoolId),
+      ]);
+      if (staffResult.success) {
+        const assignedStaffIds = new Set(
+          (teachersResult.success ? teachersResult.data || [] : [])
+            .filter((t) => t.is_active !== false)
+            .map((t) => t.staff_id)
+        );
+        setStaffList(
+          (staffResult.data || []).filter(
+            (s) =>
+              s.is_active &&
+              s.record_status === "active" &&
+              !assignedStaffIds.has(s.staff_id)
+          )
+        );
       } else {
         addNotification("Failed to load staff data", "error");
         setStaffList([]);
@@ -140,7 +155,7 @@ const CreateTeacherPanel = ({ isShow, onClose, onTeacherCreated }) => {
                   required
                 />
                 {staffList.length === 0 && (
-                  <p className="ctp-warn">No available staff members found.</p>
+                  <p className="ctp-warn">No available staff members found. Staff already assigned as teachers are hidden.</p>
                 )}
               </div>
 

@@ -8,6 +8,8 @@ import {
 import "./SchoolData.css";
 import "./ApplicationFormFieldsPanel.css";
 
+const LOCKED_FIELD_IDS = new Set(["email"]);
+
 export default function ApplicationFormFieldsPanel({ schoolId, open, onClose, isActive = true }) {
   const [sections, setSections] = useState([]);
   const [enabled, setEnabled] = useState(new Set());
@@ -23,36 +25,45 @@ export default function ApplicationFormFieldsPanel({ schoolId, open, onClose, is
       .then((res) => {
         if (!res.success) throw new Error(res.message || "Failed to load settings");
         setSections(res.data.sections || []);
-        setEnabled(new Set(res.data.enabled_fields || []));
+        const next = new Set(res.data.enabled_fields || []);
+        LOCKED_FIELD_IDS.forEach((id) => next.add(id));
+        setEnabled(next);
       })
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
   }, [open, schoolId]);
 
   const toggleField = (fieldId) => {
+    if (LOCKED_FIELD_IDS.has(fieldId)) return;
     setEnabled((prev) => {
       const next = new Set(prev);
       if (next.has(fieldId)) next.delete(fieldId);
       else next.add(fieldId);
+      LOCKED_FIELD_IDS.forEach((id) => next.add(id));
       return next;
     });
   };
 
   const toggleSection = (section) => {
     const ids = section.fields.map((f) => f.id);
-    const allOn = ids.every((id) => enabled.has(id));
+    const toggleable = ids.filter((id) => !LOCKED_FIELD_IDS.has(id));
+    if (!toggleable.length) return;
+    const allOn = toggleable.every((id) => enabled.has(id));
     setEnabled((prev) => {
       const next = new Set(prev);
-      ids.forEach((id) => {
+      toggleable.forEach((id) => {
         if (allOn) next.delete(id);
         else next.add(id);
       });
+      LOCKED_FIELD_IDS.forEach((id) => next.add(id));
       return next;
     });
   };
 
   const handleSave = async () => {
-    if (enabled.size === 0) {
+    const payload = new Set(enabled);
+    LOCKED_FIELD_IDS.forEach((id) => payload.add(id));
+    if (payload.size === 0) {
       setError("Select at least one field.");
       return;
     }
@@ -60,7 +71,7 @@ export default function ApplicationFormFieldsPanel({ schoolId, open, onClose, is
     setError(null);
     try {
       const res = await saveApplicationFormConfig(schoolId, {
-        enabled_fields: [...enabled],
+        enabled_fields: [...payload],
         is_active: isActive,
       });
       if (!res.success) throw new Error(res.message || "Failed to save");
@@ -103,7 +114,8 @@ export default function ApplicationFormFieldsPanel({ schoolId, open, onClose, is
           ) : (
             sections.map((section) => {
               const sectionIds = section.fields.map((f) => f.id);
-              const allOn = sectionIds.every((id) => enabled.has(id));
+              const toggleable = sectionIds.filter((id) => !LOCKED_FIELD_IDS.has(id));
+              const allOn = toggleable.length > 0 && toggleable.every((id) => enabled.has(id));
               const someOn = sectionIds.some((id) => enabled.has(id));
               const countOn = sectionIds.filter((id) => enabled.has(id)).length;
 
@@ -114,29 +126,40 @@ export default function ApplicationFormFieldsPanel({ schoolId, open, onClose, is
                       <h4>{section.title}</h4>
                       <span className="affp-section-count">{countOn}/{sectionIds.length} selected</span>
                     </div>
-                    <button type="button" className="affp-section-toggle" onClick={() => toggleSection(section)}>
-                      {allOn ? "Deselect all" : "Select all"}
-                    </button>
+                    {toggleable.length > 0 && (
+                      <button type="button" className="affp-section-toggle" onClick={() => toggleSection(section)}>
+                        {allOn ? "Deselect all" : "Select all"}
+                      </button>
+                    )}
                   </div>
 
                   <div className={`affp-fields${someOn && !allOn ? " affp-fields--partial" : ""}`}>
-                    {section.fields.map((field) => (
-                      <label
-                        key={field.id}
-                        className={`affp-field${enabled.has(field.id) ? " affp-field--on" : ""}`}
-                      >
-                        <input
-                          type="checkbox"
-                          checked={enabled.has(field.id)}
-                          onChange={() => toggleField(field.id)}
-                        />
-                        <span className="affp-field-check" aria-hidden="true" />
-                        <span className="affp-field-content">
-                          <strong>{field.label}</strong>
-                          <small>{field.type}</small>
-                        </span>
-                      </label>
-                    ))}
+                    {section.fields.map((field) => {
+                      const locked = field.locked || LOCKED_FIELD_IDS.has(field.id);
+                      const isOn = enabled.has(field.id) || locked;
+                      return (
+                        <label
+                          key={field.id}
+                          className={`affp-field${isOn ? " affp-field--on" : ""}${locked ? " affp-field--locked" : ""}`}
+                          title={locked ? "Required — cannot be disabled" : undefined}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={isOn}
+                            disabled={locked}
+                            onChange={() => toggleField(field.id)}
+                          />
+                          <span className="affp-field-check" aria-hidden="true" />
+                          <span className="affp-field-content">
+                            <strong>
+                              {field.label}
+                              {locked && <span className="affp-required-tag">Required</span>}
+                            </strong>
+                            <small>{field.type}</small>
+                          </span>
+                        </label>
+                      );
+                    })}
                   </div>
                 </div>
               );

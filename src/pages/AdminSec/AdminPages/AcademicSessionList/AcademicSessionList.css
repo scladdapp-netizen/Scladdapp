@@ -6,6 +6,52 @@
   overflow: hidden;
 }
 
+/* Info banner */
+.asl-info-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: #f0f4ff;
+  border: 1px solid #dce4ff;
+  border-radius: 10px;
+  padding: 12px 16px;
+  margin-bottom: 20px;
+  font-size: 13px;
+  color: #374151;
+  line-height: 1.6;
+}
+
+.asl-info-banner svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: #4f6ef7;
+}
+
+.asl-info-link {
+  color: #4f6ef7;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.asl-info-link:hover {
+  text-decoration: underline;
+}
+
+[data-theme="dark"] .asl-info-banner {
+  background: #1a1f2e;
+  border-color: #2d3a5e;
+  color: #c9d1e0;
+}
+
+[data-theme="dark"] .asl-info-banner svg {
+  color: #7b9cff;
+}
+
+[data-theme="dark"] .asl-info-link {
+  color: #7b9cff;
+}
+
 /* decorative boxes — top-right of container */
 .asl-container::before {
   content: "";

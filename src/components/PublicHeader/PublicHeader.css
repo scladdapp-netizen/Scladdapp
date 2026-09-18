@@ -32,6 +32,17 @@
   padding: 0;
   flex-shrink: 0;
   transition: color 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pub-header__logo-img {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  border-radius: 6px;
+  display: block;
 }
 
 /* ── Nav pill — centered absolutely so it's truly in the middle ──────────── */

@@ -109,6 +109,7 @@
   position: relative;
   border: 1px solid #d1d1d1;
   display: flex;
+  flex-direction: column;
 }
 
 /* decorative background boxes */
@@ -268,11 +269,272 @@
   box-shadow: 0 5px 14px rgba(0, 0, 0, 0.3);
 }
 
+/* ── Dashboard website CTA strip ─────────────────────────────────────────── */
+.sic-web-cta {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 0 20px 18px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  border: 1px solid transparent;
+  flex-wrap: wrap;
+}
+
+.sic-web-cta-icon {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sic-web-cta-copy {
+  flex: 1;
+  min-width: 160px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sic-web-cta-label {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.sic-web-cta-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 800;
+  line-height: 1.25;
+  color: #111;
+}
+
+.sic-web-cta-sub {
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 1.4;
+  color: #555;
+}
+
+.sic-web-cta-link {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #0f766e;
+  text-decoration: none;
+  word-break: break-all;
+}
+
+.sic-web-cta-link:hover { text-decoration: underline; }
+
+.sic-web-cta-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.sic-web-cta-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 9px 14px;
+  border-radius: 999px;
+  font-size: 12.5px;
+  font-weight: 800;
+  cursor: pointer;
+  text-decoration: none;
+  border: none;
+  white-space: nowrap;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+
+.sic-web-cta-btn:hover { transform: translateY(-1px); }
+
+.sic-web-cta-btn--solid {
+  background: #111;
+  color: #fff;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
+}
+
+.sic-web-cta-btn--solid:hover { background: #000; }
+
+.sic-web-cta-btn--ghost {
+  background: rgba(255, 255, 255, 0.7);
+  color: #111;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.sic-web-cta-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.25);
+}
+
+.sic-web-cta-pulse {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #999;
+  animation: sic-web-pulse 1.2s ease-in-out infinite;
+}
+
+.sic-web-cta-spinner {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2.5px solid rgba(0, 0, 0, 0.12);
+  border-top-color: #111;
+  animation: sic-web-spin 0.8s linear infinite;
+}
+
+@keyframes sic-web-spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes sic-web-pulse {
+  0%, 100% { opacity: 0.35; transform: scale(0.9); }
+  50% { opacity: 1; transform: scale(1.05); }
+}
+
+.sic-web-cta--loading {
+  background: rgba(0, 0, 0, 0.04);
+  border-color: rgba(0, 0, 0, 0.1);
+  color: #666;
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.sic-web-cta--request {
+  background: #111;
+  border-color: #111;
+  color: #fff;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.22);
+}
+
+.sic-web-cta--request .sic-web-cta-icon {
+  background: #fff;
+  color: #111;
+}
+
+.sic-web-cta--request .sic-web-cta-label { color: rgba(255, 255, 255, 0.55); }
+.sic-web-cta--request .sic-web-cta-title { color: #fff; }
+.sic-web-cta--request .sic-web-cta-sub { color: rgba(255, 255, 255, 0.7); }
+.sic-web-cta--request .sic-web-cta-btn--solid {
+  background: #fff;
+  color: #111;
+  box-shadow: none;
+}
+.sic-web-cta--request .sic-web-cta-btn--solid:hover {
+  background: #f3f3f3;
+  color: #000;
+}
+
+.sic-web-cta--processing {
+  background: #f5f5f5;
+  border-color: #111;
+  border-style: dashed;
+}
+
+.sic-web-cta--processing .sic-web-cta-icon {
+  background: #111;
+  color: #fff;
+}
+
+.sic-web-cta--processing .sic-web-cta-label { color: #111; }
+.sic-web-cta--processing .sic-web-cta-spinner {
+  border-color: rgba(255, 255, 255, 0.25);
+  border-top-color: #fff;
+}
+
+.sic-web-cta--draft {
+  background: #fff;
+  border-color: #111;
+  border-width: 2px;
+}
+
+.sic-web-cta--draft .sic-web-cta-icon {
+  background: #111;
+  color: #fff;
+}
+
+.sic-web-cta--draft .sic-web-cta-label { color: #111; }
+.sic-web-cta--draft .sic-web-cta-btn--solid {
+  background: #111;
+  color: #fff;
+}
+.sic-web-cta--draft .sic-web-cta-btn--solid:hover { background: #000; }
+
+.sic-web-cta--live {
+  background: #111;
+  border-color: #111;
+  color: #fff;
+}
+
+.sic-web-cta--live .sic-web-cta-icon {
+  background: #fff;
+  color: #111;
+}
+
+.sic-web-cta--live .sic-web-cta-label { color: rgba(255, 255, 255, 0.55); }
+.sic-web-cta--live .sic-web-cta-title { color: #fff; }
+.sic-web-cta--live .sic-web-cta-sub { color: rgba(255, 255, 255, 0.7); }
+.sic-web-cta--live .sic-web-cta-link { color: #fff; text-decoration: underline; text-underline-offset: 2px; }
+.sic-web-cta--live .sic-web-cta-dot {
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.25);
+}
+.sic-web-cta--live .sic-web-cta-btn--solid {
+  background: #fff;
+  color: #111;
+  box-shadow: none;
+}
+.sic-web-cta--live .sic-web-cta-btn--solid:hover { background: #f3f3f3; }
+.sic-web-cta--live .sic-web-cta-btn--ghost {
+  background: transparent;
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.35);
+}
+.sic-web-cta--live .sic-web-cta-btn--ghost:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.sic-web-cta--locked {
+  background: #fff;
+  border-color: #111;
+  border-style: dashed;
+}
+
+.sic-web-cta--locked .sic-web-cta-icon {
+  background: #111;
+  color: #fff;
+}
+
+.sic-web-cta--locked .sic-web-cta-label { color: #111; }
+.sic-web-cta--locked .sic-web-cta-btn--solid {
+  background: #111;
+  color: #fff;
+}
+.sic-web-cta--locked .sic-web-cta-btn--solid:hover { background: #000; }
+
 /* Right: stacked logo cards */
 .school-logo-stack {
   position: relative;
-  width: 160px;
-  height: 130px;
+  width: 210px;
+  height: 170px;
   flex-shrink: 0;
 }
 
@@ -289,8 +551,8 @@
 }
 
 .logo-card-back {
-  width: 110px;
-  height: 110px;
+  width: 150px;
+  height: 150px;
   background: transparent;
   border: 2px solid rgba(0, 0, 0, 0.15);
   top: 10px;
@@ -302,8 +564,8 @@
 }
 
 .logo-card-front {
-  width: 110px;
-  height: 110px;
+  width: 150px;
+  height: 150px;
   background: linear-gradient(135deg, #ffffff, #eeeeee);
   bottom: 0;
   left: 0;
@@ -312,14 +574,14 @@
 }
 
 .logo-img {
-  width: 70px;
-  height: 70px;
+  width: 100px;
+  height: 100px;
   object-fit: contain;
   border-radius: 8px;
 }
 
 .logo-placeholder-icon {
-  font-size: 38px;
+  font-size: 52px;
   color: rgba(0, 0, 0, 0.25);
 }
 
@@ -2103,6 +2365,10 @@
     flex-wrap: wrap;
   }
 
+  .sic-web-cta {
+    margin: 0 14px 14px;
+  }
+
   .setup-tasks-card {
     grid-column: span 12;
   }
@@ -2576,6 +2842,108 @@
 [data-theme="dark"] .edit-school-btn {
   background: linear-gradient(135deg, #333333, #444444);
   box-shadow: 0 3px 10px rgba(0,0,0,0.4);
+}
+
+[data-theme="dark"] .sic-web-cta--request {
+  background: #f0f0f0;
+  border-color: #f0f0f0;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45);
+}
+[data-theme="dark"] .sic-web-cta--request .sic-web-cta-title { color: #111; }
+[data-theme="dark"] .sic-web-cta--request .sic-web-cta-sub { color: #444; }
+[data-theme="dark"] .sic-web-cta--request .sic-web-cta-label { color: #666; }
+[data-theme="dark"] .sic-web-cta--request .sic-web-cta-icon {
+  background: #111;
+  color: #fff;
+}
+[data-theme="dark"] .sic-web-cta--request .sic-web-cta-btn--solid {
+  background: #111;
+  color: #fff;
+}
+[data-theme="dark"] .sic-web-cta--request .sic-web-cta-btn--solid:hover {
+  background: #000;
+}
+
+[data-theme="dark"] .sic-web-cta--draft .sic-web-cta-title,
+[data-theme="dark"] .sic-web-cta--processing .sic-web-cta-title,
+[data-theme="dark"] .sic-web-cta--live .sic-web-cta-title,
+[data-theme="dark"] .sic-web-cta--locked .sic-web-cta-title { color: #f0f0f0; }
+[data-theme="dark"] .sic-web-cta--draft .sic-web-cta-sub,
+[data-theme="dark"] .sic-web-cta--processing .sic-web-cta-sub,
+[data-theme="dark"] .sic-web-cta--locked .sic-web-cta-sub { color: #9ca3af; }
+
+[data-theme="dark"] .sic-web-cta--processing {
+  background: #1a1a1a;
+  border-color: #f0f0f0;
+}
+[data-theme="dark"] .sic-web-cta--processing .sic-web-cta-label { color: #f0f0f0; }
+[data-theme="dark"] .sic-web-cta--processing .sic-web-cta-icon {
+  background: #f0f0f0;
+  color: #111;
+}
+[data-theme="dark"] .sic-web-cta--processing .sic-web-cta-spinner {
+  border-color: rgba(0, 0, 0, 0.15);
+  border-top-color: #111;
+}
+
+[data-theme="dark"] .sic-web-cta--draft {
+  background: #1a1a1a;
+  border-color: #f0f0f0;
+}
+[data-theme="dark"] .sic-web-cta--draft .sic-web-cta-label { color: #f0f0f0; }
+[data-theme="dark"] .sic-web-cta--draft .sic-web-cta-icon {
+  background: #f0f0f0;
+  color: #111;
+}
+[data-theme="dark"] .sic-web-cta--draft .sic-web-cta-btn--solid {
+  background: #f0f0f0;
+  color: #111;
+}
+
+[data-theme="dark"] .sic-web-cta--live {
+  background: #f0f0f0;
+  border-color: #f0f0f0;
+}
+[data-theme="dark"] .sic-web-cta--live .sic-web-cta-label { color: #666; }
+[data-theme="dark"] .sic-web-cta--live .sic-web-cta-title { color: #111; }
+[data-theme="dark"] .sic-web-cta--live .sic-web-cta-link { color: #111; }
+[data-theme="dark"] .sic-web-cta--live .sic-web-cta-icon {
+  background: #111;
+  color: #fff;
+}
+[data-theme="dark"] .sic-web-cta--live .sic-web-cta-dot {
+  background: #111;
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.12);
+}
+[data-theme="dark"] .sic-web-cta--live .sic-web-cta-btn--solid {
+  background: #111;
+  color: #fff;
+}
+[data-theme="dark"] .sic-web-cta--live .sic-web-cta-btn--ghost {
+  background: transparent;
+  color: #111;
+  border-color: rgba(0, 0, 0, 0.2);
+}
+
+[data-theme="dark"] .sic-web-cta--locked,
+[data-theme="dark"] .sic-web-cta--loading {
+  background: #1a1a1a;
+  border-color: #555;
+  color: #888;
+}
+[data-theme="dark"] .sic-web-cta--locked .sic-web-cta-label { color: #ccc; }
+[data-theme="dark"] .sic-web-cta--locked .sic-web-cta-icon {
+  background: #f0f0f0;
+  color: #111;
+}
+[data-theme="dark"] .sic-web-cta--locked .sic-web-cta-btn--solid {
+  background: #f0f0f0;
+  color: #111;
+}
+[data-theme="dark"] .sic-web-cta-btn--ghost {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.12);
+  color: #e5e5e5;
 }
 [data-theme="dark"] .logo-card-front {
   background: linear-gradient(135deg, #2a2a2a, #333333);

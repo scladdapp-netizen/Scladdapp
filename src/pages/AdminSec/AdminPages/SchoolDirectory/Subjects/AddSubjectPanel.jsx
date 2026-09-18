@@ -53,7 +53,7 @@ const AddSubjectPanel = ({
   };
 
   const updateRow = (i, f, v) => setClassTeacherRows(p => p.map((r, idx) => idx === i ? { ...r, [f]: v } : r));
-  const addRow    = () => setClassTeacherRows(p => [...p, emptyRow()]);
+  const addRow    = () => setClassTeacherRows(p => [emptyRow(), ...p]);
   const removeRow = (i) => setClassTeacherRows(p => p.filter((_, idx) => idx !== i));
 
   const rowsValid = classTeacherRows.length > 0 && classTeacherRows.every(r => r.class_id && r.teacher_id);

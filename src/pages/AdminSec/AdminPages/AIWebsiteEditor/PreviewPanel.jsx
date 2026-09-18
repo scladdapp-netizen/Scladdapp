@@ -101,7 +101,7 @@ function paintIframeFromPage(iframe) {
  *   hoverSelector   – selector to highlight from outside (e.g. layout tree hover)
  *   hoverLabel      – friendly label for the hover badge
  */
-export default function PreviewPanel({ html, siteUrl, isSplitMode, onElementSelect, hoverSelector, hoverLabel, scrollToSelector }) {
+export default function PreviewPanel({ html, siteUrl, isSplitMode, onElementSelect, onTextEdit, hoverSelector, hoverLabel, scrollToSelector }) {
   const [device, setDevice] = useState("desktop");
   const [key,    setKey]    = useState(0);
   const [zoom,   setZoom]   = useState(80);
@@ -111,6 +111,7 @@ export default function PreviewPanel({ html, siteUrl, isSplitMode, onElementSele
   const initialHtml  = useRef(html);   // the HTML used for the current srcDoc load
   const iframeReady  = useRef(false);  // true once the iframe has fired onLoad
   const pendingHtml  = useRef(null);   // html queued while iframe was still loading
+  const lastSelectRef = useRef(null);  // keep selection across live HTML patches
 
   // srcDoc is only recomputed on key change (manual refresh) or isSplitMode toggle.
   // We always use the latest html as the baseline when key changes.
@@ -119,6 +120,20 @@ export default function PreviewPanel({ html, siteUrl, isSplitMode, onElementSele
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [key, isSplitMode]
   );
+
+  const postUpdateHtml = (win, nextHtml) => {
+    const sel = lastSelectRef.current;
+    win.postMessage(
+      {
+        __aie: true,
+        type: "updateHtml",
+        html: nextHtml,
+        preserveSelector: sel?.selector || null,
+        preserveLabel: sel?.label || null,
+      },
+      "*"
+    );
+  };
 
   // When html prop changes, push a live patch to the iframe (no reload = no scroll reset)
   useEffect(() => {
@@ -129,10 +144,7 @@ export default function PreviewPanel({ html, siteUrl, isSplitMode, onElementSele
     }
     const iframe = iframeRef.current;
     if (!iframe?.contentWindow) return;
-    iframe.contentWindow.postMessage(
-      { __aie: true, type: "updateHtml", html },
-      "*"
-    );
+    postUpdateHtml(iframe.contentWindow, html);
     setTimeout(() => paintIframeFromPage(iframe), 40);
   }, [html]);
 
@@ -141,6 +153,7 @@ export default function PreviewPanel({ html, siteUrl, isSplitMode, onElementSele
     initialHtml.current = html;
     iframeReady.current = false;
     pendingHtml.current = null;
+    lastSelectRef.current = null;
     setKey((k) => k + 1);
   };
 
@@ -164,6 +177,10 @@ export default function PreviewPanel({ html, siteUrl, isSplitMode, onElementSele
     const handler = (e) => {
       if (!e.data?.__aie) return;
       if (e.data.type === "select") {
+        lastSelectRef.current = {
+          selector: e.data.selector,
+          label: e.data.label,
+        };
         onElementSelect?.({
           label:       e.data.label,
           selector:    e.data.selector,
@@ -174,11 +191,28 @@ export default function PreviewPanel({ html, siteUrl, isSplitMode, onElementSele
           sectionHtml: e.data.sectionHtml || null,
         });
       }
+      if (e.data.type === "textEdit") {
+        lastSelectRef.current = {
+          selector: e.data.selector,
+          label: e.data.label,
+        };
+        onTextEdit?.({
+          selector: e.data.selector,
+          text: e.data.text,
+          label: e.data.label,
+          tagName: e.data.tagName,
+          outerHTML: e.data.outerHTML,
+          textContent: e.data.textContent,
+        });
+      }
+      if (e.data.type === "deselect") {
+        lastSelectRef.current = null;
+      }
     };
 
     window.addEventListener("message", handler);
     return () => window.removeEventListener("message", handler);
-  }, [isSplitMode, onElementSelect]);
+  }, [isSplitMode, onElementSelect, onTextEdit]);
 
   // Send external hover command to the iframe when hoverSelector changes
   useEffect(() => {
@@ -200,6 +234,10 @@ export default function PreviewPanel({ html, siteUrl, isSplitMode, onElementSele
   // When a tree node is selected, scroll to it inside the iframe
   useEffect(() => {
     if (!scrollToSelector || !iframeReady.current) return;
+    lastSelectRef.current = {
+      selector: scrollToSelector,
+      label: lastSelectRef.current?.label || scrollToSelector,
+    };
     const iframe = iframeRef.current;
     if (!iframe?.contentWindow) return;
     iframe.contentWindow.postMessage(
@@ -386,7 +424,7 @@ export default function PreviewPanel({ html, siteUrl, isSplitMode, onElementSele
                 const latest = pendingHtml.current ?? html;
                 pendingHtml.current = null;
                 if (latest !== initialHtml.current) {
-                  win.postMessage({ __aie: true, type: "updateHtml", html: latest }, "*");
+                  postUpdateHtml(win, latest);
                   setTimeout(() => paintIframeFromPage(frameEl), 50);
                 }
               }}

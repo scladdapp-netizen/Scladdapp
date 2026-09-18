@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, Link } from "react-router-dom";
 import { useSession } from "../../../../api_call/useSession";
 import { useAuth } from "../../../../context/AuthContext/AuthContext";
 import { useNotification } from "../../../../context/NotificationProvider/NotificationProvider";
@@ -362,6 +362,16 @@ const AcademicSessionList = () => {
 
   return (
     <div className="asl-container">
+
+      {/* How sessions work — info banner */}
+      <div className="asl-info-banner">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span>
+          A session covers your full school year and is <strong>active</strong> when today's date falls inside its start and end dates. Terms work the same way — a term is active when today's date is inside its date range.{" "}
+          <Link to="/docs/session-management" className="asl-info-link">Learn how sessions work →</Link>
+        </span>
+      </div>
+
       <div className="asl-header">
         <div className="asl-header-content">
           <div className="asl-header-text">

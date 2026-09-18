@@ -17,6 +17,8 @@ import PricingPage from "../pages/PricingPage/PricingPage";
 import Landing from "../pages/Landing/Landing";
 import ReportDownload from "../pages/ReportDownload/ReportDownload";
 import ApplicationForm from "../pages/ApplicationForm/ApplicationForm";
+import Terms from "../pages/Legal/Terms";
+import Privacy from "../pages/Legal/Privacy";
 
 export default function Nav() {
   const { isAuthenticated, user } = useAuth();
@@ -57,6 +59,8 @@ export default function Nav() {
         <Route path="/docs/:topicId" element={<Docs />} />
         <Route path="/contact" element={<ContactUs />} />
         <Route path="/pricing" element={<PricingPage />} />
+        <Route path="/terms" element={<Terms />} />
+        <Route path="/privacy" element={<Privacy />} />
         <Route path="/report-download" element={<ReportDownload />} />
 
         {/* Public routes - accessible when not authenticated */}

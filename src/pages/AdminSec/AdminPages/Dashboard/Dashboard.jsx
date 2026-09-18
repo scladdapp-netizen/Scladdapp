@@ -43,10 +43,240 @@ import {
 } from "recharts";
 import dashboardData from "../../../../data/DashboardData.json";
 import useDashboard from "../../../../api_call/useDashboard";
+import { useTutorialVideos } from "../../../../api_call/useTutorialVideos";
+import useSchool from "../../../../api_call/useSchool";
+import useWebsiteRequest from "../../../../api_call/useWebsiteRequest";
 import { useAuth } from "../../../../context/AuthContext/AuthContext";
 import { useParams, useNavigate } from "react-router-dom";
 import LoadingData from "../../../../components/LoadingData/LoadingData";
 import "./Dashboard.css";
+
+// Compact website status strip for the school profile card
+const DashboardWebsiteCta = ({ schoolId }) => {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const { getWebsite } = useSchool();
+  const { getRequest } = useWebsiteRequest();
+  const [loading, setLoading] = useState(true);
+  const [websiteUrl, setWebsiteUrl] = useState(null);
+  const [briefStatus, setBriefStatus] = useState(null);
+  const [requested, setRequested] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  const subscription = user?.subscription;
+  const isPaidPlan =
+    subscription &&
+    subscription.subscription_type !== "free" &&
+    (subscription.subscription_status === "active" ||
+      subscription.subscription_status === "trialing") &&
+    new Date(subscription.end_date) > new Date();
+
+  useEffect(() => {
+    if (!schoolId) return;
+    let cancelled = false;
+    setLoading(true);
+    Promise.all([getWebsite(schoolId), getRequest(schoolId)])
+      .then(([websiteRes, requestRes]) => {
+        if (cancelled) return;
+        const schoolData = websiteRes.success ? websiteRes.data : null;
+        const brief = requestRes.success ? requestRes.data : null;
+        const embedded = schoolData?.website_request || null;
+        const doc = brief || embedded;
+        const url =
+          doc?.scladapp_website_url ||
+          schoolData?.scladapp_website_url ||
+          (doc?.status === "published" && schoolData?.website
+            ? schoolData.website
+            : null) ||
+          null;
+        setWebsiteUrl(url);
+        setBriefStatus(doc?.status || schoolData?.website_request_status || null);
+        setRequested(
+          !!(
+            url ||
+            doc ||
+            schoolData?.website_requested ||
+            schoolData?.website_request
+          ),
+        );
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [schoolId]);
+
+  const openBrief = () =>
+    navigate(`/admin/${schoolId}/school/website/brief`);
+  const openWebsiteDocs = () => navigate("/docs/request-website");
+
+  const copyLink = () => {
+    if (!websiteUrl) return;
+    navigator.clipboard.writeText(websiteUrl).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1800);
+    });
+  };
+
+  if (loading) {
+    return (
+      <div className="sic-web-cta sic-web-cta--loading" aria-busy="true">
+        <span className="sic-web-cta-pulse" />
+        <span>Checking website status…</span>
+      </div>
+    );
+  }
+
+  // Live site
+  if (websiteUrl) {
+    return (
+      <div className="sic-web-cta sic-web-cta--live">
+        <div className="sic-web-cta-icon" aria-hidden="true">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+            <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.8" />
+            <path
+              d="M2 12h20M12 2a15.3 15.3 0 010 20M12 2a15.3 15.3 0 000 20"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+            />
+          </svg>
+        </div>
+        <div className="sic-web-cta-copy">
+          <p className="sic-web-cta-label">
+            <span className="sic-web-cta-dot" /> Your website
+          </p>
+          <a
+            href={websiteUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="sic-web-cta-link"
+          >
+            {websiteUrl.replace(/^https?:\/\//, "")}
+          </a>
+        </div>
+        <div className="sic-web-cta-actions">
+          <button type="button" className="sic-web-cta-btn sic-web-cta-btn--ghost" onClick={copyLink}>
+            {copied ? "Copied" : "Copy"}
+          </button>
+          <a
+            href={websiteUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="sic-web-cta-btn sic-web-cta-btn--solid"
+          >
+            Visit site
+          </a>
+        </div>
+      </div>
+    );
+  }
+
+  // Submitted / in progress — website coming
+  if (requested && (briefStatus === "submitted" || briefStatus === "published")) {
+    return (
+      <div className="sic-web-cta sic-web-cta--processing">
+        <div className="sic-web-cta-icon" aria-hidden="true">
+          <span className="sic-web-cta-spinner" />
+        </div>
+        <div className="sic-web-cta-copy">
+          <p className="sic-web-cta-label">Processing</p>
+          <p className="sic-web-cta-title">Your website is coming</p>
+          <p className="sic-web-cta-sub">
+            We&apos;re building your school site from the brief you submitted.
+          </p>
+        </div>
+        <button type="button" className="sic-web-cta-btn sic-web-cta-btn--ghost" onClick={openBrief}>
+          View brief
+        </button>
+      </div>
+    );
+  }
+
+  // Draft started but not submitted
+  if (requested) {
+    return (
+      <div className="sic-web-cta sic-web-cta--draft">
+        <div className="sic-web-cta-icon" aria-hidden="true">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+            <path
+              d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <polyline
+              points="14,2 14,8 20,8"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </div>
+        <div className="sic-web-cta-copy">
+          <p className="sic-web-cta-label">Website brief in progress</p>
+          <p className="sic-web-cta-title">Finish your request</p>
+          <p className="sic-web-cta-sub">
+            Complete and submit the brief so we can start building.
+          </p>
+        </div>
+        <button type="button" className="sic-web-cta-btn sic-web-cta-btn--solid" onClick={openBrief}>
+          Continue
+        </button>
+      </div>
+    );
+  }
+
+  // Free plan — noticeable but locked
+  if (!isPaidPlan) {
+    return (
+      <div className="sic-web-cta sic-web-cta--locked">
+        <div className="sic-web-cta-icon" aria-hidden="true">
+          <FaLock size={14} />
+        </div>
+        <div className="sic-web-cta-copy">
+          <p className="sic-web-cta-label">School website</p>
+          <p className="sic-web-cta-title">Get a hosted school website</p>
+          <p className="sic-web-cta-sub">Available on paid plans — upgrade to request yours.</p>
+        </div>
+        <button type="button" className="sic-web-cta-btn sic-web-cta-btn--solid" onClick={openWebsiteDocs}>
+          Learn more
+        </button>
+      </div>
+    );
+  }
+
+  // Default — request CTA
+  return (
+    <div className="sic-web-cta sic-web-cta--request">
+      <div className="sic-web-cta-icon" aria-hidden="true">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+          <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.8" />
+          <path
+            d="M2 12h20M12 2a15.3 15.3 0 010 20M12 2a15.3 15.3 0 000 20"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+          />
+        </svg>
+      </div>
+      <div className="sic-web-cta-copy">
+        <p className="sic-web-cta-label">New · Included in your plan</p>
+        <p className="sic-web-cta-title">Request a school website</p>
+        <p className="sic-web-cta-sub">
+          We&apos;ll build and host a branded site for your school — free with your plan.
+        </p>
+      </div>
+      <button type="button" className="sic-web-cta-btn sic-web-cta-btn--solid" onClick={openBrief}>
+        Request website
+      </button>
+    </div>
+  );
+};
 
 const Dashboard = () => {
   const { schoolId } = useParams();
@@ -193,6 +423,8 @@ const Dashboard = () => {
               </div>
             </div>
           </div>
+
+          <DashboardWebsiteCta schoolId={schoolId || school?.school_id} />
         </div>
 
         {/* Tutorial Videos Card */}
@@ -744,45 +976,8 @@ const ActivityItem = ({ activity, showDivider }) => (
   </>
 );
 
-const VIDEOS = [
-  {
-    id: "dQw4w9WgXcQ",
-    title: "Getting Started with Scladapp",
-    description: "Learn how to set up your school and configure basic settings.",
-    duration: "5:32",
-    category: "Getting Started",
-  },
-  {
-    id: "ScMzIvxBSi4",
-    title: "Managing Students & Admissions",
-    description: "A complete walkthrough of student enrollment and admission management.",
-    duration: "8:14",
-    category: "Students",
-  },
-  {
-    id: "9bZkp7q19f0",
-    title: "Setting Up Classes & Timetables",
-    description: "How to create classes, assign teachers, and build timetables.",
-    duration: "6:47",
-    category: "Classes",
-  },
-  {
-    id: "kJQP7kiw5Fk",
-    title: "Fee Billing & Payments",
-    description: "Configure fee templates, generate bills, and track payments.",
-    duration: "7:20",
-    category: "Finance",
-  },
-  {
-    id: "JGwWNGJdvx8",
-    title: "Staff & Teacher Management",
-    description: "Add staff, assign roles, and manage teacher subjects.",
-    duration: "4:55",
-    category: "Staff",
-  },
-];
-
 const TutorialVideos = () => {
+  const { videos } = useTutorialVideos();
   const [active, setActive] = useState(0);
   const [playing, setPlaying] = useState(false);
   const [animDir, setAnimDir] = useState("next");
@@ -794,18 +989,26 @@ const TutorialVideos = () => {
     setPlaying(false);
   };
 
-  const next = () => goTo((active + 1) % VIDEOS.length, "next");
-  const prev = () => goTo((active - 1 + VIDEOS.length) % VIDEOS.length, "prev");
+  const next = () => goTo((active + 1) % videos.length, "next");
+  const prev = () => goTo((active - 1 + videos.length) % videos.length, "prev");
+
+  useEffect(() => {
+    if (active >= videos.length) {
+      setActive(0);
+      setPlaying(false);
+    }
+  }, [active, videos.length]);
 
   // Auto-advance every 6s when not playing
   useEffect(() => {
-    if (playing) return;
+    if (playing || videos.length <= 1) return;
     timerRef.current = setTimeout(next, 6000);
     return () => clearTimeout(timerRef.current);
-  }, [active, playing]);
+  }, [active, playing, videos.length]);
 
-  const video = VIDEOS[active];
-  const thumb = `https://img.youtube.com/vi/${video.id}/maxresdefault.jpg`;
+  const video = videos[active];
+  if (!video) return null;
+  const thumb = `https://img.youtube.com/vi/${video.youtubeId}/maxresdefault.jpg`;
 
   return (
     <div className="tutorial-card card">
@@ -813,9 +1016,9 @@ const TutorialVideos = () => {
         <div className="tutorial-main">
           {playing ? (
             <iframe
-              key={video.id}
+              key={video.youtubeId}
               className="tutorial-iframe"
-              src={`https://www.youtube.com/embed/${video.id}?autoplay=1`}
+              src={`https://www.youtube.com/embed/${video.youtubeId}?autoplay=1`}
               title={video.title}
               allow="autoplay; encrypted-media"
               allowFullScreen
@@ -839,7 +1042,7 @@ const TutorialVideos = () => {
           <div className="tutorial-controls">
             <button className="tutorial-nav-btn" onClick={prev}>‹</button>
             <div className="tutorial-dots">
-              {VIDEOS.map((_, i) => (
+              {videos.map((_, i) => (
                 <button
                   key={i}
                   className={`tutorial-dot ${i === active ? "active" : ""}`}

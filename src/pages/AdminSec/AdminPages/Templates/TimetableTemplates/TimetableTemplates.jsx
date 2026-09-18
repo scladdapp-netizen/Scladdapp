@@ -11,6 +11,7 @@ import { useAuth } from "../../../../../context/AuthContext/AuthContext";
 import SubAdminGuard from "../../../../../components/SubAdminGuard/SubAdminGuard";
 import LoadingData from "../../../../../components/LoadingData/LoadingData";
 import { FaPlus, FaEdit, FaCopy, FaTrash } from "react-icons/fa";
+import "./TimetableTemplates.css";
 
 const TimetableTemplates = () => {
   const { schoolId } = useParams();
@@ -735,16 +736,22 @@ const TimetableTemplates = () => {
                       "Friday",
                       "Saturday",
                       "Sunday",
-                    ].map((day) => (
-                      <label key={day} className="day-checkbox">
+                    ].map((day) => {
+                      const checked = formData.selectedDays.includes(day);
+                      return (
+                      <label
+                        key={day}
+                        className={`day-checkbox${checked ? " is-checked" : ""}`}
+                      >
                         <input
                           type="checkbox"
-                          checked={formData.selectedDays.includes(day)}
+                          checked={checked}
                           onChange={() => handleDayToggle(day)}
                         />
                         <span>{day}</span>
                       </label>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
 
@@ -870,18 +877,24 @@ const TimetableTemplates = () => {
                       <div className="break-days-selection">
                         <h5>Apply to Days:</h5>
                         <div className="break-days-grid">
-                          {formData.selectedDays.map((day) => (
-                            <label key={day} className="break-day-checkbox">
+                          {formData.selectedDays.map((day) => {
+                            const checked = breakItem.days.includes(day);
+                            return (
+                            <label
+                              key={day}
+                              className={`break-day-checkbox${checked ? " is-checked" : ""}`}
+                            >
                               <input
                                 type="checkbox"
-                                checked={breakItem.days.includes(day)}
+                                checked={checked}
                                 onChange={() =>
                                   handleBreakDayToggle(index, day)
                                 }
                               />
                               <span>{day.substring(0, 3)}</span>
                             </label>
-                          ))}
+                            );
+                          })}
                         </div>
                       </div>
 
@@ -954,10 +967,10 @@ const TimetableTemplates = () => {
           <SlideInMenu
             isShow={isDetailMenuOpen}
             onClose={() => setIsDetailMenuOpen(false)}
-            width="800px"
+            width="720px"
           >
             {selectedTemplate && (
-              <div className="template-detail-container">
+              <div className="template-detail-container tt-detail">
                 <div className="template-detail-header">
                   <div className="template-detail-title">
                     <h2>{selectedTemplate.name}</h2>
@@ -967,91 +980,112 @@ const TimetableTemplates = () => {
                       {selectedTemplate.status}
                     </span>
                   </div>
-                  <p className="template-detail-description">
-                    {selectedTemplate.description}
-                  </p>
+                  {selectedTemplate.description && (
+                    <p className="template-detail-description">
+                      {selectedTemplate.description}
+                    </p>
+                  )}
                   <div className="template-detail-meta">
                     <div className="template-meta-item">
-                      <strong>Last Modified:</strong>{" "}
-                      {selectedTemplate.lastModified}
+                      <strong>Modified</strong>
+                      <span>{selectedTemplate.lastModified}</span>
                     </div>
                     <div className="template-meta-item">
-                      <strong>Created By:</strong> {selectedTemplate.createdBy}
+                      <strong>Created by</strong>
+                      <span>{selectedTemplate.createdBy}</span>
                     </div>
                     <div className="template-meta-item">
-                      <strong>Type:</strong> {selectedTemplate.type}
+                      <strong>Type</strong>
+                      <span>{selectedTemplate.type}</span>
                     </div>
                   </div>
                 </div>
 
                 <div className="template-detail-content">
-                  {/* Schedule Configuration */}
-                  <div className="detail-section">
-                    <h3>Schedule Configuration</h3>
-                    <div className="config-grid">
-                      <div className="config-item">
-                        <strong>Selected Days:</strong>
-                        <span>{selectedTemplate.selectedDays.join(", ")}</span>
+                  <div className="tt-detail-section">
+                    <div className="tt-detail-section-title">Schedule</div>
+                    <div className="tt-stat-grid">
+                      <div className="tt-stat-card">
+                        <span className="tt-stat-label">Days / week</span>
+                        <span className="tt-stat-value">
+                          {selectedTemplate.selectedDays.length}
+                        </span>
                       </div>
-                      <div className="config-item">
-                        <strong>Max Period Duration:</strong>
-                        <span>
-                          {selectedTemplate.maxPeriodDuration} minutes
+                      <div className="tt-stat-card">
+                        <span className="tt-stat-label">Max period</span>
+                        <span className="tt-stat-value">
+                          {selectedTemplate.maxPeriodDuration}
+                          <span className="tt-stat-unit">min</span>
+                        </span>
+                      </div>
+                      <div className="tt-stat-card">
+                        <span className="tt-stat-label">Breaks</span>
+                        <span className="tt-stat-value">
+                          {selectedTemplate.breaks.length}
                         </span>
                       </div>
                     </div>
+                    <div className="tt-day-chips">
+                      {selectedTemplate.selectedDays.map((day) => (
+                        <span key={day} className="tt-day-chip">
+                          {day}
+                        </span>
+                      ))}
+                    </div>
                   </div>
 
-                  {/* Daily Periods */}
-                  <div className="detail-section">
-                    <h3>Daily Periods</h3>
-                    <div className="periods-overview">
+                  <div className="tt-detail-section">
+                    <div className="tt-detail-section-title">Daily periods</div>
+                    <div className="tt-period-list">
                       {selectedTemplate.selectedDays.map((day) => (
-                        <div key={day} className="period-overview-item">
-                          <span className="day-name">{day}</span>
-                          <span className="period-count">
+                        <div key={day} className="tt-period-row">
+                          <span className="tt-period-day">{day}</span>
+                          <span className="tt-period-count">
                             {selectedTemplate.dailyPeriods[day]} periods
                           </span>
-                          <span className="time-range">
-                            {selectedTemplate.dailySchedule[day].startTime} -{" "}
-                            {selectedTemplate.dailySchedule[day].endTime}
+                          <span className="tt-period-time">
+                            {selectedTemplate.dailySchedule[day]?.startTime || "—"}
+                            {" – "}
+                            {selectedTemplate.dailySchedule[day]?.endTime || "—"}
                           </span>
                         </div>
                       ))}
                     </div>
                   </div>
 
-                  {/* Breaks Configuration */}
-                  <div className="detail-section">
-                    <h3>
-                      Breaks Configuration ({selectedTemplate.breaks.length})
-                    </h3>
-                    <div className="breaks-overview">
-                      {selectedTemplate.breaks.map((breakItem, index) => (
-                        <div key={index} className="break-overview-item">
-                          <div className="break-info">
-                            <span className="break-name">{breakItem.name}</span>
-                            <span className="break-details">
-                              {breakItem.duration} min after period{" "}
-                              {breakItem.afterPeriod}
-                            </span>
-                          </div>
-                          <div className="break-days">
-                            <strong>Days:</strong> {breakItem.days.join(", ")}
-                          </div>
-                        </div>
-                      ))}
+                  <div className="tt-detail-section">
+                    <div className="tt-detail-section-title">
+                      Breaks
+                      <span className="tt-detail-count">
+                        {selectedTemplate.breaks.length}
+                      </span>
                     </div>
-                  </div>
-
-                  {/* Timetable Preview */}
-                  <div className="detail-section">
-                    <h3>Timetable Preview</h3>
-                    <div className="timetable-preview-container">
-                      <Timetable
-                        timetableData={generatePreviewData(selectedTemplate)}
-                      />
-                    </div>
+                    {selectedTemplate.breaks.length === 0 ? (
+                      <div className="tt-empty-note">No breaks configured</div>
+                    ) : (
+                      <div className="tt-break-list">
+                        {selectedTemplate.breaks.map((breakItem, index) => (
+                          <div key={index} className="tt-break-card">
+                            <div className="tt-break-top">
+                              <span className="tt-break-name">{breakItem.name}</span>
+                              <span className="tt-break-duration">
+                                {breakItem.duration} min
+                              </span>
+                            </div>
+                            <div className="tt-break-meta">
+                              After period {breakItem.afterPeriod}
+                            </div>
+                            <div className="tt-day-chips tt-day-chips--sm">
+                              {(breakItem.days || []).map((day) => (
+                                <span key={day} className="tt-day-chip">
+                                  {String(day).substring(0, 3)}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -1062,7 +1096,7 @@ const TimetableTemplates = () => {
                     disabled={isSubmitting}
                   >
                     <FaEdit size={14} style={{ marginRight: "8px" }} />
-                    Edit Template
+                    Edit
                   </Button>
                   <Button
                     variant="secondary"

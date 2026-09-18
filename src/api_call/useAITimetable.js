@@ -71,9 +71,13 @@ const useAITimetable = () => {
           configId: configId || undefined,
         }),
       });
-      const data = await res.json();
-      if (!res.ok && !data?.message) {
-        return { success: false, message: `Server error (${res.status})` };
+      const data = await res.json().catch(() => ({}));
+      if (!data?.success) {
+        const message =
+          data?.message ||
+          (!res.ok ? `Server error (${res.status})` : "AI generation failed.");
+        setError(message);
+        return { success: false, message, error: data?.error, code: data?.code };
       }
       return data;
     } catch (err) {

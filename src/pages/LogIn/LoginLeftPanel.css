@@ -73,6 +73,20 @@
   margin-bottom: 4px;
 }
 
+.llp-logo--brand {
+  overflow: hidden;
+  padding: 0;
+  opacity: 1;
+  border: none;
+}
+
+.llp-brand-logo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
 .llp-title {
   font-size: 42px;
   font-weight: 900;

@@ -270,6 +270,103 @@
   line-height: 1.4;
 }
 
+.setup-school-video__meta {
+  padding: 10px 14px 0;
+}
+
+.setup-school-video__meta-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.setup-school-video__badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: #111;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.setup-school-video__duration {
+  font-size: 11px;
+  font-weight: 600;
+  color: #9ca3af;
+}
+
+.setup-school-video__desc {
+  margin: 8px 0 0;
+  font-size: 12px;
+  color: #6b7280;
+  line-height: 1.5;
+}
+
+.setup-school-video__controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 14px 0;
+}
+
+.setup-school-video__nav-btn {
+  width: 30px;
+  height: 30px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #fff;
+  color: #111;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.setup-school-video__dots {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  justify-content: center;
+}
+
+.setup-school-video__dot {
+  width: 8px;
+  height: 8px;
+  border: none;
+  border-radius: 999px;
+  background: #d1d5db;
+  cursor: pointer;
+  padding: 0;
+}
+
+.setup-school-video__dot.active {
+  background: #111;
+  transform: scale(1.2);
+}
+
+.setup-school-video__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.setup-school-video__manage-link {
+  color: #111;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.setup-school-video__manage-link:hover {
+  text-decoration: underline;
+}
+
 /* ── Dark theme ──────────────────────────────────────────────────────────── */
 [data-theme="dark"] .setup-school-video__wave {
   border-color: rgba(255, 255, 255, 0.22);
@@ -324,6 +421,37 @@
   border-top-color: #2a2a2a;
   color: #666666;
   background: #1a1a1a;
+}
+
+[data-theme="dark"] .setup-school-video__badge {
+  background: #f0f0f0;
+  color: #111;
+}
+
+[data-theme="dark"] .setup-school-video__duration {
+  color: #666666;
+}
+
+[data-theme="dark"] .setup-school-video__desc {
+  color: #888888;
+}
+
+[data-theme="dark"] .setup-school-video__nav-btn {
+  background: #252525;
+  border-color: #333333;
+  color: #f0f0f0;
+}
+
+[data-theme="dark"] .setup-school-video__dot {
+  background: #444444;
+}
+
+[data-theme="dark"] .setup-school-video__dot.active {
+  background: #f0f0f0;
+}
+
+[data-theme="dark"] .setup-school-video__manage-link {
+  color: #f0f0f0;
 }
 
 [data-theme="dark"] .setup-school-video__play-btn {

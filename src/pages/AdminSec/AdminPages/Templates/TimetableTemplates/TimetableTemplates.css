@@ -1,0 +1,613 @@
+/* ── Timetable Create/Edit panel theme ───────────────────────────────────── */
+
+/* Section cards */
+.create-template-form .days-selection-section,
+.create-template-form .periods-section,
+.create-template-form .daily-schedule-section,
+.create-template-form .breaks-section {
+  border: 1px solid #e8e8e8;
+  border-radius: 12px;
+  padding: 16px;
+  background: #f7f7f7;
+  margin-bottom: 0;
+}
+
+.create-template-form .days-selection-section h3,
+.create-template-form .periods-section h3,
+.create-template-form .daily-schedule-section h3,
+.create-template-form .breaks-section h3,
+.create-template-form .breaks-header h3 {
+  font-size: 13px;
+  font-weight: 800;
+  color: #111111;
+  margin: 0 0 6px;
+  letter-spacing: -0.01em;
+}
+
+.create-template-form .days-selection-section p,
+.create-template-form .periods-section p,
+.create-template-form .daily-schedule-section p,
+.create-template-form .breaks-section > p {
+  font-size: 12px;
+  color: #888888;
+  margin: 0 0 12px;
+  font-weight: 600;
+}
+
+.create-template-form .breaks-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+
+/* Day chips — force bg so Templates.css white can't win */
+.create-template-form label.day-checkbox {
+  display: flex !important;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  background: #ffffff !important;
+  border: 1px solid #e8e8e8 !important;
+  border-radius: 8px !important;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #333333 !important;
+  user-select: none;
+}
+
+.create-template-form label.day-checkbox:hover {
+  background: #fafafa !important;
+  border-color: #cccccc !important;
+}
+
+.create-template-form label.day-checkbox.is-checked {
+  background: #111111 !important;
+  border-color: #111111 !important;
+  color: #ffffff !important;
+}
+
+.create-template-form label.day-checkbox input {
+  margin: 0;
+  accent-color: #111111;
+}
+
+.create-template-form label.day-checkbox.is-checked span {
+  color: #ffffff !important;
+  font-weight: 700;
+}
+
+/* Period / schedule cards */
+.create-template-form .period-day-item,
+.create-template-form .schedule-day-item {
+  background: #ffffff;
+  border: 1px solid #e8e8e8;
+  border-radius: 8px;
+}
+
+.create-template-form .schedule-day-item h4 {
+  font-size: 12px;
+  font-weight: 800;
+  color: #111111;
+  margin: 0 0 12px;
+  text-align: center;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #eeeeee;
+}
+
+/* Breaks */
+.create-template-form .break-configuration {
+  background: #ffffff;
+  border: 1px solid #e8e8e8;
+  border-radius: 10px;
+  padding: 16px;
+  margin-bottom: 12px;
+  position: relative;
+}
+
+.create-template-form .break-days-selection h5 {
+  font-size: 11px;
+  font-weight: 800;
+  color: #555555;
+  margin: 0 0 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.create-template-form label.break-day-checkbox {
+  display: flex !important;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 9px;
+  background: #f4f4f4 !important;
+  border: 1px solid #e8e8e8 !important;
+  border-radius: 6px !important;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #555555 !important;
+  user-select: none;
+}
+
+.create-template-form label.break-day-checkbox:hover {
+  background: #eeeeee !important;
+  border-color: #cccccc !important;
+}
+
+.create-template-form label.break-day-checkbox.is-checked {
+  background: #111111 !important;
+  border-color: #111111 !important;
+  color: #ffffff !important;
+}
+
+.create-template-form label.break-day-checkbox input {
+  margin: 0;
+  accent-color: #111111;
+}
+
+.create-template-form label.break-day-checkbox.is-checked span {
+  color: #ffffff !important;
+  font-weight: 700;
+}
+
+.create-template-form .remove-break-btn {
+  background: #fee2e2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 11.5px;
+  font-weight: 700;
+}
+
+.create-template-form .remove-break-btn:hover {
+  background: #fecaca;
+}
+
+/* Preview */
+.create-template-container .timetable-preview-section {
+  margin-top: 0;
+  border: 1px solid #e8e8e8;
+  border-radius: 12px;
+  background: #f7f7f7;
+  overflow: hidden;
+}
+
+.create-template-container .timetable-preview-section .preview-header {
+  background: #111111;
+  color: #ffffff;
+  padding: 14px 16px;
+}
+
+.create-template-container .timetable-preview-section .preview-header h3 {
+  font-size: 13px;
+  font-weight: 800;
+  margin: 0;
+}
+
+.create-template-container .timetable-preview-section .close-preview-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  color: #fff;
+  font-size: 11.5px;
+  font-weight: 700;
+  padding: 5px 10px;
+}
+
+.create-template-container .timetable-preview-section .preview-content {
+  background: #ffffff;
+  padding: 16px;
+}
+
+/* ── Dark theme (body[data-theme] — matches ThemeContext) ─────────────────── */
+body[data-theme="dark"] .create-template-form .days-selection-section,
+body[data-theme="dark"] .create-template-form .periods-section,
+body[data-theme="dark"] .create-template-form .daily-schedule-section,
+body[data-theme="dark"] .create-template-form .breaks-section {
+  background: #1e1e1e;
+  border-color: #2a2a2a;
+}
+
+body[data-theme="dark"] .create-template-form .days-selection-section h3,
+body[data-theme="dark"] .create-template-form .periods-section h3,
+body[data-theme="dark"] .create-template-form .daily-schedule-section h3,
+body[data-theme="dark"] .create-template-form .breaks-section h3,
+body[data-theme="dark"] .create-template-form .breaks-header h3 {
+  color: #e0e0e0;
+}
+
+body[data-theme="dark"] .create-template-form .days-selection-section p,
+body[data-theme="dark"] .create-template-form .periods-section p,
+body[data-theme="dark"] .create-template-form .daily-schedule-section p,
+body[data-theme="dark"] .create-template-form .breaks-section > p {
+  color: #777777;
+}
+
+body[data-theme="dark"] .create-template-form label.day-checkbox {
+  background: #252525 !important;
+  border-color: #3a3a3a !important;
+  color: #cccccc !important;
+}
+
+body[data-theme="dark"] .create-template-form label.day-checkbox:hover {
+  background: #2e2e2e !important;
+  border-color: #555555 !important;
+}
+
+body[data-theme="dark"] .create-template-form label.day-checkbox.is-checked {
+  background: #f0f0f0 !important;
+  border-color: #f0f0f0 !important;
+  color: #111111 !important;
+}
+
+body[data-theme="dark"] .create-template-form label.day-checkbox.is-checked span {
+  color: #111111 !important;
+}
+
+body[data-theme="dark"] .create-template-form label.day-checkbox input {
+  accent-color: #f0f0f0;
+}
+
+body[data-theme="dark"] .create-template-form .period-day-item,
+body[data-theme="dark"] .create-template-form .schedule-day-item,
+body[data-theme="dark"] .create-template-form .break-configuration {
+  background: #252525;
+  border-color: #3a3a3a;
+}
+
+body[data-theme="dark"] .create-template-form .schedule-day-item h4 {
+  color: #e0e0e0;
+  border-bottom-color: #333333;
+}
+
+body[data-theme="dark"] .create-template-form .break-days-selection h5 {
+  color: #888888;
+}
+
+body[data-theme="dark"] .create-template-form label.break-day-checkbox {
+  background: #1a1a1a !important;
+  border-color: #3a3a3a !important;
+  color: #cccccc !important;
+}
+
+body[data-theme="dark"] .create-template-form label.break-day-checkbox:hover {
+  background: #2a2a2a !important;
+  border-color: #555555 !important;
+}
+
+body[data-theme="dark"] .create-template-form label.break-day-checkbox.is-checked {
+  background: #f0f0f0 !important;
+  border-color: #f0f0f0 !important;
+  color: #111111 !important;
+}
+
+body[data-theme="dark"] .create-template-form label.break-day-checkbox.is-checked span {
+  color: #111111 !important;
+}
+
+body[data-theme="dark"] .create-template-form .remove-break-btn {
+  background: #3a1a1a;
+  border-color: #5a2a2a;
+  color: #f87171;
+}
+
+body[data-theme="dark"] .create-template-form .remove-break-btn:hover {
+  background: #4a2020;
+}
+
+body[data-theme="dark"] .create-template-container .timetable-preview-section {
+  background: #1e1e1e;
+  border-color: #2a2a2a;
+}
+
+body[data-theme="dark"] .create-template-container .timetable-preview-section .preview-header {
+  background: #0a0a0a;
+}
+
+body[data-theme="dark"] .create-template-container .timetable-preview-section .preview-content {
+  background: #1a1a1a;
+}
+
+body[data-theme="dark"] .create-template-form .validation-errors {
+  background: #2a1515;
+  border-color: #5a2a2a;
+}
+
+body[data-theme="dark"] .create-template-form .error-header,
+body[data-theme="dark"] .create-template-form .validation-errors li {
+  color: #fca5a5;
+}
+
+@media (max-width: 640px) {
+  .create-template-form .break-basic-info {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── Detail panel ─────────────────────────────────────────────────────────── */
+.tt-detail .template-detail-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 14px;
+  position: relative;
+  z-index: 1;
+}
+
+.tt-detail .template-meta-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 110px;
+  padding: 8px 10px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+}
+
+.tt-detail .template-meta-item strong {
+  font-size: 10px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.45);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.tt-detail .template-meta-item span {
+  font-size: 12px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.tt-detail .template-detail-content {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 18px 20px;
+}
+
+.tt-detail-section {
+  background: #f7f7f7;
+  border: 1px solid #e8e8e8;
+  border-radius: 12px;
+  padding: 14px;
+}
+
+.tt-detail-section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 800;
+  color: #111111;
+  margin-bottom: 12px;
+  letter-spacing: -0.01em;
+}
+
+.tt-detail-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 18px;
+  padding: 0 6px;
+  border-radius: 99px;
+  background: #111111;
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.tt-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.tt-stat-card {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px;
+  background: #ffffff;
+  border: 1px solid #e8e8e8;
+  border-radius: 10px;
+}
+
+.tt-stat-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: #888888;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.tt-stat-value {
+  font-size: 20px;
+  font-weight: 800;
+  color: #111111;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+.tt-stat-unit {
+  font-size: 11px;
+  font-weight: 700;
+  color: #888888;
+  margin-left: 3px;
+}
+
+.tt-day-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.tt-day-chips--sm {
+  margin-top: 8px;
+}
+
+.tt-day-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 9px;
+  border-radius: 6px;
+  background: #111111;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.tt-period-list,
+.tt-break-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.tt-period-row {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr 1.2fr;
+  gap: 8px;
+  align-items: center;
+  padding: 11px 12px;
+  background: #ffffff;
+  border: 1px solid #e8e8e8;
+  border-radius: 8px;
+}
+
+.tt-period-day {
+  font-size: 12.5px;
+  font-weight: 800;
+  color: #111111;
+}
+
+.tt-period-count {
+  font-size: 12px;
+  font-weight: 600;
+  color: #555555;
+}
+
+.tt-period-time {
+  font-size: 12px;
+  font-weight: 700;
+  color: #888888;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.tt-break-card {
+  padding: 12px;
+  background: #ffffff;
+  border: 1px solid #e8e8e8;
+  border-radius: 10px;
+}
+
+.tt-break-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+
+.tt-break-name {
+  font-size: 13px;
+  font-weight: 800;
+  color: #111111;
+}
+
+.tt-break-duration {
+  font-size: 11px;
+  font-weight: 800;
+  color: #111111;
+  background: #f0f0f0;
+  border-radius: 99px;
+  padding: 3px 8px;
+}
+
+.tt-break-meta {
+  font-size: 12px;
+  font-weight: 600;
+  color: #888888;
+}
+
+.tt-empty-note {
+  font-size: 12px;
+  font-weight: 600;
+  color: #888888;
+  padding: 10px 0 2px;
+}
+
+body[data-theme="dark"] .tt-detail-section {
+  background: #1e1e1e;
+  border-color: #2a2a2a;
+}
+
+body[data-theme="dark"] .tt-detail-section-title {
+  color: #e0e0e0;
+}
+
+body[data-theme="dark"] .tt-detail-count {
+  background: #f0f0f0;
+  color: #111111;
+}
+
+body[data-theme="dark"] .tt-stat-card,
+body[data-theme="dark"] .tt-period-row,
+body[data-theme="dark"] .tt-break-card {
+  background: #252525;
+  border-color: #3a3a3a;
+}
+
+body[data-theme="dark"] .tt-stat-label,
+body[data-theme="dark"] .tt-period-time,
+body[data-theme="dark"] .tt-break-meta,
+body[data-theme="dark"] .tt-empty-note {
+  color: #777777;
+}
+
+body[data-theme="dark"] .tt-stat-value,
+body[data-theme="dark"] .tt-period-day,
+body[data-theme="dark"] .tt-break-name {
+  color: #f0f0f0;
+}
+
+body[data-theme="dark"] .tt-period-count {
+  color: #bbbbbb;
+}
+
+body[data-theme="dark"] .tt-stat-unit {
+  color: #777777;
+}
+
+body[data-theme="dark"] .tt-day-chip {
+  background: #f0f0f0;
+  color: #111111;
+}
+
+body[data-theme="dark"] .tt-break-duration {
+  background: #333333;
+  color: #f0f0f0;
+}
+
+@media (max-width: 640px) {
+  .tt-stat-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .tt-period-row {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+
+  .tt-period-time {
+    text-align: left;
+  }
+}

@@ -6,18 +6,25 @@ import TopBar              from "./TopBar";
 import LeftPanel           from "./LeftPanel";
 import ManualPanel         from "./ManualPanel";
 import PreviewPanel        from "./PreviewPanel";
-import BuyTokensModal      from "./BuyTokensModal";
 import PublishConfirmModal from "./PublishConfirmModal";
 import useEditorHistory    from "./useEditorHistory";
 import useAutoSave         from "./useAutoSave";
 import {
-  useAITokenBalance,
   useAIWebsiteModels,
   useAIWebsiteEdit,
   saveDraftHtml,
+  saveDraftPages,
   fetchDraftHtml,
   fetchLiveHtml,
 } from "../../../../api_call/useAIWebsiteEditor";
+import useSubscription from "../../../../api_call/useSubscription";
+import { useNotification } from "../../../../context/NotificationProvider/NotificationProvider";
+import { patchTextContent } from "./htmlPatcher";
+
+function isStandardOrAbovePlan(plan) {
+  const name = String(plan?.plan_name || "").toLowerCase();
+  return name.includes("standard") || name.includes("premium");
+}
 
 // ── Empty state HTML — shown in preview when no draft exists ─────────────────
 const EMPTY_STATE_HTML = `<!DOCTYPE html>
@@ -59,50 +66,133 @@ function formatTime() {
 export default function AIWebsiteEditor() {
   const { schoolId } = useParams();
 
-  // ── user email from sessionStorage (set during login) ────────────────────
-  const userEmail = (() => {
-    try {
-      const raw = sessionStorage.getItem("user");
-      const d   = raw ? JSON.parse(raw) : null;
-      return d?.admin?.email || d?.staff?.email || d?.email || "";
-    } catch { return ""; }
-  })();
-
   // ── API hooks ─────────────────────────────────────────────────────────────
-  const { balance, setBalance } = useAITokenBalance(schoolId);
   const { models }              = useAIWebsiteModels(schoolId);
   const { callEdit }            = useAIWebsiteEdit(schoolId);
+  const { getSubscriptionDashboard } = useSubscription();
+  const { addNotification } = useNotification();
+  const aiPlanAllowedRef = useRef(null); // null = unknown, true/false after check
+  const [aiModeChecking, setAiModeChecking] = useState(false);
+
+  useEffect(() => {
+    aiPlanAllowedRef.current = null;
+  }, [schoolId]);
 
   // ── history / html state ──────────────────────────────────────────────────
-  const { html, set, setLive, undo, redo, canUndo, canRedo } = useEditorHistory(EMPTY_STATE_HTML);
+  const { html, set, setLive, replace, undo, redo, canUndo, canRedo } = useEditorHistory(EMPTY_STATE_HTML);
   const htmlLoadedRef = useRef(false);
 
-  // Load saved draft or live published HTML on mount
+  // ── multi-page state ──────────────────────────────────────────────────────
+  const [pages, setPages] = useState([{ id: "home", title: "Home", slug: "/", order: 0, html: "" }]);
+  const [activePageId, setActivePageId] = useState("home");
+  const pagesRef = useRef(pages);
+  const activePageIdRef = useRef(activePageId);
+  useEffect(() => { pagesRef.current = pages; }, [pages]);
+  useEffect(() => { activePageIdRef.current = activePageId; }, [activePageId]);
+
+  const slugToFilename = (slug) => {
+    if (!slug || slug === "/") return "index.html";
+    return `${String(slug).replace(/^\//, "").replace(/\//g, "-")}.html`;
+  };
+
+  // Load saved draft pages (or published) on mount
   useEffect(() => {
     if (!schoolId || htmlLoadedRef.current) return;
     fetchDraftHtml(schoolId).then((data) => {
-      if (data.success && data.data?.html) {
-        set(data.data.html);
+      if (data.success && Array.isArray(data.data?.pages) && data.data.pages.length) {
+        const loaded = data.data.pages.map((p, i) => ({
+          id: p.id || `page_${i}`,
+          title: p.title || `Page ${i + 1}`,
+          slug: p.slug || (i === 0 ? "/" : `/${p.id}`),
+          order: p.order ?? i,
+          html: p.html || "",
+        }));
+        setPages(loaded);
+        const firstId = data.data.pageId || loaded.find((p) => p.slug === "/" || p.id === "home")?.id || loaded[0].id;
+        setActivePageId(firstId);
+        const firstHtml = loaded.find((p) => p.id === firstId)?.html || "";
+        replace(firstHtml || EMPTY_STATE_HTML);
         if (data.data.source === "published") {
-          saveDraftHtml(schoolId, data.data.html).catch(() => {});
+          saveDraftPages(schoolId, loaded).catch(() => {});
+        }
+      } else if (data.success && data.data?.html) {
+        // Legacy single-html response
+        replace(data.data.html);
+        setPages([{ id: "home", title: "Home", slug: "/", order: 0, html: data.data.html }]);
+        setActivePageId("home");
+        if (data.data.source === "published") {
+          saveDraftHtml(schoolId, data.data.html, "home").catch(() => {});
         }
       }
-      // If no html returned, leave EMPTY_STATE_HTML in place
       htmlLoadedRef.current = true;
     }).catch(() => { htmlLoadedRef.current = true; });
-  }, [schoolId, set]);
+  }, [schoolId, replace]);
+
+  // Keep active page html mirrored in pages state
+  useEffect(() => {
+    setPages((prev) => prev.map((p) => (p.id === activePageId ? { ...p, html } : p)));
+  }, [html, activePageId]);
 
   // ── keep a ref to html so handleAISend always reads the latest value ─────
   const htmlRef = useRef(html);
   useEffect(() => { htmlRef.current = html; }, [html]);
   const saveFn = useCallback(
-    (currentHtml) => saveDraftHtml(schoolId, currentHtml),
+    (currentHtml) => saveDraftHtml(schoolId, currentHtml, activePageIdRef.current),
     [schoolId]
   );
-  const saveStatus = useAutoSave(html, saveFn, 2000);
+  const saveStatus = useAutoSave(html, saveFn, 2000, activePageId);
+
+  const handleSwitchPage = useCallback(async (pageId) => {
+    if (pageId === activePageIdRef.current) return;
+    // Persist current page before switching
+    const currentHtml = htmlRef.current;
+    const currentId = activePageIdRef.current;
+    const next = pagesRef.current.find((p) => p.id === pageId);
+    setPages((prev) => prev.map((p) => (p.id === currentId ? { ...p, html: currentHtml } : p)));
+    try {
+      await saveDraftHtml(schoolId, currentHtml, currentId);
+    } catch (_) {}
+
+    setSelectedElement(null);
+    replace(next?.html || EMPTY_STATE_HTML);
+    setActivePageId(pageId);
+  }, [schoolId, replace]);
 
   // ── editor mode: "ai" | "manual" ─────────────────────────────────────────
   const [editorMode, setEditorMode] = useState("manual");
+
+  const handleEditorMode = useCallback(async (mode) => {
+    if (mode !== "ai") {
+      setEditorMode(mode);
+      return;
+    }
+    if (editorMode === "ai" || aiModeChecking) return;
+
+    if (aiPlanAllowedRef.current === true) {
+      setEditorMode("ai");
+      return;
+    }
+    if (aiPlanAllowedRef.current === false) {
+      addNotification("Upgrade your plan to use AI. Standard Plan or above is required.", "warning");
+      return;
+    }
+
+    setAiModeChecking(true);
+    try {
+      const res = await getSubscriptionDashboard(schoolId);
+      const allowed = res.success && isStandardOrAbovePlan(res.data?.plan);
+      aiPlanAllowedRef.current = allowed;
+      if (!allowed) {
+        addNotification("Upgrade your plan to use AI. Standard Plan or above is required.", "warning");
+        return;
+      }
+      setEditorMode("ai");
+    } catch {
+      addNotification("Could not verify your plan. Please try again.", "error");
+    } finally {
+      setAiModeChecking(false);
+    }
+  }, [editorMode, aiModeChecking, schoolId, getSubscriptionDashboard, addNotification]);
 
   // ── view mode ─────────────────────────────────────────────────────────────
   const [viewMode, setViewMode] = useState("split");
@@ -111,14 +201,10 @@ export default function AIWebsiteEditor() {
   const [messages,   setMessages]   = useState([]);
   const [isThinking, setIsThinking] = useState(false);
 
-  // ── token count (mirrors balance from server) ─────────────────────────────
-  const tokenCount = balance ?? 0;
-
   // ── selected element ──────────────────────────────────────────────────────
   const [selectedElement, setSelectedElement] = useState(null);
 
   // ── modals ────────────────────────────────────────────────────────────────
-  const [buyTokensOpen,    setBuyTokensOpen]    = useState(false);
   const [publishModalOpen, setPublishModalOpen] = useState(false);
   const [publishing,       setPublishing]       = useState(false);
   const [publishSuccess,   setPublishSuccess]   = useState(false);
@@ -137,8 +223,6 @@ export default function AIWebsiteEditor() {
 
   // ── AI send handler ───────────────────────────────────────────────────────
   const handleAISend = useCallback(async (prompt, element, configId) => {
-    if (!tokenCount) return;
-
     const displayContent = element ? `🎯 ${element.label} — ${prompt}` : prompt;
     setMessages((m) => [...m, { id: Date.now(), role: "user", content: displayContent, time: formatTime() }]);
     setIsThinking(true);
@@ -164,14 +248,11 @@ export default function AIWebsiteEditor() {
       });
 
       if (!result.success) {
-        const isNoToken = result.code === "INSUFFICIENT_TOKENS";
         setMessages((m) => [...m, {
           id:      Date.now() + 1,
           role:    "ai",
           isError: true,
-          content: isNoToken
-            ? "You have no tokens left. Please purchase more to continue editing."
-            : result.message || "Something went wrong. Please try again.",
+          content: result.message || "Something went wrong. Please try again.",
           time:    formatTime(),
         }]);
         return;
@@ -179,18 +260,10 @@ export default function AIWebsiteEditor() {
 
       set(result.newHtml);
 
-      if (result.newBalance !== undefined) {
-        setBalance(result.newBalance);
-      }
-
-      const usageNote = result.modelUsage?.total_tokens
-        ? ` (${result.modelUsage.total_tokens} model tokens)`
-        : "";
-
       setMessages((m) => [...m, {
         id:      Date.now() + 1,
         role:    "ai",
-        content: `${result.message || "Section updated successfully."}${usageNote} ${result.newBalance} edit token${result.newBalance === 1 ? "" : "s"} remaining.`,
+        content: result.message || "Section updated successfully.",
         time:    formatTime(),
       }]);
 
@@ -205,15 +278,45 @@ export default function AIWebsiteEditor() {
     } finally {
       setIsThinking(false);
     }
-  }, [tokenCount, set, callEdit, setBalance]);
+  }, [set, callEdit]);
+
+  const handlePreviewTextEdit = useCallback(({ selector, text, label, tagName, outerHTML, textContent }) => {
+    if (!selector) return;
+    const next = patchTextContent(htmlRef.current, selector, text);
+    set(next);
+    setSelectedElement((prev) => {
+      if (prev?.selector && prev.selector !== selector) return prev;
+      return {
+        ...(prev || {}),
+        selector,
+        label: label || prev?.label || selector,
+        tagName: tagName || prev?.tagName || "",
+        textContent: textContent || String(text || "").slice(0, 120),
+        outerHTML: outerHTML || prev?.outerHTML || "",
+      };
+    });
+  }, [set]);
 
   // ── publish ───────────────────────────────────────────────────────────────
   const handlePublish = useCallback(async () => {
     setPublishing(true);
     try {
-      const blob     = new Blob([htmlRef.current], { type: "text/html" });
+      // Flush active page into pages list first
+      const snapshot = pagesRef.current.map((p) =>
+        p.id === activePageIdRef.current ? { ...p, html: htmlRef.current } : p
+      );
+      setPages(snapshot);
+      await saveDraftPages(schoolId, snapshot);
+
       const formData = new FormData();
-      formData.append("html_file", blob, "index.html");
+      formData.append(
+        "pages_json",
+        JSON.stringify(snapshot.map(({ id, title, slug, order }) => ({ id, title, slug, order })))
+      );
+      snapshot.forEach((page) => {
+        const blob = new Blob([page.html || ""], { type: "text/html" });
+        formData.append("html_files", blob, slugToFilename(page.slug));
+      });
 
       let token = "";
       try {
@@ -240,24 +343,32 @@ export default function AIWebsiteEditor() {
     }
   }, [schoolId]);
 
-  const handleBuyTokensInitiate = useCallback(() => {
-    setBuyTokensOpen(false);
-  }, []);
-
   // ── reset to live published HTML ──────────────────────────────────────────
   const handleResetToLive = useCallback(async () => {
     const confirmed = window.confirm(
-      "This will discard all your unsaved draft changes and reload the live published website. Continue?"
+      "This will discard all your unsaved draft changes and reload the live published website (all pages). Continue?"
     );
     if (!confirmed) return;
 
     setResetting(true);
     try {
       const data = await fetchLiveHtml(schoolId);
-      if (data.success && data.data?.html) {
-        set(data.data.html);
-        // Overwrite the draft with live HTML so auto-save keeps it in sync
-        await saveDraftHtml(schoolId, data.data.html);
+      if (data.success && Array.isArray(data.data?.pages) && data.data.pages.length) {
+        const loaded = data.data.pages.map((p, i) => ({
+          id: p.id || `page_${i}`,
+          title: p.title || `Page ${i + 1}`,
+          slug: p.slug || (i === 0 ? "/" : `/${p.id}`),
+          order: p.order ?? i,
+          html: p.html || "",
+        }));
+        setPages(loaded);
+        await saveDraftPages(schoolId, loaded);
+        const firstId = loaded.find((p) => p.slug === "/" || p.id === "home")?.id || loaded[0].id;
+        setActivePageId(firstId);
+        replace(loaded.find((p) => p.id === firstId)?.html || EMPTY_STATE_HTML);
+      } else if (data.success && data.data?.html) {
+        replace(data.data.html);
+        await saveDraftHtml(schoolId, data.data.html, activePageIdRef.current);
       } else {
         alert(data.message || "Could not load the live website. Make sure it has been published.");
       }
@@ -266,7 +377,7 @@ export default function AIWebsiteEditor() {
     } finally {
       setResetting(false);
     }
-  }, [schoolId, set]);
+  }, [schoolId, replace]);
 
   const showLeft    = viewMode !== "preview";
   const showPreview = viewMode !== "code";
@@ -282,9 +393,8 @@ export default function AIWebsiteEditor() {
         siteName={siteName}
         saveStatus={saveStatus}
         editorMode={editorMode}
-        onEditorMode={setEditorMode}
-        tokenCount={tokenCount}
-        onBuyTokens={() => setBuyTokensOpen(true)}
+        onEditorMode={handleEditorMode}
+        aiModeChecking={aiModeChecking}
         canUndo={canUndo}
         canRedo={canRedo}
         onUndo={undo}
@@ -295,6 +405,9 @@ export default function AIWebsiteEditor() {
         publishing={publishing}
         onResetToLive={handleResetToLive}
         resetting={resetting}
+        pages={pages}
+        activePageId={activePageId}
+        onSwitchPage={handleSwitchPage}
       />
 
       {/* ── AI Mode layout: [LeftPanel] | [resize] | [Preview] ────────── */}
@@ -308,9 +421,7 @@ export default function AIWebsiteEditor() {
               onCommit={set}
               messages={messages}
               isThinking={isThinking}
-              tokenCount={tokenCount}
               onSend={handleAISend}
-              onBuyTokens={() => setBuyTokensOpen(true)}
               selectedElement={selectedElement}
               onClearElement={() => setSelectedElement(null)}
               models={models}
@@ -327,6 +438,7 @@ export default function AIWebsiteEditor() {
               siteUrl={publishedUrl || "preview"}
               isSplitMode={viewMode === "split"}
               onElementSelect={setSelectedElement}
+              onTextEdit={handlePreviewTextEdit}
             />
           )}
         </div>
@@ -354,20 +466,12 @@ export default function AIWebsiteEditor() {
               siteUrl={publishedUrl || "preview"}
               isSplitMode={true}
               onElementSelect={setSelectedElement}
+              onTextEdit={handlePreviewTextEdit}
               scrollToSelector={selectedElement?.selector || null}
             />
           </ManualPanel>
         </div>
       )}
-
-      <BuyTokensModal
-        isOpen={buyTokensOpen}
-        onClose={() => setBuyTokensOpen(false)}
-        tokenCount={tokenCount}
-        schoolId={schoolId}
-        email={userEmail}
-        onTokensPurchased={(newBalance) => setBalance(newBalance)}
-      />
 
       <PublishConfirmModal
         isOpen={publishModalOpen}

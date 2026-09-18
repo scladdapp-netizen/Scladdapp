@@ -47,12 +47,20 @@
 .st_brand_icon {
   width: 28px;
   height: 28px;
-  background: #111111;
+  background: transparent;
   border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  overflow: hidden;
+}
+
+.st_brand_icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
 }
 
 .st_brand_text {
@@ -479,8 +487,7 @@
 }
 
 [data-theme="dark"] .st_brand_text { color: #f0f0f0; }
-[data-theme="dark"] .st_brand_icon { background: #f0f0f0; }
-[data-theme="dark"] .st_brand_icon svg path { fill: #111111; }
+[data-theme="dark"] .st_brand_icon { background: transparent; }
 
 [data-theme="dark"] .st_brand_divider { background: #2e2e2e; }
 [data-theme="dark"] .st_school_name { color: #d1d5db; }

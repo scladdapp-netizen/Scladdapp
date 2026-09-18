@@ -34,13 +34,15 @@ const useWebsiteRequest = () => {
   /**
    * saveDraft — sends the structured brief as JSON.
    * briefPayload: {
-   *   primary_color, secondary_color, font_style, theme,
-   *   sections: [{ id, label, layoutId, content, notes, order }],
+   *   primary_color, secondary_color, background_color, font_style, theme,
+   *   pages: [{ id, title, slug, order, sections: [...] }],
+   *   sections: [...] // legacy / home mirror
    *   final_notes
    * }
    */
-  const saveDraft = async (schoolId, briefPayload) => {
-    setLoading(true); setError(null);
+  const saveDraft = async (schoolId, briefPayload, opts = {}) => {
+    const silent = !!opts.silent;
+    if (!silent) { setLoading(true); setError(null); }
     try {
       const res  = await fetch(`${API_BASE_URL}/api/schools/${schoolId}/website-request`, {
         method:  "PATCH",
@@ -50,8 +52,11 @@ const useWebsiteRequest = () => {
       const data = await res.json();
       if (!data.success) throw new Error(data.message);
       return { success: true, data: data.data, message: data.message };
-    } catch (err) { setError(err.message); return { success: false, message: err.message }; }
-    finally { setLoading(false); }
+    } catch (err) {
+      if (!silent) setError(err.message);
+      return { success: false, message: err.message };
+    }
+    finally { if (!silent) setLoading(false); }
   };
 
   const submitRequest = async (schoolId) => {
@@ -82,7 +87,81 @@ const useWebsiteRequest = () => {
     finally { setLoading(false); }
   };
 
-  return { loading, error, getRequest, saveDraft, submitRequest, cancelRequest };
+  const setCustomDomain = async (schoolId, domain) => {
+    setLoading(true); setError(null);
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/schools/${schoolId}/website-request/custom-domain`, {
+        method: "POST",
+        headers: authHeaders(),
+        body: JSON.stringify({ domain }),
+      });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.message || "Failed to save domain");
+      return { success: true, data: data.data, dns: data.dns, message: data.message };
+    } catch (err) {
+      setError(err.message);
+      return { success: false, message: err.message };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const verifyCustomDomain = async (schoolId) => {
+    setLoading(true); setError(null);
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/schools/${schoolId}/website-request/custom-domain/verify`, {
+        method: "POST",
+        headers: authHeaders(),
+        body: JSON.stringify({}),
+      });
+      const data = await res.json();
+      if (!data.success) {
+        setError(data.message || "Verification failed");
+        return {
+          success: false,
+          message: data.message || "Verification failed",
+          data: data.data || null,
+          dns_detail: data.dns_detail || null,
+        };
+      }
+      return { success: true, data: data.data, message: data.message, site_url: data.site_url };
+    } catch (err) {
+      setError(err.message);
+      return { success: false, message: err.message, data: null };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const removeCustomDomain = async (schoolId) => {
+    setLoading(true); setError(null);
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/schools/${schoolId}/website-request/custom-domain`, {
+        method: "DELETE",
+        headers: authHeaders(),
+      });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.message || "Failed to remove domain");
+      return { success: true, data: data.data, message: data.message };
+    } catch (err) {
+      setError(err.message);
+      return { success: false, message: err.message };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return {
+    loading,
+    error,
+    getRequest,
+    saveDraft,
+    submitRequest,
+    cancelRequest,
+    setCustomDomain,
+    verifyCustomDomain,
+    removeCustomDomain,
+  };
 };
 
 export default useWebsiteRequest;

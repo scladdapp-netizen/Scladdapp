@@ -6,7 +6,30 @@ import { useState, cloneElement, useCallback } from "react";
 import ManualLeftPanel    from "./ManualLeftPanel";
 import ManualRightPanel   from "./ManualRightPanel";
 import AddTemplateModal   from "./AddTemplateModal";
+import { parseLayoutTree } from "./htmlLayoutParser";
 import { deleteElement, insertChildLast, appendToBody, moveElement, moveIntoParent, duplicateElement } from "./htmlPatcher";
+
+function findNodeBySelector(nodes, selector) {
+  if (!selector || !nodes?.length) return null;
+  const strip = (s) => String(s).replace(/\.[a-zA-Z0-9_-]+/g, "").replace(/\s+/g, " ").trim();
+  const want = strip(selector);
+  // Only treat hle-id as identity when the lookup is the stamped root itself
+  // (not a descendant path that merely includes an ancestor's data-hle-id)
+  const hleRootId = (() => {
+    const m = want.match(/^(?:[a-zA-Z0-9_-]+)?\[data-hle-id="([^"]+)"\]$/);
+    return m ? m[1] : null;
+  })();
+  const walk = (list) => {
+    for (const n of list) {
+      if (n.selector === selector || strip(n.selector) === want) return n;
+      if (hleRootId && n.id === hleRootId) return n;
+      const child = walk(n.children || []);
+      if (child) return child;
+    }
+    return null;
+  };
+  return walk(nodes);
+}
 
 /**
  * Props:
@@ -77,11 +100,23 @@ export default function ManualPanel({ html, selectedElement, onSelectNode, onHtm
 
   // ── Move element (drag reorder) ────────────────────────────────────────────
   const handleMove = useCallback((fromSelector, toSelector, position) => {
-    const newHtml = position === "inside"
+    const result = position === "inside"
       ? moveIntoParent(html, fromSelector, toSelector)
       : moveElement(html, fromSelector, toSelector, position);
+    const newHtml = typeof result === "string" ? result : result.html;
+    const movedHleId = typeof result === "string" ? null : result.movedHleId;
     onHtmlChange(newHtml);
-  }, [html, onHtmlChange]);
+
+    // Refresh selection to the moved node's new selector (path may have changed)
+    if (onSelectNode) {
+      const tree = parseLayoutTree(newHtml);
+      const lookup = movedHleId
+        ? `[data-hle-id="${movedHleId}"]`
+        : fromSelector;
+      const node = findNodeBySelector(tree, lookup) || findNodeBySelector(tree, fromSelector);
+      if (node) onSelectNode(node);
+    }
+  }, [html, onHtmlChange, onSelectNode]);
 
   // Inject hover props into PreviewPanel
   const previewWithHover = children
@@ -110,6 +145,7 @@ export default function ManualPanel({ html, selectedElement, onSelectNode, onHtm
         selectedElement={selectedElement}
         html={html}
         onHtmlChange={onHtmlChange}
+        onSelectNode={onSelectNode}
       />
 
       <AddTemplateModal

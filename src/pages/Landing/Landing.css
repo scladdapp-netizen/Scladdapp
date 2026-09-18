@@ -1205,22 +1205,25 @@
   flex-direction: column;
   justify-content: center;
   padding-top: 0;
-  opacity: 0;
-  will-change: opacity;
+  opacity: 1;
+  box-sizing: border-box;
+  backface-visibility: hidden;
 }
 
 /* Track — pushed down so cards clear the header text */
 .hscroll-track {
   display: flex;
   width: max-content;
-  height: calc(100vh - 220px); /* leave 220px at top for the header */
-  margin-top: 220px;           /* push the whole track below the header */
-  align-items: flex-end;       /* cards hang from the bottom of the track */
+  height: calc(100% - 220px);
+  margin-top: 220px;
+  align-items: flex-end;
   will-change: transform;
+  backface-visibility: hidden;
+  transform: translate3d(0, 0, 0);
   padding: 0 80px;
   gap: 0;
   position: relative;
-  transition: transform 0.1s linear;
+  box-sizing: border-box;
 }
 
 /* Timeline — sits near the bottom of the track, aligned with dots */
@@ -1237,7 +1240,7 @@
 
 /* Each panel — all face same direction, cards at top, dot at bottom */
 .hscroll-panel {
-  width: 280px;
+  width: 300px;
   height: 100%;
   display: flex;
   flex-direction: column;
@@ -1245,7 +1248,7 @@
   justify-content: flex-end;
   position: relative;
   flex-shrink: 0;
-  margin: 0 60px;
+  margin: 0 56px;
   padding-bottom: 40px; /* gap between dot and bottom edge */
 }
 
@@ -1270,7 +1273,6 @@
   border: 3px solid #000;
   box-shadow: 0 0 0 2px rgba(255,255,255,0.4);
   flex-shrink: 0;
-  animation: dotPulse 2s ease-in-out infinite;
   z-index: 2;
 }
 
@@ -1280,7 +1282,6 @@
   height: 60px;
   background: linear-gradient(to bottom, rgba(255,255,255,0.6), rgba(255,255,255,0.1));
   flex-shrink: 0;
-  animation: connectorGlow 2s ease-in-out infinite;
 }
 
 .hscroll-panel--down .hscroll-connector {
@@ -1304,7 +1305,7 @@
 }
 
 .hscroll-card:hover {
-  transform: translateY(-6px);
+  transform: translate3d(0, -6px, 0);
 }
 
 /* Orbit dots around card — same style as morph-btn */
@@ -1321,10 +1322,10 @@
   background: rgba(255,255,255,0.7);
   border-radius: 50%;
 }
-.hscroll-card-orbit span:nth-child(1) { top: 0; left: 50%; animation: orbit1 3s linear infinite; }
-.hscroll-card-orbit span:nth-child(2) { bottom: 0; left: 50%; animation: orbit2 3s linear infinite; }
-.hscroll-card-orbit span:nth-child(3) { top: 50%; left: 0; animation: orbit3 4s linear infinite; }
-.hscroll-card-orbit span:nth-child(4) { top: 50%; right: 0; animation: orbit4 4s linear infinite; }
+.hscroll-card-orbit span:nth-child(1) { top: 0; left: 50%; transform: translate(-50%, 0); }
+.hscroll-card-orbit span:nth-child(2) { bottom: 0; left: 50%; transform: translate(-50%, 0); }
+.hscroll-card-orbit span:nth-child(3) { top: 50%; left: 0; transform: translate(0, -50%); }
+.hscroll-card-orbit span:nth-child(4) { top: 50%; right: 0; transform: translate(0, -50%); }
 
 /* Corner accents */
 .hscroll-card-corners span {
@@ -1345,55 +1346,128 @@
 .hscroll-card:hover .hscroll-card-corners span:nth-child(3) { transform: translate(-4px, 4px); }
 .hscroll-card:hover .hscroll-card-corners span:nth-child(4) { transform: translate(4px, 4px); }
 
-/* Stacked images like the reference */
-.hscroll-card-imgs {
-  position: relative;
-  height: 140px;
-  margin-bottom: 12px;
+.hscroll-card--feature {
+  width: 264px;
+  padding: 12px 12px 6px;
+  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 18px;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.35);
 }
 
-.hscroll-img {
-  width: 100%;
+.hscroll-card--feature:hover {
+  border-color: rgba(255, 255, 255, 0.22);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+}
+
+.hscroll-card--feature .hscroll-card-orbit span {
+  background: var(--feature-accent, #fff);
+}
+
+.hscroll-card--feature .hscroll-card-corners span {
+  border-color: var(--feature-accent, #fff);
+  opacity: 0.55;
+}
+
+.hscroll-card-visual {
+  position: relative;
+  height: 148px;
+  margin-bottom: 4px;
+  border-radius: 12px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.04), transparent 40%),
+    linear-gradient(rgba(255,255,255,0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.035) 1px, transparent 1px),
+    #0a0a0a;
+  background-size: auto, 18px 18px, 18px 18px, auto;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.hscroll-card-visual__glow {
+  position: absolute;
+  width: 140px;
   height: 140px;
-  object-fit: cover;
-  border-radius: 10px;
-  display: block;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--feature-accent, #fff) 0%, transparent 70%);
+  filter: blur(8px);
+  pointer-events: none;
+  opacity: 0.28;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.hscroll-card--feature:hover .hscroll-card-visual__glow {
+  opacity: 0.42;
+  transform: scale(1.12);
+}
+
+.hscroll-card-visual__index {
+  position: absolute;
+  top: 10px;
+  left: 12px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  color: var(--feature-accent, #fff);
+  opacity: 0.75;
+}
+
+.hscroll-feature-svg {
+  width: 88px;
+  height: 88px;
+  color: var(--feature-accent, #fff);
+  position: relative;
+  z-index: 1;
+  transition: transform 0.35s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  filter: drop-shadow(0 8px 18px rgba(0, 0, 0, 0.45));
+}
+
+.hscroll-card--feature:hover .hscroll-feature-svg {
+  transform: scale(1.08) translateY(-2px);
 }
 
 /* Card body */
 .hscroll-card-body {
-  padding: 16px 18px 20px;
+  padding: 14px 10px 16px;
 }
 
 .hscroll-card-body h3 {
   font-size: 15px;
   font-weight: 800;
   color: #fff;
-  margin: 0 0 10px;
+  margin: 0 0 12px;
   letter-spacing: 0.01em;
 }
 
 .hscroll-card-body ul {
   list-style: none;
   padding: 0;
-  margin: 0 0 16px;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
 .hscroll-card-body ul li {
   font-size: 12px;
-  color: rgba(255,255,255,0.55);
-  padding: 3px 0;
-  padding-left: 14px;
+  color: rgba(255,255,255,0.62);
+  padding: 0;
   position: relative;
   line-height: 1.4;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
-.hscroll-card-body ul li::before {
-  content: "·";
-  position: absolute;
-  left: 0;
-  color: rgba(255,255,255,0.3);
+.hscroll-bullet-icon {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  color: var(--feature-accent, rgba(255,255,255,0.7));
+  opacity: 0.9;
 }
 
 /* Mini morph button on each card */
@@ -1455,17 +1529,7 @@
   overflow: visible;
 }
 
-.hscroll-svg-path {
-  animation: dashFlow 1.5s linear infinite;
-}
-
-@keyframes dashFlow {
-  from { stroke-dashoffset: 0; }
-  to   { stroke-dashoffset: -28; }
-}
-
 .hscroll-svg-dot {
-  animation: dotPulse 2s ease-in-out infinite;
   filter: drop-shadow(0 0 4px rgba(255,255,255,0.6));
 }
 
@@ -1483,28 +1547,30 @@
   font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: rgba(255,255,255,0.7);
-  border: 1px solid rgba(255,255,255,0.3);
+  letter-spacing: 0.14em;
+  color: rgba(255,255,255,0.82);
+  border: 1px solid rgba(255,255,255,0.22);
+  background: rgba(255,255,255,0.05);
   border-radius: 20px;
-  padding: 4px 12px;
-  margin-bottom: 10px;
+  padding: 5px 13px;
+  margin-bottom: 12px;
 }
 
 .hscroll-header h2 {
-  font-size: clamp(1.4rem, 3vw, 2.2rem);
+  font-size: clamp(1.5rem, 3.2vw, 2.4rem);
   font-weight: 900;
   color: #fff;
-  margin: 0 0 8px;
-  line-height: 1.15;
+  margin: 0 0 10px;
+  line-height: 1.12;
+  letter-spacing: -0.02em;
 }
 
 .hscroll-header p {
   font-size: 14px;
-  color: rgba(255,255,255,0.45);
+  color: rgba(255,255,255,0.5);
   margin: 0;
-  max-width: 360px;
-  line-height: 1.6;
+  max-width: 380px;
+  line-height: 1.65;
 }
 /* ── Reverse Horizontal Scroll (Stack 2) ────────────────────────────────── */
 .hscroll2-wrapper {
@@ -1522,6 +1588,8 @@
   justify-content: center;
   padding-top: 100px;
   opacity: 0;
+  box-sizing: border-box;
+  backface-visibility: hidden;
 }
 
 .hscroll2-header {
@@ -1565,12 +1633,14 @@
 .hscroll2-track {
   display: flex;
   width: max-content;
-  height: 100vh;
+  height: 100%;
   align-items: center;
   will-change: transform;
+  backface-visibility: hidden;
+  transform: translate3d(0, 0, 0);
   padding: 0 80px;
   gap: 32px;
-  transition: transform 0.1s linear;
+  box-sizing: border-box;
 }
 
 /* Card */
@@ -1584,7 +1654,7 @@
   padding: 40px 36px;
   flex-shrink: 0;
   overflow: hidden;
-  transition: border-color 0.3s ease, transform 0.3s ease;
+  transition: border-color 0.3s ease;
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
@@ -1662,12 +1732,14 @@
 .hscroll2-track {
   display: flex;
   width: max-content;
-  height: 100vh;
+  height: 100%;
   align-items: center;
   will-change: transform;
+  backface-visibility: hidden;
+  transform: translate3d(0, 0, 0);
   padding: 0 80px;
   gap: 28px;
-  transition: transform 0.1s linear;
+  box-sizing: border-box;
 }
 
 .portal-card {
@@ -3038,6 +3110,8 @@
   justify-content: center;
   padding-top: 100px;
   opacity: 0;
+  box-sizing: border-box;
+  backface-visibility: hidden;
 }
 
 .pricing-hscroll-header {
@@ -3069,12 +3143,14 @@
 .pricing-hscroll-track {
   display: flex;
   width: max-content;
-  height: 100vh;
+  height: 100%;
   align-items: center;
   padding: 0 80px;
   gap: 24px;
-  transition: transform 0.1s linear;
   will-change: transform;
+  backface-visibility: hidden;
+  transform: translate3d(0, 0, 0);
+  box-sizing: border-box;
 }
 
 @media (max-width: 600px) {

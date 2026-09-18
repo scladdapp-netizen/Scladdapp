@@ -52,10 +52,27 @@ function withDoc(html, mutationFn) {
  * Find an element by CSS selector inside a document.
  * Returns null if not found or selector is invalid.
  */
+function ensureHleId(el) {
+  if (el && el.nodeType === 1 && !el.getAttribute("data-hle-id")) {
+    el.setAttribute(
+      "data-hle-id",
+      `hle-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`
+    );
+  }
+}
+
 function findEl(doc, selector) {
   if (!selector) return null;
-  try { return doc.querySelector(selector); }
-  catch { return null; }
+  try {
+    const el = doc.querySelector(selector);
+    if (el) return el;
+  } catch { /* invalid selector */ }
+  // Fallback: strip :nth-of-type so preview/tree selector variants still resolve
+  try {
+    const simplified = selector.replace(/:nth-of-type\(\d+\)/g, "");
+    if (simplified !== selector) return doc.querySelector(simplified);
+  } catch { /* ignore */ }
+  return null;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -89,9 +106,10 @@ export function insertChildLast(html, parentSelector, newHtml) {
     if (!parent) return;
     const tmp = doc.createElement("div");
     tmp.innerHTML = newHtml;
-    // Move all children of tmp into parent
     while (tmp.firstChild) {
-      parent.appendChild(tmp.firstChild);
+      const child = tmp.firstChild;
+      ensureHleId(child);
+      parent.appendChild(child);
     }
   });
 }
@@ -111,7 +129,10 @@ export function insertAfter(html, selector, newHtml) {
     const tmp = doc.createElement("div");
     tmp.innerHTML = newHtml;
     const frag = doc.createDocumentFragment();
-    while (tmp.firstChild) frag.appendChild(tmp.firstChild);
+    while (tmp.firstChild) {
+      ensureHleId(tmp.firstChild);
+      frag.appendChild(tmp.firstChild);
+    }
     ref.parentNode.insertBefore(frag, ref.nextSibling);
   });
 }
@@ -126,27 +147,25 @@ export function insertAfter(html, selector, newHtml) {
  * @returns {string}            - new HTML string
  */
 export function moveElement(html, fromSelector, toSelector, position) {
-  return withDoc(html, (doc) => {
+  let movedHleId = null;
+  const newHtml = withDoc(html, (doc) => {
     const from = findEl(doc, fromSelector);
     const to   = findEl(doc, toSelector);
     if (!from || !to || from === to) return;
-    if (to.contains(from)) return; // can't drop inside itself
+    if (to.contains(from)) return; // can't drop a parent onto its child
+    if (!to.parentNode) return;
 
-    // Clone before removing so the reference isn't lost
-    const clone = from.cloneNode(true);
-    from.remove();
+    ensureHleId(from);
+    movedHleId = from.getAttribute("data-hle-id");
 
-    // Re-find `to` after removal (selector may have shifted nth-of-type)
-    // Use the clone's position relative to parent
-    const toFresh = findEl(doc, toSelector);
-    const ref = toFresh || to;
-
+    // Move the live node — avoids nth-of-type shift bugs from clone/remove
     if (position === "before") {
-      ref.parentNode?.insertBefore(clone, ref);
+      to.parentNode.insertBefore(from, to);
     } else {
-      ref.parentNode?.insertBefore(clone, ref.nextSibling);
+      to.parentNode.insertBefore(from, to.nextSibling);
     }
   });
+  return { html: newHtml, movedHleId };
 }
 
 /**
@@ -161,7 +180,9 @@ export function appendToBody(html, newHtml) {
     const tmp = doc.createElement("div");
     tmp.innerHTML = newHtml;
     while (tmp.firstChild) {
-      doc.body.appendChild(tmp.firstChild);
+      const child = tmp.firstChild;
+      ensureHleId(child);
+      doc.body.appendChild(child);
     }
   });
 }
@@ -190,6 +211,13 @@ export function duplicateElement(html, selector) {
     clone.querySelectorAll(".__aie_selected__, .__aie_hover__").forEach((c) => {
       c.classList.remove("__aie_selected__", "__aie_hover__");
     });
+    // Fresh stable ids so the clone is independently addressable
+    clone.querySelectorAll("[data-hle-id]").forEach((c) => {
+      c.removeAttribute("data-hle-id");
+      ensureHleId(c);
+    });
+    clone.removeAttribute("data-hle-id");
+    ensureHleId(clone);
 
     el.parentNode.insertBefore(clone, el.nextSibling);
   });
@@ -205,19 +233,20 @@ export function duplicateElement(html, selector) {
  * @returns {string}
  */
 export function moveIntoParent(html, fromSelector, parentSelector) {
-  return withDoc(html, (doc) => {
+  let movedHleId = null;
+  const newHtml = withDoc(html, (doc) => {
     const from   = findEl(doc, fromSelector);
     const parent = findEl(doc, parentSelector);
-    if (!from || !parent || parent === from || parent.contains(from) === false && from.contains(parent)) return;
+    if (!from || !parent || parent === from) return;
     if (from.contains(parent)) return; // can't move parent into its own child
 
-    const clone = from.cloneNode(true);
-    from.remove();
+    ensureHleId(from);
+    movedHleId = from.getAttribute("data-hle-id");
 
-    // Re-find parent after removal
-    const parentFresh = findEl(doc, parentSelector) || parent;
-    parentFresh.appendChild(clone);
+    // Live move to end of parent (works even if already a child)
+    parent.appendChild(from);
   });
+  return { html: newHtml, movedHleId };
 }
 
 /**
@@ -251,6 +280,67 @@ export function patchAttribute(html, selector, attr, value) {
 }
 
 /**
+ * Set a navigation URL on a button or link.
+ * Buttons are converted to <a role="button"> so the link works on the published site
+ * without JavaScript. Returns { html, hleId } so the editor can re-select the node.
+ *
+ * @param {string} html
+ * @param {string} selector
+ * @param {string|null} href
+ * @param {string|null} [target]
+ * @returns {{ html: string, hleId: string|null }}
+ */
+export function patchElementLink(html, selector, href, target) {
+  let hleId = null;
+  if (!html || !selector) return { html: html || "", hleId };
+  const newHtml = withDoc(html, (doc) => {
+    let el = findEl(doc, selector);
+    if (!el) {
+      const simplified = selector.replace(/:nth-of-type\(\d+\)/g, "");
+      if (simplified !== selector) el = findEl(doc, simplified);
+    }
+    if (!el) return;
+
+    const tag = el.tagName.toLowerCase();
+    const url = (href || "").trim();
+
+    // Already a link — just patch href/target
+    if (tag === "a") {
+      ensureHleId(el);
+      hleId = el.getAttribute("data-hle-id");
+      if (!url) el.setAttribute("href", "#");
+      else el.setAttribute("href", url);
+      if (target) el.setAttribute("target", target);
+      else el.removeAttribute("target");
+      if (target === "_blank") el.setAttribute("rel", "noopener noreferrer");
+      else el.removeAttribute("rel");
+      return;
+    }
+
+    if (tag !== "button") return;
+
+    ensureHleId(el);
+    hleId = el.getAttribute("data-hle-id");
+
+    // Convert <button> → <a role="button"> so href navigates on the live site
+    const a = doc.createElement("a");
+    for (const attr of Array.from(el.attributes)) {
+      if (attr.name === "type" || attr.name === "disabled") continue;
+      a.setAttribute(attr.name, attr.value);
+    }
+    a.setAttribute("href", url || "#");
+    a.setAttribute("role", "button");
+    if (target) {
+      a.setAttribute("target", target);
+      if (target === "_blank") a.setAttribute("rel", "noopener noreferrer");
+    }
+    a.innerHTML = el.innerHTML;
+    el.replaceWith(a);
+  });
+  return { html: newHtml, hleId };
+}
+
+/**
  * Set a single CSS property on the element's inline `style`.
  * Pass value = null / "" to remove that property from inline style.
  *
@@ -280,11 +370,7 @@ export function patchStyle(html, selector, prop, value) {
       return;
     }
 
-    if (value === null || value === undefined || value === "") {
-      el.style.removeProperty(prop);
-    } else {
-      el.style.setProperty(prop, value);
-    }
+    applyBackgroundAwareStyle(el, prop, value);
   });
 }
 
@@ -304,14 +390,37 @@ export function patchStyles(html, selector, props) {
       console.warn("[patchStyles] Element not found for selector:", selector);
       return;
     }
+    // Clear shorthand first when any longhand background prop is written,
+    // so gradients / images in `background:` do not block colour edits.
+    const touchesBg = Object.keys(props).some((p) =>
+      p === "background" || p.startsWith("background-")
+    );
+    if (touchesBg) el.style.removeProperty("background");
+
     Object.entries(props).forEach(([prop, value]) => {
-      if (value === null || value === undefined || value === "") {
-        el.style.removeProperty(prop);
-      } else {
-        el.style.setProperty(prop, value);
-      }
+      applyBackgroundAwareStyle(el, prop, value, { skipShorthandClear: true });
     });
   });
+}
+
+/** Apply a style prop; clear `background` shorthand when editing longhands. */
+function applyBackgroundAwareStyle(el, prop, value, opts = {}) {
+  const isBgLonghand =
+    prop === "background-color" ||
+    prop === "background-image" ||
+    prop === "background-size" ||
+    prop === "background-position" ||
+    prop === "background-repeat";
+
+  if (!opts.skipShorthandClear && isBgLonghand) {
+    el.style.removeProperty("background");
+  }
+
+  if (value === null || value === undefined || value === "") {
+    el.style.removeProperty(prop);
+  } else {
+    el.style.setProperty(prop, value);
+  }
 }
 
 function applyStyleMap(el, map) {

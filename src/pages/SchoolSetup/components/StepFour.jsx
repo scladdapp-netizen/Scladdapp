@@ -1,8 +1,17 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Button from "../../../components/Button/Button";
 import { useNavigate } from "react-router-dom";
 import { PaystackButton } from "react-paystack";
 import useSubscription from "../../../api_call/useSubscription";
+import {
+  getPlanId,
+  isFreePlan,
+  getMonthlyRate,
+  getMonthsInCycle,
+  getSubscriptionTotal,
+  formatNaira,
+  resolveSelectedPlan,
+} from "../../../utils/planPricing";
 
 export default function StepFour({
   selectedPlan,
@@ -17,7 +26,11 @@ export default function StepFour({
   handlePaystackClick,
   handleSubmit,
 }) {
-  const [availablePlans, setAvailablePlans] = useState([]);
+  const [planState, setPlanState] = useState({
+    status: "loading", // loading | ready | empty
+    plans: [],
+    livePlan: null,
+  });
   const [loading, setLoading] = useState(false);
   const [durationError, setDurationError] = useState("");
   const [paymentProcessing, setPaymentProcessing] = useState(false);
@@ -26,29 +39,50 @@ export default function StepFour({
   const navigate = useNavigate();
   const publicKey = import.meta.env.VITE_PAYSTACK_PUBLIC_KEY;
 
+  const preferredId = getPlanId(selectedPlan);
+  const { status: plansStatus, plans: availablePlans, livePlan } = planState;
+  const plansLoading = plansStatus === "loading";
+
   useEffect(() => {
-    getPlans().then((res) => { if (res.success) setAvailablePlans(res.data); });
+    let cancelled = false;
+    setPlanState({ status: "loading", plans: [], livePlan: null });
+
+    getPlans().then((res) => {
+      if (cancelled) return;
+      const plans = res.success ? (res.data || []) : [];
+      if (!plans.length) {
+        setPlanState({ status: "empty", plans: [], livePlan: null });
+        return;
+      }
+      const next = resolveSelectedPlan(
+        plans,
+        preferredId ? { plan_id: preferredId } : null
+      );
+      setPlanState({ status: "ready", plans, livePlan: next });
+      setSelectedPlan(next);
+    }).catch(() => {
+      if (!cancelled) setPlanState({ status: "empty", plans: [], livePlan: null });
+    });
+
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  if (!selectedPlan && availablePlans.length > 0) setSelectedPlan(availablePlans[0]);
+  /* ── helpers (always use livePlan / plan from availablePlans) ── */
+  const getCycleLabel = () =>
+    billingCycle === "monthly" ? "month" : billingCycle === "quarterly" ? "quarter" : "year";
+  const monthsInCycle = getMonthsInCycle(billingCycle);
+  const getDiscountPct = () =>
+    billingCycle === "quarterly" ? "10%" : billingCycle === "yearly" ? "20%" : null;
+  const cycleHint =
+    billingCycle === "quarterly" ? "billed quarterly" :
+    billingCycle === "yearly" ? "billed yearly" : null;
 
-  /* ── helpers ── */
-  const getCycleLabel = () => billingCycle === "monthly" ? "month" : billingCycle === "quarterly" ? "quarter" : "year";
-  const getMonthsInCycle = () => billingCycle === "monthly" ? 1 : billingCycle === "quarterly" ? 3 : 12;
-  const getDiscountPct = () => billingCycle === "quarterly" ? "10%" : billingCycle === "yearly" ? "20%" : null;
-
-  const getMonthlyPrice = (plan = selectedPlan) => {
-    if (!plan || plan.plan_type === "Free") return 0;
-    if (billingCycle === "monthly") return parseFloat(plan.monthly_price) || 0;
-    if (billingCycle === "quarterly") return parseFloat(plan.quataly_price) || 0;
-    return parseFloat(plan.yearly_price) || 0;
-  };
-  const getStandardMonthlyPrice = (plan = selectedPlan) =>
-    (!plan || plan.plan_type === "Free") ? 0 : parseFloat(plan.monthly_price) || 0;
-  const getCyclePeriodPrice = (plan = selectedPlan) => getMonthlyPrice(plan) * getMonthsInCycle();
-  const getTotalMonths = () => duration * getMonthsInCycle();
-  const getTotalPrice = (plan = selectedPlan) =>
-    (!plan || plan.plan_type === "Free") ? 0 : getMonthlyPrice(plan) * getTotalMonths();
+  const monthlyRate = (plan) => getMonthlyRate(plan, billingCycle);
+  const standardMonthly = (plan) => getMonthlyRate(plan, "monthly");
+  const totalMonths = () => duration * monthsInCycle;
+  const totalPrice = (plan = livePlan) =>
+    getSubscriptionTotal(plan, billingCycle, duration);
 
   const handleDurationChange = (e) => {
     const value = e.target.value;
@@ -62,13 +96,29 @@ export default function StepFour({
 
   const handlefreeplan = async () => { setLoading(true); await handleSubmit(); setLoading(false); };
 
+  const selectPlan = (plan) => {
+    setPlanState((prev) => ({ ...prev, livePlan: plan }));
+    setSelectedPlan(plan);
+    if (isFreePlan(plan)) setDuration(1);
+  };
+
+  const selectedId = getPlanId(livePlan);
+  const planFeatures = useMemo(() => {
+    if (!livePlan) return [];
+    if (Array.isArray(livePlan.features)) return livePlan.features;
+    return String(livePlan.features_enabled || "")
+      .split(",")
+      .map((f) => f.trim())
+      .filter(Boolean);
+  }, [livePlan]);
+
   const paystackProps = {
     email: adminData.adminEmail,
-    amount: Math.floor(Number(getTotalPrice()) * 100) || 100,
+    amount: Math.floor(Number(totalPrice(livePlan)) * 100) || 100,
     metadata: {
       custom_fields: [
         { display_name: "School Name", variable_name: "school_name", value: schoolData.school_name },
-        { display_name: "Plan Name", variable_name: "plan_name", value: selectedPlan?.plan_name },
+        { display_name: "Plan Name", variable_name: "plan_name", value: livePlan?.plan_name },
         { display_name: "Billing Cycle", variable_name: "billing_cycle", value: billingCycle },
         { display_name: "Admin email", variable_name: "adminEmail", value: adminData.adminEmail },
         { display_name: "Duration", variable_name: "duration", value: `${duration} ${getCycleLabel()}(s)` },
@@ -76,7 +126,7 @@ export default function StepFour({
     },
     publicKey,
     text: paymentProcessing ? "Verifying..." : "Pay with Paystack",
-    onSuccess: async (response) => {
+    onSuccess: async () => {
       setLoading(true);
       await handleSubmit();
       setLoading(false);
@@ -87,9 +137,10 @@ export default function StepFour({
     },
   };
 
+  const showPricingUi = !plansLoading && !!livePlan;
+
   return (
     <div className="stepform s4-root">
-      {/* Loading overlay */}
       {loading && (
         <div className="s4-overlay">
           <div className="s4-overlay-inner">
@@ -101,7 +152,6 @@ export default function StepFour({
         </div>
       )}
 
-      {/* Page title */}
       <div className="s4-page-title">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
           <rect x="3" y="3" width="18" height="18" rx="3" stroke="currentColor" strokeWidth="1.7"/>
@@ -110,7 +160,6 @@ export default function StepFour({
         <h3>Review &amp; Subscribe</h3>
       </div>
 
-      {/* ── School header card ── */}
       <div className="s4-card">
         <div className="s4-school-header">
           <div className="s4-school-avatar">
@@ -130,9 +179,7 @@ export default function StepFour({
         </div>
       </div>
 
-      {/* ── Two-column info grid ── */}
       <div className="s4-info-grid">
-        {/* Admin */}
         <div className="s4-card">
           <div className="s4-section-head">
             <span className="s4-section-title">Admin Account</span>
@@ -149,7 +196,6 @@ export default function StepFour({
           </div>
         </div>
 
-        {/* School info */}
         <div className="s4-card">
           <div className="s4-section-head">
             <span className="s4-section-title">School Info</span>
@@ -170,38 +216,11 @@ export default function StepFour({
         </div>
       </div>
 
-      {/* ── Plan selection ── */}
       <div className="s4-section-label">Select Plan</div>
-      <div className="s4-plans-grid">
-        {availablePlans.map((plan) => (
-          <div
-            key={plan.$id}
-            onClick={() => {
-              const p = availablePlans.find(x => x.$id === plan.$id);
-              if (p) { setSelectedPlan(p); if (p.plan_type === "Free") { setDuration(1); setBillingCycle("monthly"); } }
-            }}
-            className={`s4-plan-card${selectedPlan?.$id === plan.$id ? " s4-plan-selected" : ""}`}
-          >
-            <div className="s4-plan-name">{plan.plan_name}</div>
-            <div className="s4-plan-desc">{plan.description}</div>
-            {plan.plan_type === "Free" ? (
-              <div className="s4-plan-price">Free</div>
-            ) : (
-              <div className="s4-plan-pricing">
-                <div className="s4-plan-price">${getMonthlyPrice(plan).toLocaleString()}<span>/mo</span></div>
-                {billingCycle !== "monthly" && (
-                  <div className="s4-plan-original">${getStandardMonthlyPrice(plan).toLocaleString()}/mo</div>
-                )}
-                {getDiscountPct() && <div className="s4-plan-save">Save {getDiscountPct()}</div>}
-              </div>
-            )}
-          </div>
-        ))}
-      </div>
 
-      {/* ── Billing options ── */}
-      {selectedPlan && selectedPlan.plan_type !== "Free" && (
-        <div className="s4-card s4-billing-card">
+      {/* Billing cycle first — prices on cards follow this */}
+      {!plansLoading && availablePlans.some((p) => !isFreePlan(p)) && (
+        <div className="s4-card s4-billing-card s4-billing-card--top">
           <div className="s4-billing-row">
             <div className="s4-billing-field">
               <label className="fi-label">Billing Cycle</label>
@@ -214,19 +233,78 @@ export default function StepFour({
                 <option value="yearly">Yearly — Save 20%</option>
               </select>
             </div>
-            <div className="s4-billing-field">
-              <label className="fi-label">Number of {getCycleLabel()}(s)</label>
-              <input
-                type="number"
-                value={duration}
-                onChange={handleDurationChange}
-                className={durationError ? "s4-input-error" : ""}
-              />
-              {durationError && <div className="s4-field-error">{durationError}</div>}
-            </div>
+            {livePlan && !isFreePlan(livePlan) && (
+              <div className="s4-billing-field">
+                <label className="fi-label">Number of {getCycleLabel()}(s)</label>
+                <input
+                  type="number"
+                  value={duration}
+                  onChange={handleDurationChange}
+                  className={durationError ? "s4-input-error" : ""}
+                />
+                {durationError && <div className="s4-field-error">{durationError}</div>}
+              </div>
+            )}
           </div>
+        </div>
+      )}
 
-          {/* Features */}
+      {plansLoading ? (
+        <div className="s4-card s4-plans-loading" role="status" aria-live="polite">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" className="s4-spinner" aria-hidden="true">
+            <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" strokeDasharray="40 20" />
+          </svg>
+          <div className="s4-plans-loading__text">
+            <strong>Loading subscription plans…</strong>
+            <span>Fetching the latest prices</span>
+          </div>
+        </div>
+      ) : availablePlans.length === 0 ? (
+        <div className="s4-card" style={{ textAlign: "center", padding: "24px", color: "#888" }}>
+          No subscription plans available. Please try again later.
+        </div>
+      ) : (
+        <div className="s4-plans-grid">
+          {availablePlans.map((plan) => {
+            const id = getPlanId(plan);
+            const selected = selectedId && selectedId === id;
+            return (
+              <div
+                key={id || plan.plan_name}
+                onClick={() => selectPlan(plan)}
+                className={`s4-plan-card${selected ? " s4-plan-selected" : ""}`}
+              >
+                <div className="s4-plan-name">{plan.plan_name}</div>
+                <div className="s4-plan-desc">{plan.description}</div>
+                {isFreePlan(plan) ? (
+                  <div className="s4-plan-price">Free</div>
+                ) : (
+                  <div className="s4-plan-pricing">
+                    <div className="s4-plan-price">
+                      {formatNaira(monthlyRate(plan))}
+                      <span>/mo</span>
+                    </div>
+                    {cycleHint && (
+                      <div className="s4-plan-cycle-hint">{cycleHint}</div>
+                    )}
+                    {billingCycle !== "monthly" && (
+                      <div className="s4-plan-original">
+                        {formatNaira(standardMonthly(plan))}/mo monthly
+                      </div>
+                    )}
+                    {getDiscountPct() && (
+                      <div className="s4-plan-save">Save {getDiscountPct()}</div>
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {showPricingUi && !isFreePlan(livePlan) && (
+        <div className="s4-card s4-billing-card">
           <div className="s4-features">
             <label className="fi-label">Included Features</label>
             <div className="s4-features-list">
@@ -238,10 +316,16 @@ export default function StepFour({
                 <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 8l4 4 6-6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
                 Unlimited staff
               </div>
-              {selectedPlan.features_enabled?.split(",").map((f, i) => (
+              {livePlan.max_subadmin != null && (
+                <div className="s4-feature-item">
+                  <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 8l4 4 6-6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                  Up to {livePlan.max_subadmin} sub-admins
+                </div>
+              )}
+              {planFeatures.map((f, i) => (
                 <div key={i} className="s4-feature-item">
                   <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 8l4 4 6-6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                  {f.trim()}
+                  {f}
                 </div>
               ))}
             </div>
@@ -249,40 +333,49 @@ export default function StepFour({
         </div>
       )}
 
-      {/* ── Payment summary ── */}
-      {selectedPlan && (
+      {plansLoading ? (
+        <div className="s4-summary s4-summary--loading" role="status">
+          <div className="s4-summary-title">Payment Summary</div>
+          <div className="s4-summary-loading">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" className="s4-spinner" aria-hidden="true">
+              <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" strokeDasharray="40 20" />
+            </svg>
+            <span>Loading latest prices…</span>
+          </div>
+        </div>
+      ) : showPricingUi ? (
         <div className="s4-summary">
           <div className="s4-summary-title">Payment Summary</div>
           <div className="s4-summary-rows">
-            <div className="s4-summary-row"><span>Plan</span><strong>{selectedPlan.plan_name}</strong></div>
-            {selectedPlan.plan_type !== "Free" && (
+            <div className="s4-summary-row"><span>Plan</span><strong>{livePlan.plan_name}</strong></div>
+            {!isFreePlan(livePlan) && (
               <>
                 <div className="s4-summary-row"><span>Billing</span><strong>{billingCycle.charAt(0).toUpperCase() + billingCycle.slice(1)}</strong></div>
-                <div className="s4-summary-row"><span>Duration</span><strong>{duration} {getCycleLabel()}(s) · {getTotalMonths()} months</strong></div>
-                <div className="s4-summary-row"><span>Rate</span><strong>₦{getMonthlyPrice().toLocaleString()}/month</strong></div>
+                <div className="s4-summary-row"><span>Duration</span><strong>{duration} {getCycleLabel()}(s) · {totalMonths()} months</strong></div>
+                <div className="s4-summary-row"><span>Rate</span><strong>{formatNaira(monthlyRate(livePlan))}/month</strong></div>
               </>
             )}
           </div>
           <div className="s4-summary-divider" />
           <div className="s4-summary-total">
             <span>Total</span>
-            <strong>₦{getTotalPrice().toLocaleString()}</strong>
+            <strong>{formatNaira(totalPrice(livePlan))}</strong>
           </div>
-          {getDiscountPct() && selectedPlan.plan_type !== "Free" && (
+          {getDiscountPct() && !isFreePlan(livePlan) && (
             <div className="s4-summary-saving">You're saving {getDiscountPct()} vs monthly billing</div>
           )}
         </div>
-      )}
+      ) : null}
 
-      {/* ── Terms + CTA ── */}
       <div className="s4-footer">
         <label className="s4-terms">
           <input
             type="checkbox"
             checked={agreeTerms}
             onChange={(e) => setAgreeTerms(e.target.checked)}
+            disabled={plansLoading || !livePlan}
           />
-          <span>I agree to the <a href="#">Terms and Conditions</a></span>
+          <span>I agree to the <a href="/terms" target="_blank" rel="noopener noreferrer">Terms and Conditions</a></span>
         </label>
 
         {paymentProcessing && (
@@ -295,7 +388,9 @@ export default function StepFour({
         )}
 
         <div className="s4-cta">
-          {selectedPlan?.plan_type === "Free" ? (
+          {plansLoading || !livePlan ? (
+            <div className="s4-paystack-disabled">Loading prices…</div>
+          ) : isFreePlan(livePlan) ? (
             <Button type="submit" variant="primary" disabled={!agreeTerms} onClick={handlefreeplan}>
               Complete Registration
             </Button>

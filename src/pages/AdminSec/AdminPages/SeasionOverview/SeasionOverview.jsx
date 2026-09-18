@@ -35,6 +35,7 @@ const SeasionOverview = () => {
   const [subsessions, setSubsessions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [totalStudents, setTotalStudents] = useState(null);
   const [showEditMenu, setShowEditMenu] = useState(false);
   const [editingSubsession, setEditingSubsession] = useState(null);
   const [showAddMenu, setShowAddMenu] = useState(false);
@@ -81,6 +82,26 @@ const SeasionOverview = () => {
           return dateA - dateB; // Earliest first (First Term, Second Term, etc.)
         });
         setSubsessions(sortedSubsessions);
+
+        // Accurate enrolled student count for this session (active assignments)
+        try {
+          const qs = new URLSearchParams({ page: 1, limit: 1, status: "active" });
+          const res = await fetch(
+            `${import.meta.env.VITE_API_BASE_URL}/api/student-class-assignment/session/${seasionId}?${qs}`
+          );
+          const json = await res.json().catch(() => ({}));
+          if (json?.success) {
+            setTotalStudents(
+              json.stats?.active ??
+              json.pagination?.totalItems ??
+              0
+            );
+          } else {
+            setTotalStudents(0);
+          }
+        } catch {
+          setTotalStudents(0);
+        }
       } catch (err) {
         console.error("Error fetching data:", err);
         setError(err.message);
@@ -513,7 +534,9 @@ const SeasionOverview = () => {
               </div>
               <div className="so-card-body">
                 <span className="so-card-label">Total Students</span>
-                <span className="so-card-value">—</span>
+                <span className="so-card-value">
+                  {totalStudents === null ? "…" : totalStudents}
+                </span>
                 <span className="so-card-sub">Enrolled in this session</span>
               </div>
             </div>

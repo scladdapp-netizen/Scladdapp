@@ -28,10 +28,12 @@
   box-shadow:
     0 10px 30px rgba(15, 23, 42, 0.1),
     0 2px 8px rgba(15, 23, 42, 0.06);
-  transform: translateX(120%);
-  opacity: 0;
   pointer-events: auto;
   overflow: hidden;
+  will-change: transform, opacity;
+}
+
+.notification.is-entering {
   animation: notification-slide-in 0.38s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
@@ -135,15 +137,23 @@
   from {
     transform: translateX(0);
     opacity: 1;
+    max-height: 120px;
+    margin-bottom: 0;
   }
   to {
     transform: translateX(120%);
     opacity: 0;
+    max-height: 0;
+    margin-bottom: -10px;
+    padding-top: 0;
+    padding-bottom: 0;
+    border-width: 0;
   }
 }
 
-.notification.slide-out {
+.notification.is-leaving {
   animation: notification-slide-out 0.32s ease forwards;
+  pointer-events: none;
 }
 
 /* ── Dark theme ──────────────────────────────────────────────────────────── */

@@ -26,6 +26,13 @@ export default function useEditorHistory(initialHtml = "") {
     setPresent(newHtml);
   }, []);
 
+  /** Replace present HTML and clear undo/redo (used when switching pages) */
+  const replace = useCallback((newHtml) => {
+    setPast([]);
+    setFuture([]);
+    setPresent(newHtml || "");
+  }, []);
+
   const undo = useCallback(() => {
     setPast((p) => {
       if (!p.length) return p;
@@ -56,6 +63,7 @@ export default function useEditorHistory(initialHtml = "") {
     html:     present,
     set,
     setLive,
+    replace,
     undo,
     redo,
     canUndo:  past.length > 0,

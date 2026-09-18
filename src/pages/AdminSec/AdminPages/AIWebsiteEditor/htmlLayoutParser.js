@@ -137,10 +137,14 @@ function walkElement(el, depth = 0) {
   if (SKIP_TAGS.has(tag)) return null;
 
   // Build a unique path-based id so we can find it again
-  const id = ++_nodeId;
+  // (legacy counter kept as fallback when selector is empty)
+  ++_nodeId;
 
   // Friendly label: use id attr, class hint, or tag label
-  const tagLabel  = TAG_LABELS[tag] || tag.charAt(0).toUpperCase() + tag.slice(1);
+  const isButtonLink = tag === "a" && el.getAttribute("role") === "button";
+  const tagLabel  = isButtonLink
+    ? "Button"
+    : (TAG_LABELS[tag] || tag.charAt(0).toUpperCase() + tag.slice(1));
   const idHint    = el.id   ? `#${el.id}` : "";
   const classHint = el.classList.length
     ? "." + Array.from(el.classList).filter(c => !c.startsWith("__aie")).slice(0, 1).join(".")
@@ -162,13 +166,13 @@ function walkElement(el, depth = 0) {
         .filter(Boolean);
 
   return {
-    id,
+    id: el.getAttribute("data-hle-id") || selector || String(++_nodeId),
     tag,
     label: tagLabel,
     hint: idHint || classHint,
     textPreview,
     selector,
-    iconType: TAG_ICON[tag] || "container",
+    iconType: isButtonLink ? "button" : (TAG_ICON[tag] || "container"),
     depth,
     children,
     // store outerHTML for passing to the right panel later

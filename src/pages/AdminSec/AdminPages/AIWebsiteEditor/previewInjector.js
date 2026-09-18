@@ -21,6 +21,16 @@ const INJECT_CSS = `
       outline: 2.5px solid #a29bfe !important;
       outline-offset: 2px !important;
     }
+    .__aie_editing__ {
+      outline: 2.5px solid #00b894 !important;
+      outline-offset: 2px !important;
+      cursor: text !important;
+      min-width: 1ch;
+    }
+    .__aie_editing__:focus {
+      outline: 2.5px solid #00b894 !important;
+      box-shadow: 0 0 0 3px rgba(0, 184, 148, 0.25) !important;
+    }
     #__aie_badge__ {
       position: fixed;
       z-index: 2147483647;
@@ -65,9 +75,13 @@ const INJECT_SCRIPT = `
     var selected  = null;
     var badge     = null;
     var selBadge  = null;
+    var editing   = null;
+    var editOriginal = '';
 
     // skip invisible / utility elements
     var SKIP_TAGS = ['HTML','HEAD','BODY','SCRIPT','STYLE','META','LINK','TITLE','NOSCRIPT'];
+    var TEXT_EDIT_TAGS = ['P','H1','H2','H3','H4','H5','H6','SPAN','A','BUTTON','LI','LABEL','TD','TH','STRONG','EM','B','I','SMALL','BLOCKQUOTE','FIGCAPTION','LEGEND','DT','DD','SUMMARY','CITE','TIME','CODE'];
+    var NON_TEXT_TAGS = ['IMG','VIDEO','AUDIO','IFRAME','SVG','INPUT','TEXTAREA','SELECT','BR','HR','CANVAS','TABLE','THEAD','TBODY','TFOOT','TR','UL','OL','FORM','SECTION','NAV','HEADER','FOOTER','MAIN','ASIDE','ARTICLE','DIV'];
 
     function shouldSkip(el) {
       if (!el || el.nodeType !== 1) return true;
@@ -75,16 +89,48 @@ const INJECT_SCRIPT = `
       return false;
     }
 
-    // build a short CSS selector for an element
+    function isTextEditable(el) {
+      if (!el || shouldSkip(el)) return false;
+      if (NON_TEXT_TAGS.indexOf(el.tagName) !== -1 && TEXT_EDIT_TAGS.indexOf(el.tagName) === -1) {
+        // allow DIV/SECTION only when they contain plain text and no element children
+        if (el.tagName === 'DIV' || el.tagName === 'SECTION') {
+          if (el.children && el.children.length > 0) return false;
+          return !!(el.innerText || el.textContent || '').trim();
+        }
+        return false;
+      }
+      if (TEXT_EDIT_TAGS.indexOf(el.tagName) !== -1) return true;
+      if (!el.children || el.children.length === 0) {
+        return !!(el.innerText || el.textContent || '').trim();
+      }
+      return false;
+    }
+
+    function findTextEditable(start) {
+      var el = start;
+      while (el && el !== document.body && el !== document.documentElement) {
+        if (isTextEditable(el)) return el;
+        el = el.parentElement;
+      }
+      return null;
+    }
+
+    // build a short CSS selector for an element (must match layout tree / htmlLayoutParser)
     function buildSelector(el) {
       var parts = [];
       var cur = el;
-      while (cur && cur !== document.body) {
+      while (cur && cur !== document.body && cur.tagName && cur.tagName.toLowerCase() !== 'body') {
         var tag = cur.tagName.toLowerCase();
         var id  = cur.id ? '#' + cur.id : '';
 
         if (id) {
           parts.unshift(tag + id);
+          break;
+        }
+
+        var hleId = cur.getAttribute && cur.getAttribute('data-hle-id');
+        if (hleId) {
+          parts.unshift(tag + '[data-hle-id="' + hleId + '"]');
           break;
         }
 
@@ -94,19 +140,17 @@ const INJECT_SCRIPT = `
                     .map(function(c){ return '.' + c; })
                     .join('');
 
-        // nth-of-type to disambiguate siblings with the same tag
+        // Always include nth-of-type so selectors match the layout tree
         var parent   = cur.parentElement;
         var siblings = parent
           ? Array.from(parent.children).filter(function(c){ return c.tagName === cur.tagName; })
-          : [];
-        var nthOfType = siblings.length > 1
-          ? ':nth-of-type(' + (siblings.indexOf(cur) + 1) + ')'
-          : '';
+          : [cur];
+        var nthOfType = ':nth-of-type(' + (siblings.indexOf(cur) + 1) + ')';
 
         parts.unshift(tag + cls + nthOfType);
         cur = cur.parentElement;
       }
-      return parts.join(' > ').slice(0, 200);
+      return parts.join(' > ').slice(0, 300);
     }
 
     // human-readable label: tagName + id/class snippet
@@ -195,8 +239,74 @@ const INJECT_SCRIPT = `
       } catch(e) {}
     }
 
+    function endTextEdit(commit) {
+      if (!editing) return;
+      var el = editing;
+      var selector = '';
+      try { selector = buildSelector(el); } catch (_) {}
+      var text = (el.innerText || '').replace(/\u00a0/g, ' ');
+      el.removeAttribute('contenteditable');
+      el.classList.remove('__aie_editing__');
+      editing = null;
+      if (!commit) {
+        el.innerText = editOriginal;
+      } else if (selector && text !== editOriginal) {
+        try {
+          window.parent.postMessage({
+            __aie: true,
+            type: 'textEdit',
+            selector: selector,
+            text: text,
+            label: buildLabel(el),
+            tagName: el.tagName.toLowerCase(),
+            outerHTML: el.outerHTML.slice(0, 20000),
+            textContent: getTextSnippet(el),
+          }, '*');
+        } catch (_) {}
+      }
+      selected = el;
+      selected.classList.add('__aie_selected__');
+      ensureSelBadge();
+      selBadge.textContent = buildLabel(el) + ' · editing saved';
+      positionBadge(selBadge, selected);
+      setTimeout(function() {
+        if (selBadge && selected === el) selBadge.textContent = buildLabel(el);
+      }, 1200);
+      post('select', el);
+    }
+
+    function startTextEdit(el) {
+      if (!el || !isTextEditable(el)) return;
+      if (editing === el) return;
+      if (editing) endTextEdit(true);
+
+      if (selected && selected !== el) selected.classList.remove('__aie_selected__');
+      selected = el;
+      selected.classList.add('__aie_selected__');
+
+      editOriginal = (el.innerText || '').replace(/\u00a0/g, ' ');
+      editing = el;
+      el.setAttribute('contenteditable', 'true');
+      el.classList.add('__aie_editing__');
+      el.focus();
+
+      try {
+        var range = document.createRange();
+        range.selectNodeContents(el);
+        var sel = window.getSelection();
+        sel.removeAllRanges();
+        sel.addRange(range);
+      } catch (_) {}
+
+      ensureSelBadge();
+      selBadge.textContent = 'Editing text — click away to save';
+      positionBadge(selBadge, el);
+      post('select', el);
+    }
+
     // ── mousemove ─────────────────────────────────────────────────────
     document.addEventListener('mousemove', function(e) {
+      if (editing) return;
       var el = e.target;
       if (shouldSkip(el)) {
         if (hovered) {
@@ -214,7 +324,10 @@ const INJECT_SCRIPT = `
         post('hover', el);
 
         ensureBadge();
-        badge.textContent = buildLabel(el);
+        var editable = findTextEditable(el);
+        badge.textContent = editable
+          ? (buildLabel(editable) + ' · double-click to edit')
+          : buildLabel(el);
         badge.style.opacity = '1';
         positionBadge(badge, el);
       }
@@ -229,6 +342,13 @@ const INJECT_SCRIPT = `
     // ── click ──────────────────────────────────────────────────────────
     document.addEventListener('click', function(e) {
       var el = e.target;
+      if (editing) {
+        if (editing === el || editing.contains(el)) {
+          e.stopPropagation();
+          return;
+        }
+        endTextEdit(true);
+      }
       if (shouldSkip(el)) return;
 
       e.preventDefault();
@@ -243,8 +363,35 @@ const INJECT_SCRIPT = `
       post('select', el);
 
       ensureSelBadge();
-      selBadge.textContent = buildLabel(el);
+      var tip = isTextEditable(el) || findTextEditable(el)
+        ? ' · double-click to edit text'
+        : '';
+      selBadge.textContent = buildLabel(el) + tip;
       positionBadge(selBadge, el);
+    }, true);
+
+    // ── double-click: edit text in place ───────────────────────────────
+    document.addEventListener('dblclick', function(e) {
+      var target = findTextEditable(e.target);
+      if (!target) return;
+      e.preventDefault();
+      e.stopPropagation();
+      startTextEdit(target);
+    }, true);
+
+    document.addEventListener('keydown', function(e) {
+      if (!editing) return;
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        endTextEdit(false);
+        return;
+      }
+      // Single-line tags: Enter saves (Shift+Enter still allowed nowhere useful)
+      var singleLine = ['H1','H2','H3','H4','H5','H6','SPAN','A','BUTTON','LABEL','STRONG','EM','B','I','SMALL'].indexOf(editing.tagName) !== -1;
+      if (e.key === 'Enter' && (singleLine || (e.metaKey || e.ctrlKey))) {
+        e.preventDefault();
+        endTextEdit(true);
+      }
     }, true);
 
     // ── scroll: reposition selected badge ─────────────────────────────
@@ -258,6 +405,7 @@ const INJECT_SCRIPT = `
       if (!e.data || !e.data.__aie) return;
 
       if (e.data.type === 'externalHover') {
+        if (editing) return;
         // clear previous external hover
         if (hovered) { hovered.classList.remove('__aie_hover__'); hovered = null; }
         if (badge)   badge.style.opacity = '0';
@@ -283,6 +431,7 @@ const INJECT_SCRIPT = `
       }
 
       if (e.data.type === 'externalSelect') {
+        if (editing) endTextEdit(true);
         if (selected) selected.classList.remove('__aie_selected__');
         var sel = e.data.selector;
         if (!sel) return;
@@ -299,10 +448,23 @@ const INJECT_SCRIPT = `
 
       // ── live HTML patch — update DOM without reloading the iframe ──
       if (e.data.type === 'updateHtml') {
+        if (editing) return; // don't wipe in-progress text edits
         try {
-          // Save scroll position
+          // Save scroll position + current selection (style edits must not deselect)
           var sx = window.scrollX;
           var sy = window.scrollY;
+          var keepSelector = null;
+          var keepLabel = null;
+          if (selected && !shouldSkip(selected)) {
+            try {
+              keepSelector = buildSelector(selected);
+              keepLabel = buildLabel(selected);
+            } catch (_) {}
+          }
+          if (!keepSelector && e.data.preserveSelector) {
+            keepSelector = e.data.preserveSelector;
+            keepLabel = e.data.preserveLabel || keepSelector;
+          }
 
           // Parse the new HTML
           var parser = new DOMParser();
@@ -361,6 +523,28 @@ const INJECT_SCRIPT = `
 
           // Restore scroll position
           window.scrollTo(sx, sy);
+
+          // Re-apply selection outline after the DOM swap (Styles tab edits)
+          if (keepSelector) {
+            var restored = null;
+            try { restored = document.querySelector(keepSelector); } catch (_) {}
+            if (!restored) {
+              try {
+                restored = document.querySelector(
+                  keepSelector.replace(/:nth-of-type\(\d+\)/g, "")
+                );
+              } catch (_) {}
+            }
+            if (restored && !shouldSkip(restored)) {
+              selected = restored;
+              selected.classList.add('__aie_selected__');
+              ensureSelBadge();
+              selBadge.textContent = keepLabel || buildLabel(restored);
+              positionBadge(selBadge, selected);
+              // Refresh parent metadata (outerHTML) without clearing the Styles panel
+              post('select', restored);
+            }
+          }
         } catch(err) {}
       }
 

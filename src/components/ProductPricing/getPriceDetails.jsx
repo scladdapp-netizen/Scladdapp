@@ -1,5 +1,7 @@
 export const getPriceDetails = (plan, priceView, dark = false) => {
-  if (plan.type === "free") return "Free forever";
+  if (String(plan?.plan_type || plan?.type || "").toLowerCase() === "free") {
+    return "Free forever";
+  }
 
   let price = 0;
   let months = 1;
@@ -7,22 +9,22 @@ export const getPriceDetails = (plan, priceView, dark = false) => {
 
   switch (priceView) {
     case "monthly":
-      price = plan.monthly_price;
+      price = Number(plan.monthly_price) || 0;
       months = 1;
       description = "Billed every month";
       break;
     case "quarterly":
-      price = plan.quataly_price;
+      price = Number(plan.quataly_price) || 0;
       months = 3;
       description = "Billed every 3 months";
       break;
     case "yearly":
-      price = plan.yearly_price;
+      price = Number(plan.yearly_price) || 0;
       months = 12;
       description = "Billed annually";
       break;
     default:
-      price = plan.monthly_price;
+      price = Number(plan.monthly_price) || 0;
       months = 1;
       description = "Billed every month";
   }

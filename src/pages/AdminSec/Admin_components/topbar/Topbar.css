@@ -55,12 +55,20 @@
 .al_brand_icon {
   width: 28px;
   height: 28px;
-  background: #111111;
+  background: transparent;
   border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  overflow: hidden;
+}
+
+.al_brand_icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
 }
 
 .al_brand_text {
@@ -761,8 +769,7 @@
 }
 
 [data-theme="dark"] .al_brand_text { color: #f0f0f0; }
-[data-theme="dark"] .al_brand_icon { background: #f0f0f0; }
-[data-theme="dark"] .al_brand_icon svg path { fill: #111111; }
+[data-theme="dark"] .al_brand_icon { background: transparent; }
 
 [data-theme="dark"] .al_brand_divider { background: #3a3a3a; }
 [data-theme="dark"] .al_school_name { color: #cccccc; }

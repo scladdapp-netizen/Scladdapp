@@ -125,19 +125,21 @@ const ApplicationFormLinkCard = ({ schoolId, school, onConfigure, isActive, onAc
   };
 
   return (
-    <div className="sw-section">
-      <div className="sw-section-head">
-        <div className="sw-section-icon sw-icon-form">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-            <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-            <polyline points="14,2 14,8 20,8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-            <line x1="16" y1="13" x2="8" y2="13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-            <line x1="16" y1="17" x2="8" y2="17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-          </svg>
-        </div>
-        <div>
-          <h3 className="sw-section-title">School Application Form Link</h3>
-          <p className="sw-section-sub">Share this link with parents so they can apply online. Choose which fields appear on the form.</p>
+    <div className="sw-section sw-section-app-form">
+      <div className="sw-section-head sw-section-head--app-form">
+        <div className="sw-section-head-main">
+          <div className="sw-section-icon sw-icon-form">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+              <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              <polyline points="14,2 14,8 20,8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              <line x1="16" y1="13" x2="8" y2="13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+              <line x1="16" y1="17" x2="8" y2="17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+            </svg>
+          </div>
+          <div className="sw-section-head-copy">
+            <h3 className="sw-section-title">School Application Form Link</h3>
+            <p className="sw-section-sub">Share this link with parents so they can apply online. Choose which fields appear on the form.</p>
+          </div>
         </div>
         <div className="sw-section-head-actions">
           <label className={`sw-form-active-toggle${toggling ? " sw-form-active-toggle--busy" : ""}`}>
@@ -385,25 +387,70 @@ const YourWebsiteSection = ({ schoolId, initialWebsite, onSaved, loading }) => {
 };
 
 // ── Custom Domain Section ─────────────────────────────────────────────────────
-const CustomDomainSection = ({ scladappWebsiteUrl, existingDomain, existingStatus, nested = false }) => {
+const CustomDomainSection = ({
+  schoolId,
+  scladappWebsiteUrl,
+  existingDomain,
+  existingStatus,
+  onUpdated,
+  nested = false,
+}) => {
+  const { addNotification } = useNotification();
+  const { setCustomDomain, verifyCustomDomain, removeCustomDomain, loading } = useWebsiteRequest();
   const [domain,   setDomain]   = useState(existingDomain || "");
   const [editing,  setEditing]  = useState(false);
   const [status,   setStatus]   = useState(existingStatus || null); // null | "pending" | "connected"
+  const [dnsHint,  setDnsHint]  = useState(null);
 
-  // UI-only: just show the flow, no API call yet
-  const handleSave = () => {
-    if (!domain.trim()) return;
+  useEffect(() => {
+    setDomain(existingDomain || "");
+    setStatus(existingStatus || null);
+  }, [existingDomain, existingStatus]);
+
+  const handleSave = async () => {
+    if (!domain.trim() || !schoolId) return;
+    const res = await setCustomDomain(schoolId, domain.trim());
+    if (!res.success) {
+      addNotification(res.message || "Failed to save domain", "error");
+      return;
+    }
     setStatus("pending");
     setEditing(false);
+    setDnsHint(res.dns || null);
+    onUpdated?.(res.data);
+    addNotification("Domain saved — add the DNS records, then verify.", "success");
   };
 
-  const handleRemove = () => {
+  const handleVerify = async () => {
+    const res = await verifyCustomDomain(schoolId);
+    if (!res.success) {
+      if (res.data) onUpdated?.(res.data);
+      setStatus("pending");
+      addNotification(res.message || "DNS not verified yet", "error");
+      return;
+    }
+    setStatus("connected");
+    onUpdated?.(res.data);
+    addNotification("Custom domain connected.", "success");
+  };
+
+  const handleRemove = async () => {
+    const res = await removeCustomDomain(schoolId);
+    if (!res.success) {
+      addNotification(res.message || "Failed to remove domain", "error");
+      return;
+    }
     setDomain("");
     setStatus(null);
     setEditing(false);
+    setDnsHint(null);
+    onUpdated?.(res.data);
+    addNotification("Custom domain removed.", "success");
   };
 
   if (!scladappWebsiteUrl) return null; // only show once site is published
+
+  const aRecord = dnsHint?.a_record || "your-server-ip";
 
   return (
     <div className={nested ? "sw-domain-nested" : "sw-section sw-section-domain"}>
@@ -416,10 +463,10 @@ const CustomDomainSection = ({ scladappWebsiteUrl, existingDomain, existingStatu
         </div>
         <div>
           <h3 className="sw-section-title">Custom Domain</h3>
-          <p className="sw-section-sub">Connect your own domain so your site loads at <strong>yourschool.com</strong> instead of our subdomain.</p>
+          <p className="sw-section-sub">Connect your own domain so your site loads at <strong>yourschool.com</strong> (multi-page paths like /about work too).</p>
         </div>
         {!editing && status !== "connected" && (
-          <Button variant="secondary" onClick={() => setEditing(true)}>
+          <Button variant="secondary" onClick={() => setEditing(true)} disabled={loading}>
             {status === "pending" ? "Edit" : domain ? "Edit" : "Add Domain"}
           </Button>
         )}
@@ -432,7 +479,7 @@ const CustomDomainSection = ({ scladappWebsiteUrl, existingDomain, existingStatu
             <span className="sw-domain-live-dot" />
             <div>
               <p className="sw-domain-connected-url">{domain}</p>
-              <p className="sw-domain-connected-sub">Connected and live</p>
+              <p className="sw-domain-connected-sub">Connected and live — https://{domain}/about etc.</p>
             </div>
           </div>
           <div className="sw-domain-connected-actions">
@@ -445,7 +492,7 @@ const CustomDomainSection = ({ scladappWebsiteUrl, existingDomain, existingStatu
               </svg>
               Visit
             </a>
-            <button className="sw-domain-remove-btn" onClick={handleRemove}>Remove</button>
+            <button className="sw-domain-remove-btn" onClick={handleRemove} disabled={loading}>Remove</button>
           </div>
         </div>
       )}
@@ -470,7 +517,7 @@ const CustomDomainSection = ({ scladappWebsiteUrl, existingDomain, existingStatu
             <div className="sw-dns-row">
               <span className="sw-dns-tag">A</span>
               <span className="sw-dns-mono">@</span>
-              <span className="sw-dns-mono sw-dns-val">your-server-ip</span>
+              <span className="sw-dns-mono sw-dns-val">{aRecord}</span>
             </div>
             <div className="sw-dns-row">
               <span className="sw-dns-tag">CNAME</span>
@@ -478,12 +525,12 @@ const CustomDomainSection = ({ scladappWebsiteUrl, existingDomain, existingStatu
               <span className="sw-dns-mono sw-dns-val">{domain}</span>
             </div>
           </div>
-          <p className="sw-domain-pending-note">DNS changes can take up to 24 hours to propagate.</p>
+          <p className="sw-domain-pending-note">DNS changes can take up to 24 hours to propagate. After pointing DNS, click Verify.</p>
           <div className="sw-domain-pending-actions">
-            <button className="sw-domain-verify-btn" onClick={() => setStatus("connected")}>
-              I've added the records — Verify
+            <button className="sw-domain-verify-btn" onClick={handleVerify} disabled={loading}>
+              {loading ? "Verifying…" : "I've added the records — Verify"}
             </button>
-            <button className="sw-domain-remove-btn" onClick={handleRemove}>Remove domain</button>
+            <button className="sw-domain-remove-btn" onClick={handleRemove} disabled={loading}>Remove domain</button>
           </div>
         </div>
       )}
@@ -503,7 +550,7 @@ const CustomDomainSection = ({ scladappWebsiteUrl, existingDomain, existingStatu
           <p className="sw-domain-form-hint">Enter without https:// — e.g. <code>yourschool.com</code></p>
           <div className="sw-domain-form-actions">
             <Button variant="secondary" onClick={() => { setEditing(false); setDomain(existingDomain || ""); }}>Cancel</Button>
-            <Button onClick={handleSave} disabled={!domain.trim()}>Save & Get DNS Instructions</Button>
+            <Button onClick={handleSave} disabled={!domain.trim() || loading}>Save & Get DNS Instructions</Button>
           </div>
         </div>
       )}
@@ -522,7 +569,7 @@ const CustomDomainSection = ({ scladappWebsiteUrl, existingDomain, existingStatu
     </div>
   );
 };
-const RequestWebsiteSection = ({ onRequest, onCancel, loading, alreadyRequested, briefStatus, scladappWebsiteUrl, onEditWithAI, customDomain, customDomainStatus }) => {
+const RequestWebsiteSection = ({ onRequest, onCancel, loading, alreadyRequested, briefStatus, scladappWebsiteUrl, onEditWithAI, customDomain, customDomainStatus, schoolId, onCustomDomainUpdated }) => {
   const features = [
     {
       icon: (
@@ -643,9 +690,11 @@ const RequestWebsiteSection = ({ onRequest, onCancel, loading, alreadyRequested,
 
             <CustomDomainSection
               nested
+              schoolId={schoolId}
               scladappWebsiteUrl={scladappWebsiteUrl}
               existingDomain={customDomain}
               existingStatus={customDomainStatus}
+              onUpdated={onCustomDomainUpdated}
             />
           </div>
         ) : alreadyRequested ? (
@@ -801,31 +850,51 @@ export const SchoolWebsiteContent = () => {
             onEditWithAI={() => navigate(`/admin/${schoolId}/school/website/ai-editor`)}
             customDomain={briefData?.custom_domain || school?.custom_domain || null}
             customDomainStatus={briefData?.custom_domain_status || school?.custom_domain_status || null}
+            schoolId={schoolId}
+            onCustomDomainUpdated={(doc) => {
+              if (doc) setBriefData((prev) => ({ ...(prev || {}), ...doc }));
+            }}
           />
         ) : (
           <div className="sw-section sw-section-locked">
-            <div className="sw-locked-inner">
-              <div className="sw-locked-icon">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-                  <rect x="3" y="11" width="18" height="11" rx="2" stroke="currentColor" strokeWidth="1.8" />
-                  <path d="M7 11V7a5 5 0 0110 0v4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-                </svg>
+            <div className="sw-locked-content" aria-hidden="true">
+              <div className="sw-locked-inner">
+                <div className="sw-locked-icon">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                    <rect x="3" y="11" width="18" height="11" rx="2" stroke="currentColor" strokeWidth="1.8" />
+                    <path d="M7 11V7a5 5 0 0110 0v4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+                  </svg>
+                </div>
+                <div className="sw-locked-copy">
+                  <h3 className="sw-locked-title">Scladapp-Hosted Website</h3>
+                  <p className="sw-locked-desc">
+                    Request a professionally designed website built and hosted for your school.
+                  </p>
+                </div>
+                <div className="sw-locked-pill">Paid Plans Only</div>
               </div>
-              <div>
-                <h3 className="sw-locked-title">Scladapp-Hosted Website</h3>
-                <p className="sw-locked-desc">
-                  Upgrade to a paid plan to request a professionally designed website built and hosted for your school.
+              <div className="sw-locked-features">
+                {["Custom branded design", "All pages included", "Mobile responsive", "Zero maintenance"].map((f) => (
+                  <div key={f} className="sw-locked-feature">
+                    <span className="sw-locked-dot" />
+                    {f}
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="sw-locked-overlay">
+              <div className="sw-locked-overlay-card">
+                <div className="sw-locked-overlay-icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                    <rect x="3" y="11" width="18" height="11" rx="2" stroke="currentColor" strokeWidth="1.8" />
+                    <path d="M7 11V7a5 5 0 0110 0v4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+                  </svg>
+                </div>
+                <p className="sw-locked-overlay-label">Paid plans</p>
+                <p className="sw-locked-overlay-text">
+                  Upgrade to a paid plan to request a school site
                 </p>
               </div>
-              <div className="sw-locked-pill">Paid Plans Only</div>
-            </div>
-            <div className="sw-locked-features">
-              {["Custom branded design", "All pages included", "Mobile responsive", "Zero maintenance"].map((f) => (
-                <div key={f} className="sw-locked-feature">
-                  <span className="sw-locked-dot" />
-                  {f}
-                </div>
-              ))}
             </div>
           </div>
         )}

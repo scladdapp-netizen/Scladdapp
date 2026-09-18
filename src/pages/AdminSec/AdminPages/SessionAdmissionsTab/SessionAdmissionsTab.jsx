@@ -56,20 +56,28 @@ const SessionAdmissionsTab = () => {
             class_id: assignment.class_id,
             admission_class: assignment.class_name,
             stream: assignment.stream || "N/A",
-            admitted_date: assignment.assignment_date,
+            admitted_date: assignment.assignment_date || assignment.assigned_date,
             admission_session: assignment.session_name,
             active_status: assignment.is_active,
             remarks: assignment.remarks,
           }));
 
-          // Update stats
-          const active = mappedData.filter((a) => a.active_status).length;
-          const total = result.pagination?.totalItems || mappedData.length;
-          setStats({
-            active,
-            inactive: total - active,
-            total,
-          });
+          // Prefer server-wide stats (not page-only counts)
+          if (result.stats) {
+            setStats({
+              active: result.stats.active || 0,
+              inactive: result.stats.inactive || 0,
+              total: result.stats.total || 0,
+            });
+          } else {
+            const active = mappedData.filter((a) => a.active_status).length;
+            const total = result.pagination?.totalItems || mappedData.length;
+            setStats({
+              active,
+              inactive: Math.max(0, total - active),
+              total,
+            });
+          }
 
           return {
             success: true,

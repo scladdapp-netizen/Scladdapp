@@ -142,12 +142,8 @@ const LoginLeftPanel = ({ schoolId = null }) => {
         ) : (
           // Default Scladapp branding
           <>
-            <div className="llp-logo">
-              <svg width="36" height="36" viewBox="0 0 16 16" fill="none">
-                <path d="M8 1l7 3.5-7 3.5-7-3.5L8 1z" fill="currentColor" />
-                <path d="M1 8l7 3.5L15 8" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" opacity="0.6" />
-                <path d="M1 11.5l7 3.5 7-3.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" opacity="0.3" />
-              </svg>
+            <div className="llp-logo llp-logo--brand">
+              <img src="/logo.jpg" alt="Scladapp" className="llp-brand-logo-img" />
             </div>
             <h1 className="llp-title">Scladapp</h1>
             <p className="llp-sub">School management,<br />simplified.</p>

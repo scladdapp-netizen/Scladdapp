@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import "./Footer.css";
 
 const Footer = () => (
@@ -5,7 +6,10 @@ const Footer = () => (
     <div className="site-footer__inner">
 
       <div className="site-footer__brand-col">
-        <span className="site-footer__brand">Scladapp</span>
+        <div className="site-footer__brand">
+          <img src="/logo.jpg" alt="" className="site-footer__brand-logo" />
+          Scladapp
+        </div>
         <p className="site-footer__tagline">The all-in-one school management platform built for modern education.</p>
         <div className="site-footer__socials">
           <a href="#" aria-label="Twitter">
@@ -22,37 +26,20 @@ const Footer = () => (
 
       <div className="site-footer__col">
         <h4>Product</h4>
-        <a href="/pricing">Pricing</a>
-        <a href="/features">Features</a>
-        <a href="/changelog">Changelog</a>
-        <a href="/roadmap">Roadmap</a>
-        <a href="/docs">Documentation</a>
-      </div>
-
-      <div className="site-footer__col">
-        <h4>Company</h4>
-        <a href="/blog">Blog</a>
-        <a href="/careers">Careers</a>
-        <a href="/contact">Contact</a>
-        <a href="/press">Press Kit</a>
+        <Link to="/pricing">Pricing</Link>
+        <Link to="/docs">Documentation</Link>
       </div>
 
       <div className="site-footer__col">
         <h4>Support</h4>
-        <a href="/help">Help Center</a>
-        <a href="/status">System Status</a>
-        <a href="/security">Security</a>
-        <a href="/community">Community</a>
+        <Link to="/contact">Contact Us</Link>
         <a href="mailto:support@scladapp.com">support@scladapp.com</a>
       </div>
 
       <div className="site-footer__col">
         <h4>Legal</h4>
-        <a href="/terms">Terms of Service</a>
-        <a href="/privacy">Privacy Policy</a>
-        <a href="/cookies">Cookie Policy</a>
-        <a href="/gdpr">GDPR</a>
-        <a href="/acceptable-use">Acceptable Use</a>
+        <Link to="/terms">Terms of Service</Link>
+        <Link to="/privacy">Privacy Policy</Link>
       </div>
 
     </div>
@@ -61,9 +48,8 @@ const Footer = () => (
       <div className="site-footer__bottom-inner">
         <span>© {new Date().getFullYear()} Scladapp Technologies. All rights reserved.</span>
         <div className="site-footer__bottom-links">
-          <a href="/terms">Terms</a>
-          <a href="/privacy">Privacy</a>
-          <a href="/cookies">Cookies</a>
+          <Link to="/terms">Terms</Link>
+          <Link to="/privacy">Privacy</Link>
         </div>
       </div>
     </div>

@@ -510,6 +510,44 @@
   gap: 10px;
 }
 
+.s4-plans-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 28px 20px !important;
+  text-align: left;
+}
+
+.s4-plans-loading__text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.s4-plans-loading__text strong {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1a1a1a;
+}
+
+.s4-plans-loading__text span {
+  font-size: 12px;
+  color: #888;
+}
+
+[data-theme="dark"] .s4-plans-loading__text strong { color: #f0f0f0; }
+
+.s4-summary--loading .s4-summary-loading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 0 4px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #888;
+}
+
 .s4-plan-card {
   border: 1.5px solid #e0e0e0;
   border-radius: 12px;
@@ -573,6 +611,16 @@
   color: #bbb;
   text-decoration: line-through;
   margin-top: 2px;
+}
+
+.s4-plan-cycle-hint {
+  font-size: 11px;
+  color: #888;
+  margin-top: 2px;
+}
+
+.s4-billing-card--top {
+  margin-bottom: 4px;
 }
 
 .s4-plan-save {

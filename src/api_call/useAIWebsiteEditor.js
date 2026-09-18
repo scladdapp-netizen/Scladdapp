@@ -147,26 +147,37 @@ export async function deleteWebsiteImage(schoolId, publicId) {
 }
 
 // ── Draft save ────────────────────────────────────────────────────────────────
-export async function saveDraftHtml(schoolId, html) {
+export async function saveDraftHtml(schoolId, html, pageId = null) {
   const res  = await fetch(`${API_BASE}/api/schools/${schoolId}/ai-website/draft`, {
     method:  "PATCH",
     headers: authHeaders(),
-    body:    JSON.stringify({ html }),
+    body:    JSON.stringify(pageId ? { html, pageId } : { html }),
+  });
+  return res.json();
+}
+
+export async function saveDraftPages(schoolId, pages) {
+  const res  = await fetch(`${API_BASE}/api/schools/${schoolId}/ai-website/draft`, {
+    method:  "PATCH",
+    headers: authHeaders(),
+    body:    JSON.stringify({ pages }),
   });
   return res.json();
 }
 
 // ── Draft fetch ───────────────────────────────────────────────────────────────
-export async function fetchDraftHtml(schoolId) {
-  const res = await fetch(`${API_BASE}/api/schools/${schoolId}/ai-website/draft`, {
+export async function fetchDraftHtml(schoolId, pageId = null) {
+  const q = pageId ? `?pageId=${encodeURIComponent(pageId)}` : "";
+  const res = await fetch(`${API_BASE}/api/schools/${schoolId}/ai-website/draft${q}`, {
     headers: authHeaders(),
   });
   return res.json();
 }
 
 // ── Live published HTML fetch ─────────────────────────────────────────────────
-export async function fetchLiveHtml(schoolId) {
-  const res = await fetch(`${API_BASE}/api/schools/${schoolId}/ai-website/live`, {
+export async function fetchLiveHtml(schoolId, pageId = null) {
+  const q = pageId ? `?pageId=${encodeURIComponent(pageId)}` : "";
+  const res = await fetch(`${API_BASE}/api/schools/${schoolId}/ai-website/live${q}`, {
     headers: authHeaders(),
   });
   return res.json();

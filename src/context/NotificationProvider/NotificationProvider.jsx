@@ -1,9 +1,13 @@
 // NotificationProvider.jsx
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useState, useRef, useEffect, useCallback } from "react";
 import "./notifications.css";
 
 const NotificationContext = createContext();
 export const useNotification = () => useContext(NotificationContext);
+
+const AUTO_DISMISS_MS = 4500;
+const EXIT_MS = 320;
+const MAX_VISIBLE = 4;
 
 const NOTIFICATION_ICONS = {
   info: (
@@ -37,25 +41,88 @@ const NOTIFICATION_ICONS = {
 
 export const NotificationProvider = ({ children }) => {
   const [notifications, setNotifications] = useState([]);
+  const timersRef = useRef(new Map());
+  const idRef = useRef(0);
 
-  const addNotification = (message, type = "info") => {
-    const id = Date.now();
-    const newNotification = { id, message, type };
-    setNotifications((prev) => [{ ...newNotification }, ...prev]);
+  const clearTimers = useCallback((id) => {
+    const timers = timersRef.current.get(id);
+    if (!timers) return;
+    if (timers.dismiss) clearTimeout(timers.dismiss);
+    if (timers.remove) clearTimeout(timers.remove);
+    timersRef.current.delete(id);
+  }, []);
 
-    setTimeout(() => startSlideOut(id), 5000);
-  };
-
-  const startSlideOut = (id) => {
-    setNotifications((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, slideOut: true } : n))
-    );
-    setTimeout(() => removeNotification(id), 300);
-  };
-
-  const removeNotification = (id) => {
+  const removeNotification = useCallback((id) => {
+    clearTimers(id);
     setNotifications((prev) => prev.filter((n) => n.id !== id));
-  };
+  }, [clearTimers]);
+
+  const startSlideOut = useCallback((id) => {
+    clearTimers(id);
+    setNotifications((prev) => {
+      const target = prev.find((n) => n.id === id);
+      if (!target || target.leaving) return prev;
+      return prev.map((n) => (n.id === id ? { ...n, leaving: true } : n));
+    });
+    const remove = setTimeout(() => removeNotification(id), EXIT_MS);
+    timersRef.current.set(id, { dismiss: null, remove });
+  }, [clearTimers, removeNotification]);
+
+  const scheduleDismiss = useCallback((id) => {
+    clearTimers(id);
+    const dismiss = setTimeout(() => startSlideOut(id), AUTO_DISMISS_MS);
+    timersRef.current.set(id, { dismiss, remove: null });
+  }, [clearTimers, startSlideOut]);
+
+  useEffect(() => {
+    return () => {
+      timersRef.current.forEach((timers) => {
+        if (timers.dismiss) clearTimeout(timers.dismiss);
+        if (timers.remove) clearTimeout(timers.remove);
+      });
+      timersRef.current.clear();
+    };
+  }, []);
+
+  const addNotification = useCallback((message, type = "info") => {
+    const text = String(message || "").trim();
+    if (!text) return;
+
+    idRef.current += 1;
+    const candidateId = `${Date.now()}-${idRef.current}`;
+    let idToSchedule = candidateId;
+
+    setNotifications((prev) => {
+      const existing = prev.find(
+        (n) => !n.leaving && n.message === text && n.type === type
+      );
+
+      if (existing) {
+        idToSchedule = existing.id;
+        return [
+          { ...existing, leaving: false },
+          ...prev.filter((n) => n.id !== existing.id),
+        ];
+      }
+
+      const next = [
+        { id: candidateId, message: text, type, leaving: false, entered: false },
+        ...prev.filter((n) => !n.leaving),
+      ];
+      const capped = next.slice(0, MAX_VISIBLE);
+      next.slice(MAX_VISIBLE).forEach((n) => clearTimers(n.id));
+      return capped;
+    });
+
+    // Schedule after the state update call (not inside the updater)
+    scheduleDismiss(idToSchedule);
+  }, [clearTimers, scheduleDismiss]);
+
+  const markEntered = useCallback((id) => {
+    setNotifications((prev) =>
+      prev.map((n) => (n.id === id && !n.entered ? { ...n, entered: true } : n))
+    );
+  }, []);
 
   return (
     <NotificationContext.Provider value={{ addNotification }}>
@@ -64,10 +131,15 @@ export const NotificationProvider = ({ children }) => {
         {notifications.map((n) => (
           <div
             key={n.id}
-            className={`notification notification--${n.type} ${
-              n.slideOut ? "slide-out" : "slide-in"
+            className={`notification notification--${n.type}${
+              n.leaving ? " is-leaving" : n.entered ? "" : " is-entering"
             }`}
             role="status"
+            onAnimationEnd={(e) => {
+              if (e.target !== e.currentTarget) return;
+              if (n.leaving) removeNotification(n.id);
+              else if (!n.entered) markEntered(n.id);
+            }}
           >
             <div className="notification__icon">
               {NOTIFICATION_ICONS[n.type] || NOTIFICATION_ICONS.info}

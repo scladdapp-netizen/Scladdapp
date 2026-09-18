@@ -8,7 +8,7 @@
   margin: 0 auto;
   padding: 64px 6% 48px;
   display: grid;
-  grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
   gap: 40px;
 }
 
@@ -20,10 +20,21 @@
 }
 
 .site-footer__brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
   font-size: 22px;
   font-weight: 800;
   color: #fff;
   letter-spacing: -0.02em;
+}
+
+.site-footer__brand-logo {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  border-radius: 6px;
+  display: block;
 }
 
 .site-footer__tagline {

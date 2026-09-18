@@ -25,6 +25,24 @@ export async function submitApplicationForm(schoolId, formData) {
   return res.json();
 }
 
+export async function sendApplicationEmailOtp(schoolId, email) {
+  const res = await fetch(`${API_BASE_URL}/api/schools/${schoolId}/application-form/verify-email/send`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email }),
+  });
+  return res.json();
+}
+
+export async function verifyApplicationEmailOtp(schoolId, email, otp) {
+  const res = await fetch(`${API_BASE_URL}/api/schools/${schoolId}/application-form/verify-email/verify`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, otp }),
+  });
+  return res.json();
+}
+
 export async function fetchApplicationFormConfig(schoolId) {
   const res = await fetch(`${API_BASE_URL}/api/schools/${schoolId}/application-form/config`, {
     headers: authHeaders(),

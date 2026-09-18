@@ -32,9 +32,7 @@ const AI_TABS = [
  *   onCommit        – fn(html) commit to undo history
  *   messages        – AI chat message array
  *   isThinking      – bool
- *   tokenCount      – number
  *   onSend          – fn(prompt, element, configId)
- *   onBuyTokens     – fn()
  *   selectedElement – element selected from preview
  *   onClearElement  – fn()
  *   models          – available AI model configs
@@ -46,9 +44,7 @@ export default function LeftPanel({
   onCommit,
   messages,
   isThinking,
-  tokenCount,
   onSend,
-  onBuyTokens,
   selectedElement,
   onClearElement,
   models,
@@ -88,9 +84,7 @@ export default function LeftPanel({
         <AIChatPanel
           messages={messages}
           isThinking={isThinking}
-          tokenCount={tokenCount}
           onSend={onSend}
-          onBuyTokens={onBuyTokens}
           selectedElement={selectedElement}
           onClearElement={onClearElement}
           models={models || []}

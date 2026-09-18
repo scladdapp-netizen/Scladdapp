@@ -61,7 +61,7 @@ const LogIn = ({ schoolId: propSchoolId = null }) => {
   };
 
   const brandName = schoolProfile?.school_name || "Scladapp";
-  const brandLogo = schoolProfile?.logo_url || null;
+  const brandLogo = schoolProfile?.logo_url || (!schoolId ? "/logo.jpg" : null);
   const brandInitial = (brandName || "S").charAt(0).toUpperCase();
 
   return (

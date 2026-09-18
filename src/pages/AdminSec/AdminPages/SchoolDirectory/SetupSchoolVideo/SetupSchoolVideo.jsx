@@ -1,46 +1,52 @@
 import { useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { useLocation } from "react-router-dom";
+import { useTutorialVideos } from "../../../../../api_call/useTutorialVideos";
 import "./SetupSchoolVideo.css";
-
-const VIDEO_ID = "dQw4w9WgXcQ";
-const VIDEO_TITLE = "Setup your school";
-const VIDEO_SUBTITLE = "Quick walkthrough for setting up your school";
-const POS_KEY = "ssv_pos";
 
 const clampPosition = (x, y, width, height) => ({
   x: Math.max(0, Math.min(window.innerWidth - width, x)),
   y: Math.max(0, Math.min(window.innerHeight - height, y)),
 });
 
-const getDefaultPosition = (width = 420, height = 150) =>
+const getDefaultPosition = (corner, width = 420, height = 150) =>
   clampPosition(
-    window.innerWidth - width - 24,
+    corner === "bottom-left" ? 24 : window.innerWidth - width - 24,
     window.innerHeight - height - 20,
     width,
     height
   );
 
-const SetupSchoolVideo = () => {
+const SetupSchoolVideo = ({
+  page = "",
+  corner = "bottom-right",
+  // each placement remembers where it was dragged to on its own
+  storageKey = "ssv_pos",
+  footerText = "Keep this open while you work in admin.",
+  collapsedText = "Watch the setup guide while you configure your school dashboard.",
+}) => {
   const location = useLocation();
+  const { videos } = useTutorialVideos(page);
   const wrapRef = useRef(null);
   const dragging = useRef(false);
   const offset = useRef({ x: 0, y: 0 });
   const posRef = useRef({ x: 0, y: 0 });
+  const timerRef = useRef(null);
 
   const [dismissed, setDismissed] = useState(false);
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(true);
   const [playing, setPlaying] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
+  const [active, setActive] = useState(0);
   const [pos, setPos] = useState(() => {
     try {
-      const saved = sessionStorage.getItem(POS_KEY);
+      const saved = sessionStorage.getItem(storageKey);
       if (saved) {
         const p = JSON.parse(saved);
         return clampPosition(p.x, p.y, p.w || 420, p.h || 150);
       }
     } catch {}
-    return getDefaultPosition();
+    return getDefaultPosition(corner);
   });
 
   posRef.current = pos;
@@ -48,9 +54,24 @@ const SetupSchoolVideo = () => {
   const isAdminDashboard = /^\/admin\/[^/]+/.test(location.pathname);
 
   useEffect(() => {
+    if (active >= videos.length) {
+      setActive(0);
+      setPlaying(false);
+    }
+  }, [active, videos.length]);
+
+  useEffect(() => {
+    if (playing || videos.length <= 1) return undefined;
+    timerRef.current = setTimeout(() => {
+      setActive((prev) => (prev + 1) % videos.length);
+    }, 6000);
+    return () => clearTimeout(timerRef.current);
+  }, [active, playing, videos.length]);
+
+  useEffect(() => {
     const el = wrapRef.current;
     sessionStorage.setItem(
-      POS_KEY,
+      storageKey,
       JSON.stringify({
         x: pos.x,
         y: pos.y,
@@ -58,7 +79,7 @@ const SetupSchoolVideo = () => {
         h: el?.offsetHeight,
       })
     );
-  }, [pos]);
+  }, [pos, storageKey]);
 
   useEffect(() => {
     const onResize = () => {
@@ -97,6 +118,14 @@ const SetupSchoolVideo = () => {
     setPlaying(true);
   };
 
+  const goTo = (idx) => {
+    setActive(idx);
+    setPlaying(false);
+  };
+
+  const next = () => goTo((active + 1) % videos.length);
+  const prev = () => goTo((active - 1 + videos.length) % videos.length);
+
   const onPointerDown = (e) => {
     if (!e.target.closest(".setup-school-video__header")) return;
     if (e.target.closest("button")) return;
@@ -134,6 +163,10 @@ const SetupSchoolVideo = () => {
   };
 
   const showPlayer = expanded || playing;
+  const video = videos[active];
+  if (!isAdminDashboard || dismissed || !video) return null;
+
+  const thumb = `https://img.youtube.com/vi/${video.youtubeId}/hqdefault.jpg`;
   const panelClass = expanded
     ? "setup-school-video--expanded"
     : playing
@@ -175,8 +208,10 @@ const SetupSchoolVideo = () => {
               </svg>
             </span>
             <div>
-              <span className="setup-school-video__title">{VIDEO_TITLE}</span>
-              <span className="setup-school-video__subtitle">{VIDEO_SUBTITLE}</span>
+              <span className="setup-school-video__title">{video.title}</span>
+              <span className="setup-school-video__subtitle">
+                {video.category || "Tutorial"}{video.duration ? ` · ${video.duration}` : ""}
+              </span>
             </div>
           </div>
 
@@ -226,16 +261,16 @@ const SetupSchoolVideo = () => {
               {playing ? (
                 <iframe
                   className="setup-school-video__iframe"
-                  src={`https://www.youtube.com/embed/${VIDEO_ID}?autoplay=1`}
-                  title={VIDEO_TITLE}
+                  src={`https://www.youtube.com/embed/${video.youtubeId}?autoplay=1`}
+                  title={video.title}
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                   allowFullScreen
                 />
               ) : (
                 <button type="button" className="setup-school-video__thumb-wrap" onClick={() => setPlaying(true)}>
                   <img
-                    src={`https://img.youtube.com/vi/${VIDEO_ID}/hqdefault.jpg`}
-                    alt={VIDEO_TITLE}
+                    src={thumb}
+                    alt={video.title}
                     className="setup-school-video__thumb"
                   />
                   <span className="setup-school-video__thumb-overlay">
@@ -248,17 +283,41 @@ const SetupSchoolVideo = () => {
                 </button>
               )}
             </div>
+            <div className="setup-school-video__meta">
+              <div className="setup-school-video__meta-top">
+                <span className="setup-school-video__badge">{video.category || "Tutorial"}</span>
+                {video.duration && <span className="setup-school-video__duration">{video.duration}</span>}
+              </div>
+              <p className="setup-school-video__desc">
+                {video.description || "Watch this guide while you work in the admin dashboard."}
+              </p>
+            </div>
+            {videos.length > 1 && (
+              <div className="setup-school-video__controls">
+                <button type="button" className="setup-school-video__nav-btn" onClick={prev} aria-label="Previous video">‹</button>
+                <div className="setup-school-video__dots">
+                  {videos.map((item, index) => (
+                    <button
+                      key={`${item.youtubeId}-${index}`}
+                      type="button"
+                      className={`setup-school-video__dot${index === active ? " active" : ""}`}
+                      onClick={() => goTo(index)}
+                      aria-label={`Open video ${index + 1}`}
+                    />
+                  ))}
+                </div>
+                <button type="button" className="setup-school-video__nav-btn" onClick={next} aria-label="Next video">›</button>
+              </div>
+            )}
             {expanded && (
               <div className="setup-school-video__footer">
-                Keep this open while you set up students, classes, teachers, and staff.
+                <span>{footerText}</span>
               </div>
             )}
           </>
         ) : (
           <div className="setup-school-video__collapsed-body">
-            <p className="setup-school-video__collapsed-text">
-              Watch the setup guide while you configure your school dashboard.
-            </p>
+            <p className="setup-school-video__collapsed-text">{collapsedText}</p>
             <button type="button" className="setup-school-video__watch-btn" onClick={handlePlay}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                 <path d="M8 5v14l11-7z" />

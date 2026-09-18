@@ -98,11 +98,7 @@ const StudentTopbar = ({ onMenuClick, isMobileMenuOpen }) => {
         </button>
         <div className="sft_brand" onClick={() => navigate(`/student/${studentId}`)} style={{ cursor: "pointer" }}>
           <div className="sft_brand_icon">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <path d="M8 1l7 3.5-7 3.5-7-3.5L8 1z" fill="white"/>
-              <path d="M1 8l7 3.5L15 8" stroke="white" strokeWidth="1.4" strokeLinecap="round" opacity="0.6"/>
-              <path d="M1 11.5l7 3.5 7-3.5" stroke="white" strokeWidth="1.4" strokeLinecap="round" opacity="0.35"/>
-            </svg>
+            <img src="/logo.jpg" alt="" />
           </div>
           <span className="sft_brand_text">Scladapp</span>
         </div>

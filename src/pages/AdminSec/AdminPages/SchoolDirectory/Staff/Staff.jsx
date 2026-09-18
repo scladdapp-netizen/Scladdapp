@@ -168,30 +168,9 @@ const Staff = () => {
     setShowAddStaffMenu(true);
   };
 
-  const handleAddStaff = (staffData) => {
-    // This function will be called by StaffFormPanel after successful API call
-    console.log("Staff created successfully:", staffData);
-
-    // Show success notification
-    addNotification(
-      `Staff member ${
-        staffData.staff?.full_name || "Unknown"
-      } created successfully!`,
-      "success"
-    );
-
-    // Refresh the staff table
+  const handleAddStaff = () => {
+    // StaffFormPanel already shows the API success toast
     setRefreshTable((prev) => prev + 1);
-
-    // Show staff ID notification
-    if (staffData.staff?.staff_id) {
-      setTimeout(() => {
-        addNotification(
-          `Staff ID ${staffData.staff.staff_id} has been assigned`,
-          "info"
-        );
-      }, 1500);
-    }
   };
 
   const handleClick = (r) => {

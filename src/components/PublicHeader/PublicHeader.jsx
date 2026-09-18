@@ -92,6 +92,7 @@ const PublicHeader = ({ dark = false }) => {
 
         {/* Logo */}
         <button className="pub-header__logo" onClick={() => navigate("/")}>
+          <img src="/logo.jpg" alt="" className="pub-header__logo-img" />
           Scladapp
         </button>
 

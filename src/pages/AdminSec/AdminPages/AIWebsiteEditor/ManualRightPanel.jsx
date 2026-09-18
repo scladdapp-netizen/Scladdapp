@@ -1,12 +1,13 @@
 // ManualRightPanel.jsx
 // Right sidebar for Manual mode.
 // Two tabs:
-//   Attributes — content/link/source/alt specific to the element type
-//   Style      — visual CSS properties with friendly controls
+//   Content — text/link/image fields for the selected part
+//   Look    — simple visual controls (advanced CSS behind "More options")
 
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useParams } from "react-router-dom";
-import { patchAttribute, patchStyle, patchStyles, patchTextContent, patchMediaStyle, readMediaStyles, applyTableTemplate } from "./htmlPatcher";
+import { patchAttribute, patchStyle, patchStyles, patchTextContent, patchMediaStyle, readMediaStyles, applyTableTemplate, patchElementLink } from "./htmlPatcher";
+import { parseLayoutTree } from "./htmlLayoutParser";
 import { TABLE_STYLE_TEMPLATES } from "../../../../utils/tableStyleTemplates";
 import { detectReportSection } from "../../../../utils/reportSectionTemplates";
 import ReportTemplateTab from "../../../../components/HtmlEditor/ReportTemplateTab";
@@ -127,6 +128,124 @@ function composeBgImage(url, overlayColor, overlayOpacity) {
   return `linear-gradient(rgba(${r}, ${g}, ${b}, ${a}), rgba(${r}, ${g}, ${b}, ${a})), ${quoted}`;
 }
 
+/** True when background-image is a gradient fill (not a photo + overlay). */
+function isPureGradient(bgImage) {
+  if (!bgImage || bgImage === "none") return false;
+  if (extractBgImageUrl(bgImage)) return false;
+  return /(?:linear|radial|conic)-gradient\s*\(/i.test(bgImage);
+}
+
+/** Split top-level commas (ignore commas inside parentheses). */
+function splitCssList(val) {
+  const parts = [];
+  let depth = 0;
+  let buf = "";
+  for (const ch of String(val || "")) {
+    if (ch === "(") depth++;
+    else if (ch === ")") depth = Math.max(0, depth - 1);
+    if (ch === "," && depth === 0) {
+      if (buf.trim()) parts.push(buf.trim());
+      buf = "";
+      continue;
+    }
+    buf += ch;
+  }
+  if (buf.trim()) parts.push(buf.trim());
+  return parts;
+}
+
+function extractBalancedCall(str, startIdx) {
+  const open = str.indexOf("(", startIdx);
+  if (open === -1) return null;
+  let depth = 0;
+  for (let i = open; i < str.length; i++) {
+    if (str[i] === "(") depth++;
+    else if (str[i] === ")") {
+      depth--;
+      if (depth === 0) {
+        return { full: str.slice(startIdx, i + 1), inner: str.slice(open + 1, i) };
+      }
+    }
+  }
+  return null;
+}
+
+/**
+ * Parse the first linear-gradient in a background-image value into editable stops.
+ * Supports angles like `165deg` / `to bottom`. Keeps raw color tokens (hex, rgb, var()).
+ */
+function parseLinearGradient(bgImage) {
+  if (!bgImage) return null;
+  const idx = bgImage.search(/linear-gradient\s*\(/i);
+  if (idx === -1) {
+    // Fallback: treat other gradients as a 2-stop linear for editing
+    const anyIdx = bgImage.search(/(?:radial|conic)-gradient\s*\(/i);
+    if (anyIdx === -1) return null;
+    const call = extractBalancedCall(bgImage, anyIdx);
+    if (!call) return null;
+    const parts = splitCssList(call.inner);
+    const stops = parts
+      .map((p) => {
+        const m = p.match(/^(.+?)(?:\s+(-?[\d.]+%))?$/);
+        return m ? { color: m[1].trim(), pos: m[2] || "" } : null;
+      })
+      .filter(Boolean)
+      .filter((s) => !/^(circle|ellipse|at|from|to)\b/i.test(s.color));
+    if (stops.length < 1) return null;
+    while (stops.length < 2) stops.push({ color: stops[0].color, pos: "" });
+    return { kind: "linear", angle: "180deg", stops: stops.slice(0, 3), raw: bgImage };
+  }
+  const call = extractBalancedCall(bgImage, idx);
+  if (!call) return null;
+  const parts = splitCssList(call.inner);
+  if (!parts.length) return null;
+
+  let angle = "180deg";
+  let stopParts = parts;
+  const first = parts[0];
+  if (/^-?[\d.]+deg$/i.test(first) || /^to\s+/i.test(first) || /^in\s+/i.test(first)) {
+    angle = first;
+    stopParts = parts.slice(1);
+  }
+
+  const stops = stopParts
+    .map((p) => {
+      const m = p.match(/^(.+?)(?:\s+(-?[\d.]+%))?$/);
+      if (!m) return null;
+      return { color: m[1].trim(), pos: m[2] || "" };
+    })
+    .filter(Boolean);
+
+  if (!stops.length) return null;
+  while (stops.length < 2) stops.push({ color: "#ffffff", pos: "" });
+  return { kind: "linear", angle, stops: stops.slice(0, 3), raw: bgImage };
+}
+
+function composeLinearGradient({ angle, stops }) {
+  const ang = angle || "180deg";
+  const list = (stops || [])
+    .filter((s) => s && s.color)
+    .map((s) => (s.pos ? `${s.color} ${s.pos}` : s.color));
+  if (list.length < 2) {
+    const c = list[0] || "#111111";
+    return `linear-gradient(${ang}, ${c}, ${c})`;
+  }
+  return `linear-gradient(${ang}, ${list.join(", ")})`;
+}
+
+function swatchHex(color) {
+  const c = String(color || "").trim();
+  if (/^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(c)) {
+    if (c.length === 4) {
+      return `#${c[1]}${c[1]}${c[2]}${c[2]}${c[3]}${c[3]}`;
+    }
+    return c;
+  }
+  const rgb = c.match(/rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/i);
+  if (rgb) return rgbToHex(+rgb[1], +rgb[2], +rgb[3]);
+  return "#888888";
+}
+
 /** Last comma-separated layer (the photo), ignoring commas inside (). */
 function lastBgLayer(val) {
   if (!val) return "";
@@ -222,13 +341,22 @@ const ATTR_DEFS = {
   button: [
     { key: "_text", label: "Button label", type: "text",
       hint: "The text written on the button." },
+    { key: "href",  label: "Where it leads (URL)", type: "text",
+      hint: "Paste a web address, or pick a # section on this page. Turns the button into a clickable link.",
+      placeholder: "https://... or #about" },
+    { key: "target", label: "Open in", type: "select",
+      options: [
+        { value: "",       label: "Same tab" },
+        { value: "_blank", label: "New tab" },
+      ],
+      hint: "Choose whether the link opens in the same or a new browser tab." },
     { key: "type", label: "Button type", type: "select",
       options: [
         { value: "button", label: "Normal button" },
         { value: "submit", label: "Submit form" },
         { value: "reset",  label: "Reset form" },
       ],
-      hint: 'Use "Submit form" if this button sends a form.' },
+      hint: 'Use "Submit form" if this button sends a form. Ignored when a link URL is set.' },
     { key: "disabled", label: "Disabled (greyed out)?", type: "checkbox",
       hint: "When ticked, the button cannot be clicked." },
   ],
@@ -311,11 +439,29 @@ const ATTR_DEFS = {
 };
 
 /** Pick which attribute group to show for a given tagName. */
-function getAttrDefs(tagName) {
+function getAttrDefs(tagName, outerHTML) {
   if (!tagName) return [];
   const t = tagName.toLowerCase();
   if (["h1","h2","h3","h4","h5","h6"].includes(t)) return ATTR_DEFS.heading;
   if (["p","span","li","td","th","label","strong","em","blockquote"].includes(t)) return ATTR_DEFS.text;
+  // Link-styled buttons (converted from <button> or inserted as <a role="button">)
+  if (t === "a" && /role\s*=\s*["']?button["']?/i.test(outerHTML || "")) {
+    return [
+      { key: "_text", label: "Button label", type: "text",
+        hint: "The text written on the button." },
+      { key: "href",  label: "Where it leads (URL)", type: "text",
+        hint: "Paste a web address, or pick a # section on this page.",
+        placeholder: "https://... or #about" },
+      { key: "target", label: "Open in", type: "select",
+        options: [
+          { value: "",       label: "Same tab" },
+          { value: "_blank", label: "New tab" },
+        ],
+        hint: "Choose whether the link opens in the same or a new browser tab." },
+      { key: "title", label: "Tooltip (on hover)", type: "text",
+        hint: "Small description shown when visitors hover over the button.", placeholder: "optional" },
+    ];
+  }
   if (t === "a")        return ATTR_DEFS.a;
   if (t === "button")   return ATTR_DEFS.button;
   if (t === "img")      return ATTR_DEFS.img;
@@ -496,7 +642,7 @@ const STYLE_DEFAULTS_MAP = {
   ],
 };
 
-function getDefaultStyleProps(tagName) {
+function getDefaultStyleProps(tagName, outerHTML) {
   if (!tagName) return STYLE_DEFAULTS_MAP.generic;
   const t = tagName.toLowerCase();
 
@@ -509,6 +655,9 @@ function getDefaultStyleProps(tagName) {
   if (["p","span","label","strong","em","blockquote","small","time","pre","code"].includes(t))
     return STYLE_DEFAULTS_MAP.text;
 
+  // Button components inserted as <a role="button">
+  if (t === "a" && /role\s*=\s*["']?button["']?/i.test(outerHTML || ""))
+    return STYLE_DEFAULTS_MAP.button;
   if (t === "a")      return STYLE_DEFAULTS_MAP.link;
   if (t === "button") return STYLE_DEFAULTS_MAP.button;
   if (t === "img")    return STYLE_DEFAULTS_MAP.image;
@@ -981,9 +1130,14 @@ function BackgroundRow({ styleVals, onStyle, onStyles, onRemove, schoolId }) {
   const imgVal   = styleVals["background-image"] || styleVals["background"] || "";
 
   const [showImgManual, setShowImgManual] = useState(false);
-  const showImg = showImgManual || !!extractBgImageUrl(imgVal);
+  const [showGradManual, setShowGradManual] = useState(false);
 
   const rawImgUrl = extractBgImageUrl(imgVal);
+  const hasPureGradient = isPureGradient(imgVal);
+  const parsedGrad = hasPureGradient ? parseLinearGradient(imgVal) : null;
+  const showImg = showImgManual || !!rawImgUrl;
+  const showGrad = (showGradManual || hasPureGradient) && !rawImgUrl;
+
   const overlay   = parseBgOverlay(imgVal);
 
   const sizeSelect = lastBgLayer(styleVals["background-size"]);
@@ -993,6 +1147,7 @@ function BackgroundRow({ styleVals, onStyle, onStyles, onRemove, schoolId }) {
   const writeBg = (url, color, opacity, extras = {}) => {
     if (!url) {
       writeStyles({
+        background: "",
         "background-image": "",
         "background-size": "",
         "background-position": "",
@@ -1005,6 +1160,7 @@ function BackgroundRow({ styleVals, onStyle, onStyles, onRemove, schoolId }) {
     const pos  = extras.pos  !== undefined ? extras.pos  : posSelect;
     const rep  = extras.rep  !== undefined ? extras.rep  : (repSelect || "no-repeat");
     writeStyles({
+      background: "",
       "background-image":    composeBgImage(url, color, opacity),
       "background-size":     imageLayerCss(size || "cover", ov, "size"),
       "background-position": imageLayerCss(pos || "center", ov, "position"),
@@ -1012,8 +1168,37 @@ function BackgroundRow({ styleVals, onStyle, onStyles, onRemove, schoolId }) {
     });
   };
 
+  const writeGradient = (grad) => {
+    const next = composeLinearGradient(grad);
+    writeStyles({
+      background: "",
+      "background-image": next,
+      // Keep a solid fallback colour (first stop) so contrast tools stay meaningful
+      "background-color": grad.stops?.[0]?.color || colorVal || "",
+    });
+  };
+
+  const handleSolidColor = (hex) => {
+    if (hasPureGradient && parsedGrad) {
+      const stops = parsedGrad.stops.map((s, i) =>
+        i === 0 ? { ...s, color: hex } : s
+      );
+      writeGradient({ ...parsedGrad, stops });
+      return;
+    }
+    // Solid colour must win over leftover gradients in shorthand / image
+    writeStyles({
+      background: "",
+      "background-image": rawImgUrl
+        ? composeBgImage(rawImgUrl, overlay.color, overlay.opacity)
+        : "",
+      "background-color": hex,
+    });
+  };
+
   const handleBgImageChange = (url) => {
     writeBg(url, overlay.color, overlay.opacity);
+    if (url) setShowGradManual(false);
   };
 
   const handleOverlayColor = (hex) => {
@@ -1031,10 +1216,38 @@ function BackgroundRow({ styleVals, onStyle, onStyles, onRemove, schoolId }) {
     writeBg(rawImgUrl, preset.color, preset.opacity);
   };
 
+  const startGradient = () => {
+    setShowGradManual(true);
+    setShowImgManual(false);
+    const base = colorVal && colorVal !== "transparent" ? colorVal : "#111111";
+    writeGradient({
+      angle: "135deg",
+      stops: [
+        { color: base, pos: "" },
+        { color: "#4c4294", pos: "" },
+      ],
+    });
+  };
+
+  const clearGradientToSolid = () => {
+    setShowGradManual(false);
+    const solid = parsedGrad?.stops?.[0]?.color || colorVal || "#111111";
+    writeStyles({
+      background: "",
+      "background-image": "",
+      "background-color": solid,
+    });
+  };
+
   const activePresetId = OVERLAY_PRESETS.find((p) => {
     if (p.opacity === 0) return overlay.opacity === 0;
     return p.color.toLowerCase() === overlay.color.toLowerCase() && p.opacity === overlay.opacity;
   })?.id || (overlay.opacity > 0 ? "custom" : "off");
+
+  const angleNum = (() => {
+    const m = String(parsedGrad?.angle || "180deg").match(/(-?[\d.]+)deg/i);
+    return m ? Math.round(Number(m[1])) : 180;
+  })();
 
   return (
     <div className="mrp-field mrp-field--style">
@@ -1042,32 +1255,142 @@ function BackgroundRow({ styleVals, onStyle, onStyles, onRemove, schoolId }) {
         <label className="mrp-label">Background colour</label>
         <div className="mrp-field-actions">
           <button
+            className={`mrp-expand-btn ${showGrad ? "mrp-expand-btn--active" : ""}`}
+            onClick={() => {
+              if (showGrad) clearGradientToSolid();
+              else startGradient();
+            }}
+            title="Edit gradient background"
+            aria-label="Toggle gradient"
+            type="button"
+          >
+            gradient
+          </button>
+          <button
             className={`mrp-expand-btn ${showImg ? "mrp-expand-btn--active" : ""}`}
             onClick={() => setShowImgManual(s => !s)}
             title="Use a background image instead"
             aria-label="Toggle background image"
+            type="button"
           >
             <IconImage /> image
           </button>
           <button className="mrp-icon-btn mrp-icon-btn--remove"
-            onClick={onRemove} title="Remove" aria-label="Remove background">
+            onClick={onRemove} title="Remove" aria-label="Remove background" type="button">
             <IconTrash />
           </button>
         </div>
       </div>
-      <div className="mrp-field-sub">background-color</div>
+      <div className="mrp-field-sub">
+        {hasPureGradient
+          ? "gradient (colour edits the first stop)"
+          : "background-color"}
+      </div>
       <div className="mrp-color-row">
         <input type="color" className="mrp-color-swatch"
-          value={colorVal.startsWith("#") ? colorVal : "#ffffff"}
-          onChange={e => onStyle("background-color", e.target.value)} />
-        <input type="text" className="mrp-text-input" value={colorVal}
+          value={
+            hasPureGradient
+              ? swatchHex(parsedGrad?.stops?.[0]?.color || colorVal)
+              : (colorVal.startsWith("#") ? colorVal : "#ffffff")
+          }
+          onChange={e => handleSolidColor(e.target.value)} />
+        <input type="text" className="mrp-text-input"
+          value={
+            hasPureGradient
+              ? (parsedGrad?.stops?.[0]?.color || colorVal)
+              : colorVal
+          }
           placeholder="#ffffff or rgba(…) or transparent"
-          onChange={e => onStyle("background-color", e.target.value)} />
+          onChange={e => handleSolidColor(e.target.value)} />
       </div>
+
+      {showGrad && (
+        <div className="mrp-bg-gradient">
+          <div className="mrp-bg-gradient__title">Gradient</div>
+          <p className="mrp-bg-gradient__hint">
+            Edit angle and colour stops. Changing the main colour above updates the first stop.
+          </p>
+
+          <div
+            className="mrp-bg-gradient__preview"
+            style={{ backgroundImage: composeLinearGradient(parsedGrad || { angle: "135deg", stops: [{ color: "#111" }, { color: "#4c4294" }] }) }}
+          />
+
+          <label className="mrp-side-label">Angle — {angleNum}°</label>
+          <div className="mrp-slider-row">
+            <input
+              type="range"
+              className="mrp-slider"
+              min="0"
+              max="360"
+              step="1"
+              value={angleNum}
+              onChange={(e) => {
+                const g = parsedGrad || { angle: "180deg", stops: [{ color: "#111111" }, { color: "#4c4294" }] };
+                writeGradient({ ...g, angle: `${Number(e.target.value)}deg` });
+              }}
+            />
+            <span className="mrp-slider-val">{angleNum}°</span>
+          </div>
+
+          {(parsedGrad?.stops || [{ color: "#111111" }, { color: "#4c4294" }]).map((stop, i) => (
+            <div key={i} className="mrp-bg-gradient__stop">
+              <label className="mrp-side-label">Colour {i + 1}</label>
+              <div className="mrp-color-row">
+                <input
+                  type="color"
+                  className="mrp-color-swatch"
+                  value={swatchHex(stop.color)}
+                  onChange={(e) => {
+                    const g = parsedGrad || { angle: "180deg", stops: [{ color: "#111111" }, { color: "#4c4294" }] };
+                    const stops = g.stops.map((s, idx) =>
+                      idx === i ? { ...s, color: e.target.value } : s
+                    );
+                    writeGradient({ ...g, stops });
+                  }}
+                />
+                <input
+                  type="text"
+                  className="mrp-text-input"
+                  value={stop.color}
+                  onChange={(e) => {
+                    const g = parsedGrad || { angle: "180deg", stops: [{ color: "#111111" }, { color: "#4c4294" }] };
+                    const stops = g.stops.map((s, idx) =>
+                      idx === i ? { ...s, color: e.target.value } : s
+                    );
+                    writeGradient({ ...g, stops });
+                  }}
+                />
+              </div>
+            </div>
+          ))}
+
+          <div className="mrp-bg-gradient__actions">
+            {(parsedGrad?.stops?.length || 0) < 3 && (
+              <button
+                type="button"
+                className="mrp-expand-btn"
+                onClick={() => {
+                  const g = parsedGrad || { angle: "180deg", stops: [{ color: "#111111" }, { color: "#4c4294" }] };
+                  writeGradient({
+                    ...g,
+                    stops: [...g.stops, { color: "#ffffff", pos: "" }],
+                  });
+                }}
+              >
+                + Add colour
+              </button>
+            )}
+            <button type="button" className="mrp-expand-btn" onClick={clearGradientToSolid}>
+              Make solid
+            </button>
+          </div>
+        </div>
+      )}
 
       {showImg && (
         <div className="mrp-bg-img-section">
-          <div className="mrp-bg-img-section__title">Background image</div>
+          <div className="mrp-bg-img-section__title">Background picture</div>
 
           <ImageUploadField
             value={rawImgUrl}
@@ -1255,6 +1578,483 @@ function getPropLabel(prop) {
     "gap": "Space between children",
   };
   return fallbacks[prop] || prop;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SIMPLE LOOK CONTROLS (plain-language Style tab)
+// ─────────────────────────────────────────────────────────────────────────────
+
+const FONT_SIZE_STEPS = ["12px", "14px", "16px", "18px", "20px", "24px", "28px", "32px", "40px", "48px"];
+
+const SPACING_PRESETS = [
+  { id: "none",   label: "None",   value: "0" },
+  { id: "tight",  label: "Tight",  value: "8px" },
+  { id: "normal", label: "Normal", value: "16px" },
+  { id: "roomy",  label: "Roomy",  value: "24px" },
+  { id: "wide",   label: "Wide",   value: "40px" },
+];
+
+const CORNER_PRESETS = [
+  { id: "sharp", label: "Sharp", value: "0" },
+  { id: "soft",  label: "Soft",  value: "8px" },
+  { id: "round", label: "Round", value: "16px" },
+  { id: "pill",  label: "Pill",  value: "999px" },
+];
+
+const ALIGN_CHIPS = [
+  { value: "left",    label: "Left" },
+  { value: "center",  label: "Middle" },
+  { value: "right",   label: "Right" },
+  { value: "justify", label: "Even" },
+];
+
+const CASE_CHIPS = [
+  { value: "none",       label: "As typed" },
+  { value: "uppercase",  label: "ALL CAPS" },
+  { value: "capitalize", label: "Title" },
+  { value: "lowercase",  label: "lower" },
+];
+
+const LINE_HEIGHT_PRESETS = [
+  { id: "tight",  label: "Tight",  value: "1.2" },
+  { id: "normal", label: "Normal", value: "1.5" },
+  { id: "loose",  label: "Loose",  value: "1.8" },
+  { id: "airy",   label: "Airy",   value: "2.2" },
+];
+
+const GAP_PRESETS = [
+  { id: "none",   label: "None",   value: "0" },
+  { id: "tight",  label: "Tight",  value: "8px" },
+  { id: "normal", label: "Normal", value: "16px" },
+  { id: "roomy",  label: "Roomy",  value: "24px" },
+];
+
+const SHADOW_PRESETS = [
+  { id: "none",   label: "None",   value: "none" },
+  { id: "soft",   label: "Soft",   value: "0 4px 14px rgba(0,0,0,0.18)" },
+  { id: "strong", label: "Strong", value: "0 10px 28px rgba(0,0,0,0.28)" },
+  { id: "glow",   label: "Glow",   value: "0 0 0 3px rgba(108,92,231,0.35)" },
+];
+
+const BORDER_PRESETS = [
+  { id: "none",  label: "None",  value: "none" },
+  { id: "thin",  label: "Thin",  value: "1px solid #333333" },
+  { id: "thick", label: "Thick", value: "3px solid #333333" },
+];
+
+const WIDTH_PRESETS = [
+  { id: "auto", label: "Auto", value: "auto" },
+  { id: "half", label: "Half", value: "50%" },
+  { id: "full", label: "Full", value: "100%" },
+];
+
+const HEIGHT_PRESETS = [
+  { id: "auto",   label: "Auto",        value: "auto" },
+  { id: "short",  label: "Short",       value: "120px" },
+  { id: "medium", label: "Medium",      value: "240px" },
+  { id: "tall",   label: "Tall",        value: "400px" },
+  { id: "screen", label: "Full screen", value: "100vh" },
+];
+
+const JUSTIFY_CHIPS = [
+  { value: "flex-start",    label: "Start" },
+  { value: "center",        label: "Centre" },
+  { value: "flex-end",      label: "End" },
+  { value: "space-between", label: "Spread" },
+];
+
+const CROSS_ALIGN_CHIPS = [
+  { value: "flex-start", label: "Top" },
+  { value: "center",     label: "Middle" },
+  { value: "flex-end",   label: "Bottom" },
+  { value: "stretch",    label: "Stretch" },
+];
+
+const LAYOUT_MODE_CHIPS = [
+  { id: "row",    label: "Side by side", display: "flex", flexDirection: "row", columns: "" },
+  { id: "column", label: "Stacked",      display: "flex", flexDirection: "column", columns: "" },
+  { id: "grid-2", label: "Grid 2",       display: "grid", flexDirection: "", columns: "1fr 1fr" },
+  { id: "grid-3", label: "Grid 3",       display: "grid", flexDirection: "", columns: "1fr 1fr 1fr" },
+  { id: "grid-4", label: "Grid 4",       display: "grid", flexDirection: "", columns: "repeat(4, 1fr)" },
+];
+
+function detectLayoutMode(vals) {
+  const display = String(vals.display || "").toLowerCase();
+  const cols = String(vals["grid-template-columns"] || "").replace(/\s+/g, " ").trim().toLowerCase();
+  if (display === "grid" || cols) {
+    if (cols.includes("repeat(4") || (cols.match(/1fr/g) || []).length >= 4) return "grid-4";
+    if (cols.includes("repeat(3") || (cols.match(/1fr/g) || []).length === 3) return "grid-3";
+    if (cols.includes("repeat(2") || cols === "1fr 1fr" || (cols.match(/1fr/g) || []).length === 2) return "grid-2";
+    return "grid-2";
+  }
+  const dir = String(vals["flex-direction"] || "").toLowerCase();
+  if (dir === "column" || dir === "column-reverse") return "column";
+  if (dir === "row" || dir === "row-reverse" || display === "flex") return "row";
+  return "";
+}
+
+function nearestFontStep(val) {
+  const n = parseFloat(val);
+  if (!Number.isFinite(n)) return 2;
+  let best = 2;
+  let dist = Infinity;
+  FONT_SIZE_STEPS.forEach((s, i) => {
+    const d = Math.abs(parseFloat(s) - n);
+    if (d < dist) { dist = d; best = i; }
+  });
+  return best;
+}
+
+function matchPreset(val, presets) {
+  if (val == null || val === "") return null;
+  const norm = String(val).trim().toLowerCase().replace(/\s+/g, "");
+  const found = presets.find((p) => String(p.value).toLowerCase().replace(/\s+/g, "") === norm);
+  if (found) return found.id;
+  const n = parseFloat(val);
+  if (!Number.isFinite(n)) return null;
+  let best = null;
+  let dist = Infinity;
+  presets.forEach((p) => {
+    const pn = parseFloat(p.value);
+    if (!Number.isFinite(pn)) return;
+    const d = Math.abs(pn - n);
+    if (d < dist) { dist = d; best = p.id; }
+  });
+  return dist <= 4 ? best : null;
+}
+
+function matchShadowPreset(val) {
+  if (!val || val === "none") return "none";
+  const v = String(val).toLowerCase();
+  if (v.includes("108,92,231") || v.includes("108, 92, 231")) return "glow";
+  if (v.includes("28px") || v.includes("0.28")) return "strong";
+  if (v.includes("14px") || v.includes("0.18") || v.includes("rgba")) return "soft";
+  return null;
+}
+
+function matchBorderPreset(val) {
+  if (!val || val === "none" || val === "0") return "none";
+  const n = parseFloat(val);
+  if (Number.isFinite(n) && n >= 2.5) return "thick";
+  if (Number.isFinite(n) && n > 0) return "thin";
+  if (String(val).includes("3px")) return "thick";
+  if (String(val).includes("1px") || String(val).includes("solid")) return "thin";
+  return null;
+}
+
+function toColorInput(val) {
+  const v = String(val || "").trim();
+  if (/^#[0-9a-f]{6}$/i.test(v)) return v;
+  if (/^#[0-9a-f]{3}$/i.test(v)) {
+    const r = v[1], g = v[2], b = v[3];
+    return `#${r}${r}${g}${g}${b}${b}`;
+  }
+  return "#000000";
+}
+
+function isBoldWeight(val) {
+  const v = String(val || "").toLowerCase();
+  if (v === "bold" || v === "bolder") return true;
+  const n = parseInt(v, 10);
+  return Number.isFinite(n) && n >= 600;
+}
+
+function isItalicStyle(val) {
+  const v = String(val || "").toLowerCase();
+  return v === "italic" || v === "oblique";
+}
+
+function hasUnderline(val) {
+  return String(val || "").toLowerCase().includes("underline");
+}
+
+const CONTAINER_TAGS = new Set([
+  "div", "section", "article", "main", "header", "footer", "nav", "aside",
+  "form", "ul", "ol", "li", "figure", "figcaption", "blockquote",
+]);
+const MEDIA_TAGS = new Set(["img", "video", "audio", "iframe", "hr", "br", "svg", "canvas"]);
+
+function ChipRow({ label, chips, active, onPick }) {
+  return (
+    <div className="mrp-simple-row mrp-simple-row--stack">
+      <span className="mrp-simple-label">{label}</span>
+      <div className="mrp-simple-chips">
+        {chips.map((c) => {
+          const value = c.value ?? c.id;
+          const isOn = active === value || active === c.id;
+          return (
+            <button
+              key={value}
+              type="button"
+              className={`mrp-simple-chip ${isOn ? "mrp-simple-chip--active" : ""}`}
+              onClick={() => onPick(c.value !== undefined ? c.value : c.id, c)}
+            >
+              {c.label}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function SimpleLookPanel({ vals, onStyle, onStyles, tagName, schoolId }) {
+  const sizeIdx = nearestFontStep(vals["font-size"]);
+  const spacingId = matchPreset(vals.padding, SPACING_PRESETS);
+  const marginId = matchPreset(vals.margin, SPACING_PRESETS);
+  const gapId = matchPreset(vals.gap, GAP_PRESETS);
+  const cornerId = matchPreset(vals["border-radius"], CORNER_PRESETS);
+  const lineId = matchPreset(vals["line-height"], LINE_HEIGHT_PRESETS);
+  const widthId = matchPreset(vals.width, WIDTH_PRESETS);
+  const heightId = matchPreset(vals.height, HEIGHT_PRESETS);
+  const shadowId = matchShadowPreset(vals["box-shadow"]);
+  const borderId = matchBorderPreset(vals.border);
+  const align = vals["text-align"] || "";
+  const textCase = vals["text-transform"] || "none";
+  const bold = isBoldWeight(vals["font-weight"]);
+  const italic = isItalicStyle(vals["font-style"]);
+  const underline = hasUnderline(vals["text-decoration"]);
+  const tag = String(tagName || "").toLowerCase();
+  const isContainer = CONTAINER_TAGS.has(tag);
+  const showText = !isContainer && !MEDIA_TAGS.has(tag);
+  const showMediaFit = tag === "img" || tag === "video";
+  const layoutMode = detectLayoutMode(vals);
+  const justify = vals["justify-content"] || "";
+  const alignItems = vals["align-items"] || "";
+  const opacityNum = (() => {
+    const n = parseFloat(vals.opacity);
+    return Number.isFinite(n) ? n : 1;
+  })();
+
+  const pickChip = (prop) => (_value, chip) => {
+    onStyle(prop, chip.value);
+  };
+
+  const applyLayoutMode = (_value, chip) => {
+    const mode = chip;
+    if (mode.display === "grid") {
+      onStyles({
+        display: "grid",
+        "flex-direction": "",
+        "grid-template-columns": mode.columns,
+      });
+    } else {
+      onStyles({
+        display: "flex",
+        "flex-direction": mode.flexDirection,
+        "grid-template-columns": "",
+      });
+    }
+  };
+
+  return (
+    <div className="mrp-simple">
+      {showText && (
+        <div className="mrp-simple-card">
+          <p className="mrp-simple-card__title">Text</p>
+
+          <div className="mrp-simple-row">
+            <span className="mrp-simple-label">Colour</span>
+            <div className="mrp-simple-color">
+              <input
+                type="color"
+                className="mrp-color-swatch"
+                value={toColorInput(vals.color)}
+                onChange={(e) => onStyle("color", e.target.value)}
+                aria-label="Text colour"
+              />
+              <span className="mrp-simple-color-hint">Pick a colour</span>
+            </div>
+          </div>
+
+          <div className="mrp-simple-row">
+            <span className="mrp-simple-label">Size</span>
+            <div className="mrp-simple-stepper" role="group" aria-label="Text size">
+              <button
+                type="button"
+                className="mrp-simple-stepper__btn"
+                disabled={sizeIdx <= 0}
+                onClick={() => onStyle("font-size", FONT_SIZE_STEPS[Math.max(0, sizeIdx - 1)])}
+                aria-label="Make text smaller"
+              >
+                A−
+              </button>
+              <span className="mrp-simple-stepper__val">
+                {FONT_SIZE_STEPS[sizeIdx].replace("px", "")}
+              </span>
+              <button
+                type="button"
+                className="mrp-simple-stepper__btn"
+                disabled={sizeIdx >= FONT_SIZE_STEPS.length - 1}
+                onClick={() => onStyle("font-size", FONT_SIZE_STEPS[Math.min(FONT_SIZE_STEPS.length - 1, sizeIdx + 1)])}
+                aria-label="Make text bigger"
+              >
+                A+
+              </button>
+            </div>
+          </div>
+
+          <div className="mrp-simple-row">
+            <span className="mrp-simple-label">Style</span>
+            <div className="mrp-simple-chips">
+              <button
+                type="button"
+                className={`mrp-simple-chip ${bold ? "mrp-simple-chip--active" : ""}`}
+                onClick={() => onStyle("font-weight", bold ? "400" : "700")}
+              >
+                Bold
+              </button>
+              <button
+                type="button"
+                className={`mrp-simple-chip ${italic ? "mrp-simple-chip--active" : ""}`}
+                onClick={() => onStyle("font-style", italic ? "normal" : "italic")}
+              >
+                Italic
+              </button>
+              <button
+                type="button"
+                className={`mrp-simple-chip ${underline ? "mrp-simple-chip--active" : ""}`}
+                onClick={() => onStyle("text-decoration", underline ? "none" : "underline")}
+              >
+                Underline
+              </button>
+            </div>
+          </div>
+
+          <ChipRow label="Align" chips={ALIGN_CHIPS} active={align} onPick={pickChip("text-align")} />
+          <ChipRow label="Letter case" chips={CASE_CHIPS} active={textCase} onPick={pickChip("text-transform")} />
+          <ChipRow
+            label="Line spacing"
+            chips={LINE_HEIGHT_PRESETS}
+            active={lineId}
+            onPick={(_v, chip) => onStyle("line-height", chip.value)}
+          />
+        </div>
+      )}
+
+      {isContainer && (
+        <div className="mrp-simple-card">
+          <p className="mrp-simple-card__title">Box layout</p>
+          <ChipRow
+            label="How children line up"
+            chips={LAYOUT_MODE_CHIPS}
+            active={layoutMode}
+            onPick={applyLayoutMode}
+          />
+          <ChipRow
+            label="Space between children"
+            chips={GAP_PRESETS}
+            active={gapId}
+            onPick={(_v, chip) => onStyle("gap", chip.value)}
+          />
+          <ChipRow
+            label="Push children"
+            chips={JUSTIFY_CHIPS}
+            active={justify}
+            onPick={pickChip("justify-content")}
+          />
+          <ChipRow
+            label="Align children"
+            chips={CROSS_ALIGN_CHIPS}
+            active={alignItems}
+            onPick={pickChip("align-items")}
+          />
+        </div>
+      )}
+
+      <div className="mrp-simple-card">
+        <p className="mrp-simple-card__title">{isContainer ? "Box look" : showMediaFit ? "Picture look" : "Look"}</p>
+
+        <BackgroundRow
+          styleVals={vals}
+          onStyle={onStyle}
+          onStyles={onStyles}
+          onRemove={() => (onStyles || ((props) => Object.entries(props).forEach(([p, v]) => onStyle(p, v))))({
+            background: "",
+            "background-color": "",
+            "background-image": "",
+            "background-size": "",
+            "background-position": "",
+            "background-repeat": "",
+          })}
+          schoolId={schoolId}
+        />
+
+        <ChipRow
+          label="Space inside"
+          chips={SPACING_PRESETS}
+          active={spacingId}
+          onPick={(_v, chip) => onStyle("padding", chip.value)}
+        />
+        <ChipRow
+          label="Space outside"
+          chips={SPACING_PRESETS}
+          active={marginId}
+          onPick={(_v, chip) => onStyle("margin", chip.value)}
+        />
+        <ChipRow
+          label="Corners"
+          chips={CORNER_PRESETS}
+          active={cornerId}
+          onPick={(_v, chip) => onStyle("border-radius", chip.value)}
+        />
+        <ChipRow
+          label="Border"
+          chips={BORDER_PRESETS}
+          active={borderId}
+          onPick={(_v, chip) => onStyle("border", chip.value)}
+        />
+        <ChipRow
+          label="Shadow"
+          chips={SHADOW_PRESETS}
+          active={shadowId}
+          onPick={(_v, chip) => onStyle("box-shadow", chip.value)}
+        />
+        <ChipRow
+          label="Width"
+          chips={WIDTH_PRESETS}
+          active={widthId}
+          onPick={(_v, chip) => onStyle("width", chip.value)}
+        />
+        <ChipRow
+          label="Height"
+          chips={HEIGHT_PRESETS}
+          active={heightId}
+          onPick={(_v, chip) => onStyle("height", chip.value)}
+        />
+
+        {showMediaFit && (
+          <ChipRow
+            label="How picture fits"
+            chips={[
+              { value: "cover", label: "Fill" },
+              { value: "contain", label: "Fit" },
+              { value: "fill", label: "Stretch" },
+            ]}
+            active={vals["object-fit"] || ""}
+            onPick={pickChip("object-fit")}
+          />
+        )}
+
+        <div className="mrp-simple-row">
+          <span className="mrp-simple-label">See-through</span>
+          <div className="mrp-simple-opacity">
+            <input
+              type="range"
+              min="0"
+              max="1"
+              step="0.05"
+              value={opacityNum}
+              className="mrp-slider"
+              onChange={(e) => onStyle("opacity", e.target.value)}
+              aria-label="Transparency"
+            />
+            <span className="mrp-simple-stepper__val">{Math.round(opacityNum * 100)}%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1452,7 +2252,14 @@ function StyleAccordion({ group, props, currentVals, commitStyle, commitStyles, 
               styleVals={currentVals}
               onStyle={commitStyle}
               onStyles={commitStyles}
-              onRemove={() => removeStyleProp("background-color")}
+              onRemove={() => commitStyles({
+                background: "",
+                "background-color": "",
+                "background-image": "",
+                "background-size": "",
+                "background-position": "",
+                "background-repeat": "",
+              })}
               schoolId={schoolId} />
           )}
 
@@ -1595,6 +2402,7 @@ function StyleTab({ selectedElement, html, onHtmlChange }) {
   const [mobileVals,   setMobileVals]   = useState({});
   const [showPicker,   setShowPicker]   = useState(false);
   const [viewMode,     setViewMode]     = useState("desktop");
+  const [showAdvanced, setShowAdvanced] = useState(false);
 
   const currentVals    = viewMode === "mobile" ? mobileVals  : styleVals;
   const setCurrentVals = viewMode === "mobile" ? setMobileVals : setStyleVals;
@@ -1602,7 +2410,7 @@ function StyleTab({ selectedElement, html, onHtmlChange }) {
   // Sync when selected element changes
   useEffect(() => {
     if (!selectedElement) { setActiveProps([]); setStyleVals({}); setMobileVals({}); return; }
-    const defaults = getDefaultStyleProps(selectedElement.tagName);
+    const defaults = getDefaultStyleProps(selectedElement.tagName, selectedElement.outerHTML);
 
     // Always use the latest html via ref — avoids stale closure when a new
     // element is selected right after an edit, and avoids re-running on every
@@ -1648,6 +2456,13 @@ function StyleTab({ selectedElement, html, onHtmlChange }) {
     ["background-size","background-position","background-repeat"].forEach((p) => {
       if (inlineMap[p] && !vals[p]) vals[p] = inlineMap[p];
     });
+    [
+      "color","font-size","font-weight","font-style","text-align","text-decoration","text-transform","line-height",
+      "background-color","padding","margin","border-radius","border","box-shadow","width","height","opacity",
+      "gap","flex-direction","justify-content","align-items","display","grid-template-columns","object-fit",
+    ].forEach((p) => {
+      if (!(p in vals)) vals[p] = inlineMap[p] || "";
+    });
     setStyleVals(vals);
 
     const mediaMap = readMediaStyles(currentHtml, selectedElement.selector);
@@ -1657,7 +2472,15 @@ function StyleTab({ selectedElement, html, onHtmlChange }) {
     ["position","top","bottom","left","right","z-index"].forEach(p => {
       if (!(p in mVals)) mVals[p] = mediaMap[p] || "";
     });
+    [
+      "color","font-size","font-weight","font-style","text-align","text-decoration","text-transform","line-height",
+      "background-color","padding","margin","border-radius","border","box-shadow","width","height","opacity",
+      "gap","flex-direction","justify-content","align-items","display","grid-template-columns","object-fit",
+    ].forEach((p) => {
+      if (!(p in mVals)) mVals[p] = mediaMap[p] || "";
+    });
     setMobileVals(mVals);
+    setShowAdvanced(false);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedElement?.selector]);
 
@@ -1669,9 +2492,9 @@ function StyleTab({ selectedElement, html, onHtmlChange }) {
       onHtmlChange(patchMediaStyle(html, sel, prop, value));
     } else {
       let newHtml = patchStyle(html, sel, prop, value);
-      if (prop === "flex-direction" && value) {
+      if (["flex-direction", "justify-content", "align-items", "gap"].includes(prop) && value) {
         newHtml = patchStyle(newHtml, sel, "display", "flex");
-        setStyleVals(v => ({ ...v, display: "flex" }));
+        setStyleVals(v => ({ ...v, display: "flex", [prop]: value }));
       }
       onHtmlChange(newHtml);
     }
@@ -1725,59 +2548,86 @@ function StyleTab({ selectedElement, html, onHtmlChange }) {
 
   return (
     <div className="mrp-style-tab">
-      {/* ── Desktop / Mobile toggle ─────────────────────────────── */}
-      <div className="mrp-view-toggle">
-        <button
-          className={`mrp-view-btn ${viewMode === "desktop" ? "mrp-view-btn--active" : ""}`}
-          onClick={() => setViewMode("desktop")}
-          title="Edit desktop styles (inline)"
-        >
-          <IconDesktop /> Desktop
-        </button>
-        <button
-          className={`mrp-view-btn ${viewMode === "mobile" ? "mrp-view-btn--active mrp-view-btn--mobile" : ""}`}
-          onClick={() => setViewMode("mobile")}
-          title="Edit mobile styles (@media max-width: 768px)"
-        >
-          <IconMobile /> Mobile
-        </button>
-      </div>
-
-      {viewMode === "mobile" && (
-        <div className="mrp-mobile-banner">
-          📱 Styles here only apply on screens ≤ 768 px wide
+      <div className="mrp-style-tab__scroll">
+        <div className="mrp-simple-tip">
+          <strong>How to edit:</strong> click something to style it. Double-click text on the page to change the words.
         </div>
-      )}
 
-      {/* ── Accordion groups ────────────────────────────────────── */}
-      <div className="mrp-accordions">
-        {showTableThemes && viewMode === "desktop" && sel && (
-          <TableStylePicker html={html} selector={sel} onHtmlChange={onHtmlChange} />
-        )}
-        {STYLE_GROUPS.map(group => (
-          <StyleAccordion
-            key={group.id}
-            group={group}
-            props={grouped[group.id] || []}
-            currentVals={currentVals}
-            commitStyle={commitStyle}
-            commitStyles={commitStyles}
-            removeStyleProp={removeStyleProp}
-            showFlexArrows={showFlexArrows}
-            schoolId={schoolId}
-          />
-        ))}
-      </div>
-
-      {/* ── Add style property ──────────────────────────────────── */}
-      <div className="mrp-style-tab__footer">
-        {showPicker ? (
-          <AddStylePicker existingProps={activeProps}
-            onPick={addStyleProp} onClose={() => setShowPicker(false)} />
-        ) : (
-          <button className="mrp-add-style-btn" onClick={() => setShowPicker(true)}>
-            <IconPlus /> Add style property
+        <div className="mrp-view-toggle">
+          <button
+            className={`mrp-view-btn ${viewMode === "desktop" ? "mrp-view-btn--active" : ""}`}
+            onClick={() => setViewMode("desktop")}
+            title="Edit how it looks on a computer"
+          >
+            <IconDesktop /> Computer
           </button>
+          <button
+            className={`mrp-view-btn ${viewMode === "mobile" ? "mrp-view-btn--active mrp-view-btn--mobile" : ""}`}
+            onClick={() => setViewMode("mobile")}
+            title="Edit how it looks on a phone"
+          >
+            <IconMobile /> Phone
+          </button>
+        </div>
+
+        {viewMode === "mobile" && (
+          <div className="mrp-mobile-banner">
+            These changes only show on phones (small screens).
+          </div>
+        )}
+
+        <SimpleLookPanel
+          vals={currentVals}
+          onStyle={commitStyle}
+          onStyles={commitStyles}
+          tagName={selectedElement.tagName}
+          schoolId={schoolId}
+        />
+
+        {showTableThemes && viewMode === "desktop" && sel && (
+          <div className="mrp-simple-card mrp-simple-card--table">
+            <p className="mrp-simple-card__title">Table look</p>
+            <TableStylePicker html={html} selector={sel} onHtmlChange={onHtmlChange} />
+          </div>
+        )}
+
+        <button
+          type="button"
+          className={`mrp-more-options ${showAdvanced ? "mrp-more-options--open" : ""}`}
+          onClick={() => setShowAdvanced((v) => !v)}
+        >
+          {showAdvanced ? "Hide extra options" : "More options (advanced)"}
+        </button>
+
+        {showAdvanced && (
+          <>
+            <div className="mrp-accordions">
+              {STYLE_GROUPS.map(group => (
+                <StyleAccordion
+                  key={group.id}
+                  group={group}
+                  props={grouped[group.id] || []}
+                  currentVals={currentVals}
+                  commitStyle={commitStyle}
+                  commitStyles={commitStyles}
+                  removeStyleProp={removeStyleProp}
+                  showFlexArrows={showFlexArrows}
+                  schoolId={schoolId}
+                />
+              ))}
+            </div>
+
+            <div className="mrp-style-tab__footer">
+              {showPicker ? (
+                <AddStylePicker existingProps={activeProps}
+                  onPick={addStyleProp} onClose={() => setShowPicker(false)} />
+              ) : (
+                <button className="mrp-add-style-btn" onClick={() => setShowPicker(true)}>
+                  <IconPlus /> Add style property
+                </button>
+              )}
+            </div>
+          </>
         )}
       </div>
     </div>
@@ -1948,9 +2798,10 @@ function HrefField({ value, onChange, html, placeholder }) {
   );
 }
 
-function AttributesTab({ selectedElement, html, onHtmlChange, schoolId }) {
-  const defs = getAttrDefs(selectedElement?.tagName);
+function AttributesTab({ selectedElement, html, onHtmlChange, schoolId, onSelectNode }) {
+  const defs = getAttrDefs(selectedElement?.tagName, selectedElement?.outerHTML);
   const sel  = selectedElement?.selector;
+  const tag  = (selectedElement?.tagName || "").toLowerCase();
 
   // local state mirror for attr values so input stays responsive
   const [vals, setVals] = useState({});
@@ -1964,6 +2815,12 @@ function AttributesTab({ selectedElement, html, onHtmlChange, schoolId }) {
         initial._text = getTextFromHtml(selectedElement.outerHTML || "");
       } else if (d.type === "checkbox") {
         initial[d.key] = selectedElement.outerHTML?.includes(` ${d.key}`) ? "true" : "false";
+      } else if (d.key === "href" && tag === "button") {
+        // Buttons may store a pending link as data-href before conversion
+        initial.href =
+          getAttrFromHtml(selectedElement.outerHTML || "", "data-href") ||
+          getAttrFromHtml(selectedElement.outerHTML || "", "href") ||
+          "";
       } else {
         initial[d.key] = getAttrFromHtml(selectedElement.outerHTML || "", d.key);
       }
@@ -1982,6 +2839,21 @@ function AttributesTab({ selectedElement, html, onHtmlChange, schoolId }) {
     );
   }
 
+  const reselectByHleId = (newHtml, hleId) => {
+    if (!onSelectNode || !hleId) return;
+    const walk = (nodes) => {
+      for (const n of nodes || []) {
+        // Match the stamped element only — descendant selectors also embed this id
+        if (n.id === hleId) return n;
+        const found = walk(n.children);
+        if (found) return found;
+      }
+      return null;
+    };
+    const node = walk(parseLayoutTree(newHtml));
+    if (node) onSelectNode(node);
+  };
+
   const commit = (key, value) => {
     // Strip leading # if user types it into the id field
     const cleanValue = key === "id" ? value.replace(/^#+/, "") : value;
@@ -1990,6 +2862,13 @@ function AttributesTab({ selectedElement, html, onHtmlChange, schoolId }) {
       onHtmlChange(patchTextContent(html, sel, cleanValue));
     } else if (defs.find(d => d.key === key)?.type === "checkbox") {
       onHtmlChange(patchAttribute(html, sel, key, cleanValue === "true" ? "" : null));
+    } else if ((key === "href" || key === "target") && (tag === "button" || tag === "a")) {
+      // Links + buttons: use shared link patcher (converts button → <a>)
+      const nextHref   = key === "href"   ? cleanValue : (vals.href ?? "");
+      const nextTarget = key === "target" ? cleanValue : (vals.target ?? "");
+      const { html: newHtml, hleId } = patchElementLink(html, sel, nextHref, nextTarget || null);
+      onHtmlChange(newHtml);
+      if (tag === "button") reselectByHleId(newHtml, hleId);
     } else {
       onHtmlChange(patchAttribute(html, sel, key, cleanValue));
     }
@@ -2081,7 +2960,7 @@ function AttributesTab({ selectedElement, html, onHtmlChange, schoolId }) {
 
 const TABS = [
   { id: "attrs",     label: "Content",  Icon: IconType    },
-  { id: "styles",    label: "Style",    Icon: IconPaint   },
+  { id: "styles",    label: "Look",     Icon: IconPaint   },
   { id: "template",  label: "Template", Icon: IconTemplate },
 ];
 
@@ -2092,22 +2971,25 @@ const TABS = [
  *   onHtmlChange     – fn(newHtml) commit to history
  *   reportMode       – when true, show Template tab for report card sections
  */
-export default function ManualRightPanel({ selectedElement, html, onHtmlChange, reportMode = false }) {
+export default function ManualRightPanel({ selectedElement, html, onHtmlChange, onSelectNode, reportMode = false }) {
   const { schoolId } = useParams();
   const [activeTab, setActiveTab] = useState("attrs");
 
-  // When selection changes, open Template tab in report mode if a section is selected
+  // When the selected element changes, default to Content (or Template in report mode).
+  // Do NOT depend on `html` — style edits update html and must not yank the user off Style.
   useEffect(() => {
+    if (!selectedElement?.selector) return;
     if (
       reportMode &&
-      selectedElement?.selector &&
       detectReportSection(html, selectedElement.selector)
     ) {
       setActiveTab("template");
     } else {
       setActiveTab("attrs");
     }
-  }, [selectedElement?.selector, reportMode, html]);
+    // html intentionally omitted: only re-evaluate when selection / report mode changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedElement?.selector, reportMode]);
 
   const noSelection = !selectedElement;
   const visibleTabs = reportMode ? TABS : TABS.filter((t) => t.id !== "template");
@@ -2148,9 +3030,10 @@ export default function ManualRightPanel({ selectedElement, html, onHtmlChange, 
             <div className="manual-side-panel__empty-icon">
               <IconPaint />
             </div>
-            <p className="manual-side-panel__empty-title">No element selected</p>
+            <p className="manual-side-panel__empty-title">Tap something to edit</p>
             <p className="manual-side-panel__empty-desc">
-              Click any element in the preview<br />to edit its content and styles.
+              Click any part of the page to style it.<br />
+              Double-click text to change the words.
             </p>
           </div>
         ) : (
@@ -2161,6 +3044,7 @@ export default function ManualRightPanel({ selectedElement, html, onHtmlChange, 
                 html={html}
                 onHtmlChange={onHtmlChange}
                 schoolId={schoolId}
+                onSelectNode={onSelectNode}
               />
             )}
             {activeTab === "styles" && (

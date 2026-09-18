@@ -63,10 +63,31 @@ function NodeIcon({ type }) {
   return <span className="lt-node-icon"><Comp /></span>;
 }
 
+// Match preview ↔ tree selectors even if classes differ slightly.
+// Descendants embed an ancestor's data-hle-id in their path — do NOT treat
+// a shared hle-id as identity unless both selectors are that stamped root.
+function selectorsMatch(a, b) {
+  if (!a || !b) return false;
+  if (a === b) return true;
+  const strip = (s) => s.replace(/\.[a-zA-Z0-9_-]+/g, "").replace(/\s+/g, " ").trim();
+  const sa = strip(a);
+  const sb = strip(b);
+  if (sa === sb) return true;
+
+  // Pure hle roots only: "section[data-hle-id=…]" or "[data-hle-id=…]" (no " > ")
+  const hleRootId = (s) => {
+    const m = strip(s).match(/^(?:[a-zA-Z0-9_-]+)?\[data-hle-id="([^"]+)"\]$/);
+    return m ? m[1] : null;
+  };
+  const idA = hleRootId(a);
+  const idB = hleRootId(b);
+  return !!(idA && idB && idA === idB);
+}
+
 // Pure recursive helper — does this subtree contain `selector`?
 function subtreeContains(node, selector) {
   if (!selector || !node) return false;
-  if (node.selector === selector) return true;
+  if (selectorsMatch(node.selector, selector)) return true;
   return (node.children || []).some(c => subtreeContains(c, selector));
 }
 
@@ -158,24 +179,26 @@ function TreeNode({
   dragState, setDragState, onOpenModal,
   expandAll,
 }) {
-  const [open,        setOpen]        = useState(false);
+  const hasChildren = node.children && node.children.length > 0;
+  const isNestable  = NESTABLE_TAGS.has(node.tag);
+  const isSelected  = selectorsMatch(selectedSelector, node.selector);
+  const isDragging  = dragState?.selector === node.selector;
+
+  const [open,        setOpen]        = useState(
+    () => !!expandAll || (!!selectedSelector && subtreeContains(node, selectedSelector))
+  );
   const [showActions, setShowActions] = useState(false);
   const [addOpen,     setAddOpen]     = useState(false);
   const [dropZone,    setDropZone]    = useState(null); // "before"|"inside"|"after"|null
   const addBtnRef = useRef(null);
   const rowRef    = useRef(null);
 
-  const hasChildren = node.children && node.children.length > 0;
-  const isNestable  = NESTABLE_TAGS.has(node.tag);
-  const isSelected  = selectedSelector === node.selector;
-  const isDragging  = dragState?.selector === node.selector;
-
   // When selectedSelector changes (preview click or external):
   // • if this node IS selected → scroll its row into view
   // • if this node CONTAINS the selected node → expand so it becomes visible
   useEffect(() => {
     if (!selectedSelector) return;
-    if (isSelected) {
+    if (selectorsMatch(selectedSelector, node.selector)) {
       // Small timeout lets React finish rendering the open state of ancestors first
       setTimeout(() => {
         rowRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
@@ -185,8 +208,16 @@ function TreeNode({
     }
   }, [selectedSelector]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Expand/collapse-all — never collapse the path to the current selection
   useEffect(() => {
-    if (hasChildren) setOpen(!!expandAll);
+    if (!hasChildren) return;
+    if (expandAll) {
+      setOpen(true);
+    } else if (selectedSelector && subtreeContains(node, selectedSelector)) {
+      setOpen(true);
+    } else {
+      setOpen(false);
+    }
   }, [expandAll]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleClick  = (e) => { e.stopPropagation(); onSelect(node); };

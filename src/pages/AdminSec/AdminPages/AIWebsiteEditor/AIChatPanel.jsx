@@ -23,19 +23,6 @@ const IconSend = () => (
     <path d="M22 2L15 22l-4-9-9-4 20-7z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
   </svg>
 );
-const IconCoin = () => (
-  <svg width="11" height="11" viewBox="0 0 24 24" fill="none">
-    <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2"/>
-    <path d="M12 7v1m0 8v1M9 12h6" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-  </svg>
-);
-const IconWarn = () => (
-  <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
-    <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-    <line x1="12" y1="9" x2="12" y2="13" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-    <line x1="12" y1="17" x2="12.01" y2="17" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-  </svg>
-);
 
 // ── single message ────────────────────────────────────────────────────────────
 function Message({ msg }) {
@@ -96,9 +83,7 @@ const IconX = () => (
  * Props:
  *   messages        – array of { id, role, content, time }
  *   isThinking      – bool
- *   tokenCount      – number
  *   onSend          – fn(promptText, selectedElement?, configId?)
- *   onBuyTokens     – fn()
  *   selectedElement – { label, selector, textContent, tagName } | null
  *   onClearElement  – fn()
  *   models          – [{ config_id, label, model, is_active }]  — available AI models
@@ -106,9 +91,7 @@ const IconX = () => (
 export default function AIChatPanel({
   messages,
   isThinking,
-  tokenCount,
   onSend,
-  onBuyTokens,
   selectedElement,
   onClearElement,
   models = [],
@@ -117,8 +100,6 @@ export default function AIChatPanel({
   const [configId,  setConfigId]  = useState("");   // selected model config_id
   const bottomRef = useRef(null);
   const textaRef  = useRef(null);
-
-  const hasTokens = tokenCount > 0;
 
   // Default to active model when list loads
   useEffect(() => {
@@ -135,7 +116,7 @@ export default function AIChatPanel({
 
   const handleSend = () => {
     const text = prompt.trim();
-    if (!text || !hasTokens || isThinking) return;
+    if (!text || isThinking) return;
     onSend(text, selectedElement ?? null, configId || null);
     setPrompt("");
     textaRef.current?.focus();
@@ -192,15 +173,6 @@ export default function AIChatPanel({
 
       {/* input area */}
       <div className="aie-chat-input-wrap">
-        {/* no-token banner */}
-        {!hasTokens && (
-          <button className="aie-no-token-banner" onClick={onBuyTokens}>
-            <IconWarn />
-            <span>You have no tokens left</span>
-            <span>Buy tokens →</span>
-          </button>
-        )}
-
         {/* ── model picker — always shown when models exist ─────────── */}
         {models.length > 0 && (
           <div className="aie-model-picker">
@@ -252,21 +224,19 @@ export default function AIChatPanel({
             placeholder={
               selectedElement
                 ? `Edit the ${selectedElement.tagName}…`
-                : hasTokens
-                  ? "Describe what to change… or click an element in preview"
-                  : "Buy tokens to edit with AI"
+                : "Describe what to change… or click an element in preview"
             }
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
             onKeyDown={handleKey}
-            disabled={!hasTokens || isThinking}
+            disabled={isThinking}
             rows={1}
             aria-label="AI prompt input"
           />
           <button
             className="aie-send-btn"
             onClick={handleSend}
-            disabled={!prompt.trim() || !hasTokens || isThinking}
+            disabled={!prompt.trim() || isThinking}
             aria-label="Send prompt"
           >
             <IconSend />
@@ -275,10 +245,7 @@ export default function AIChatPanel({
 
         <div className="aie-input-hint">
           <span className="aie-input-hint-text">
-            Shift+Enter for new line · Enter to send
-          </span>
-          <span className="aie-token-cost">
-            <IconCoin /> 1 token per edit
+            Shift+Enter for new line · Enter to send · Free to use
           </span>
         </div>
       </div>

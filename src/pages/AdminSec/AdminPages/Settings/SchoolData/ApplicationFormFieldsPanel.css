@@ -130,6 +130,33 @@
   background: #f7f7f7;
 }
 
+.affp-field--locked {
+  cursor: not-allowed;
+  opacity: 1;
+}
+
+.affp-field--locked:hover {
+  background: #f7f7f7;
+}
+
+.affp-field--locked .affp-field-check {
+  opacity: 0.85;
+}
+
+.affp-required-tag {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 2px 7px;
+  border-radius: 99px;
+  background: #111111;
+  color: #ffffff;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  vertical-align: middle;
+}
+
 .affp-field input {
   position: absolute;
   opacity: 0;
@@ -275,4 +302,13 @@
 [data-theme="dark"] .affp-field--on .affp-field-content small {
   background: #333333;
   color: #888888;
+}
+
+[data-theme="dark"] .affp-field--locked:hover {
+  background: #1e1e1e;
+}
+
+[data-theme="dark"] .affp-required-tag {
+  background: #f0f0f0;
+  color: #111111;
 }

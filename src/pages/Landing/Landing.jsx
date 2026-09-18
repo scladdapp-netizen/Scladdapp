@@ -2,17 +2,14 @@ import { useNavigate } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
 import PublicHeader from "../../components/PublicHeader/PublicHeader";
 import Footer from "../../components/Footer/Footer";
+import { getMonthlyRate, formatNaira, isFreePlan } from "../../utils/planPricing";
+import { FeatureVisual, BulletIcon } from "./FeatureIcons";
 import "./Landing.css";
 
 const API_BASE_URL = `${import.meta.env.VITE_API_BASE_URL}`;
 
 const INTRO_SECTION_BG = { r: 26, g: 26, b: 26 }; // #1a1a1a — matches .intro-video-section
 const FEATURES_SECTION_BG = { r: 0, g: 0, b: 0 };
-const HSCROLL_ENTER_VIEWS = 1;     // extra viewport of scroll for enter/exit bg fade
-const HSCROLL_BG_DONE = 0.24;      // engagement at which bg reaches full black
-const HSCROLL_CONTENT_START = 0.24;
-const HSCROLL_CONTENT_DONE = 0.34;
-const HSCROLL_MOVE_START = 0.34;
 
 const TYPEWRITER_PHRASES = [
   "Students Stay Informed",
@@ -23,33 +20,55 @@ const TYPEWRITER_PHRASES = [
 const FEATURES = [
   {
     title: "Student Management",
-    img: "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=400&q=80",
-    bullets: ["Student records", "Attendance", "Results", "Promotion history"],
+    icon: "students",
+    accent: "#00cec9",
+    bullets: [
+      { text: "Student records", icon: "records" },
+      { text: "Attendance", icon: "attendance" },
+      { text: "Results", icon: "results" },
+      { text: "Promotion history", icon: "promotion" },
+    ],
   },
   {
     title: "Staff Management",
-    img: "https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=400&q=80",
-    bullets: ["Teacher profiles", "Salary / payroll", "Assigned classes", "Subjects taught"],
+    icon: "staff",
+    accent: "#6c5ce7",
+    bullets: [
+      { text: "Teacher profiles", icon: "profiles" },
+      { text: "Salary / payroll", icon: "payroll" },
+      { text: "Assigned classes", icon: "classes" },
+      { text: "Subjects taught", icon: "subjects" },
+    ],
   },
   {
     title: "Timetable System",
-    img: "https://images.unsplash.com/photo-1606761568499-6d2451b23c66?w=400&q=80",
-    bullets: ["Auto timetable generation", "Class schedules", "Teacher schedules"],
+    icon: "timetable",
+    accent: "#74b9ff",
+    bullets: [
+      { text: "Auto timetable generation", icon: "auto" },
+      { text: "Class schedules", icon: "schedule" },
+      { text: "Teacher schedules", icon: "teacher" },
+    ],
   },
   {
     title: "Result & Report Cards",
-    img: "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=400&q=80",
-    bullets: ["End-of-term results", "GPA calculation", "Printable report cards"],
+    icon: "reports",
+    accent: "#fd79a8",
+    bullets: [
+      { text: "End-of-term results", icon: "term" },
+      { text: "GPA calculation", icon: "gpa" },
+      { text: "Printable report cards", icon: "printable" },
+    ],
   },
-  // {
-  //   title: "School Fees",
-  //   img: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=400&q=80",
-  //   bullets: ["Online payment", "Payment history", "Receipts", "Debt tracking"],
-  // },
   {
     title: "Notifications",
-    img: "https://images.unsplash.com/photo-1611532736597-de2d4265fba3?w=400&q=80",
-    bullets: ["Announcements", "Exam alerts",  "SMS / email"],
+    icon: "notifications",
+    accent: "#fdcb6e",
+    bullets: [
+      { text: "Announcements", icon: "announcements" },
+      { text: "Exam alerts", icon: "exam" },
+      { text: "SMS / email", icon: "sms" },
+    ],
   },
 ];
 
@@ -139,292 +158,12 @@ function CtaTestimonials() {
   );
 }
 
-const Landing = () => {
-  const navigate = useNavigate();
+function HeroTypewriter() {
   const [displayed, setDisplayed] = useState("");
   const [phraseIndex, setPhraseIndex] = useState(0);
   const [charIndex, setCharIndex] = useState(0);
   const [deleting, setDeleting] = useState(false);
   const timeoutRef = useRef(null);
-  const hWrapperRef = useRef(null);
-  const hTrackRef = useRef(null);
-  const hProgressRef = useRef(null);
-  const introVideoRef = useRef(null);
-  const h2WrapperRef = useRef(null);
-  const h2TrackRef = useRef(null);
-  const h3WrapperRef = useRef(null);
-  const h3TrackRef = useRef(null);
-
-  const [plans, setPlans] = useState([]);
-  const [plansLoading, setPlansLoading] = useState(true);
-  const [billingCycle, setBillingCycle] = useState("monthly");
-  const [navDark, setNavDark] = useState(false);
-
-  useEffect(() => {
-    fetch(`${API_BASE_URL}/api/subscription/plans`)
-      .then(r => r.json())
-      .then(d => { if (d.success) setPlans(d.data); })
-      .catch(() => {})
-      .finally(() => setPlansLoading(false));
-  }, []);
-
-  const getPrice = (plan) => {
-    if (plan.plan_type === "Free") return "Free";
-    const base = billingCycle === "monthly" ? plan.monthly_price
-      : billingCycle === "quarterly" ? plan.quataly_price
-      : plan.yearly_price;
-    return `₦${(Number(base) || 0).toLocaleString()}`;
-  };
-
-  const getPeriod = () =>
-    billingCycle === "monthly" ? "/mo" : billingCycle === "quarterly" ? "/qtr" : "/yr";
-
-  const handleSelectPlan = (plan) => {
-    navigate("/setup/1", { state: { plan } });
-  };
-
-  const getHscrollEngagement = (wrapper) => {
-    const vh = window.innerHeight;
-    const rect = wrapper.getBoundingClientRect();
-    const scrollRange = Math.max(1, wrapper.offsetHeight - vh);
-
-    // Section not in view yet (below fold)
-    if (rect.top >= vh) return 0;
-    // Scrolled past section (above fold)
-    if (rect.bottom <= 0) return 1;
-
-    // Approaching sticky — bg fades in before content can appear
-    if (rect.top > 0) {
-      return (1 - rect.top / vh) * 0.18;
-    }
-
-    // Sticky zone — extra lead-in scroll, then horizontal section
-    const raw = Math.max(0, Math.min(1, -rect.top / scrollRange));
-    return 0.18 + raw * 0.82;
-  };
-
-  const applyHscrollSection = (wrapper, track, sticky) => {
-    const maxTranslate = track.scrollWidth - window.innerWidth;
-    const engagement = getHscrollEngagement(wrapper);
-
-    const bgT = Math.min(1, engagement / HSCROLL_BG_DONE);
-    const r = Math.round(INTRO_SECTION_BG.r + (FEATURES_SECTION_BG.r - INTRO_SECTION_BG.r) * bgT);
-    const g = Math.round(INTRO_SECTION_BG.g + (FEATURES_SECTION_BG.g - INTRO_SECTION_BG.g) * bgT);
-    const b = Math.round(INTRO_SECTION_BG.b + (FEATURES_SECTION_BG.b - INTRO_SECTION_BG.b) * bgT);
-    const bgColor = `rgb(${r}, ${g}, ${b})`;
-    wrapper.style.backgroundColor = bgColor;
-    if (introVideoRef.current) {
-      introVideoRef.current.style.backgroundColor = bgColor;
-    }
-
-    let contentOpacity = 0;
-    if (engagement > HSCROLL_CONTENT_START) {
-      contentOpacity = Math.min(
-        1,
-        (engagement - HSCROLL_CONTENT_START) / (HSCROLL_CONTENT_DONE - HSCROLL_CONTENT_START)
-      );
-    }
-
-    let scrollT = 0;
-    if (engagement > HSCROLL_MOVE_START) {
-      scrollT = Math.min(1, (engagement - HSCROLL_MOVE_START) / (1 - HSCROLL_MOVE_START));
-    }
-
-    if (maxTranslate > 0) {
-      const move = scrollT * maxTranslate;
-      track.style.transform = `translateX(-${move}px)`;
-    } else {
-      track.style.transform = "translateX(0)";
-    }
-
-    if (sticky) {
-      sticky.style.opacity = String(contentOpacity);
-      sticky.style.pointerEvents = contentOpacity > 0.05 ? "" : "none";
-    }
-
-    const handle = wrapper.querySelector(".hscroll-pull-handle");
-    if (handle) {
-      let handleOpacity = 0;
-      if (engagement > 0.02 && engagement < HSCROLL_CONTENT_DONE) {
-        handleOpacity = engagement <= HSCROLL_CONTENT_START
-          ? Math.min(1, (engagement - 0.02) / 0.1)
-          : Math.max(0, 1 - contentOpacity);
-      }
-      handle.style.opacity = String(handleOpacity);
-      const dragOffset = Math.min(engagement / HSCROLL_BG_DONE, 1) * -18;
-      handle.style.transform = `translateX(-50%) translateY(${dragOffset}px)`;
-    }
-
-    if (hProgressRef.current) {
-      hProgressRef.current.style.width = `${scrollT * 100}%`;
-    }
-  };
-
-  // Horizontal scroll handler
-  useEffect(() => {
-    const wrapper = hWrapperRef.current;
-    const track = hTrackRef.current;
-    const totalViews = FEATURES.length + HSCROLL_ENTER_VIEWS;
-
-    const updateHeight = () => {
-      if (!wrapper || !track) return;
-      const sticky = wrapper.querySelector(".hscroll-sticky");
-      const maxTranslate = track.scrollWidth - window.innerWidth;
-      if (maxTranslate <= 0) {
-        const introBg = `rgb(${INTRO_SECTION_BG.r}, ${INTRO_SECTION_BG.g}, ${INTRO_SECTION_BG.b})`;
-        wrapper.style.height = "auto";
-        wrapper.style.backgroundColor = introBg;
-        if (introVideoRef.current) {
-          introVideoRef.current.style.backgroundColor = introBg;
-        }
-        track.style.transform = "translateX(0)";
-        if (sticky) {
-          sticky.style.opacity = "1";
-          sticky.style.pointerEvents = "";
-        }
-      } else {
-        wrapper.style.height = `${totalViews * 100}vh`;
-        applyHscrollSection(wrapper, track, sticky);
-      }
-    };
-
-    const onScroll = () => {
-      if (!wrapper || !track) return;
-      const sticky = wrapper.querySelector(".hscroll-sticky");
-      applyHscrollSection(wrapper, track, sticky);
-    };
-
-    updateHeight();
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", updateHeight);
-    return () => {
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", updateHeight);
-    };
-  }, []);
-
-  // Reverse horizontal scroll handler (Stack 2)
-  useEffect(() => {
-    const wrapper = h2WrapperRef.current;
-    const track = h2TrackRef.current;
-
-    const updateHeight = () => {
-      if (!wrapper || !track) return;
-      const maxTranslate = track.scrollWidth - window.innerWidth;
-      if (maxTranslate <= 0) {
-        wrapper.style.height = "auto";
-        track.style.transform = "translateX(0)";
-        const sticky = wrapper.querySelector(".hscroll2-sticky");
-        if (sticky) sticky.style.opacity = "1";
-      } else {
-        wrapper.style.height = `${3 * 100}vh`;
-      }
-    };
-
-    const onScroll = () => {
-      if (!wrapper || !track) return;
-      const maxTranslate = track.scrollWidth - window.innerWidth;
-      if (maxTranslate <= 0) return;
-      const rect = wrapper.getBoundingClientRect();
-      const progress = -rect.top / (wrapper.offsetHeight - window.innerHeight);
-      const move = Math.max(0, Math.min((1 - progress) * maxTranslate, maxTranslate));
-      track.style.transform = `translateX(-${move}px)`;
-      const sticky = wrapper.querySelector(".hscroll2-sticky");
-      if (sticky) sticky.style.opacity = Math.min(progress / 0.08, 1);
-    };
-
-    updateHeight();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", updateHeight);
-    return () => {
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", updateHeight);
-    };
-  }, []);
-
-  // Pricing horizontal scroll (left-to-right, same direction as section 1)
-  useEffect(() => {
-    const wrapper = h3WrapperRef.current;
-    const track = h3TrackRef.current;
-
-    const updateHeight = () => {
-      if (!wrapper || !track) return;
-      const maxTranslate = track.scrollWidth - window.innerWidth;
-      if (maxTranslate <= 0) {
-        // all cards fit — no scroll needed, collapse to normal height
-        wrapper.style.height = "auto";
-        track.style.transform = "translateX(0)";
-        const sticky = wrapper.querySelector(".pricing-hscroll-sticky");
-        if (sticky) sticky.style.opacity = "1";
-      } else {
-        wrapper.style.height = `${(plans.length || 4) * 100}vh`;
-      }
-    };
-
-    const onScroll = () => {
-      if (!wrapper || !track) return;
-      const maxTranslate = track.scrollWidth - window.innerWidth;
-      if (maxTranslate <= 0) return; // nothing to scroll
-      const rect = wrapper.getBoundingClientRect();
-      const progress = -rect.top / (wrapper.offsetHeight - window.innerHeight);
-      const move = Math.max(0, Math.min(progress * maxTranslate, maxTranslate));
-      track.style.transform = `translateX(-${move}px)`;
-      const sticky = wrapper.querySelector(".pricing-hscroll-sticky");
-      if (sticky) sticky.style.opacity = Math.min(progress / 0.08, 1);
-    };
-
-    updateHeight();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", updateHeight);
-    return () => {
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", updateHeight);
-    };
-  }, [plans]);
-
-  // Landing navbar — white text when overlapping dark sections
-  useEffect(() => {
-    const onScroll = () => {
-      const headerBottom = 72;
-      const darkSections = [
-        introVideoRef.current,
-        hWrapperRef.current,
-        h2WrapperRef.current,
-        document.querySelector(".cta-section"),
-      ];
-
-      const overDark = darkSections.filter(Boolean).some((el) => {
-        const r = el.getBoundingClientRect();
-        return r.top < headerBottom && r.bottom > 0;
-      });
-
-      setNavDark(overDark);
-    };
-
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onScroll);
-    return () => {
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", onScroll);
-    };
-  }, []);
-  useEffect(() => {
-    const sections = document.querySelectorAll(".stack-section");
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add("active");
-          }
-        });
-      },
-      { threshold: 0.5 }
-    );
-    sections.forEach((s) => observer.observe(s));
-    return () => observer.disconnect();
-  }, []);
 
   useEffect(() => {
     const current = TYPEWRITER_PHRASES[phraseIndex];
@@ -451,6 +190,319 @@ const Landing = () => {
   }, [charIndex, deleting, phraseIndex]);
 
   return (
+    <div className="landing__hero-typewriter">
+      <span>{displayed}</span>
+      <span className="landing__hero-cursor">|</span>
+    </div>
+  );
+}
+
+function viewportH() {
+  return Math.round(window.visualViewport?.height || window.innerHeight);
+}
+
+function documentY(el) {
+  return el.getBoundingClientRect().top + window.scrollY;
+}
+
+const SUPPORTS_VIEW_TIMELINE =
+  typeof window !== "undefined" && typeof window.ViewTimeline === "function";
+
+/**
+ * Pins each track to its wrapper's sticky range, 1px of scroll per 1px sideways.
+ *
+ * Where supported the pan is a scroll-driven animation so it runs on the
+ * compositor alongside position:sticky. Driving the transform from a scroll
+ * listener instead lets the track fall behind during fast scrolling and snap
+ * forward on release.
+ */
+function bindPinnedTracks(pins) {
+  const state = pins.filter((p) => p.wrapper && p.track);
+  if (!state.length) return () => {};
+
+  let ticking = false;
+
+  const clearAnimations = (pin) => {
+    pin.animations?.forEach((a) => a.cancel());
+    pin.animations = null;
+  };
+
+  const composite = (pin) => {
+    clearAnimations(pin);
+    if (pin.maxX <= 0) return false;
+
+    const timeline = new ViewTimeline({ subject: pin.wrapper, axis: "block" });
+    const from = pin.reverse ? `translate3d(${-pin.maxX}px, 0, 0)` : "translate3d(0, 0, 0)";
+    const to = pin.reverse ? "translate3d(0, 0, 0)" : `translate3d(${-pin.maxX}px, 0, 0)`;
+
+    const animations = [
+      pin.track.animate(
+        { transform: [from, to] },
+        { timeline, rangeStart: "contain 0%", rangeEnd: "contain 100%", fill: "both" }
+      ),
+    ];
+
+    if (pin.fadeSticky && pin.sticky) {
+      animations.push(
+        pin.sticky.animate(
+          { opacity: [0, 1] },
+          { timeline, rangeStart: "contain 0%", rangeEnd: "contain 6%", fill: "both" }
+        )
+      );
+    }
+
+    pin.track.style.transform = "";
+    pin.animations = animations;
+    return true;
+  };
+
+  const measure = () => {
+    const vh = viewportH();
+    for (const pin of state) {
+      if (pin.sticky) {
+        pin.sticky.style.height = `${vh}px`;
+        pin.sticky.style.boxSizing = "border-box";
+      }
+      pin.maxX = Math.max(0, pin.track.scrollWidth - window.innerWidth);
+      // 1:1 — the section stays pinned for exactly the distance it pans.
+      pin.measureHeight?.(pin.maxX, vh);
+      pin.startY = documentY(pin.wrapper);
+      pin.range = Math.max(1, pin.wrapper.offsetHeight - vh);
+      pin.lastX = NaN;
+      pin.lastOp = NaN;
+      pin.composited = SUPPORTS_VIEW_TIMELINE ? composite(pin) : false;
+    }
+    apply();
+  };
+
+  const apply = () => {
+    ticking = false;
+    const y = window.scrollY;
+    const vh = viewportH();
+
+    for (const pin of state) {
+      const t = Math.max(0, Math.min(1, (y - pin.startY) / pin.range));
+
+      if (!pin.composited) {
+        const x = Math.round(pin.reverse ? (1 - t) * pin.maxX : t * pin.maxX);
+        if (x !== pin.lastX) {
+          pin.lastX = x;
+          pin.track.style.transform = `translate3d(${-x}px, 0, 0)`;
+        }
+        if (pin.fadeSticky && pin.sticky) {
+          const op = pin.maxX <= 0 ? 1 : Math.max(0, Math.min(1, t / 0.06));
+          if (op !== pin.lastOp) {
+            pin.lastOp = op;
+            pin.sticky.style.opacity = String(op);
+          }
+        }
+      }
+
+      pin.onProgress?.(t, vh, y, pin.startY);
+    }
+  };
+
+  // Cards slide under a stationary cursor, so hover would flicker card lifts on
+  // and off mid-pan. Ignore pointers until scrolling settles.
+  let idleTimer = 0;
+  let inert = false;
+  const setInert = (next) => {
+    if (inert === next) return;
+    inert = next;
+    state.forEach((pin) => {
+      pin.track.style.pointerEvents = next ? "none" : "";
+    });
+  };
+
+  const onScroll = () => {
+    setInert(true);
+    clearTimeout(idleTimer);
+    idleTimer = setTimeout(() => setInert(false), 120);
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(apply);
+  };
+
+  measure();
+  window.addEventListener("scroll", onScroll, { passive: true });
+  window.addEventListener("resize", measure);
+  window.visualViewport?.addEventListener("resize", measure);
+  return () => {
+    clearTimeout(idleTimer);
+    window.removeEventListener("scroll", onScroll);
+    window.removeEventListener("resize", measure);
+    window.visualViewport?.removeEventListener("resize", measure);
+    state.forEach(clearAnimations);
+  };
+}
+
+const Landing = () => {
+  const navigate = useNavigate();
+  const hWrapperRef = useRef(null);
+  const hTrackRef = useRef(null);
+  const hProgressRef = useRef(null);
+  const introVideoRef = useRef(null);
+  const h2WrapperRef = useRef(null);
+  const h2TrackRef = useRef(null);
+  const h3WrapperRef = useRef(null);
+  const h3TrackRef = useRef(null);
+
+  const [plans, setPlans] = useState([]);
+  const [plansLoading, setPlansLoading] = useState(true);
+  const [billingCycle, setBillingCycle] = useState("monthly");
+  const [navDark, setNavDark] = useState(false);
+
+  useEffect(() => {
+    fetch(`${API_BASE_URL}/api/subscription/plans`)
+      .then(r => r.json())
+      .then(d => { if (d.success) setPlans(d.data); })
+      .catch(() => {})
+      .finally(() => setPlansLoading(false));
+  }, []);
+
+  const getPrice = (plan) => {
+    if (isFreePlan(plan)) return "Free";
+    return formatNaira(getMonthlyRate(plan, billingCycle));
+  };
+
+  const getPeriod = () => "/mo";
+
+  const handleSelectPlan = (plan) => {
+    navigate("/setup/1", { state: { plan } });
+  };
+
+  // Horizontal pin sections — one scroller, 1:1 with page scroll
+  useEffect(() => {
+    const wrapper = hWrapperRef.current;
+    const track = hTrackRef.current;
+    if (!wrapper || !track) return;
+
+    const sticky = wrapper.querySelector(".hscroll-sticky");
+    const handle = wrapper.querySelector(".hscroll-pull-handle");
+    const lastBg = { current: "" };
+
+    if (sticky) {
+      sticky.style.opacity = "1";
+      sticky.style.pointerEvents = "";
+    }
+    if (handle) {
+      handle.style.opacity = "0";
+      handle.style.transform = "translateX(-50%)";
+    }
+
+    return bindPinnedTracks([
+      {
+        wrapper,
+        track,
+        sticky,
+        measureHeight: (maxTranslate, vh) => {
+          if (maxTranslate <= 0) {
+            const introBg = `rgb(${INTRO_SECTION_BG.r}, ${INTRO_SECTION_BG.g}, ${INTRO_SECTION_BG.b})`;
+            wrapper.style.height = "auto";
+            wrapper.style.backgroundColor = introBg;
+            lastBg.current = introBg;
+            if (introVideoRef.current) introVideoRef.current.style.backgroundColor = introBg;
+            return;
+          }
+          wrapper.style.height = `${Math.round(maxTranslate + vh)}px`;
+        },
+        onProgress: (t, vh, y, startY) => {
+          const dist = startY - y;
+          let bgT = 0;
+          if (dist >= vh) bgT = 0;
+          else if (dist > 0) bgT = 1 - dist / vh;
+          else bgT = 1;
+          const r = Math.round(INTRO_SECTION_BG.r + (FEATURES_SECTION_BG.r - INTRO_SECTION_BG.r) * bgT);
+          const g = Math.round(INTRO_SECTION_BG.g + (FEATURES_SECTION_BG.g - INTRO_SECTION_BG.g) * bgT);
+          const b = Math.round(INTRO_SECTION_BG.b + (FEATURES_SECTION_BG.b - INTRO_SECTION_BG.b) * bgT);
+          const bgColor = `rgb(${r}, ${g}, ${b})`;
+          if (lastBg.current !== bgColor) {
+            lastBg.current = bgColor;
+            wrapper.style.backgroundColor = bgColor;
+            if (introVideoRef.current) introVideoRef.current.style.backgroundColor = bgColor;
+          }
+          if (hProgressRef.current) hProgressRef.current.style.width = `${t * 100}%`;
+        },
+      },
+      {
+        wrapper: h2WrapperRef.current,
+        track: h2TrackRef.current,
+        sticky: h2WrapperRef.current?.querySelector(".hscroll2-sticky"),
+        reverse: true,
+        fadeSticky: true,
+        measureHeight: (maxTranslate, vh) => {
+          const w = h2WrapperRef.current;
+          if (!w) return;
+          w.style.height = maxTranslate <= 0 ? "auto" : `${Math.round(maxTranslate + vh)}px`;
+        },
+      },
+      {
+        wrapper: h3WrapperRef.current,
+        track: h3TrackRef.current,
+        sticky: h3WrapperRef.current?.querySelector(".pricing-hscroll-sticky"),
+        fadeSticky: true,
+        measureHeight: (maxTranslate, vh) => {
+          const w = h3WrapperRef.current;
+          if (!w) return;
+          w.style.height = maxTranslate <= 0 ? "auto" : `${Math.round(maxTranslate + vh)}px`;
+        },
+      },
+    ]);
+  }, [plans]);
+
+  // Landing navbar — white text when overlapping dark sections
+  useEffect(() => {
+    let ticking = false;
+
+    const measure = () => {
+      ticking = false;
+      const headerBottom = 72;
+      const darkSections = [
+        introVideoRef.current,
+        hWrapperRef.current,
+        h2WrapperRef.current,
+        document.querySelector(".cta-section"),
+      ];
+
+      const overDark = darkSections.filter(Boolean).some((el) => {
+        const r = el.getBoundingClientRect();
+        return r.top < headerBottom && r.bottom > 0;
+      });
+
+      setNavDark(overDark);
+    };
+
+    const onScroll = () => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(measure);
+    };
+
+    measure();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+    };
+  }, []);
+  useEffect(() => {
+    const sections = document.querySelectorAll(".stack-section");
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("active");
+          }
+        });
+      },
+      { threshold: 0.5 }
+    );
+    sections.forEach((s) => observer.observe(s));
+    return () => observer.disconnect();
+  }, []);
+
+  return (
     <div className="landing">
       <PublicHeader dark={navDark} />
 
@@ -469,10 +521,7 @@ const Landing = () => {
             </span>
           </div>
           <h1>The Smarter Way to <br /> Experience Education</h1>
-          <div className="landing__hero-typewriter">
-            <span>{displayed}</span>
-            <span className="landing__hero-cursor">|</span>
-          </div>
+          <HeroTypewriter />
           <p>
             A connected platform for students, teachers, and administrators
             to handle everything from academics to communication.
@@ -563,7 +612,7 @@ const Landing = () => {
         <div
           className="hscroll-wrapper stack-section--1"
           ref={hWrapperRef}
-          style={{ height: `${(FEATURES.length + HSCROLL_ENTER_VIEWS) * 100}vh`, zIndex: 2 }}
+          style={{ zIndex: 2 }}
         >
           <div className="hscroll-pull-handle-wrap" aria-hidden="true">
             <div className="hscroll-pull-handle">
@@ -591,19 +640,24 @@ const Landing = () => {
                 const isUp = i % 2 === 0;
                 return (
                   <div key={f.title} className={`hscroll-panel ${isUp ? "hscroll-panel--up" : "hscroll-panel--down"}`}>
-                    <div className="hscroll-card">
-                      {/* floating orbit dots around card */}
+                    <div className="hscroll-card hscroll-card--feature" style={{ "--feature-accent": f.accent }}>
                       <span className="hscroll-card-orbit"><span></span><span></span><span></span><span></span></span>
-                      {/* corner accents */}
                       <span className="hscroll-card-corners"><span></span><span></span><span></span><span></span></span>
 
-                      <div className="hscroll-card-imgs">
-                        <img src={f.img} alt={f.title} className="hscroll-img" />
+                      <div className="hscroll-card-visual">
+                        <span className="hscroll-card-visual__glow" />
+                        <span className="hscroll-card-visual__index">{String(i + 1).padStart(2, "0")}</span>
+                        <FeatureVisual name={f.icon} />
                       </div>
                       <div className="hscroll-card-body">
                         <h3>{f.title}</h3>
                         <ul>
-                          {f.bullets.map((b) => <li key={b}>{b}</li>)}
+                          {f.bullets.map((b) => (
+                            <li key={b.text}>
+                              <BulletIcon name={b.icon} />
+                              <span>{b.text}</span>
+                            </li>
+                          ))}
                         </ul>
                       </div>
                     </div>
