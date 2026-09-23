@@ -1,9 +1,11 @@
 import { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../../../../../context/AuthContext/AuthContext";
 import { useNotification } from "../../../../../context/NotificationProvider/NotificationProvider";
 import useSchool from "../../../../../api_call/useSchool";
 import useWebsiteRequest from "../../../../../api_call/useWebsiteRequest";
+import { publicSiteUrl } from "../../../../../utils/publicSiteUrl";
 import Button from "../../../../../components/Button/Button";
 import FormInput from "../../../../../components/FormInput";
 import InnerTabCon from "../../../../../components/InnerTabCon/InnerTabCon";
@@ -569,7 +571,27 @@ const CustomDomainSection = ({
     </div>
   );
 };
-const RequestWebsiteSection = ({ onRequest, onCancel, loading, alreadyRequested, briefStatus, scladappWebsiteUrl, onEditWithAI, customDomain, customDomainStatus, schoolId, onCustomDomainUpdated }) => {
+const RequestWebsiteSection = ({ onRequest, onCancel, onDelete, loading, alreadyRequested, briefStatus, scladappWebsiteUrl, onEditWithAI, customDomain, customDomainStatus, schoolId, onCustomDomainUpdated }) => {
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deletePhrase, setDeletePhrase] = useState("");
+  const deleteInputRef = useRef(null);
+  const canConfirmDelete = deletePhrase.trim().toLowerCase() === "delete";
+
+  const closeDelete = () => {
+    if (loading) return;
+    setConfirmDelete(false);
+    setDeletePhrase("");
+  };
+
+  useEffect(() => {
+    if (!confirmDelete) return;
+    deleteInputRef.current?.focus();
+    const onKey = (e) => {
+      if (e.key === "Escape") closeDelete();
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [confirmDelete, loading]);
   const features = [
     {
       icon: (
@@ -620,12 +642,12 @@ const RequestWebsiteSection = ({ onRequest, onCancel, loading, alreadyRequested,
     <div className="sw-section sw-section-request">
       <div className="sw-request-header">
         <h3 className="sw-request-title">
-          {scladappWebsiteUrl ? "Your Scladapp-Powered Website" : "Get a Scladapp-Powered School Website"}
+          {scladappWebsiteUrl ? "Your Scladapp-Powered Website" : "Create a Scladapp-Powered School Website"}
         </h3>
         <p className="sw-request-desc">
           {scladappWebsiteUrl
             ? "Your website is live and hosted by Scladapp. Share it with parents and the community."
-            : "Let us build and host a professional website for your school — included in paid plans. Your school's data, profile, and branding are used automatically."}
+            : "Create and host a professional website for your school — included in paid plans. Your school's data, profile, and branding are used automatically."}
         </p>
       </div>
 
@@ -688,6 +710,82 @@ const RequestWebsiteSection = ({ onRequest, onCancel, loading, alreadyRequested,
               Your personal workspace for managing and improving your school website — edit content, update sections, and use AI to rewrite or generate new parts of your site.
             </p>
 
+            <div className="sw-delete-website">
+              <div className="sw-delete-website-copy">
+                <p className="sw-delete-website-title">Delete website</p>
+                <p className="sw-delete-website-sub">
+                  Deletes the brief, the published pages and every uploaded image. The school is reset to never having requested a site.
+                </p>
+              </div>
+              <button
+                type="button"
+                className="sw-delete-website-btn"
+                onClick={() => {
+                  setDeletePhrase("");
+                  setConfirmDelete(true);
+                }}
+                disabled={loading}
+              >
+                Delete website
+              </button>
+            </div>
+            {confirmDelete &&
+              createPortal(
+                <div
+                  className="sw-delete-modal"
+                  role="presentation"
+                  onMouseDown={(e) => {
+                    if (e.target === e.currentTarget) closeDelete();
+                  }}
+                >
+                  <div
+                    className="sw-delete-dialog"
+                    role="dialog"
+                    aria-modal="true"
+                    aria-labelledby="sw-delete-dialog-title"
+                  >
+                    <h3 id="sw-delete-dialog-title" className="sw-delete-dialog-title">
+                      Delete this website?
+                    </h3>
+                    <p className="sw-delete-dialog-text">
+                      This removes the brief, the published pages, and every uploaded image. The live site goes offline, and the school is reset as if it never requested a website. This cannot be undone.
+                    </p>
+                    <label className="sw-delete-dialog-label" htmlFor="sw-delete-phrase">
+                      Type <strong>delete</strong> to confirm
+                    </label>
+                    <input
+                      id="sw-delete-phrase"
+                      ref={deleteInputRef}
+                      className="sw-delete-dialog-input"
+                      value={deletePhrase}
+                      onChange={(e) => setDeletePhrase(e.target.value)}
+                      autoComplete="off"
+                      spellCheck={false}
+                      disabled={loading}
+                    />
+                    <div className="sw-delete-dialog-actions">
+                      <button
+                        type="button"
+                        className="sw-delete-dialog-keep"
+                        onClick={closeDelete}
+                        disabled={loading}
+                      >
+                        Keep it
+                      </button>
+                      <button
+                        type="button"
+                        className="sw-delete-dialog-confirm"
+                        onClick={onDelete}
+                        disabled={loading || !canConfirmDelete}
+                      >
+                        {loading ? "Deleting…" : "Yes, delete everything"}
+                      </button>
+                    </div>
+                  </div>
+                </div>,
+                document.body,
+              )}
+
             <CustomDomainSection
               nested
               schoolId={schoolId}
@@ -722,9 +820,9 @@ const RequestWebsiteSection = ({ onRequest, onCancel, loading, alreadyRequested,
         ) : (
           <>
             <Button onClick={onRequest} disabled={loading}>
-              {loading ? "Loading..." : "Request Your Website"}
+              {loading ? "Loading..." : "Create your website"}
             </Button>
-            <p className="sw-request-note">Available on Starter and above plans. We'll contact you to get started.</p>
+            <p className="sw-request-note">Available on Starter and above plans. You'll set it up in the website brief.</p>
           </>
         )}
       </div>
@@ -739,7 +837,7 @@ export const SchoolWebsiteContent = () => {
   const { addNotification } = useNotification();
   const navigate = useNavigate();
   const { getWebsite, saveWebsite, loading } = useSchool();
-  const { getRequest, cancelRequest, loading: briefLoading } = useWebsiteRequest();
+  const { getRequest, cancelRequest, purgeWebsite, loading: briefLoading } = useWebsiteRequest();
 
   const [school, setSchool] = useState(null);
   const [websiteRequested, setWebsiteRequested] = useState(false);
@@ -754,11 +852,12 @@ export const SchoolWebsiteContent = () => {
     new Date(subscription.end_date) > new Date();
 
   // Hosted site URL — from WebsiteRequest first, then school.website fallback (same DB, not localStorage)
-  const scladappWebsiteUrl =
+  const scladappWebsiteUrl = publicSiteUrl(
     briefData?.scladapp_website_url ||
-    school?.scladapp_website_url ||
-    (briefData?.status === "published" && school?.website ? school.website : null) ||
-    null;
+      school?.scladapp_website_url ||
+      (briefData?.status === "published" && school?.website ? school.website : null) ||
+      null,
+  );
 
   const alreadyRequested =
     websiteRequested ||
@@ -825,6 +924,23 @@ export const SchoolWebsiteContent = () => {
     addNotification("Request cancelled.", "success");
   };
 
+  const handleDeleted = () => {
+    setBriefData(null);
+    setWebsiteRequested(false);
+    setSchool((prev) =>
+      prev
+        ? {
+            ...prev,
+            website: null,
+            website_requested: false,
+            scladapp_website_url: null,
+            website_request: null,
+          }
+        : prev,
+    );
+    addNotification("Website deleted.", "success");
+  };
+
   return (
     <div className="sw-wrap">
         {/* Scladapp-hosted website request — paid plans only, shown first */}
@@ -842,6 +958,11 @@ export const SchoolWebsiteContent = () => {
               const res = await cancelRequest(schoolId);
               if (res.success) handleCancelled();
               else addNotification("Failed to cancel request", "error");
+            }}
+            onDelete={async () => {
+              const res = await purgeWebsite(schoolId);
+              if (res.success) handleDeleted();
+              else addNotification(res.message || "Failed to delete website", "error");
             }}
             loading={briefLoading}
             alreadyRequested={alreadyRequested}

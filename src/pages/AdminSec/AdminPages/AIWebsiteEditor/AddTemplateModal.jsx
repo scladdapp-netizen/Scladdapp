@@ -3,8 +3,64 @@
 // Falls back gracefully with an error state if the request fails.
 
 import { useState, useEffect } from "react";
+import navPack from "../../../../../../website-template-packs/website-template-2/navigation-sections.json";
+import heroPack from "../../../../../../website-template-packs/website-template-2/hero-sections.json";
+import footerPack from "../../../../../../website-template-packs/website-template-2/footer-sections.json";
+import aboutPack from "../../../../../../website-template-packs/website-template-2/about-sections.json";
+import campusPack from "../../../../../../website-template-packs/website-template-2/campus-sections.json";
+import featuresPack from "../../../../../../website-template-packs/website-template-2/features-sections.json";
+import feesPack from "../../../../../../website-template-packs/website-template-2/fees-sections.json";
+import galleryPack from "../../../../../../website-template-packs/website-template-2/gallery-sections.json";
+import programsPack from "../../../../../../website-template-packs/website-template-2/programs-sections.json";
+import statsPack from "../../../../../../website-template-packs/website-template-2/stats-sections.json";
+import teamPack from "../../../../../../website-template-packs/website-template-2/team-sections.json";
+import testimonialsPack from "../../../../../../website-template-packs/website-template-2/testimonials-sections.json";
+import valuesPack from "../../../../../../website-template-packs/website-template-2/values-sections.json";
+import contactPack from "../../../../../../website-template-packs/website-template-2/contact-sections.json";
+import titlePack from "../../../../../../website-template-packs/website-template-2/title-sections.json";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:1234";
+
+const LOCAL_PACKS = [
+  ...navPack,
+  ...heroPack,
+  ...footerPack,
+  ...aboutPack,
+  ...campusPack,
+  ...featuresPack,
+  ...feesPack,
+  ...galleryPack,
+  ...programsPack,
+  ...statsPack,
+  ...teamPack,
+  ...testimonialsPack,
+  ...valuesPack,
+  ...contactPack,
+  ...titlePack,
+].map((t) => ({
+  ...t,
+  template_id: `pack2_${t.category}_${t.sort_order}`,
+  type: "section",
+}));
+
+const localTemplateId = new Map(
+  LOCAL_PACKS.map((item) => [
+    `${String(item.category || "").trim().toLowerCase()}::${String(item.label || "").trim().toLowerCase()}`,
+    item.template_id,
+  ]),
+);
+
+function mergeSections(apiSections) {
+  const seen = new Set();
+  const out = [];
+  (apiSections || []).forEach((item) => {
+    const key = `${String(item?.category || "").trim().toLowerCase()}::${String(item?.label || "").trim().toLowerCase()}`;
+    if (seen.has(key)) return;
+    seen.add(key);
+    out.push({ ...item, template_id: localTemplateId.get(key) || item.template_id });
+  });
+  return out;
+}
 
 // ── fetch hook ────────────────────────────────────────────────────────────────
 function useTemplates(isOpen) {
@@ -30,10 +86,10 @@ function useTemplates(isOpen) {
       .then((r) => r.json())
       .then((data) => {
         if (!data.success) throw new Error(data.message || "Failed to load templates");
-        setSections(data.data.sections   || []);
+        setSections(mergeSections(data.data.sections || []));
         setComponents(data.data.components || []);
       })
-      .catch((err) => setError(err.message || "Could not load templates"))
+      .catch(() => setSections(LOCAL_PACKS))
       .finally(() => setLoading(false));
   }, [isOpen]);
 

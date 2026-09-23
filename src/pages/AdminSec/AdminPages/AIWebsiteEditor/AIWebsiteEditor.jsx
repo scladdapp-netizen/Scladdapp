@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useParams }          from "react-router-dom";
 import "./AIWebsiteEditor.css";
 
@@ -18,6 +18,8 @@ import {
   fetchLiveHtml,
 } from "../../../../api_call/useAIWebsiteEditor";
 import useSubscription from "../../../../api_call/useSubscription";
+import useSchool from "../../../../api_call/useSchool";
+import useWebsiteRequest from "../../../../api_call/useWebsiteRequest";
 import { useNotification } from "../../../../context/NotificationProvider/NotificationProvider";
 import { patchTextContent } from "./htmlPatcher";
 
@@ -71,11 +73,29 @@ export default function AIWebsiteEditor() {
   const { callEdit }            = useAIWebsiteEdit(schoolId);
   const { getSubscriptionDashboard } = useSubscription();
   const { addNotification } = useNotification();
+  const { getProfile } = useSchool();
+  const { getRequest } = useWebsiteRequest();
+  const [schoolBrand, setSchoolBrand] = useState(null);
   const aiPlanAllowedRef = useRef(null); // null = unknown, true/false after check
   const [aiModeChecking, setAiModeChecking] = useState(false);
 
   useEffect(() => {
     aiPlanAllowedRef.current = null;
+  }, [schoolId]);
+
+  useEffect(() => {
+    if (!schoolId) return;
+    let cancelled = false;
+    Promise.all([getProfile(schoolId), getRequest(schoolId)]).then(([profile, request]) => {
+      if (cancelled) return;
+      setSchoolBrand({
+        school: profile?.success ? profile.data : null,
+        brief: request?.success ? request.data?.brief || null : null,
+      });
+    });
+    return () => { cancelled = true; };
+    // Profile and request loaders are recreated each render; schoolId is the trigger.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [schoolId]);
 
   // ── history / html state ──────────────────────────────────────────────────
@@ -89,6 +109,43 @@ export default function AIWebsiteEditor() {
   const activePageIdRef = useRef(activePageId);
   useEffect(() => { pagesRef.current = pages; }, [pages]);
   useEffect(() => { activePageIdRef.current = activePageId; }, [activePageId]);
+
+  const chrome = useMemo(() => {
+    const school = schoolBrand?.school;
+    const brief = schoolBrand?.brief || {};
+    const logo = school?.logo_url;
+    const logoUrl = typeof logo === "string" ? logo : logo?.url || "";
+    const origin = typeof window !== "undefined" ? window.location.origin : "";
+    return {
+      schoolName: school?.school_name || "School Name",
+      logoUrl,
+      email: school?.email || "",
+      phone: school?.phone_number || "",
+      address: [school?.address, school?.state, school?.country].filter(Boolean).join(", "),
+      motto: school?.motto || "",
+      pages: (() => {
+        const fromEditor = (pages || []).map((page) => ({
+          title: page.title,
+          slug: page.slug || "/",
+        }));
+        const fromBrief = (schoolBrand?.brief?.pages || []).map((page) => ({
+          title: page.title,
+          slug: page.slug || "/",
+        }));
+        const source = fromEditor.filter((page) => page.title || page.slug).length
+          >= fromBrief.filter((page) => page.title || page.slug).length
+          ? fromEditor
+          : fromBrief;
+        return source.filter((page) => page.title || page.slug);
+      })(),
+      loginHref: schoolId ? `${origin}/school/${schoolId}/login` : "/login",
+      applyHref: schoolId ? `${origin}/school/${schoolId}/apply` : "/apply",
+      primary: brief.primary_color || "#111111",
+      secondary: brief.secondary_color || "#6c5ce7",
+      background: brief.background_color || "#ffffff",
+      fontStyle: brief.font_style || "modern",
+    };
+  }, [schoolBrand, pages, schoolId]);
 
   const slugToFilename = (slug) => {
     if (!slug || slug === "/") return "index.html";
@@ -449,6 +506,7 @@ export default function AIWebsiteEditor() {
         <div className="aie-body aie-body--manual">
           <ManualPanel
             html={html}
+            chrome={chrome}
             selectedElement={selectedElement}
             onHtmlChange={set}
             onSelectNode={(node) => {

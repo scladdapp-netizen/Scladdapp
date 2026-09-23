@@ -326,7 +326,7 @@ const INJECT_SCRIPT = `
         ensureBadge();
         var editable = findTextEditable(el);
         badge.textContent = editable
-          ? (buildLabel(editable) + ' · double-click to edit')
+          ? (buildLabel(editable) + ' · click to edit')
           : buildLabel(el);
         badge.style.opacity = '1';
         positionBadge(badge, el);
@@ -354,6 +354,12 @@ const INJECT_SCRIPT = `
       e.preventDefault();
       e.stopPropagation();
 
+      var editable = findTextEditable(el);
+      if (editable) {
+        startTextEdit(editable);
+        return;
+      }
+
       // deselect previous
       if (selected) selected.classList.remove('__aie_selected__');
 
@@ -363,20 +369,8 @@ const INJECT_SCRIPT = `
       post('select', el);
 
       ensureSelBadge();
-      var tip = isTextEditable(el) || findTextEditable(el)
-        ? ' · double-click to edit text'
-        : '';
-      selBadge.textContent = buildLabel(el) + tip;
+      selBadge.textContent = buildLabel(el);
       positionBadge(selBadge, el);
-    }, true);
-
-    // ── double-click: edit text in place ───────────────────────────────
-    document.addEventListener('dblclick', function(e) {
-      var target = findTextEditable(e.target);
-      if (!target) return;
-      e.preventDefault();
-      e.stopPropagation();
-      startTextEdit(target);
     }, true);
 
     document.addEventListener('keydown', function(e) {

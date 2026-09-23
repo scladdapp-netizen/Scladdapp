@@ -14,6 +14,44 @@ import useWebsiteRequest from "../../../../api_call/useWebsiteRequest";
 import { TUTORIAL_PAGE_WEBSITE_BRIEF } from "../../../../api_call/useTutorialVideos";
 import SetupSchoolVideo from "../SchoolDirectory/SetupSchoolVideo/SetupSchoolVideo";
 import "./WebsiteBriefPage.css";
+import { publicSiteUrl } from "../../../../utils/publicSiteUrl";
+import navPack from "../../../../../../website-template-packs/website-template-2/navigation-sections.json";
+import heroPack from "../../../../../../website-template-packs/website-template-2/hero-sections.json";
+import footerPack from "../../../../../../website-template-packs/website-template-2/footer-sections.json";
+import aboutPack from "../../../../../../website-template-packs/website-template-2/about-sections.json";
+import campusPack from "../../../../../../website-template-packs/website-template-2/campus-sections.json";
+import featuresPack from "../../../../../../website-template-packs/website-template-2/features-sections.json";
+import feesPack from "../../../../../../website-template-packs/website-template-2/fees-sections.json";
+import galleryPack from "../../../../../../website-template-packs/website-template-2/gallery-sections.json";
+import programsPack from "../../../../../../website-template-packs/website-template-2/programs-sections.json";
+import statsPack from "../../../../../../website-template-packs/website-template-2/stats-sections.json";
+import teamPack from "../../../../../../website-template-packs/website-template-2/team-sections.json";
+import testimonialsPack from "../../../../../../website-template-packs/website-template-2/testimonials-sections.json";
+import valuesPack from "../../../../../../website-template-packs/website-template-2/values-sections.json";
+import contactPack from "../../../../../../website-template-packs/website-template-2/contact-sections.json";
+import titlePack from "../../../../../../website-template-packs/website-template-2/title-sections.json";
+
+const LOCAL_PACKS = [
+  ...navPack,
+  ...heroPack,
+  ...footerPack,
+  ...aboutPack,
+  ...campusPack,
+  ...featuresPack,
+  ...feesPack,
+  ...galleryPack,
+  ...programsPack,
+  ...statsPack,
+  ...teamPack,
+  ...testimonialsPack,
+  ...valuesPack,
+  ...contactPack,
+  ...titlePack,
+].map((t) => ({
+  ...t,
+  template_id: `pack2_${t.category}_${t.sort_order}`,
+  type: "section",
+}));
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:1234";
 
@@ -57,6 +95,47 @@ const isHeroCategory = (category) =>
     .toLowerCase()
     .includes("hero");
 
+// Navigation and footer are chosen once, on the home page, and reused on
+// every other page.
+const SHARED_CHROME_TOKENS = ["topbar", "navbar", "navigation", "footer"];
+
+const isSharedChromeCategory = (categoryId) =>
+  SHARED_CHROME_TOKENS.some((token) =>
+    String(categoryId || "").toLowerCase().includes(token),
+  );
+
+const findHomePage = (pages) =>
+  (pages || []).find((page) => isHomePage(page.id) || page.slug === "/") ||
+  pages?.[0];
+
+const sharedChromeTemplates = (page) => {
+  const map = new Map();
+  (page?.sections || []).forEach((sec) => {
+    const key = String(catIdOf(sec) || "").toLowerCase();
+    if (isSharedChromeCategory(key) && sec.templateId) map.set(key, sec.templateId);
+  });
+  return map;
+};
+
+const applySharedChromeTemplates = (pages, sourcePage) => {
+  const map = sharedChromeTemplates(sourcePage);
+  if (!map.size) return pages;
+  let changed = false;
+  const next = (pages || []).map((page) => {
+    let sectionChanged = false;
+    const sections = (page.sections || []).map((sec) => {
+      const templateId = map.get(String(catIdOf(sec) || "").toLowerCase());
+      if (!templateId || sec.templateId === templateId) return sec;
+      sectionChanged = true;
+      return { ...sec, templateId, content: {} };
+    });
+    if (!sectionChanged) return page;
+    changed = true;
+    return { ...page, sections };
+  });
+  return changed ? next : pages;
+};
+
 // A section is an *instance* of a category, and a page may hold several from
 // the same one, so `id` identifies the instance and `categoryId` the template
 // family. Briefs saved before duplicates were allowed have no `categoryId` —
@@ -72,33 +151,52 @@ const useWebsiteTemplates = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const localCategoryId = new Map();
+    const localTemplateId = new Map();
+    LOCAL_PACKS.forEach((t) => {
+      const canon = String(t.category || "").trim().toLowerCase();
+      const labelKey = String(t.label || "").trim().toLowerCase();
+      if (canon && !localCategoryId.has(canon)) localCategoryId.set(canon, t.category.trim());
+      if (canon) localTemplateId.set(`${canon}::${labelKey}`, t.template_id);
+    });
+
+    const groupTemplates = (sections) => {
+      const map = {};
+      const seen = new Set();
+      (sections || []).forEach((t) => {
+        const raw = t.category?.trim() || "Other";
+        const canon = raw.toLowerCase();
+        const display = localCategoryId.get(canon) || raw;
+        if (!map[canon]) map[canon] = { id: display, label: display, templates: [] };
+        const labelKey = String(t.label || "").trim().toLowerCase();
+        const dedupeKey = `${canon}::${labelKey}`;
+        if (seen.has(dedupeKey)) return;
+        seen.add(dedupeKey);
+        map[canon].templates.push({
+          ...t,
+          category: display,
+          template_id: localTemplateId.get(dedupeKey) || t.template_id,
+        });
+      });
+      return Object.values(map).sort((a, b) => {
+        const aLocked = isLocked(a.id, "home");
+        const bLocked = isLocked(b.id, "home");
+        if (aLocked && !bLocked) return -1;
+        if (!aLocked && bLocked) return 1;
+        return a.label.localeCompare(b.label);
+      });
+    };
+
     fetch(`${API_BASE}/api/website-templates`)
       .then((r) => r.json())
       .then((data) => {
-        if (!data.success) return;
-        // Use only type==="section" templates
-        const sections = data.data?.sections || [];
-
-        // Group by category
-        const map = {};
-        sections.forEach((t) => {
-          const key = t.category?.trim() || "Other";
-          if (!map[key]) map[key] = { id: key, label: key, templates: [] };
-          map[key].templates.push(t);
-        });
-
-        // Sort: home-required chrome first, then alphabetically
-        const sorted = Object.values(map).sort((a, b) => {
-          const aLocked = isLocked(a.id, "home");
-          const bLocked = isLocked(b.id, "home");
-          if (aLocked && !bLocked) return -1;
-          if (!aLocked && bLocked) return 1;
-          return a.label.localeCompare(b.label);
-        });
-
-        setCategories(sorted);
+        if (!data?.success) {
+          setCategories(groupTemplates(LOCAL_PACKS));
+          return;
+        }
+        setCategories(groupTemplates(data.data?.sections || []));
       })
-      .catch(() => {})
+      .catch(() => setCategories(groupTemplates(LOCAL_PACKS)))
       .finally(() => setLoading(false));
   }, []);
 
@@ -202,7 +300,7 @@ const FONT_OPTIONS = [
 const STEPBAR_SLOT_ID = "wbp-stepbar-slot";
 
 const StepBar = ({ step, onStep, isSubmitted }) => {
-  const steps = ["Brand & Style", "Pages", "Final Notes"];
+  const steps = ["Brand & Style", "Pages"];
   return (
     <div className="wbp-stepbar">
       <div className="wbp-stepbar-steps">
@@ -1190,12 +1288,129 @@ const orderSectionsForPage = (sections) =>
 const CUSTOM_BLOCK_STYLE =
   "padding:56px 24px;text-align:center;font-family:system-ui,-apple-system,Segoe UI,sans-serif;background:#fafafa;color:#333";
 
+const PACK_CHROME = ["navigation", "hero", "footer", "about"];
+
+const isPackChromeCategory = (id) =>
+  PACK_CHROME.includes(String(id || "").trim().toLowerCase());
+
+const packTemplateFor = (cat) =>
+  cat?.templates?.find((t) => String(t.template_id || "").startsWith("pack2_"));
+
+const brandCss = (chrome) => {
+  const classic = chrome.fontStyle === "classic";
+  const playful = chrome.fontStyle === "playful";
+  const heading = classic
+    ? "Georgia, 'Times New Roman', serif"
+    : playful
+      ? "'Trebuchet MS', cursive"
+      : "'Inter', 'Helvetica Neue', sans-serif";
+  const body = classic
+    ? "Georgia, 'Times New Roman', serif"
+    : playful
+      ? "'Trebuchet MS', 'Segoe UI', sans-serif"
+      : "'Inter', 'Helvetica Neue', sans-serif";
+  const primary = chrome.primary || "#111111";
+  const secondary = chrome.secondary || "#6c5ce7";
+  const background = chrome.background || "#ffffff";
+  return `
+    :root {
+      --sclad-primary: ${primary};
+      --sclad-secondary: ${secondary};
+      --sclad-bg: ${background};
+      --sclad-on-primary: #ffffff;
+      --sclad-font: ${body};
+      --sclad-heading: ${heading};
+      --sclad-text: color-mix(in srgb, ${primary} 78%, #3a342c);
+      --sclad-muted: color-mix(in srgb, ${primary} 42%, #6d675f);
+      --sclad-line: color-mix(in srgb, ${primary} 16%, ${background});
+      --sclad-soft: color-mix(in srgb, ${secondary} 20%, ${background});
+      --sclad-surface: color-mix(in srgb, #ffffff 86%, ${background});
+    }
+    .sclad-nav, .sclad-hero, .sclad-foot { font-family: ${body} !important; }
+    .sclad-nav-brand, .sclad-foot-name, .sclad-hero h1 { font-family: ${heading} !important; }
+    .sclad-nav-apply, .sclad-hero-apply {
+      background: ${primary} !important;
+      border-color: ${primary} !important;
+      color: #ffffff !important;
+    }
+    #nav-c1.sclad-nav, #nav-c3.sclad-nav,
+    #hero-c1.sclad-hero, #hero-c2.sclad-hero,
+    #foot-c2.sclad-foot, #foot-c3.sclad-foot { background: ${background} !important; }
+    #nav-c1 .sclad-nav-brand, #nav-c3 .sclad-nav-brand,
+    #hero-c1 h1, #hero-c2 h1,
+    #foot-c2 .sclad-foot-name, #foot-c3 .sclad-foot-name { color: ${primary} !important; }
+    .sclad-hero-kicker, .sclad-foot-label { color: ${secondary} !important; }
+    .sclad-nav-pages a:hover, .sclad-foot-pages a:hover { color: ${secondary} !important; }
+  `;
+};
+
+// Fill brand slots in a template. Page links are written only when the brief
+// has more than one page; a single page keeps Login and Apply alone.
+const applyChrome = (html, chrome) => {
+  if (!html || !chrome) return html;
+  try {
+    const doc = new DOMParser().parseFromString(html, "text/html");
+    const name = chrome.schoolName || "School Name";
+    doc.querySelectorAll("[data-sclad-brand]").forEach((el) => {
+      el.textContent = name;
+    });
+    doc.querySelectorAll("[data-sclad-logo]").forEach((el) => {
+      while (el.firstChild) el.removeChild(el.firstChild);
+      if (!chrome.logoUrl) return;
+      const img = doc.createElement("img");
+      img.setAttribute("src", chrome.logoUrl);
+      img.setAttribute("alt", name);
+      el.appendChild(img);
+    });
+    const pages = Array.isArray(chrome.pages) ? chrome.pages : [];
+    doc.querySelectorAll("[data-sclad-pages]").forEach((el) => {
+      while (el.firstChild) el.removeChild(el.firstChild);
+      if (pages.length <= 1) return;
+      pages.forEach((page) => {
+        const a = doc.createElement("a");
+        a.setAttribute("href", page.slug || "/");
+        a.textContent = page.title || "Page";
+        el.appendChild(a);
+      });
+    });
+    const setHref = (sel, href) => {
+      if (!href) return;
+      doc.querySelectorAll(sel).forEach((el) => el.setAttribute("href", href));
+    };
+    setHref("[data-sclad-login]", chrome.loginHref);
+    setHref("[data-sclad-apply]", chrome.applyHref);
+    const setText = (sel, value) => {
+      if (!value) return;
+      doc.querySelectorAll(sel).forEach((el) => {
+        el.textContent = value;
+      });
+    };
+    setText("[data-sclad-email]", chrome.email);
+    setText("[data-sclad-phone]", chrome.phone);
+    setText("[data-sclad-address]", chrome.address);
+    if (chrome.motto) {
+      doc.querySelectorAll(".sclad-foot-blurb").forEach((el) => {
+        el.textContent = chrome.motto;
+      });
+    }
+    doc.querySelectorAll(".sclad-foot-bar p").forEach((el) => {
+      el.textContent = `© ${name}. All rights reserved.`;
+    });
+    const styles = Array.from(doc.head.querySelectorAll("style"))
+      .map((el) => el.outerHTML)
+      .join("");
+    return `${styles}${doc.body.innerHTML}`;
+  } catch (_) {
+    return html;
+  }
+};
+
 /**
  * Stitch every section into a single HTML document so the preview behaves like
  * the real site: one style cascade, one flow, and `position:fixed` chrome that
  * spans the whole page instead of being trapped in its own frame.
  */
-const buildMergedPageHtml = (stacked, categories) => {
+const buildMergedPageHtml = (stacked, categories, chrome, { publish = false } = {}) => {
   const headParts = [];
   const bodyParts = [];
   const fieldsBySection = {};
@@ -1222,16 +1437,17 @@ const buildMergedPageHtml = (stacked, categories) => {
       templates.find((t) => t.template_id === sec.templateId) || templates[0];
     if (!tmpl?.html) return;
 
+    const chromed = applyChrome(tmpl.html, chrome);
     const skip = shouldSkipContent(cat?.id);
-    const parsed = skip ? null : parseEditableFields(tmpl.html);
+    const parsed = skip ? null : parseEditableFields(chromed);
     fieldsBySection[sec.id] = parsed?.fields || [];
 
-    let bodyHtml = parsed?.taggedHtml ?? tmpl.html;
+    let bodyHtml = parsed?.taggedHtml ?? chromed;
 
     // parseEditableFields only hands back the body, so pull <head> assets off
     // the raw template or the section loses its styling in the merge
     try {
-      const raw = new DOMParser().parseFromString(tmpl.html, "text/html");
+      const raw = new DOMParser().parseFromString(chromed, "text/html");
       const head = raw.head?.innerHTML?.trim();
       if (head && !seenHead.has(head)) {
         seenHead.add(head);
@@ -1260,27 +1476,107 @@ const buildMergedPageHtml = (stacked, categories) => {
     bodyParts.push(bodyHtml);
   });
 
+  if (chrome) {
+    headParts.push(`<style id="wbp-brand">${brandCss(chrome)}</style>`);
+  }
+
   let html = `<!doctype html><html><head><meta charset="utf-8">
 ${headParts.join("\n")}
 <style>html,body{margin:0;padding:0;}</style>
-</head><body>${bodyParts.join("\n")}</body></html>`;
+</head><body>${bodyParts.join("\n")}
+${publish ? "" : `<script>document.addEventListener("click",function(e){var a=e.target&&e.target.closest&&e.target.closest("a");if(a)e.preventDefault();});</script>`}
+</body></html>`;
 
-  // Strip vh units everywhere before the document is ever rendered
-  try {
-    const doc = new DOMParser().parseFromString(html, "text/html");
-    doc.querySelectorAll("style").forEach((el) => {
-      el.textContent = neutralizeViewportUnits(el.textContent);
-    });
-    doc.querySelectorAll("[style]").forEach((el) => {
-      el.setAttribute(
-        "style",
-        neutralizeViewportUnits(el.getAttribute("style")),
-      );
-    });
-    html = `<!doctype html>${doc.documentElement.outerHTML}`;
-  } catch (_) {}
+  // The preview iframe is as tall as its content, so vh would grow forever.
+  // A published page is a real document and should keep viewport units.
+  if (!publish) {
+    try {
+      const doc = new DOMParser().parseFromString(html, "text/html");
+      doc.querySelectorAll("style").forEach((el) => {
+        el.textContent = neutralizeViewportUnits(el.textContent);
+      });
+      doc.querySelectorAll("[style]").forEach((el) => {
+        el.setAttribute(
+          "style",
+          neutralizeViewportUnits(el.getAttribute("style")),
+        );
+      });
+      html = `<!doctype html>${doc.documentElement.outerHTML}`;
+    } catch (_) {}
+  }
 
   return { html, fieldsBySection };
+};
+
+const fileNameForPage = (page) => {
+  const slug = String(page?.slug || "/").trim();
+  if (!slug || slug === "/") return "index.html";
+  return `${slug.replace(/^\//, "").replace(/\//g, "-")}.html`;
+};
+
+const PREVIEW_NAV_SCRIPT = `<script>
+document.addEventListener("click",function(e){
+  var a=e.target&&e.target.closest&&e.target.closest("a");
+  if(!a)return;
+  var href=a.getAttribute("href")||"";
+  if(!href||/^(https?:|mailto:|tel:|#)/i.test(href))return;
+  e.preventDefault();
+  if(window.opener)window.opener.postMessage({type:"wbp-preview-nav",href:href},"*");
+});
+</script>`;
+
+const pageFromPreviewHref = (pages, href) => {
+  let path = String(href || "").split("?")[0].split("#")[0];
+  path = path.replace(/^\.\//, "").replace(/\/$/, "").replace(/\.html$/i, "");
+  if (!path || path === "." || path === "index") {
+    return pages.find((p) => !p.slug || p.slug === "/") || pages[0];
+  }
+  return (
+    pages.find((p) => String(p.slug || "/").replace(/^\//, "").replace(/\/$/, "") === path) ||
+    null
+  );
+};
+
+const renderPublishedHtml = (page, categories, chrome, { allowLocalImages = false } = {}) => {
+  const stacked = orderSectionsForPage(page.sections || []);
+  const { html } = buildMergedPageHtml(stacked, categories, chrome, {
+    publish: true,
+  });
+  const doc = new DOMParser().parseFromString(html, "text/html");
+  const content = {};
+  Object.entries(buildMergedContent(page.sections || [])).forEach(([key, value]) => {
+    if (value && typeof value === "object") {
+      content[key] = value.cloudUrl || (allowLocalImages ? value.localUrl : "") || "";
+    } else {
+      content[key] = value;
+    }
+  });
+  applyContentToDom(doc, content);
+  doc.querySelectorAll("[data-sclad-pages] a").forEach((anchor) => {
+    const href = anchor.getAttribute("href") || "";
+    if (!href || href === "/" || href === "#") {
+      anchor.setAttribute("href", "./");
+      return;
+    }
+    if (href.startsWith("/") && !href.startsWith("//")) {
+      anchor.setAttribute("href", href.replace(/^\//, ""));
+    }
+  });
+  const schoolName = String(chrome?.schoolName || "School").trim() || "School";
+  const pageLabel = String(page?.title || "").trim();
+  const isHome = !page?.slug || page.slug === "/";
+  doc.title =
+    !isHome && pageLabel && pageLabel !== schoolName
+      ? `${pageLabel} · ${schoolName}`
+      : schoolName;
+  if (chrome?.logoUrl) {
+    const icon = doc.createElement("link");
+    icon.setAttribute("rel", "icon");
+    icon.setAttribute("href", chrome.logoUrl);
+    doc.head.appendChild(icon);
+  }
+  const out = `<!doctype html>${doc.documentElement.outerHTML}`;
+  return allowLocalImages ? out.replace("</body>", `${PREVIEW_NAV_SCRIPT}</body>`) : out;
 };
 
 const buildMergedContent = (sections) => {
@@ -1297,6 +1593,7 @@ const buildMergedContent = (sections) => {
 const PagePreview = ({
   stacked,
   categories,
+  chrome,
   activeId,
   hoverId,
   disabled,
@@ -1313,8 +1610,8 @@ const PagePreview = ({
   const [imgPanelId, setImgPanelId] = useState(null);
 
   const { html: pageHtml, fieldsBySection } = useMemo(
-    () => buildMergedPageHtml(stacked, categories),
-    [stacked, categories],
+    () => buildMergedPageHtml(stacked, categories, chrome),
+    [stacked, categories, chrome],
   );
 
   const imageFieldsFor = useCallback(
@@ -1663,10 +1960,17 @@ const Step2 = ({
   categories,
   templatesLoading,
   pageId = "home",
+  chrome = null,
 }) => {
   const [activeId, setActiveId] = useState(null);
   const [hoverId, setHoverId] = useState(null);
   const [addOpen, setAddOpen] = useState(false);
+  const [previewDevice, setPreviewDevice] = useState("desktop");
+  const [previewZoom, setPreviewZoom] = useState(90);
+  const [previewContentHeight, setPreviewContentHeight] = useState(0);
+  const [previewContainerWidth, setPreviewContainerWidth] = useState(0);
+  const previewViewportRef = useRef(null);
+  const previewScaleRef = useRef(null);
   const addWrapRef = useRef(null);
   const onChangeRef = useRef(onChange);
   onChangeRef.current = onChange;
@@ -1694,6 +1998,54 @@ const Step2 = ({
     setActiveId(null);
     setAddOpen(false);
   }, [pageId]);
+
+  const previewZoomScale = previewZoom / 100;
+  const previewDeviceWidth =
+    previewDevice === "tablet" ? 768 : previewDevice === "mobile" ? 390 : 0;
+  // Browser zoom: the column stays the same width. The page lays out in a
+  // different CSS viewport, then is scaled so it still fills that column.
+  const previewFrameWidth = previewDeviceWidth
+    ? previewDeviceWidth
+    : previewContainerWidth > 0
+      ? previewContainerWidth / previewZoomScale
+      : 0;
+  const previewFrameOffset = Math.max(
+    0,
+    (previewContainerWidth - previewFrameWidth * previewZoomScale) / 2,
+  );
+
+  useLayoutEffect(() => {
+    const el = previewViewportRef.current;
+    if (!el) return;
+    const measure = () => {
+      const w = el.clientWidth;
+      setPreviewContainerWidth((prev) => (Math.abs(prev - w) < 1 ? prev : w));
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [sections.length]);
+
+  useLayoutEffect(() => {
+    const el = previewScaleRef.current;
+    if (!el) return;
+    const measure = () => {
+      const h = el.offsetHeight;
+      setPreviewContentHeight((prev) => (Math.abs(prev - h) < 1 ? prev : h));
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [previewDevice, previewFrameWidth, sections.length]);
+
+  const stepZoom = (dir) => {
+    const steps = [50, 75, 90, 100, 125, 150];
+    const idx = steps.indexOf(previewZoom);
+    const next = steps[Math.min(steps.length - 1, Math.max(0, (idx < 0 ? 2 : idx) + dir))];
+    setPreviewZoom(next);
+  };
 
   // Dismiss the add menu on Escape or a click outside it
   useEffect(() => {
@@ -2155,21 +2507,91 @@ const Step2 = ({
                 {!disabled &&
                   " Click any text to edit it. Red-striped images still need uploading — use the image button on the section toolbar."}
               </p>
+              <div className="wbp-pv-toolbar">
+                <div className="wbp-pv-devices" role="group" aria-label="Preview size">
+                  {[
+                    ["desktop", "Desktop"],
+                    ["tablet", "Tablet"],
+                    ["mobile", "Mobile"],
+                  ].map(([id, label]) => (
+                    <button
+                      key={id}
+                      type="button"
+                      className={`wbp-pv-device${previewDevice === id ? " wbp-pv-device--active" : ""}`}
+                      aria-pressed={previewDevice === id}
+                      onClick={() => setPreviewDevice(id)}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+                <div className="wbp-pv-zoom" role="group" aria-label="Preview zoom">
+                  <button
+                    type="button"
+                    className="wbp-pv-zoom-btn"
+                    onClick={() => stepZoom(-1)}
+                    disabled={previewZoom <= 50}
+                    aria-label="Zoom out"
+                  >
+                    −
+                  </button>
+                  <button
+                    type="button"
+                    className="wbp-pv-zoom-pct"
+                    onClick={() => setPreviewZoom(90)}
+                    title="Reset zoom"
+                  >
+                    {previewZoom}%
+                  </button>
+                  <button
+                    type="button"
+                    className="wbp-pv-zoom-btn"
+                    onClick={() => stepZoom(1)}
+                    disabled={previewZoom >= 150}
+                    aria-label="Zoom in"
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
             </div>
 
-            <div className="wbp-page-preview-sheet">
-              <PagePreview
-                stacked={stackedSections}
-                categories={categories}
-                activeId={activeId}
-                hoverId={hoverId}
-                disabled={disabled}
-                mergedContent={mergedContent}
-                onContentChange={handleMergedContentChange}
-                onActivate={setActiveId}
-                onHover={setHoverId}
-                isFilled={isSectionFilled}
-              />
+            <div className="wbp-pv-viewport" ref={previewViewportRef}>
+              <div
+                className="wbp-pv-sizer"
+                style={{
+                  height: previewContentHeight
+                    ? previewContentHeight * previewZoomScale
+                    : undefined,
+                }}
+              >
+                <div
+                  ref={previewScaleRef}
+                  className="wbp-pv-scale"
+                  style={{
+                    width: previewFrameWidth || "100%",
+                    transform: `scale(${previewZoomScale})`,
+                    transformOrigin: "top left",
+                    left: previewFrameOffset || 0,
+                  }}
+                >
+                  <div className="wbp-page-preview-sheet">
+                    <PagePreview
+                      stacked={stackedSections}
+                      categories={categories}
+                      chrome={chrome}
+                      activeId={activeId}
+                      hoverId={hoverId}
+                      disabled={disabled}
+                      mergedContent={mergedContent}
+                      onContentChange={handleMergedContentChange}
+                      onActivate={setActiveId}
+                      onHover={setHoverId}
+                      isFilled={isSectionFilled}
+                    />
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         )}
@@ -2354,6 +2776,8 @@ const Step2Pages = ({
   disabled,
   categories,
   templatesLoading,
+  chrome = null,
+  onActivePageChange,
 }) => {
   const [activePageId, setActivePageId] = useState(pages[0]?.id || "home");
   const [dialog, setDialog] = useState(null); // { mode: "add" | "edit" }
@@ -2373,6 +2797,9 @@ const Step2Pages = ({
   }, [pages, activePageId]);
 
   const activePage = pages.find((p) => p.id === activePageId) || pages[0];
+  useEffect(() => {
+    onActivePageChange?.(activePage?.id || null);
+  }, [activePage?.id, onActivePageChange]);
   const usedPresetIds = new Set(pages.map((p) => p.id));
   const availablePresets = PAGE_PRESETS.filter(
     (p) => !p.locked && !usedPresetIds.has(p.id),
@@ -2391,7 +2818,10 @@ const Step2Pages = ({
 
   const handleAddPreset = (preset) => {
     const page = createPage(preset, categories, pages.length);
-    onChange((prevPages) => [...(prevPages || []), page]);
+    onChange((prevPages) => {
+      const list = prevPages || [];
+      return [...list, applySharedChromeTemplates([page], findHomePage(list))[0]];
+    });
     setActivePageId(page.id);
     setDialog(null);
   };
@@ -2402,7 +2832,10 @@ const Step2Pages = ({
       categories,
       pages.length,
     );
-    onChange((prevPages) => [...(prevPages || []), page]);
+    onChange((prevPages) => {
+      const list = prevPages || [];
+      return [...list, applySharedChromeTemplates([page], findHomePage(list))[0]];
+    });
     setActivePageId(page.id);
     setDialog(null);
   };
@@ -2432,9 +2865,26 @@ const Step2Pages = ({
   const handleSectionsChange = useCallback(
     (nextSections) => {
       if (!editingPageId) return;
-      updatePageById(editingPageId, { sections: nextSections });
+      onChange((prevPages) => {
+        const prev = prevPages || [];
+        const previous = prev.find((page) => page.id === editingPageId);
+        const chromeChanged = (nextSections || []).some((sec) => {
+          if (!isSharedChromeCategory(catIdOf(sec))) return false;
+          const old = (previous?.sections || []).find(
+            (item) => item.id === sec.id || catIdOf(item) === catIdOf(sec),
+          );
+          return !old || old.templateId !== sec.templateId;
+        });
+        const withEdited = prev.map((page) =>
+          page.id === editingPageId ? { ...page, sections: nextSections } : page,
+        );
+        if (!chromeChanged) return withEdited;
+        return applySharedChromeTemplates(withEdited, {
+          sections: nextSections,
+        });
+      });
     },
-    [editingPageId, updatePageById],
+    [editingPageId, onChange],
   );
 
   if (!activePage) {
@@ -2533,6 +2983,7 @@ const Step2Pages = ({
           disabled={disabled}
           categories={categories}
           templatesLoading={templatesLoading}
+          chrome={chrome}
         />
       </div>
 
@@ -2553,62 +3004,20 @@ const Step2Pages = ({
   );
 };
 
-// ── Step 3 — Final Notes ──────────────────────────────────────────────────────
-const Step3 = ({ value, onChange, disabled }) => (
-  <div className="wbp-step-body">
-    <div className="wbp-notes-wrap">
-      <h3 className="wbp-notes-title">Anything else you want us to know?</h3>
-      <p className="wbp-notes-sub">
-        Special requests, things to avoid, inspirations, or any extra context
-        our team should have when building your site.
-      </p>
-      <textarea
-        className="wbp-textarea wbp-textarea--final"
-        placeholder="e.g. We'd like a calm, professional tone. Avoid bright colours. We love the layout of xyz.com…"
-        value={value || ""}
-        onChange={(e) => !disabled && onChange(e.target.value)}
-        rows={10}
-        disabled={disabled}
-        aria-label="Final notes"
-      />
-      {disabled && (
-        <div className="wbp-submitted-note">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-            <path
-              d="M22 11.08V12a10 10 0 11-5.93-9.14"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            <polyline
-              points="22,4 12,14.01 9,11.01"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-          Brief submitted and locked. Our team is working on your website.
-        </div>
-      )}
-    </div>
-  </div>
-);
-
 // ── Main page ─────────────────────────────────────────────────────────────────
 const WebsiteBriefPage = () => {
   const { schoolId } = useParams();
   const navigate = useNavigate();
   const { addNotification } = useNotification();
   const { getWebsite } = useSchool();
-  const { getRequest, saveDraft, submitRequest, cancelRequest, loading } =
+  const { getRequest, saveDraft, publishWebsite, cancelRequest, loading } =
     useWebsiteRequest();
   const { categories, loading: templatesLoading } = useWebsiteTemplates();
 
   const [school, setSchool] = useState(null);
   const [step, setStep] = useState(1);
   const [briefData, setBriefData] = useState(null);
+  const [briefLoaded, setBriefLoaded] = useState(false);
   const [saveStatus, setSaveStatus] = useState("");
   const [showConfirm, setShowConfirm] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -2626,6 +3035,7 @@ const WebsiteBriefPage = () => {
 
   const briefRef = useRef(brief);
   briefRef.current = brief;
+  const chromeAppliedRef = useRef(false);
   const lastSavedSigRef = useRef("");
   const savingRef = useRef(false);
   const pendingResaveRef = useRef(false);
@@ -2633,8 +3043,13 @@ const WebsiteBriefPage = () => {
   const autoSaveArmedRef = useRef(false);
   const [autoSaveReady, setAutoSaveReady] = useState(false);
 
-  const isSubmitted =
-    briefData?.status === "submitted" || briefData?.status === "published";
+  const isSubmitted = briefData?.status === "submitted";
+  const isPublished = briefData?.status === "published";
+  const liveSiteUrl = publicSiteUrl(briefData?.scladapp_website_url || "");
+  const [previewPageId, setPreviewPageId] = useState("home");
+  const previewWindowRef = useRef(null);
+  const previewUrlRef = useRef("");
+  const previewListenerRef = useRef(null);
 
   // Once categories load, initialise default pages if brief has none
   useEffect(() => {
@@ -2678,9 +3093,11 @@ const WebsiteBriefPage = () => {
   useEffect(() => {
     if (!schoolId) return;
     let cancelled = false;
+    chromeAppliedRef.current = false;
     autoSaveReadyRef.current = false;
     autoSaveArmedRef.current = false;
     setAutoSaveReady(false);
+    setBriefLoaded(false);
 
     const load = async () => {
       getWebsite(schoolId).then((res) => {
@@ -2732,11 +3149,63 @@ const WebsiteBriefPage = () => {
       }
     };
 
-    load();
+    load().finally(() => {
+      if (!cancelled) setBriefLoaded(true);
+    });
     return () => {
       cancelled = true;
     };
   }, [schoolId]);
+
+  // Once the saved brief and the template list are both in, point Navigation,
+  // Hero, Footer, and About at the classic pack so the preview can fill brand slots.
+  useEffect(() => {
+    if (chromeAppliedRef.current) return;
+    if (!briefLoaded || templatesLoading || categories.length === 0) return;
+    chromeAppliedRef.current = true;
+    setBrief((prev) => {
+      const pages = (prev.pages || []).map((page) => ({
+        ...page,
+        sections: (page.sections || []).map((sec) => {
+          const cat = categories.find((c) => c.id === catIdOf(sec));
+          if (!cat || !isPackChromeCategory(cat.id)) return sec;
+          const pack = packTemplateFor(cat);
+          if (!pack || sec.templateId === pack.template_id) return sec;
+          const current = cat.templates.find((t) => t.template_id === sec.templateId);
+          if (current?.html?.includes("data-sclad-brand")) return sec;
+          return { ...sec, templateId: pack.template_id, content: {} };
+        }),
+      }));
+      const changed = pages.some((page, i) =>
+        (page.sections || []).some(
+          (sec, j) =>
+            sec.templateId !== prev.pages?.[i]?.sections?.[j]?.templateId,
+        ),
+      );
+      if (!changed) return prev;
+      return {
+        ...prev,
+        pages,
+        sections: pages[0]?.sections || prev.sections,
+      };
+    });
+  }, [briefLoaded, templatesLoading, categories]);
+
+  // Keep every page on the navigation and footer chosen for the home page.
+  useEffect(() => {
+    setBrief((prev) => {
+      const pages = prev.pages || [];
+      const home = findHomePage(pages);
+      if (!home) return prev;
+      const next = applySharedChromeTemplates(pages, home);
+      if (next === pages) return prev;
+      return {
+        ...prev,
+        pages: next,
+        sections: next[0]?.sections || prev.sections,
+      };
+    });
+  }, [brief.pages]);
 
   // Wait until templates + loaded brief have finished patching before auto-saving
   useEffect(() => {
@@ -2753,6 +3222,80 @@ const WebsiteBriefPage = () => {
 
   const handleBriefChange = useCallback((key, value) => {
     setBrief((prev) => ({ ...prev, [key]: value }));
+  }, []);
+
+  const chrome = useMemo(() => {
+    const logo = school?.logo_url;
+    const logoUrl = typeof logo === "string" ? logo : logo?.url || "";
+    const origin = typeof window !== "undefined" ? window.location.origin : "";
+    return {
+      schoolName: school?.school_name || "School Name",
+      logoUrl,
+      email: school?.email || "",
+      phone: school?.phone_number || "",
+      address: [school?.address, school?.state, school?.country]
+        .filter(Boolean)
+        .join(", "),
+      motto: school?.motto || "",
+      pages: brief.pages || [],
+      loginHref: schoolId ? `${origin}/school/${schoolId}/login` : "/login",
+      applyHref: schoolId ? `${origin}/school/${schoolId}/apply` : "/apply",
+      primary: brief.primary_color || "#111111",
+      secondary: brief.secondary_color || "#6c5ce7",
+      background: brief.background_color || "#ffffff",
+      fontStyle: brief.font_style || "modern",
+    };
+  }, [
+    school,
+    schoolId,
+    brief.pages,
+    brief.primary_color,
+    brief.secondary_color,
+    brief.background_color,
+    brief.font_style,
+  ]);
+
+  const openSitePreview = useCallback(() => {
+    const pages = briefRef.current.pages || [];
+    if (!pages.length) return;
+    const win = window.open("about:blank", "wbp-site-preview");
+    if (!win) {
+      addNotification("Allow pop-ups to open the site preview.", "error");
+      return;
+    }
+    previewWindowRef.current = win;
+    if (previewListenerRef.current) {
+      window.removeEventListener("message", previewListenerRef.current);
+    }
+    const show = (page) => {
+      if (!page || win.closed) return;
+      const html = renderPublishedHtml(page, categories, chrome, {
+        allowLocalImages: true,
+      });
+      const url = URL.createObjectURL(new Blob([html], { type: "text/html" }));
+      const previous = previewUrlRef.current;
+      previewUrlRef.current = url;
+      win.location.href = url;
+      if (previous) setTimeout(() => URL.revokeObjectURL(previous), 1500);
+    };
+    const onMessage = (event) => {
+      if (event.source !== win) return;
+      if (event.data?.type !== "wbp-preview-nav") return;
+      const next = pageFromPreviewHref(pages, event.data.href);
+      if (next) show(next);
+    };
+    previewListenerRef.current = onMessage;
+    window.addEventListener("message", onMessage);
+    show(pages.find((page) => page.id === previewPageId) || pages[0]);
+  }, [addNotification, categories, chrome, previewPageId]);
+
+  useEffect(() => {
+    return () => {
+      if (previewListenerRef.current) {
+        window.removeEventListener("message", previewListenerRef.current);
+      }
+      if (previewUrlRef.current) URL.revokeObjectURL(previewUrlRef.current);
+    };
   }, []);
 
   const persistDraft = useCallback(
@@ -2822,9 +3365,10 @@ const WebsiteBriefPage = () => {
     [schoolId, isSubmitted, saveDraft, addNotification],
   );
 
-  const handleSaveDraft = useCallback(() => {
-    return persistDraft({ silent: false });
-  }, [persistDraft]);
+  const handleSaveDraft = useCallback(async () => {
+    const res = await persistDraft({ silent: false });
+    if (res?.success) navigate(`/admin/${schoolId}/school/profile`);
+  }, [persistDraft, navigate, schoolId]);
 
   // Debounced auto-save whenever the brief changes
   useEffect(() => {
@@ -2837,41 +3381,6 @@ const WebsiteBriefPage = () => {
     }, 1600);
     return () => clearTimeout(t);
   }, [brief, autoSaveReady, isSubmitted, schoolId, persistDraft]);
-
-  const handleSubmit = useCallback(async () => {
-    setSubmitting(true);
-    try {
-      const briefToSubmit = await prepareBriefForSave(schoolId, briefRef.current);
-
-      const saveRes = await saveDraft(schoolId, briefToSubmit);
-      if (!saveRes.success) {
-        addNotification(
-          saveRes.message || "Failed to save before submitting",
-          "error",
-        );
-        setShowConfirm(false);
-        return;
-      }
-      lastSavedSigRef.current = briefSignature(briefToSubmit);
-      setBrief(briefToSubmit);
-      briefRef.current = briefToSubmit;
-
-      const res = await submitRequest(schoolId);
-      if (res.success) {
-        setBriefData((prev) => ({ ...prev, status: "submitted" }));
-        setShowConfirm(false);
-        addNotification(
-          "Website brief submitted! We'll be in touch soon.",
-          "success",
-        );
-      } else {
-        addNotification(res.message || "Failed to submit", "error");
-        setShowConfirm(false);
-      }
-    } finally {
-      setSubmitting(false);
-    }
-  }, [schoolId, saveDraft, submitRequest, addNotification]);
 
   const handleCancel = useCallback(async () => {
     if (
@@ -2900,10 +3409,6 @@ const WebsiteBriefPage = () => {
       addNotification("Failed to cancel request", "error");
     }
   }, [schoolId, cancelRequest, addNotification, navigate, categories]);
-
-  const canSubmit = (brief.pages || []).some(
-    (p) => (p.sections || []).length > 0,
-  );
 
   const isSectionComplete = useCallback(
     (sec) => {
@@ -2943,6 +3448,56 @@ const WebsiteBriefPage = () => {
       return secs.every(isSectionComplete);
     });
   }, [brief.pages, isSectionComplete]);
+
+  const handlePublish = useCallback(async () => {
+    if (!step2Complete) return;
+    setSubmitting(true);
+    try {
+      const briefToPublish = await prepareBriefForSave(schoolId, briefRef.current);
+      const saveRes = await saveDraft(schoolId, briefToPublish);
+      if (!saveRes.success) {
+        addNotification(saveRes.message || "Failed to save before publishing", "error");
+        setShowConfirm(false);
+        return;
+      }
+      lastSavedSigRef.current = briefSignature(briefToPublish);
+      setBrief(briefToPublish);
+      briefRef.current = briefToPublish;
+
+      const pages = briefToPublish.pages || [];
+      const files = pages.map(
+        (page) =>
+          new File(
+            [renderPublishedHtml(page, categories, chrome)],
+            fileNameForPage(page),
+            { type: "text/html" },
+          ),
+      );
+      const res = await publishWebsite(schoolId, {
+        pages: pages.map((page, i) => ({
+          id: page.id || `page_${i}`,
+          title: page.title || `Page ${i + 1}`,
+          slug: page.slug || (i === 0 ? "/" : `/${page.id}`),
+          order: page.order ?? i,
+        })),
+        files,
+      });
+      if (res.success) {
+        setBriefData(res.data || { status: "published", scladapp_website_url: res.site_url });
+        setShowConfirm(false);
+        addNotification(
+          res.site_url ? `Website published at ${res.site_url}` : "Website published.",
+          "success",
+        );
+        navigate(`/admin/${schoolId}/school/profile`);
+      } else {
+        addNotification(res.message || "Failed to publish", "error");
+        setShowConfirm(false);
+      }
+    } finally {
+      setSubmitting(false);
+    }
+  }, [schoolId, saveDraft, publishWebsite, addNotification, navigate, step2Complete, categories, chrome]);
 
   return (
     <div className="wbp-root">
@@ -3026,6 +3581,16 @@ const WebsiteBriefPage = () => {
             </svg>
             <span>Website Brief</span>
           </div>
+          {isPublished && liveSiteUrl && (
+            <a
+              className="wbp-submitted-badge"
+              href={liveSiteUrl}
+              target="_blank"
+              rel="noreferrer"
+            >
+              Live site
+            </a>
+          )}
           {isSubmitted && (
             <span className="wbp-submitted-badge">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
@@ -3042,6 +3607,14 @@ const WebsiteBriefPage = () => {
           )}
         </div>
         <div className="wbp-topbar-right">
+          <button
+            type="button"
+            className="wbp-preview-btn"
+            onClick={openSitePreview}
+            disabled={!(brief.pages || []).length}
+          >
+            Preview
+          </button>
           {!isSubmitted && (
             <>
               {saveStatus === "saving" && (
@@ -3058,7 +3631,7 @@ const WebsiteBriefPage = () => {
                   onClick={handleCancel}
                   disabled={loading}
                 >
-                  Cancel Request
+                  Cancel Draft
                 </button>
               )}
               <button
@@ -3070,10 +3643,15 @@ const WebsiteBriefPage = () => {
               </button>
               <button
                 className="wbp-submit-btn"
-                onClick={() => setShowConfirm(true)}
-                disabled={loading || !canSubmit}
+                onClick={() => step2Complete && setShowConfirm(true)}
+                disabled={loading || submitting || !step2Complete}
+                title={
+                  step2Complete
+                    ? undefined
+                    : "Fill all content fields on every page to continue"
+                }
               >
-                Submit Brief
+                {isPublished ? "Republish" : "Publish"}
               </button>
             </>
           )}
@@ -3082,10 +3660,7 @@ const WebsiteBriefPage = () => {
 
       <StepBar
         step={step}
-        onStep={(n) => {
-          if (n === 3 && step === 2 && !isSubmitted && !step2Complete) return;
-          setStep(n);
-        }}
+        onStep={setStep}
         isSubmitted={isSubmitted}
       />
 
@@ -3116,13 +3691,8 @@ const WebsiteBriefPage = () => {
             disabled={isSubmitted}
             categories={categories}
             templatesLoading={templatesLoading}
-          />
-        )}
-        {step === 3 && (
-          <Step3
-            value={brief.final_notes}
-            onChange={(v) => handleBriefChange("final_notes", v)}
-            disabled={isSubmitted}
+            chrome={chrome}
+            onActivePageChange={setPreviewPageId}
           />
         )}
       </div>
@@ -3130,8 +3700,8 @@ const WebsiteBriefPage = () => {
       {/* Bottom bar */}
       <div className="wbp-bottombar">
         <div className="wbp-bottombar-left">
-          <span className="wbp-step-indicator">Step {step} of 3</span>
-          {step === 2 && !isSubmitted && !step2Complete && (
+          <span className="wbp-step-indicator">Step {step} of 2</span>
+          {!isSubmitted && !step2Complete && (
             <span className="wbp-step-warning">
               Fill all content fields on every page to continue
             </span>
@@ -3146,29 +3716,13 @@ const WebsiteBriefPage = () => {
               ← Back
             </button>
           )}
-          {step < 3 ? (
+          {step < 2 && (
             <button
               className="wbp-nav-btn wbp-nav-btn--next"
-              onClick={() => setStep((s) => s + 1)}
-              disabled={step === 2 && !isSubmitted && !step2Complete}
-              title={
-                step === 2 && !step2Complete
-                  ? "Fill all content fields on every page first"
-                  : undefined
-              }
+              onClick={() => setStep(2)}
             >
               Next →
             </button>
-          ) : (
-            !isSubmitted && (
-              <button
-                className="wbp-submit-btn"
-                onClick={() => setShowConfirm(true)}
-                disabled={loading || !canSubmit}
-              >
-                Submit Brief
-              </button>
-            )
           )}
         </div>
       </div>
@@ -3206,12 +3760,11 @@ const WebsiteBriefPage = () => {
                 />
               </svg>
             </div>
-            <h3 className="wbp-confirm-title">Submit your website brief?</h3>
+            <h3 className="wbp-confirm-title">Publish your website?</h3>
             <p className="wbp-confirm-body">
-              Once submitted, <strong>this brief is permanently locked</strong>{" "}
-              and cannot be changed. Our team will build your website based
-              exactly on what you've filled in ({(brief.pages || []).length}{" "}
-              page{(brief.pages || []).length === 1 ? "" : "s"}).
+              This puts the {(brief.pages || []).length} page
+              {(brief.pages || []).length === 1 ? "" : "s"} you built online.
+              You can keep editing and publish again.
             </p>
             <div className="wbp-confirm-actions">
               <button
@@ -3223,15 +3776,15 @@ const WebsiteBriefPage = () => {
               </button>
               <button
                 className="wbp-submit-btn"
-                onClick={handleSubmit}
-                disabled={submitting}
+                onClick={handlePublish}
+                disabled={submitting || !step2Complete}
               >
                 {submitting ? (
                   <>
-                    <span className="wbp-btn-spinner" /> Submitting…
+                    <span className="wbp-btn-spinner" /> Publishing…
                   </>
                 ) : (
-                  "Yes, submit now"
+                  "Yes, publish"
                 )}
               </button>
             </div>

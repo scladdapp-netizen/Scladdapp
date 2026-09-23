@@ -73,6 +73,54 @@ const useWebsiteRequest = () => {
     finally { setLoading(false); }
   };
 
+  const publishWebsite = async (schoolId, { pages, files }) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const form = new FormData();
+      form.append("pages_json", JSON.stringify(pages));
+      files.forEach((file) => form.append("html_files", file, file.name));
+      const headers = authHeaders();
+      delete headers["Content-Type"];
+      const res = await fetch(
+        `${API_BASE_URL}/api/schools/${schoolId}/website-request/publish`,
+        { method: "POST", headers, body: form },
+      );
+      const data = await res.json();
+      if (!data.success) throw new Error(data.message || "Publish failed");
+      return {
+        success: true,
+        data: data.data,
+        message: data.message,
+        site_url: data.site_url,
+      };
+    } catch (err) {
+      setError(err.message);
+      return { success: false, message: err.message };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const purgeWebsite = async (schoolId) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch(
+        `${API_BASE_URL}/api/schools/${schoolId}/website-request/purge`,
+        { method: "DELETE", headers: authHeaders() },
+      );
+      const data = await res.json();
+      if (!data.success) throw new Error(data.message || "Delete failed");
+      return { success: true, message: data.message };
+    } catch (err) {
+      setError(err.message);
+      return { success: false, message: err.message };
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const cancelRequest = async (schoolId) => {
     setLoading(true); setError(null);
     try {
@@ -157,6 +205,8 @@ const useWebsiteRequest = () => {
     getRequest,
     saveDraft,
     submitRequest,
+    publishWebsite,
+    purgeWebsite,
     cancelRequest,
     setCustomDomain,
     verifyCustomDomain,

@@ -187,6 +187,88 @@ export function appendToBody(html, newHtml) {
   });
 }
 
+/** Insert `newHtml` as the first children of <body>, keeping their order. */
+export function prependToBody(html, newHtml) {
+  return withDoc(html, (doc) => {
+    const tmp = doc.createElement("div");
+    tmp.innerHTML = newHtml;
+    const nodes = [];
+    while (tmp.firstChild) nodes.push(tmp.firstChild);
+    const ref = doc.body.firstChild;
+    nodes.forEach((node) => {
+      ensureHleId(node);
+      doc.body.insertBefore(node, ref);
+    });
+  });
+}
+
+/**
+ * Insert a section fragment into a page.
+ * Styles go in <head>. Markup goes into the body (or a parent).
+ * Navigation can replace the existing bar so it is not hidden under it.
+ * Returns { html, selector } for the inserted root element.
+ */
+export function insertSectionIntoPage(html, fragmentHtml, {
+  atStart = false,
+  replaceSelector = null,
+  parentSelector = null,
+} = {}) {
+  let insertedSelector = null;
+  const newHtml = withDoc(html, (doc) => {
+    const parsed = new DOMParser().parseFromString(String(fragmentHtml || ""), "text/html");
+    Array.from(parsed.head.querySelectorAll("style, link[rel='stylesheet']")).forEach((node) => {
+      doc.head.appendChild(doc.importNode(node, true));
+    });
+
+    const imported = Array.from(parsed.body.children).map((node) => {
+      ensureHleId(node);
+      return doc.importNode(node, true);
+    });
+    if (!imported.length) return;
+
+    const root = imported[0];
+    const hleId = root.getAttribute("data-hle-id");
+    const tag = root.tagName.toLowerCase();
+    insertedSelector = hleId ? `${tag}[data-hle-id="${hleId}"]` : null;
+
+    if (parentSelector) {
+      const parent = findEl(doc, parentSelector);
+      const host = parent || doc.body;
+      imported.forEach((node) => host.appendChild(node));
+      return;
+    }
+
+    const existing = replaceSelector ? findEl(doc, replaceSelector) : null;
+    if (existing && existing.parentNode) {
+      imported.forEach((node) => existing.parentNode.insertBefore(node, existing));
+      existing.remove();
+      return;
+    }
+
+    if (atStart) {
+      const ref = doc.body.firstChild;
+      imported.forEach((node) => doc.body.insertBefore(node, ref));
+    } else {
+      imported.forEach((node) => doc.body.appendChild(node));
+    }
+  });
+  return { html: newHtml, selector: insertedSelector };
+}
+
+/** Create or replace a <style id> in the document head. */
+export function upsertHeadStyle(html, id, css) {
+  if (!html || !id) return html;
+  return withDoc(html, (doc) => {
+    let style = doc.getElementById(id);
+    if (!style) {
+      style = doc.createElement("style");
+      style.id = id;
+      (doc.head || doc.documentElement).appendChild(style);
+    }
+    style.textContent = css;
+  });
+}
+
 /**
  * Duplicate the element matching `selector`, inserting the clone
  * immediately after the original.

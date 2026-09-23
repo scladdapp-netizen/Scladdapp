@@ -46,6 +46,7 @@ import useDashboard from "../../../../api_call/useDashboard";
 import { useTutorialVideos } from "../../../../api_call/useTutorialVideos";
 import useSchool from "../../../../api_call/useSchool";
 import useWebsiteRequest from "../../../../api_call/useWebsiteRequest";
+import { publicSiteUrl } from "../../../../utils/publicSiteUrl";
 import { useAuth } from "../../../../context/AuthContext/AuthContext";
 import { useParams, useNavigate } from "react-router-dom";
 import LoadingData from "../../../../components/LoadingData/LoadingData";
@@ -82,13 +83,14 @@ const DashboardWebsiteCta = ({ schoolId }) => {
         const brief = requestRes.success ? requestRes.data : null;
         const embedded = schoolData?.website_request || null;
         const doc = brief || embedded;
-        const url =
+        const url = publicSiteUrl(
           doc?.scladapp_website_url ||
-          schoolData?.scladapp_website_url ||
-          (doc?.status === "published" && schoolData?.website
-            ? schoolData.website
-            : null) ||
-          null;
+            schoolData?.scladapp_website_url ||
+            (doc?.status === "published" && schoolData?.website
+              ? schoolData.website
+              : null) ||
+            null,
+        );
         setWebsiteUrl(url);
         setBriefStatus(doc?.status || schoolData?.website_request_status || null);
         setRequested(
@@ -266,13 +268,13 @@ const DashboardWebsiteCta = ({ schoolId }) => {
       </div>
       <div className="sic-web-cta-copy">
         <p className="sic-web-cta-label">New · Included in your plan</p>
-        <p className="sic-web-cta-title">Request a school website</p>
+        <p className="sic-web-cta-title">Create a school website</p>
         <p className="sic-web-cta-sub">
-          We&apos;ll build and host a branded site for your school — free with your plan.
+          Build and host a branded site for your school — free with your plan.
         </p>
       </div>
       <button type="button" className="sic-web-cta-btn sic-web-cta-btn--solid" onClick={openBrief}>
-        Request website
+        Create website
       </button>
     </div>
   );

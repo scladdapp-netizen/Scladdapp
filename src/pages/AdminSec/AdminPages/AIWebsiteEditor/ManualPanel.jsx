@@ -7,7 +7,8 @@ import ManualLeftPanel    from "./ManualLeftPanel";
 import ManualRightPanel   from "./ManualRightPanel";
 import AddTemplateModal   from "./AddTemplateModal";
 import { parseLayoutTree } from "./htmlLayoutParser";
-import { deleteElement, insertChildLast, appendToBody, moveElement, moveIntoParent, duplicateElement } from "./htmlPatcher";
+import { deleteElement, insertChildLast, upsertHeadStyle, insertSectionIntoPage, moveElement, moveIntoParent, duplicateElement } from "./htmlPatcher";
+import { applySectionChrome, brandCss, isNavigationSection } from "./sectionChrome";
 
 function findNodeBySelector(nodes, selector) {
   if (!selector || !nodes?.length) return null;
@@ -39,7 +40,7 @@ function findNodeBySelector(nodes, selector) {
  *   onHtmlChange     – fn(newHtml) commit a new HTML snapshot to history
  *   children         – the <PreviewPanel /> from AIWebsiteEditor
  */
-export default function ManualPanel({ html, selectedElement, onSelectNode, onHtmlChange, children }) {
+export default function ManualPanel({ html, selectedElement, onSelectNode, onHtmlChange, chrome = null, children }) {
   const [hoverSelector, setHoverSelector] = useState(null);
   const [hoverLabel,    setHoverLabel]    = useState(null);
 
@@ -59,16 +60,21 @@ export default function ManualPanel({ html, selectedElement, onSelectNode, onHtm
   }, []);
 
   const handleModalInsert = useCallback((templateHtml) => {
-    let newHtml;
-    if (modalTargetSel) {
-      // Insert as last child of the element whose + button was clicked
-      newHtml = insertChildLast(html, modalTargetSel, templateHtml);
-    } else {
-      // No specific target — append to <body>
-      newHtml = appendToBody(html, templateHtml);
-    }
+    const fragment = applySectionChrome(templateHtml, chrome);
+    const pageHtml = chrome ? upsertHeadStyle(html, "wbp-brand", brandCss(chrome)) : html;
+    const navigation = isNavigationSection(fragment);
+    const { html: newHtml, selector } = insertSectionIntoPage(pageHtml, fragment, {
+      atStart: navigation,
+      replaceSelector: navigation ? "nav.sclad-nav, header.sclad-nav" : null,
+      parentSelector: modalTargetSel || null,
+    });
     onHtmlChange(newHtml);
-  }, [html, modalTargetSel, onHtmlChange]);
+    if (navigation && selector && onSelectNode) {
+      const tree = parseLayoutTree(newHtml);
+      const node = findNodeBySelector(tree, selector);
+      if (node) onSelectNode(node);
+    }
+  }, [html, modalTargetSel, onHtmlChange, onSelectNode, chrome]);
 
   // ── Hover ──────────────────────────────────────────────────────────────────
   const handleHover = (selector, label) => {
