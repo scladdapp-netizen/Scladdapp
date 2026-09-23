@@ -3,21 +3,21 @@
 // Falls back gracefully with an error state if the request fails.
 
 import { useState, useEffect } from "react";
-import navPack from "../../../../../../website-template-packs/website-template-2/navigation-sections.json";
-import heroPack from "../../../../../../website-template-packs/website-template-2/hero-sections.json";
-import footerPack from "../../../../../../website-template-packs/website-template-2/footer-sections.json";
-import aboutPack from "../../../../../../website-template-packs/website-template-2/about-sections.json";
-import campusPack from "../../../../../../website-template-packs/website-template-2/campus-sections.json";
-import featuresPack from "../../../../../../website-template-packs/website-template-2/features-sections.json";
-import feesPack from "../../../../../../website-template-packs/website-template-2/fees-sections.json";
-import galleryPack from "../../../../../../website-template-packs/website-template-2/gallery-sections.json";
-import programsPack from "../../../../../../website-template-packs/website-template-2/programs-sections.json";
-import statsPack from "../../../../../../website-template-packs/website-template-2/stats-sections.json";
-import teamPack from "../../../../../../website-template-packs/website-template-2/team-sections.json";
-import testimonialsPack from "../../../../../../website-template-packs/website-template-2/testimonials-sections.json";
-import valuesPack from "../../../../../../website-template-packs/website-template-2/values-sections.json";
-import contactPack from "../../../../../../website-template-packs/website-template-2/contact-sections.json";
-import titlePack from "../../../../../../website-template-packs/website-template-2/title-sections.json";
+import navPack from "../../../../data/website-template-2/navigation-sections.json";
+import heroPack from "../../../../data/website-template-2/hero-sections.json";
+import footerPack from "../../../../data/website-template-2/footer-sections.json";
+import aboutPack from "../../../../data/website-template-2/about-sections.json";
+import campusPack from "../../../../data/website-template-2/campus-sections.json";
+import featuresPack from "../../../../data/website-template-2/features-sections.json";
+import feesPack from "../../../../data/website-template-2/fees-sections.json";
+import galleryPack from "../../../../data/website-template-2/gallery-sections.json";
+import programsPack from "../../../../data/website-template-2/programs-sections.json";
+import statsPack from "../../../../data/website-template-2/stats-sections.json";
+import teamPack from "../../../../data/website-template-2/team-sections.json";
+import testimonialsPack from "../../../../data/website-template-2/testimonials-sections.json";
+import valuesPack from "../../../../data/website-template-2/values-sections.json";
+import contactPack from "../../../../data/website-template-2/contact-sections.json";
+import titlePack from "../../../../data/website-template-2/title-sections.json";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:1234";
 
