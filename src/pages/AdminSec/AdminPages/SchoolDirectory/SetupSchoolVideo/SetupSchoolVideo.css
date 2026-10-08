@@ -64,12 +64,29 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  padding: 12px 14px;
-  background: linear-gradient(135deg, #111 0%, #2a2a2a 100%);
+  gap: 10px;
+  padding: 10px 12px;
+  background: #111;
   color: #fff;
   cursor: grab;
   touch-action: none;
+}
+
+.setup-school-video__title {
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.setup-school-video__detail {
+  margin: 0;
+  padding: 10px 12px 12px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: #6b7280;
 }
 
 .setup-school-video-wrap--dragging .setup-school-video__header,
@@ -123,7 +140,8 @@
 .setup-school-video__title {
   font-size: 13px;
   font-weight: 700;
-  line-height: 1.2;
+  line-height: 1.3;
+  min-width: 0;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -205,6 +223,10 @@
   width: 100%;
   padding-bottom: 56.25%;
   background: #000;
+}
+
+.setup-school-video__drag .setup-school-video__btn {
+  background: rgba(0, 0, 0, 0.55);
 }
 
 .setup-school-video__iframe,
@@ -384,8 +406,12 @@
 }
 
 [data-theme="dark"] .setup-school-video__header {
-  background: linear-gradient(135deg, #111 0%, #1a1a1a 100%);
+  background: #111;
   border-bottom: 1px solid #2a2a2a;
+}
+
+[data-theme="dark"] .setup-school-video__detail {
+  color: #9ca3af;
 }
 
 [data-theme="dark"] .setup-school-video__icon {

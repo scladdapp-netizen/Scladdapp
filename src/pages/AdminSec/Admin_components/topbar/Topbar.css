@@ -207,6 +207,30 @@
 
 .al_search_mobile { display: none; }
 
+.aa-star-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  background: #eef2ff;
+  border: 1px solid #c7d2fe;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.aa-star-btn:hover,
+.aa-star-btn.open {
+  background: #e0e7ff;
+  border-color: #818cf8;
+}
+
+[data-theme="dark"] .aa-star-btn {
+  background: #1e1b4b;
+  border-color: #4338ca;
+}
+
 /* ── Profile avatar ───────────────────────────────────────────────────────── */
 .profile-dropdown-wrapper { position: relative; }
 

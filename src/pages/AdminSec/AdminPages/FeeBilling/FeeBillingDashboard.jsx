@@ -574,8 +574,8 @@ const BillsTab = () => {
               if (!tmpl) return null;
               const items = typeof tmpl.bill_items === "string" ? JSON.parse(tmpl.bill_items) : (tmpl.bill_items || []);
               return (
-                <div style={{ background: "#f9fafb", border: "1px solid #e5e7eb", borderRadius: 8, padding: 14, marginBottom: 16 }}>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 12 }}>
+                <div className="cf-template-preview">
+                  <div className="cf-template-grid">
                     {[
                       { label: "Name", value: tmpl.name },
                       { label: "Category", value: tmpl.category },
@@ -584,22 +584,22 @@ const BillsTab = () => {
                       { label: "Installments", value: tmpl.allow_installments ? `Yes (${tmpl.installment_count})` : "No" },
                     ].map(({ label, value }) => (
                       <div key={label}>
-                        <p style={{ fontSize: 11, fontWeight: 600, color: "#9ca3af", margin: "0 0 2px", textTransform: "uppercase" }}>{label}</p>
-                        <p style={{ fontSize: 13, color: "#374151", margin: 0, fontWeight: 500 }}>{value || "—"}</p>
+                        <p className="cf-template-label">{label}</p>
+                        <p className="cf-template-value">{value || "—"}</p>
                       </div>
                     ))}
                   </div>
                   {tmpl.description && (
-                    <p style={{ fontSize: 13, color: "#6b7280", margin: "0 0 12px" }}>{tmpl.description}</p>
+                    <p className="cf-template-desc">{tmpl.description}</p>
                   )}
                   {items.length > 0 && (
                     <div>
-                      <p style={{ fontSize: 11, fontWeight: 600, color: "#9ca3af", margin: "0 0 6px", textTransform: "uppercase" }}>Bill Items</p>
-                      <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                      <p className="cf-template-label">Bill Items</p>
+                      <div className="cf-template-items">
                         {items.map((item, i) => (
-                          <div key={i} style={{ display: "flex", justifyContent: "space-between", fontSize: 13, padding: "4px 0", borderBottom: "1px solid #f3f4f6" }}>
-                            <span style={{ color: "#374151" }}>{item.item_name}</span>
-                            <span style={{ fontWeight: 600, color: "#374151" }}>₦{Number(item.amount).toLocaleString()}</span>
+                          <div key={i} className="cf-template-item">
+                            <span>{item.item_name}</span>
+                            <span>₦{Number(item.amount).toLocaleString()}</span>
                           </div>
                         ))}
                       </div>

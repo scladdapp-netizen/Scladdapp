@@ -266,18 +266,12 @@ const Students = () => {
         }
         const displayText = row.currentClassStream ? `${v} - ${row.currentClassStream}` : v;
         const isPastWarning = row.isClassFromPastSession && row.currentSessionExists;
-        const methodColor = { admission: "std-badge-green", promotion: "std-badge-blue", demotion: "std-badge-yellow" };
         return (
           <div className={`std-class-cell${isPastWarning ? " std-class-past" : ""}`}>
             <span className="std-class-name">{displayText}</span>
             {row.classAssignmentSession && (
               <span className={`std-class-session${isPastWarning ? " std-class-session-warn" : ""}`}>
                 {row.classAssignmentSession}{isPastWarning && " (Past)"}
-              </span>
-            )}
-            {row.classAssignmentMethod && !isPastWarning && (
-              <span className={`std-badge ${methodColor[row.classAssignmentMethod] || "std-badge-gray"}`}>
-                {row.classAssignmentMethod}
               </span>
             )}
           </div>
@@ -299,7 +293,7 @@ const Students = () => {
       label: "Status",
       accessor: "status",
       render: (v) => (
-        <span className={`std-badge ${v === "Active" ? "std-badge-green" : "std-badge-danger"}`}>{v}</span>
+        <span className={`std-badge ${v === "Active" ? "std-badge-on" : "std-badge-danger"}`}>{v}</span>
       ),
     },
   ];

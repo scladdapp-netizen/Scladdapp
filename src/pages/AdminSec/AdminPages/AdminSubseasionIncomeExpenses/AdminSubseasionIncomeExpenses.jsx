@@ -22,6 +22,13 @@ const dateFilterOptions = [
   { value: 365, label: "Last year" },
 ];
 
+const localISODate = (d = new Date()) => {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+};
+
 const EMPTY_FORM = {
   type: "income", title: "", amount: "", category: "",
   description: "", date: "", paymentMethod: "", reference: "",
@@ -71,9 +78,9 @@ const AdminSubseasionIncomeExpenses = () => {
   }, [schoolId, dateFilter, refreshTable]);
 
   const fetchData = useCallback(async (params) => {
-    const endDate   = new Date().toISOString().split("T")[0];
-    const startDate = new Date(Date.now() - dateFilter * 86400000).toISOString().split("T")[0];
-    const result = await getTransactionsPaginated(schoolId, { ...params, startDate, endDate });
+    const start = new Date();
+    start.setDate(start.getDate() - dateFilter);
+    const result = await getTransactionsPaginated(schoolId, { ...params, startDate: localISODate(start) });
     if (result.success) {
       return {
         success: true,
@@ -146,7 +153,9 @@ const AdminSubseasionIncomeExpenses = () => {
 
   const openAdd = () => {
     if (!canCreate) { addNotification("No permission to add transactions.", "error"); return; }
-    setEditingTransaction(null); setFormData(EMPTY_FORM); setIsAddMenuOpen(true);
+    setEditingTransaction(null);
+    setFormData({ ...EMPTY_FORM, date: localISODate() });
+    setIsAddMenuOpen(true);
   };
 
   const openEdit = (t) => {
@@ -165,7 +174,7 @@ const AdminSubseasionIncomeExpenses = () => {
       school_id: schoolId, type: formData.type, title: formData.title,
       amount: formData.amount, category: formData.category || null,
       description: formData.description || null,
-      date: formData.date || new Date().toISOString().split("T")[0],
+      date: formData.date || localISODate(),
       payment_method: formData.paymentMethod || null,
       reference: formData.reference || null,
       created_by_id: user?.admin?.admin_id || user?.staff?.staff_id || null,
@@ -176,6 +185,15 @@ const AdminSubseasionIncomeExpenses = () => {
       ? await updateTransaction(editingTransaction.transaction_id, payload)
       : await createTransaction(payload);
     if (result.success) {
+      const savedDate = (formData.date || localISODate()).slice(0, 10);
+      const saved = new Date(`${savedDate}T12:00:00`);
+      const today = new Date();
+      today.setHours(12, 0, 0, 0);
+      const daysBack = Math.ceil((today - saved) / 86400000);
+      if (daysBack > dateFilter) {
+        const wider = dateFilterOptions.find((o) => o.value >= daysBack)?.value || daysBack;
+        setDateFilter(wider);
+      }
       addNotification(`Transaction ${editingTransaction ? "updated" : "created"} successfully`, "success");
       setRefreshTable((k) => k + 1);
       setIsAddMenuOpen(false);

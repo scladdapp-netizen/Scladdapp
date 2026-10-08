@@ -164,23 +164,37 @@ const SchoolAccountsTab = () => {
     accountType: "Savings", description: "", isDefault: false,
   });
 
+  const paystackBlocked = (message) => {
+    const msg = (message || "").toLowerCase();
+    return msg.includes("daily limit") || msg.includes("test mode") || msg.includes("test bank");
+  };
+
   const handleSubmit = async () => {
     if (!formData.accountName || !formData.accountNumber || !formData.bankName) {
       addNotification("Please fill in all required fields", "error"); return;
     }
     const bankCode = formData.bankCode?.trim();
     if (!bankCode) { addNotification("Please select a bank to verify the account.", "error"); return; }
+    const accountNumber = String(formData.accountNumber).replace(/\D/g, "");
+    if (accountNumber.length !== 10) {
+      addNotification("Account number must be 10 digits.", "error");
+      return;
+    }
     setIsSubmitting(true);
     try {
-      const verify = await verifyBankAccount(formData.accountNumber, bankCode);
+      const verify = await verifyBankAccount(accountNumber, bankCode);
       if (!verify.success) {
         const msg = verify.message || "";
-        addNotification(
-          msg.toLowerCase().includes("daily limit") || msg.toLowerCase().includes("test bank")
-            ? "Paystack test mode limit reached (3/day). Use account '0000000000' with code '001' to test."
-            : msg || "Could not verify account. Check account number and bank.",
-          "error"
-        );
+        if (paystackBlocked(msg)) {
+          setVerifyPopup({
+            account_name: formData.accountName,
+            account_number: accountNumber,
+            bank_code: bankCode,
+            unverified: true,
+          });
+          return;
+        }
+        addNotification(msg || "Could not verify account. Check account number and bank.", "error");
         return;
       }
       setVerifyPopup({ account_name: verify.account_name, account_number: verify.account_number, bank_code: bankCode });
@@ -190,34 +204,43 @@ const SchoolAccountsTab = () => {
 
   const handleConfirmAccount = async () => {
     const bankCode = verifyPopup?.bank_code;
+    const unverified = !!verifyPopup?.unverified;
     const accountName = formData.accountName;
-    const accountNumber = formData.accountNumber;
+    const accountNumber = verifyPopup?.account_number || formData.accountNumber;
     setVerifyPopup(null);
     setIsSubmitting(true);
     try {
+      if (unverified) {
+        await saveAccount(null, "Account saved. Paystack could not verify it today because the test-mode limit was reached.", accountNumber);
+        return;
+      }
       const sub = await createPaystackSubaccount({
         business_name: accountName, account_number: accountNumber,
         bank_code: bankCode, percentage_charge: 0,
       });
-      if (!sub.success) { addNotification(sub.message || "Failed to create Paystack subaccount", "error"); return; }
-      await saveAccount(sub.subaccount_code);
+      if (!sub.success) {
+        await saveAccount(null, `Account saved. Paystack settlement was not created: ${sub.message || "request failed"}.`, accountNumber);
+        return;
+      }
+      await saveAccount(sub.subaccount_code, null, accountNumber);
     } catch { addNotification("Failed to create subaccount", "error"); }
     finally { setIsSubmitting(false); }
   };
 
-  const saveAccount = async (subaccount_code) => {
+  const saveAccount = async (subaccount_code, notice, accountNumber) => {
     setIsSubmitting(true);
     try {
       const result = await createSchoolAccount({
         school_id: schoolId,
-        account_name: formData.accountName, account_number: formData.accountNumber,
+        account_name: formData.accountName,
+        account_number: accountNumber || formData.accountNumber,
         bank_name: formData.bankName, bank_code: formData.bankCode?.trim() || null,
         account_type: formData.accountType, description: formData.description,
         is_default: formData.isDefault, subaccount_code: subaccount_code || null,
         created_by: user?.admin?.admin_id || user?.user_id,
       });
       if (result.success) {
-        addNotification("School account created successfully", "success");
+        addNotification(notice || "School account created successfully", notice ? "info" : "success");
         setIsAddMenuOpen(false); resetForm(); fetchAccounts();
       } else addNotification(result.message || "Failed to create school account", "error");
     } catch { addNotification("Error creating school account", "error"); }
@@ -508,8 +531,12 @@ const SchoolAccountsTab = () => {
               <div className="sa-verify-icon">
                 <IconBank />
               </div>
-              <h3 className="sa-verify-title">Is this your account?</h3>
-              <p className="sa-verify-sub">Please confirm this account belongs to your school.</p>
+              <h3 className="sa-verify-title">{verifyPopup.unverified ? "Save this account?" : "Is this your account?"}</h3>
+              <p className="sa-verify-sub">
+                {verifyPopup.unverified
+                  ? "Paystack test mode has reached its daily check limit, so this account was not verified. You can still save the details you entered."
+                  : "Please confirm this account belongs to your school."}
+              </p>
               <div className="sa-verify-card">
                 <div className="sa-verify-row">
                   <span className="sa-verify-label">Account Name</span>
@@ -523,7 +550,7 @@ const SchoolAccountsTab = () => {
               <div className="sa-verify-btns">
                 <Button variant="secondary" onClick={() => setVerifyPopup(null)}>No, go back</Button>
                 <Button onClick={handleConfirmAccount} disabled={isSubmitting}>
-                  {isSubmitting ? "Creating..." : "Yes, this is mine"}
+                  {isSubmitting ? "Creating..." : (verifyPopup.unverified ? "Save account" : "Yes, this is mine")}
                 </Button>
               </div>
             </div>

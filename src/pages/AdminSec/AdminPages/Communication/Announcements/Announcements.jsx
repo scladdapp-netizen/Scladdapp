@@ -448,7 +448,7 @@ const Announcements = () => {
   };
 
   const handleSendAnnouncement = async () => {
-    console.log("Sending announcement:", selectedAnnouncement);
+    ("Sending announcement:", selectedAnnouncement);
     // Handle actual sending logic
     setIsPreviewMenuOpen(false);
     // Log activity

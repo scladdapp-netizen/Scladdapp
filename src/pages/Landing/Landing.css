@@ -426,7 +426,7 @@
 .ivs-heading {
   font-size: clamp(2.2rem, 3.5vw, 3.2rem);
   font-weight: 900;
-  color: #f0ede8;          /* off-white */
+  color: #f0ede8;
   line-height: 1.05;
   letter-spacing: -0.03em;
   margin: 0 0 20px;
@@ -461,7 +461,6 @@
   width: 100%;
 }
 
-/* ambient glow behind video */
 .ivs-glow {
   position: absolute;
   width: 90%;
@@ -474,7 +473,6 @@
   z-index: 0;
 }
 
-/* 16:9 iframe shell */
 .intro-video-frame {
   position: relative;
   width: 100%;
@@ -502,12 +500,8 @@
     grid-template-columns: 1fr;
     gap: 40px;
   }
-  .intro-video-text {
-    order: 1;
-  }
-  .intro-video-frame-wrap {
-    order: 2;
-  }
+  .intro-video-text { order: 1; }
+  .intro-video-frame-wrap { order: 2; }
   .ivs-sub { max-width: 100%; }
   .ivs-heading { font-size: 2rem; }
 }
@@ -1587,7 +1581,8 @@
   flex-direction: column;
   justify-content: center;
   padding-top: 100px;
-  opacity: 0;
+  opacity: 1;
+  background: #000;
   box-sizing: border-box;
   backface-visibility: hidden;
 }
@@ -1629,7 +1624,6 @@
   line-height: 1.6;
 }
 
-/* Track — starts fully right, slides left as you scroll */
 .hscroll2-track {
   display: flex;
   width: max-content;
@@ -1639,7 +1633,7 @@
   backface-visibility: hidden;
   transform: translate3d(0, 0, 0);
   padding: 0 80px;
-  gap: 32px;
+  gap: 28px;
   box-sizing: border-box;
 }
 
@@ -1729,19 +1723,6 @@
 }
 
 /* ── Portal Cards (Stack 2) ──────────────────────────────────────────────── */
-.hscroll2-track {
-  display: flex;
-  width: max-content;
-  height: 100%;
-  align-items: center;
-  will-change: transform;
-  backface-visibility: hidden;
-  transform: translate3d(0, 0, 0);
-  padding: 0 80px;
-  gap: 28px;
-  box-sizing: border-box;
-}
-
 .portal-card {
   width: 520px;
   height: 78vh;

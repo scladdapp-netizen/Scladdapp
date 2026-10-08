@@ -9,7 +9,7 @@ import useAdminNotification from "../../../../api_call/useAdminNotification";
 import NotificationPanel from "../../../../components/NotificationPanel/NotificationPanel";
 import "./Topbar.css";
 
-const Topbar = ({ isMobileMenuOpen, onMenuClick }) => {
+const Topbar = ({ isMobileMenuOpen, onMenuClick, assistantOpen = false, onToggleAssistant }) => {
   const { logout, user } = useAuth();
   const navigate = useNavigate();
   const { schoolId } = useParams();
@@ -144,6 +144,21 @@ const Topbar = ({ isMobileMenuOpen, onMenuClick }) => {
 
         {/* Right */}
         <div className="al_topbar_right">
+          {admin && (
+            <button
+              type="button"
+              className={`aa-star-btn${assistantOpen ? " open" : ""}`}
+              onClick={onToggleAssistant}
+              title="Assistant"
+              aria-label="Open assistant"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M12 2.2l1.7 6.1L20 10l-6.3 1.7L12 17.8l-1.7-6.1L4 10l6.3-1.7L12 2.2z" fill="#4F46E5" />
+                <path d="M18.2 14.2l.7 2.4 2.3.7-2.3.7-.7 2.4-.7-2.4-2.3-.7 2.3-.7.7-2.4z" fill="#818CF8" />
+              </svg>
+            </button>
+          )}
+
           {/* Search icon (mobile) */}
           <button className="topbar-icon-btn al_search_mobile" onClick={() => setIsSearchOpen(true)} title="Search">
             <FaSearch size={15} />

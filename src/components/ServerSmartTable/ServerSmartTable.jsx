@@ -350,8 +350,8 @@ export default function ServerSmartTable({
                           <input type="checkbox" checked={selected} onChange={() => toggleRow(rid)} />
                         </td>
                       )}
-                      {columns.map((col) => (
-                        <td key={col.accessor} data-label={col.label}>
+                      {columns.map((col, colIndex) => (
+                        <td key={`${col.accessor}-${colIndex}`} data-label={typeof col.label === "string" ? col.label : col.accessor}>
                           {col.render ? col.render(row[col.accessor], row) : row[col.accessor]}
                         </td>
                       ))}

@@ -21,7 +21,55 @@ import useSubscription from "../../../../api_call/useSubscription";
 import useSchool from "../../../../api_call/useSchool";
 import useWebsiteRequest from "../../../../api_call/useWebsiteRequest";
 import { useNotification } from "../../../../context/NotificationProvider/NotificationProvider";
-import { patchTextContent } from "./htmlPatcher";
+import { patchTextContent, deleteElement, applyImportantStyles } from "./htmlPatcher";
+
+const NAMED_COLORS = {
+  green: "#16a34a",
+  red: "#dc2626",
+  blue: "#2563eb",
+  yellow: "#ca8a04",
+  orange: "#ea580c",
+  purple: "#7c3aed",
+  pink: "#db2777",
+  black: "#111111",
+  white: "#ffffff",
+  gold: "#b45309",
+  navy: "#1e3a8a",
+  teal: "#0f766e",
+  gray: "#6b7280",
+  grey: "#6b7280",
+  brown: "#92400e",
+};
+
+function isStylePrompt(prompt) {
+  return /\b(style|color|colour|font|size|bold|italic|background|bg|bigger|smaller|larger|shadow|border|align|padding|margin|weight|underline|center)\b/i.test(prompt || "");
+}
+
+function stylePropsFromPrompt(prompt) {
+  const text = String(prompt || "").toLowerCase();
+  const props = {};
+  const onBackground = /\b(background|bg)\b/.test(text);
+  const hex = text.match(/#(?:[0-9a-f]{3}|[0-9a-f]{6})\b/i);
+  const named = text.match(new RegExp(`\\b(${Object.keys(NAMED_COLORS).join("|")})\\b`, "i"));
+  const color = hex ? hex[0] : named ? NAMED_COLORS[named[1].toLowerCase()] : null;
+  if (color) props[onBackground ? "background-color" : "color"] = color;
+  if (/\b(bigger|larger)\b/.test(text)) props["font-size"] = "1.35em";
+  if (/\bsmaller\b/.test(text)) props["font-size"] = "0.85em";
+  if (/\bbold\b/.test(text)) props["font-weight"] = "700";
+  if (/\bitalic\b/.test(text)) props["font-style"] = "italic";
+  if (/\bunderline\b/.test(text)) props["text-decoration"] = "underline";
+  if (/\bcenter\b/.test(text)) props["text-align"] = "center";
+  return Object.keys(props).length ? props : null;
+}
+
+function isRemoveSelection(prompt) {
+  const text = String(prompt || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[!?.]+$/g, "")
+    .replace(/\s+/g, " ");
+  return /^(please\s+)?(remove|delete|erase|drop|get rid of|take out)(\s+(it|this|that|the selected|this element|the element|this item|the item))?$/.test(text);
+}
 
 function isStandardOrAbovePlan(plan) {
   const name = String(plan?.plan_name || "").toLowerCase();
@@ -285,21 +333,85 @@ export default function AIWebsiteEditor() {
     setIsThinking(true);
     setSelectedElement(null);
 
+    if (element?.selector && isRemoveSelection(prompt)) {
+      const next = deleteElement(htmlRef.current, element.selector, {
+        tagName: element.tagName,
+        textContent: element.textContent,
+        outerHTML: element.outerHTML,
+        sectionId: element.sectionId,
+      });
+      setIsThinking(false);
+      if (!next || next === htmlRef.current) {
+        setMessages((m) => [...m, {
+          id: Date.now() + 1,
+          role: "ai",
+          isError: true,
+          content: "I couldn't find that item to remove. Select it again and try once more.",
+          time: formatTime(),
+        }]);
+        return;
+      }
+      set(next);
+      setMessages((m) => [...m, {
+        id: Date.now() + 1,
+        role: "ai",
+        content: "Removed.",
+        time: formatTime(),
+      }]);
+      return;
+    }
+
+    if (element?.selector && isStylePrompt(prompt)) {
+      const hint = {
+        tagName: element.tagName,
+        textContent: element.textContent,
+        outerHTML: element.outerHTML,
+        sectionId: element.sectionId,
+      };
+      const localProps = stylePropsFromPrompt(prompt);
+      if (localProps) {
+        const next = applyImportantStyles(htmlRef.current, element.selector, hint, localProps);
+        setIsThinking(false);
+        if (!next || next === htmlRef.current) {
+          setMessages((m) => [...m, {
+            id: Date.now() + 1,
+            role: "ai",
+            isError: true,
+            content: "I couldn't find that item to style. Select it again and try once more.",
+            time: formatTime(),
+          }]);
+          return;
+        }
+        set(next);
+        setMessages((m) => [...m, {
+          id: Date.now() + 1,
+          role: "ai",
+          content: "Styled.",
+          time: formatTime(),
+        }]);
+        return;
+      }
+    }
+
     try {
       const sectionHtml = element?.sectionHtml || element?.outerHTML || null;
       const sectionId   = element?.sectionId   || null;
 
       // Always read htmlRef.current so we use the latest HTML, not a stale closure
+      const styleOnly = Boolean(element?.selector && isStylePrompt(prompt));
       const result = await callEdit({
         prompt,
         fullHtml:    htmlRef.current,
         sectionId,
         sectionHtml,
+        styleOnly,
         element: element ? {
           selector:    element.selector,
           tagName:     element.tagName,
           label:       element.label,
           textContent: element.textContent,
+          outerHTML:   element.outerHTML,
+          sectionId:   element.sectionId,
         } : null,
         configId: configId || null,
       });
@@ -315,12 +427,32 @@ export default function AIWebsiteEditor() {
         return;
       }
 
-      set(result.newHtml);
+      if (result.styleProps && element?.selector) {
+        const next = applyImportantStyles(htmlRef.current, element.selector, {
+          tagName: element.tagName,
+          textContent: element.textContent,
+          outerHTML: element.outerHTML,
+          sectionId: element.sectionId,
+        }, result.styleProps);
+        if (!next || next === htmlRef.current) {
+          setMessages((m) => [...m, {
+            id: Date.now() + 1,
+            role: "ai",
+            isError: true,
+            content: "I couldn't find that item to style. Select it again and try once more.",
+            time: formatTime(),
+          }]);
+          return;
+        }
+        set(next);
+      } else if (result.newHtml && !styleOnly) {
+        set(result.newHtml);
+      }
 
       setMessages((m) => [...m, {
         id:      Date.now() + 1,
         role:    "ai",
-        content: result.message || "Section updated successfully.",
+        content: result.message || (result.newHtml ? "Section updated successfully." : "Tell me what you would like to change on the page."),
         time:    formatTime(),
       }]);
 

@@ -122,7 +122,8 @@
 }
 .bd-pay-badge.paid    { background: #dcfce7; color: #166634; }
 .bd-pay-badge.partial { background: #fef3c7; color: #92400e; }
-.bd-pay-badge.unpaid  { background: #fee2e2; color: #dc2626; }
+.bd-pay-badge.unpaid  { padding: 4px 10px; background: #111111; color: #f87171; box-shadow: none; }
+[data-theme="dark"] .bd-pay-badge.unpaid { background: #f0f0f0; color: #dc2626; }
 
 /* ── Recipient detail panel ───────────────────────────────────────────────── */
 .bd-recipient-panel {

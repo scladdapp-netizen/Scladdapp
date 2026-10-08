@@ -22,7 +22,7 @@
   box-shadow: inset 0 1px 0 rgba(255,255,255,0.4), 0 1px 2px rgba(0,0,0,0.05);
 }
 
-.cls-badge-active   { background: #dcfce7; color: #166534; }
+.cls-badge-active   { padding: 4px 10px; background: #111111; color: #ffffff; box-shadow: none; }
 .cls-badge-inactive { background: #fecaca; color: #991b1b; }
 
 /* ── Dark theme ───────────────────────────────────────────────────────────── */
@@ -35,6 +35,7 @@
 [data-theme="dark"] .cls-unassigned { color: #555555; }
 [data-theme="dark"] .cls-count { color: #e0e0e0; }
 [data-theme="dark"] .cls-room  { color: #888888; }
+[data-theme="dark"] .cls-badge-active { background: #f0f0f0; color: #111111; }
 
 /* ═══════════════════════════════════════════════════════════════════════════
    Add Class Panel

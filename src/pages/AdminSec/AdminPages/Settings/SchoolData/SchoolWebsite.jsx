@@ -642,12 +642,12 @@ const RequestWebsiteSection = ({ onRequest, onCancel, onDelete, loading, already
     <div className="sw-section sw-section-request">
       <div className="sw-request-header">
         <h3 className="sw-request-title">
-          {scladappWebsiteUrl ? "Your Scladapp-Powered Website" : "Create a Scladapp-Powered School Website"}
+          {scladappWebsiteUrl ? "Your AI website" : "Create an AI school website"}
         </h3>
         <p className="sw-request-desc">
           {scladappWebsiteUrl
-            ? "Your website is live and hosted by Scladapp. Share it with parents and the community."
-            : "Create and host a professional website for your school — included in paid plans. Your school's data, profile, and branding are used automatically."}
+            ? "The site is live. Change the text and images yourself, or tell AI what to edit."
+            : "Build the school site with AI, then edit the text and images yourself."}
         </p>
       </div>
 
@@ -669,47 +669,21 @@ const RequestWebsiteSection = ({ onRequest, onCancel, onDelete, loading, already
         {scladappWebsiteUrl ? (
           /* Website is live */
           <div className="sw-website-live">
-            <div className="sw-website-live-badge">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2"/>
-                <path d="M2 12h20M12 2a15.3 15.3 0 010 20M12 2a15.3 15.3 0 000 20" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-              </svg>
-              <span>Your Scladapp-powered website is live!</span>
-            </div>
-            <div className="sw-website-live-url">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.8"/>
-                <path d="M2 12h20M12 2a15.3 15.3 0 010 20M12 2a15.3 15.3 0 000 20" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
-              </svg>
+            <div className="sw-ai-board">
+              <p className="sw-ai-kicker"><span className="sw-ai-dot" /> Live</p>
               <a href={scladappWebsiteUrl} target="_blank" rel="noreferrer" className="sw-website-live-link">
                 {scladappWebsiteUrl}
               </a>
               <div className="sw-website-live-actions">
                 <CopyBtn text={scladappWebsiteUrl} />
                 <a href={scladappWebsiteUrl} target="_blank" rel="noreferrer" className="sw-open-btn">
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
-                    <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                    <polyline points="15,3 21,3 21,9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                    <line x1="10" y1="14" x2="21" y2="3" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-                  </svg>
                   Visit
                 </a>
+                <button type="button" className="sw-edit-ai-btn" onClick={onEditWithAI}>
+                  Edit site
+                </button>
               </div>
             </div>
-            {/* Site Workplace entry point */}
-            <button className="sw-edit-ai-btn" onClick={onEditWithAI}>
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
-                <rect x="3" y="3" width="7" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.8"/>
-                <rect x="14" y="3" width="7" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.8"/>
-                <rect x="3" y="14" width="7" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.8"/>
-                <rect x="14" y="14" width="7" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.8"/>
-              </svg>
-              Open Site Workplace
-            </button>
-            <p className="sw-edit-ai-desc">
-              Your personal workspace for managing and improving your school website — edit content, update sections, and use AI to rewrite or generate new parts of your site.
-            </p>
-
             <div className="sw-delete-website">
               <div className="sw-delete-website-copy">
                 <p className="sw-delete-website-title">Delete website</p>
@@ -947,7 +921,7 @@ export const SchoolWebsiteContent = () => {
         {websiteLoading ? (
           <div className="sw-section sw-section-request">
             <div className="sw-request-header">
-              <h3 className="sw-request-title">Scladapp-Powered Website</h3>
+              <h3 className="sw-request-title">AI website</h3>
               <p className="sw-request-desc">Loading website status…</p>
             </div>
           </div>

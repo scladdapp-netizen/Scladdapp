@@ -6,11 +6,13 @@ import Saidbar from "../../Admin_components/saidbar/Saidbar";
 import Topbar from "../../Admin_components/topbar/Topbar";
 import SubscriptionExpiredBanner from "../../../../components/SubscriptionExpiredBanner/SubscriptionExpiredBanner";
 import SetupSchoolVideo from "../../AdminPages/SchoolDirectory/SetupSchoolVideo/SetupSchoolVideo";
+import SchoolAssistantPanel from "../../Admin_components/SchoolAssistant/SchoolAssistantPanel";
 import { useBlockExpiredMutations } from "../../../../hooks/useBlockExpiredMutations";
 import { useSubscriptionAccess } from "../../../../hooks/useSubscriptionAccess";
 
 const AdminLayout = ({ children, schoolId }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [assistantOpen, setAssistantOpen] = useState(false);
   const { schoolId: paramSchoolId } = useParams();
   const resolvedSchoolId = paramSchoolId || schoolId;
   const { canMutate } = useSubscriptionAccess();
@@ -26,10 +28,12 @@ const AdminLayout = ({ children, schoolId }) => {
   };
 
   return (
-    <div className={`AdminLayout${!canMutate ? " AdminLayout--sub-banner" : ""}`}>
+    <div className={`AdminLayout${!canMutate ? " AdminLayout--sub-banner" : ""}${assistantOpen ? " assistant-open" : ""}`}>
       <Topbar
         isMobileMenuOpen={isMobileMenuOpen}
         onMenuClick={handleMenuClick}
+        assistantOpen={assistantOpen}
+        onToggleAssistant={() => setAssistantOpen((open) => !open)}
       />
 
       <div className="al_saidNContentSec">
@@ -50,6 +54,12 @@ const AdminLayout = ({ children, schoolId }) => {
         </div>
       </div>
       <SetupSchoolVideo />
+      {assistantOpen && (
+        <SchoolAssistantPanel
+          schoolId={resolvedSchoolId}
+          onClose={() => setAssistantOpen(false)}
+        />
+      )}
     </div>
   );
 };

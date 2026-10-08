@@ -465,52 +465,80 @@
 .col-checkbox-row:hover { background: #ebebeb; }
 
 /* ── Mobile — card layout ─────────────────────────────────────────────────── */
-@media (max-width: 640px) {
-  /* topbar stacks */
-  .table-topbar { gap: 8px; }
-  .right-controls { flex-wrap: wrap; }
-  .filter-select { width: 100%; box-sizing: border-box; }
-  .search-input { max-width: 100%; width: 100%; box-sizing: border-box; }
-  .left-controls { width: 100%; justify-content: flex-end; }
-
-  /* footer stacks */
-  .table-footer { flex-direction: column; align-items: stretch; gap: 10px; }
-  .pagination-info { justify-content: space-between; }
-  .pagination-controls { justify-content: center; }
-
-  /* bulk bar — stays fixed bottom-right on mobile, just tighter */
-  .bulk-action-bar {
-    bottom: 16px;
-    right: 16px;
-    flex-wrap: wrap;
-    max-width: calc(100vw - 32px);
+@media (max-width: 768px) {
+  .smart-table-container {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
   }
 
-  /* modal full width */
-  .modal-dialog { max-width: 100%; border-radius: 12px; }
+  .table-topbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+  .right-controls {
+    width: 100%;
+    flex: none;
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .left-controls {
+    width: auto;
+    flex: none;
+    align-self: flex-end;
+  }
+  .left-controls .btn { flex: none; }
+  .filter-select,
+  .search-input {
+    width: 100%;
+    max-width: none;
+    box-sizing: border-box;
+  }
 
-  /* ── Card layout ── */
-  .smart-table-container { width: 100%; box-sizing: border-box; }
+  .table-footer { flex-direction: column; align-items: stretch; gap: 10px; }
+  .pagination-info { justify-content: space-between; flex-wrap: wrap; }
+  .pagination-controls { justify-content: center; }
+
+  .bulk-action-bar {
+    left: 16px;
+    right: 16px;
+    bottom: 16px;
+    flex-wrap: wrap;
+    max-width: none;
+    white-space: normal;
+  }
+
+  .modal-dialog { max-width: calc(100vw - 32px); border-radius: 12px; }
+
+  .smart-table-container,
+  .smart-table-container .table-wrap,
+  .smart-table-container .smart-table,
+  .smart-table-container .smart-table tbody,
+  .smart-table-container .smart-table tbody tr {
+    max-width: 100%;
+    min-width: 0;
+  }
 
   .table-wrap {
     border: none;
     box-shadow: none;
     background: transparent;
-    overflow: visible;
+    overflow-x: hidden;
     width: 100%;
+    max-width: 100%;
   }
 
-  .smart-table {
-    min-width: unset;
+  .smart-table-container .smart-table {
+    min-width: 0 !important;
     width: 100%;
+    max-width: 100%;
     display: block;
     box-sizing: border-box;
   }
 
-  /* hide thead */
   .smart-table thead { display: none; }
 
-  /* tbody = flex column of cards */
   .smart-table tbody {
     display: flex;
     flex-direction: column;
@@ -518,7 +546,6 @@
     width: 100%;
   }
 
-  /* each row = a card, full width, no overflow */
   .smart-table tbody tr {
     display: block;
     width: 100%;
@@ -529,13 +556,11 @@
     overflow: hidden;
     box-shadow: 0 1px 4px rgba(0,0,0,0.05);
     cursor: pointer;
-    transition: box-shadow 0.15s, transform 0.15s;
   }
 
   .smart-table tbody tr:hover {
-    box-shadow: 0 4px 14px rgba(0,0,0,0.09);
-    transform: translateY(-1px);
     background: #ffffff;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.09);
   }
 
   .smart-table tbody tr.row-selected {
@@ -543,29 +568,63 @@
     background: #f4f4f4 !important;
   }
 
-  /* each cell — no label, just the value */
   .smart-table td {
-    display: block;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
     width: 100%;
+    max-width: 100%;
+    min-width: 0;
     box-sizing: border-box;
-    padding: 10px 14px;
+    padding: 7px 12px;
     border-bottom: 1px solid #f0f0f0;
     font-size: 13px;
     font-weight: 600;
     color: #111111;
     white-space: normal;
-    word-break: break-word;
+    word-break: normal;
+    overflow-wrap: break-word;
   }
 
-  /* no ::before label at all */
-  .smart-table td::before { display: none; }
+  .smart-table td[data-label]::before {
+    content: attr(data-label);
+    display: block;
+    flex: 0 0 96px;
+    width: 96px;
+    margin: 0;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #888888;
+    line-height: 1.3;
+  }
+
+  .smart-table td[data-label] > * {
+    flex: 1 1 auto;
+    min-width: 0;
+    max-width: 100%;
+    text-align: right;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
 
   .smart-table tbody tr td:last-child { border-bottom: none; }
 
-  /* checkbox col */
   .smart-table td.col-checkbox {
-    padding: 10px 14px 6px;
+    padding: 10px 14px 4px;
     border-bottom: none;
+  }
+
+  .smart-table td[colspan] {
+    text-align: center;
+    border-bottom: none;
+  }
+  .smart-table tbody tr:has(td[colspan]) {
+    background: transparent;
+    border: none;
+    box-shadow: none;
   }
 }
 
@@ -616,7 +675,7 @@
 [data-theme="dark"] .col-checkbox-row:hover { background: #2a2a2a; }
 
 /* dark mobile cards */
-@media (max-width: 640px) {
+@media (max-width: 768px) {
   [data-theme="dark"] .smart-table tbody tr {
     background: #1e1e1e;
     border-color: #2a2a2a;
@@ -625,7 +684,8 @@
   [data-theme="dark"] .smart-table tbody tr:hover { background: #252525; }
   [data-theme="dark"] .smart-table tbody tr.row-selected { background: #252525 !important; border-color: #f0f0f0; }
   [data-theme="dark"] .smart-table td { border-bottom-color: #2a2a2a; color: #cccccc; }
-  [data-theme="dark"] .smart-table td::before { color: #555555; }
+  [data-theme="dark"] .smart-table td[data-label]::before { color: #777777; }
+  [data-theme="dark"] .smart-table tbody tr:has(td[colspan]) { background: transparent; }
 }
 
 /* ── Export modal ─────────────────────────────────────────────────────────── */

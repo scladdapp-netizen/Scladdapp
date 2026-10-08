@@ -40,10 +40,34 @@
   height: 100%;
 }
 
+.AdminLayout .al_topbar,
+.AdminLayout .al_saidNContentSec {
+  transition: width 0.28s ease, right 0.28s ease;
+}
+
+.AdminLayout.assistant-open .al_topbar {
+  width: calc(100% - 400px);
+}
+
+.AdminLayout.assistant-open .al_saidNContentSec,
+.AdminLayout.assistant-open .slide-in-menu-container {
+  right: 400px;
+}
+
 /* Mobile styles */
 @media (max-width: 1000px) {
   .al_content {
     margin-left: 0;
     width: 100%;
+  }
+}
+
+@media (max-width: 720px) {
+  .AdminLayout.assistant-open .al_topbar {
+    width: calc(100% - min(400px, 92vw));
+  }
+  .AdminLayout.assistant-open .al_saidNContentSec,
+  .AdminLayout.assistant-open .slide-in-menu-container {
+    right: min(400px, 92vw);
   }
 }

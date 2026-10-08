@@ -70,23 +70,23 @@
   margin-bottom: 24px;
 }
 
-.table-wrap {
+.studentSemesterReport .table-wrap {
   overflow-x: auto;
   border: #d6d6d6 solid 1px;
   border-radius: 15px;
 }
 
-.smart-table {
+.studentSemesterReport .smart-table {
   width: 100%;
   border-collapse: collapse;
   min-width: 640px;
 }
 
-.smart-table thead {
+.studentSemesterReport .smart-table thead {
   background: #f7f9fc;
 }
 
-.smart-table th {
+.studentSemesterReport .smart-table th {
   text-align: left;
   padding: 12px 14px;
   font-weight: 600;
@@ -97,13 +97,13 @@
   letter-spacing: 0.5px;
 }
 
-.smart-table td {
+.studentSemesterReport .smart-table td {
   padding: 14px;
   border-bottom: 1px solid #f1f5f9;
   vertical-align: middle;
 }
 
-.smart-table tr:hover {
+.studentSemesterReport .smart-table tr:hover {
   background: #fbfdff;
 }
 
@@ -189,12 +189,12 @@
     justify-content: flex-start;
   }
 
-  .smart-table th,
-  .smart-table td {
+  .studentSemesterReport .smart-table th,
+  .studentSemesterReport .smart-table td {
     padding: 10px 12px;
   }
 
-  .smart-table th {
+  .studentSemesterReport .smart-table th {
     font-size: 10px;
   }
 
@@ -249,22 +249,22 @@
     font-size: 18px;
   }
 
-  /* Mobile table styling - stack rows as cards */
-  .smart-table {
+  /* Mobile table styling - stack rows as cards. Scoped so other tables keep their own labels. */
+  .studentSemesterReport .smart-table {
     min-width: 100%;
     border: 0;
     display: block;
   }
 
-  .smart-table thead {
+  .studentSemesterReport .smart-table thead {
     display: none;
   }
 
-  .smart-table tbody {
+  .studentSemesterReport .smart-table tbody {
     display: block;
   }
 
-  .smart-table tr {
+  .studentSemesterReport .smart-table tr {
     display: block;
     background: #ffffff;
     border: 1px solid #e5e7eb;
@@ -274,11 +274,11 @@
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   }
 
-  .smart-table tr:hover {
+  .studentSemesterReport .smart-table tr:hover {
     background: #ffffff;
   }
 
-  .smart-table td {
+  .studentSemesterReport .smart-table td {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -289,11 +289,11 @@
     border-top: none;
   }
 
-  .smart-table td:last-child {
+  .studentSemesterReport .smart-table td:last-child {
     border-bottom: none;
   }
 
-  .smart-table td::before {
+  .studentSemesterReport .smart-table td::before {
     content: attr(data-label);
     font-size: 12px;
     font-weight: 600;
@@ -304,35 +304,35 @@
     width: 80px;
   }
 
-  .smart-table td:nth-child(1)::before {
+  .studentSemesterReport .smart-table td:nth-child(1)::before {
     content: "Subject";
   }
 
-  .smart-table td:nth-child(2)::before {
+  .studentSemesterReport .smart-table td:nth-child(2)::before {
     content: "Teacher";
   }
 
-  .smart-table td:nth-child(3)::before {
+  .studentSemesterReport .smart-table td:nth-child(3)::before {
     content: "1st Test";
   }
 
-  .smart-table td:nth-child(4)::before {
+  .studentSemesterReport .smart-table td:nth-child(4)::before {
     content: "2nd Test";
   }
 
-  .smart-table td:nth-child(5)::before {
+  .studentSemesterReport .smart-table td:nth-child(5)::before {
     content: "Exam";
   }
 
-  .smart-table td:nth-child(6)::before {
+  .studentSemesterReport .smart-table td:nth-child(6)::before {
     content: "Total";
   }
 
-  .smart-table td:nth-child(7)::before {
+  .studentSemesterReport .smart-table td:nth-child(7)::before {
     content: "Grade";
   }
 
-  .smart-table td:nth-child(8)::before {
+  .studentSemesterReport .smart-table td:nth-child(8)::before {
     content: "Remarks";
   }
 
@@ -364,15 +364,15 @@
     margin-bottom: 0;
   }
 
-  .smart-table tr {
+  .studentSemesterReport .smart-table tr {
     padding: 12px;
   }
 
-  .smart-table td {
+  .studentSemesterReport .smart-table td {
     padding: 6px 0;
   }
 
-  .smart-table td::before {
+  .studentSemesterReport .smart-table td::before {
     width: 70px;
     font-size: 11px;
   }

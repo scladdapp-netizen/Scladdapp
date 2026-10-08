@@ -63,32 +63,124 @@ function ensureHleId(el) {
 
 function findEl(doc, selector) {
   if (!selector) return null;
-  try {
-    const el = doc.querySelector(selector);
-    if (el) return el;
-  } catch { /* invalid selector */ }
-  // Fallback: strip :nth-of-type so preview/tree selector variants still resolve
-  try {
-    const simplified = selector.replace(/:nth-of-type\(\d+\)/g, "");
-    if (simplified !== selector) return doc.querySelector(simplified);
-  } catch { /* ignore */ }
+  const candidates = [selector];
+  const simplified = selector.replace(/:nth-of-type\(\d+\)/g, "").replace(/\s*>\s*>/g, " > ");
+  if (simplified && simplified !== selector) candidates.push(simplified);
+  const parts = selector.split(/\s*>\s*/);
+  for (let i = 1; i < parts.length; i += 1) {
+    candidates.push(parts.slice(i).join(" > "));
+  }
+  for (const sel of [...candidates]) {
+    const stripped = sel.replace(/:nth-of-type\(\d+\)/g, "").trim();
+    if (stripped && !candidates.includes(stripped)) candidates.push(stripped);
+  }
+  for (const sel of candidates) {
+    const trimmed = sel.trim();
+    if (!trimmed) continue;
+    try {
+      const el = doc.querySelector(trimmed);
+      if (el) return el;
+    } catch {
+      /* invalid selector from the preview */
+    }
+  }
   return null;
+}
+
+function normText(value) {
+  return String(value || "").replace(/\s+/g, " ").trim();
+}
+
+function editorClasses(el) {
+  return [...el.classList].filter((c) => !c.startsWith("__aie")).sort();
+}
+
+function findByHint(doc, hint, selector) {
+  if (!hint) return null;
+  const tag = String(hint.tagName || "").toLowerCase();
+  const text = normText(hint.textContent).slice(0, 120);
+  const sectionId = hint.sectionId || "";
+  let nodes = tag ? [...doc.getElementsByTagName(tag)] : [];
+  if (sectionId) {
+    const scope = doc.getElementById(sectionId);
+    if (scope) {
+      const scoped = nodes.filter((el) => scope.contains(el));
+      if (scoped.length) nodes = scoped;
+    }
+  }
+  if (text) {
+    const exact = nodes.filter((el) => normText(el.textContent).slice(0, 120) === text);
+    const prefix = exact.length
+      ? exact
+      : nodes.filter((el) => {
+          const value = normText(el.textContent);
+          return value.startsWith(text);
+        });
+    if (prefix.length === 1) return prefix[0];
+    nodes = prefix.length ? prefix : nodes;
+  }
+  if (hint.outerHTML) {
+    const parsed = new DOMParser().parseFromString(hint.outerHTML, "text/html");
+    const sample = parsed.body.firstElementChild;
+    if (sample) {
+      const wantCls = editorClasses(sample).join(".");
+      const wantText = normText(sample.textContent).slice(0, 120);
+      const marked = nodes.filter((el) => {
+        const sameCls = editorClasses(el).join(".") === wantCls;
+        const sameText = !wantText || normText(el.textContent).slice(0, 120) === wantText;
+        return sameCls && sameText;
+      });
+      if (marked.length === 1) return marked[0];
+    }
+  }
+  const idMatch = String(selector || "").match(/#([A-Za-z][\w-]*)/);
+  if (idMatch && nodes.length) {
+    const scoped = nodes.filter(
+      (el) => el.id === idMatch[1] || el.closest(`#${idMatch[1]}`),
+    );
+    if (scoped.length === 1) return scoped[0];
+  }
+  return nodes.length === 1 ? nodes[0] : null;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
  * Delete the element matching `selector` from the HTML string.
+ * `hint` is the preview selection ({ tagName, textContent }) used when the
+ * preview selector does not exist in the saved HTML.
  *
  * @param {string} html       - full page HTML
  * @param {string} selector   - CSS selector of the element to remove
- * @returns {string}          - new HTML string
+ * @param {{ tagName?: string, textContent?: string }} [hint]
+ * @returns {string}          - new HTML string, or the original if not found
  */
-export function deleteElement(html, selector) {
+/**
+ * Set CSS on one element only, with !important so section rules cannot override it.
+ * Returns the original html when the element cannot be found.
+ */
+export function applyImportantStyles(html, selector, hint, props) {
+  if (!html || !props || !Object.keys(props).length) return html || "";
+  const probe = new DOMParser().parseFromString(html, "text/html");
+  if (!findEl(probe, selector) && !findByHint(probe, hint, selector)) return html;
   return withDoc(html, (doc) => {
-    const el = findEl(doc, selector);
+    const el = findEl(doc, selector) || findByHint(doc, hint, selector);
+    if (!el) return;
+    Object.entries(props).forEach(([prop, value]) => {
+      const clean = String(value).replace(/\s*!important\s*$/i, "").trim();
+      if (!clean) return;
+      el.style.setProperty(prop, clean, "important");
+    });
+  });
+}
+
+export function deleteElement(html, selector, hint) {
+  if (!html || (!selector && !hint?.textContent)) return html || "";
+  const probe = new DOMParser().parseFromString(html, "text/html");
+  if (!findEl(probe, selector) && !findByHint(probe, hint, selector)) return html;
+  return withDoc(html, (doc) => {
+    const el = findEl(doc, selector) || findByHint(doc, hint, selector);
     if (el) el.remove();
-    else console.warn("[deleteElement] Element not found for selector:", selector);
   });
 }
 

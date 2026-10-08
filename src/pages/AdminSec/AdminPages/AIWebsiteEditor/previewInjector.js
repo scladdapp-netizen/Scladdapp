@@ -442,7 +442,13 @@ const INJECT_SCRIPT = `
 
       // ── live HTML patch — update DOM without reloading the iframe ──
       if (e.data.type === 'updateHtml') {
-        if (editing) return; // don't wipe in-progress text edits
+        // A chat edit (remove, recolor) is the new source of truth.
+        // Drop any open text session so the live preview actually updates.
+        if (editing) {
+          editing.removeAttribute('contenteditable');
+          editing.classList.remove('__aie_editing__');
+          editing = null;
+        }
         try {
           // Save scroll position + current selection (style edits must not deselect)
           var sx = window.scrollX;

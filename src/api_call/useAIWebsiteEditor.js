@@ -67,14 +67,14 @@ export function useAIWebsiteEdit(schoolId) {
   const [editing, setEditing] = useState(false);
   const [error,   setError]   = useState(null);
 
-  const callEdit = useCallback(async ({ prompt, fullHtml, sectionId, sectionHtml, element, configId }) => {
+  const callEdit = useCallback(async ({ prompt, fullHtml, sectionId, sectionHtml, element, configId, styleOnly, wholeSection }) => {
     setEditing(true);
     setError(null);
     try {
       const res  = await fetch(`${API_BASE}/api/schools/${schoolId}/ai-website/edit`, {
         method:  "POST",
         headers: authHeaders(),
-        body:    JSON.stringify({ prompt, fullHtml, sectionId, sectionHtml, element, configId }),
+        body:    JSON.stringify({ prompt, fullHtml, sectionId, sectionHtml, element, configId, styleOnly, wholeSection }),
       });
       const data = await res.json();
       if (!res.ok && !data.message) {

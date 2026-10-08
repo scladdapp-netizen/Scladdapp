@@ -390,6 +390,12 @@ const Landing = () => {
       handle.style.transform = "translateX(-50%)";
     }
 
+    const featuresSticky = h2WrapperRef.current?.querySelector(".hscroll2-sticky");
+    if (featuresSticky) {
+      featuresSticky.getAnimations().forEach((animation) => animation.cancel());
+      featuresSticky.style.opacity = "1";
+    }
+
     return bindPinnedTracks([
       {
         wrapper,
@@ -427,9 +433,8 @@ const Landing = () => {
       {
         wrapper: h2WrapperRef.current,
         track: h2TrackRef.current,
-        sticky: h2WrapperRef.current?.querySelector(".hscroll2-sticky"),
+        sticky: featuresSticky,
         reverse: true,
-        fadeSticky: true,
         measureHeight: (maxTranslate, vh) => {
           const w = h2WrapperRef.current;
           if (!w) return;
@@ -595,12 +600,12 @@ const Landing = () => {
 
           {/* Text — right */}
           <div className="intro-video-text">
-            <span className="ivs-eyebrow">See It In Action</span>
+            <span className="ivs-eyebrow">AI website</span>
             <h2 className="ivs-heading">
-              Watch how<br />Scladapp<br />works
+              Build the<br />school site<br />with AI
             </h2>
             <p className="ivs-sub">
-              A 2-minute walkthrough of the platform — from onboarding to daily use, for admins, teachers, and students.
+              Pick a look. The page is written for your school. Then change the words and pictures yourself.
             </p>
             <div className="ivs-divider" />
             <span className="ivs-runtime">2 min watch</span>

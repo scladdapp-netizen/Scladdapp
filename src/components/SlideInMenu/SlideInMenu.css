@@ -2,10 +2,12 @@
   position: fixed;
   top: 0;
   left: 0;
-  width: 100%;
+  right: 0;
+  width: auto;
   height: 100%;
   z-index: 1000000;
   overflow: hidden;
+  transition: right 0.28s ease;
 }
 
 .slide-in-menu-overlay {

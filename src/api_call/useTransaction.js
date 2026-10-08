@@ -54,9 +54,12 @@ const useTransaction = () => {
     setLoading(true);
     setError(null);
     try {
-      const endDate = new Date().toISOString().split("T")[0];
-      const startDate = new Date(Date.now() - days * 86400000).toISOString().split("T")[0];
-      const query = new URLSearchParams({ page: 1, limit: 9999, startDate, endDate }).toString();
+      const start = new Date();
+      start.setDate(start.getDate() - days);
+      const y = start.getFullYear();
+      const m = String(start.getMonth() + 1).padStart(2, "0");
+      const day = String(start.getDate()).padStart(2, "0");
+      const query = new URLSearchParams({ page: 1, limit: 9999, startDate: `${y}-${m}-${day}` }).toString();
       const res = await fetch(`${API_BASE_URL}/api/transactions/school/${schoolId}/paginated?${query}`);
       const data = await handleResponse(res);
       return { success: true, data: data.data, summary: data.summary };

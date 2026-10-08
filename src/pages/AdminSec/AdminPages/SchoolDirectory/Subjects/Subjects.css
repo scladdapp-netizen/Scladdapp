@@ -12,7 +12,7 @@
 
 /* ── Status badge ─────────────────────────────────────────────────────────── */
 .sub-badge { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap; line-height: 1; box-shadow: inset 0 1px 0 rgba(255,255,255,0.4), 0 1px 2px rgba(0,0,0,0.05); }
-.sub-badge-active   { background: #dcfce7; color: #166534; }
+.sub-badge-active   { padding: 4px 10px; background: #111111; color: #ffffff; box-shadow: none; }
 .sub-badge-inactive { background: #fecaca; color: #991b1b; }
 
 /* ── Dark theme: table ────────────────────────────────────────────────────── */
@@ -23,6 +23,7 @@
 [data-theme="dark"] .sub-name  { color: #e0e0e0; }
 [data-theme="dark"] .sub-stream { color: #888888; }
 [data-theme="dark"] .sub-unassigned { color: #555555; }
+[data-theme="dark"] .sub-badge-active { background: #f0f0f0; color: #111111; }
 
 /* ═══════════════════════════════════════════════════════════════════════════
    Add Subject Panel

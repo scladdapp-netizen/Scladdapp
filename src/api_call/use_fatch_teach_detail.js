@@ -18,7 +18,7 @@ const use_fatch_teach_detail = (schoolId, teacherId) => {
       setError(null);
 
       try {
-        console.log("Fetching teacher detail for:", { schoolId, teacherId });
+         console.log("Fetching teacher detail for:", { schoolId, teacherId });
 
         // Use the detail endpoint to get teacher with sessions
         const response = await fetch(

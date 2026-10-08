@@ -20,7 +20,6 @@ import Dashboard from "../AdminPages/Dashboard/Dashboard.jsx";
 import SubscriptionGuard from "../../../components/SubscriptionGuard/SubscriptionGuard.jsx";
 import SubAdminGuard from "../../../components/SubAdminGuard/SubAdminGuard.jsx";
 import NotificationDetail from "../AdminPages/Communication/Notifications/NotificationDetail/NotificationDetail.jsx";
-import AIWebsiteEditor from "../AdminPages/AIWebsiteEditor/AIWebsiteEditor.jsx";
 import WebsiteBriefPage from "../AdminPages/WebsiteBrief/WebsiteBriefPage.jsx";
 import EditTemplatePage from "../AdminPages/Templates/EditTemplatePage/EditTemplatePage.jsx";
 import EditAnnouncementTemplatePage from "../AdminPages/Templates/EditAnnouncementTemplatePage/EditAnnouncementTemplatePage.jsx";
@@ -58,7 +57,7 @@ const Admin = () => {
   return (
     <Routes>
       {/* ── Full-screen pages (no sidebar/layout) ── */}
-      <Route path="/school/website/ai-editor" element={<AIWebsiteEditor />} />
+      <Route path="/school/website/ai-editor" element={<WebsiteBriefPage aiOnly />} />
       <Route path="/school/website/brief"     element={<WebsiteBriefPage />} />
       <Route path="/templates/edit/:templateId" element={<SubscriptionGuard><SubAdminGuard permission="report_template"><EditTemplatePage /></SubAdminGuard></SubscriptionGuard>} />
       <Route path="/templates/announcement/edit/:templateId" element={<SubscriptionGuard><SubAdminGuard permission="announcement_template"><EditAnnouncementTemplatePage /></SubAdminGuard></SubscriptionGuard>} />
