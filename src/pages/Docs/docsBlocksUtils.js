@@ -55,6 +55,20 @@ export function topicSearchText(item) {
   return text.toLowerCase();
 }
 
+function videoBlock(block) {
+  return {
+    type: "video",
+    title: block.title || "",
+    youtubeId: parseYoutubeId(block.youtubeId || ""),
+    description: block.description || "",
+    duration: block.duration || "",
+    category: block.category || "",
+    page: block.page || "",
+    thumbnail: block.thumbnail || "",
+    thumbnailPublicId: block.thumbnailPublicId || "",
+  };
+}
+
 export function emptyBlock(type) {
   if (type === "paragraph") return { type: "paragraph", text: "" };
   if (type === "video") return { type: "video", title: "", youtubeId: "" };
@@ -64,13 +78,7 @@ export function emptyBlock(type) {
 
 export function normalizeTopicBlocks(topic) {
   const blocks = getTopicBlocks(topic).map((block) => {
-    if (block.type === "video") {
-      return {
-        type: "video",
-        title: block.title || "",
-        youtubeId: parseYoutubeId(block.youtubeId || ""),
-      };
-    }
+    if (block.type === "video") return videoBlock(block);
     if (block.type === "image") {
       return {
         type: "image",
@@ -109,13 +117,7 @@ export function sanitizeDocsForSave(docs) {
         steps: (item.steps || []).map((step) => {
           const stepBlocks = (step.blocks || getStepBlocks(step))
             .map((block) => {
-              if (block.type === "video") {
-                return {
-                  type: "video",
-                  title: block.title || "",
-                  youtubeId: parseYoutubeId(block.youtubeId || ""),
-                };
-              }
+              if (block.type === "video") return videoBlock(block);
               if (block.type === "image") {
                 return {
                   type: "image",

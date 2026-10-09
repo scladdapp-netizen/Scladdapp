@@ -495,6 +495,44 @@
   display: block;
 }
 
+.intro-video-poster {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  background: #111;
+  cursor: pointer;
+}
+
+.intro-video-poster img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.intro-video-play {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 68px;
+  height: 68px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #fff;
+  color: #111;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  transition: transform 0.15s ease;
+}
+
+.intro-video-poster:hover .intro-video-play {
+  transform: translate(-50%, -50%) scale(1.06);
+}
+
 @media (max-width: 900px) {
   .intro-video-inner {
     grid-template-columns: 1fr;
@@ -1094,7 +1132,7 @@
 }
 
 .stack-section--1 { background: #000000; z-index: 2; }
-.stack-section--2 { background: #16213e; z-index: 3; }
+.stack-section--2 { background: #000; z-index: 3; }
 .stack-section--3 { background: #0f3460; z-index: 4; }
 .stack-section--4 { background: #533483; z-index: 5; }
 .stack-section--5 { background: #111;    z-index: 6; }
@@ -1202,6 +1240,24 @@
   opacity: 1;
   box-sizing: border-box;
   backface-visibility: hidden;
+}
+
+.hscroll-sticky::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image: url("/feature-grid.svg");
+  background-repeat: repeat;
+  background-size: 840px 560px;
+  background-position: -40px -24px;
+  opacity: 0.9;
+}
+
+.hscroll-sticky > .hscroll-header,
+.hscroll-sticky > .hscroll-track {
+  z-index: 1;
 }
 
 /* Track — pushed down so cards clear the header text */
@@ -1340,18 +1396,99 @@
 .hscroll-card:hover .hscroll-card-corners span:nth-child(3) { transform: translate(-4px, 4px); }
 .hscroll-card:hover .hscroll-card-corners span:nth-child(4) { transform: translate(4px, 4px); }
 
+.hscroll-track > .hscroll-panel {
+  width: 280px;
+  margin: 0;
+  padding-bottom: 0;
+  align-items: stretch;
+  justify-content: center;
+}
+
+.hscroll-track .hscroll-inline-line,
+.hscroll-track .hscroll-svg-connector {
+  display: none;
+}
+
 .hscroll-card--feature {
-  width: 264px;
-  padding: 12px 12px 6px;
-  background: rgba(255, 255, 255, 0.035);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 18px;
-  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.35);
+  width: 100%;
+  padding: 0;
+  background: #070707;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 0;
+  box-shadow: none;
+  overflow: hidden;
+  margin-left: -1px;
+  display: flex;
+  flex-direction: column;
+}
+
+.hscroll-track > .hscroll-panel:first-child .hscroll-card--feature {
+  margin-left: 0;
 }
 
 .hscroll-card--feature:hover {
-  border-color: rgba(255, 255, 255, 0.22);
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+  transform: none;
+  z-index: 1;
+  border-color: rgba(255, 255, 255, 0.85);
+  box-shadow: none;
+}
+
+.hscroll-card-face {
+  position: relative;
+  height: 168px;
+  padding: 18px 18px 16px;
+  background: var(--feature-face, #eef6f8);
+  color: var(--feature-ink, #111);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.hscroll-card-face__mark {
+  position: absolute;
+  top: 16px;
+  left: 18px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  opacity: 0.55;
+}
+
+.hscroll-card-face__name {
+  position: relative;
+  z-index: 1;
+  font-size: 22px;
+  font-weight: 500;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+  max-width: 68%;
+}
+
+.hscroll-card-face__label {
+  position: relative;
+  z-index: 1;
+  margin-top: 12px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  opacity: 0.5;
+}
+
+.hscroll-card-face__steps {
+  position: absolute;
+  right: 10px;
+  bottom: 8px;
+  width: 92px;
+  height: 76px;
+  color: var(--feature-accent, currentColor);
+  opacity: 0.85;
+  pointer-events: none;
+}
+
+.hscroll-card--feature.is-dark .hscroll-card-face__steps {
+  opacity: 0.7;
 }
 
 .hscroll-card--feature .hscroll-card-orbit span {
@@ -1425,15 +1562,30 @@
 
 /* Card body */
 .hscroll-card-body {
-  padding: 14px 10px 16px;
+  padding: 20px 18px 22px;
+  background: #070707;
+  min-height: 148px;
+  border-top: 1px solid rgba(255, 255, 255, 0.22);
 }
 
 .hscroll-card-body h3 {
-  font-size: 15px;
-  font-weight: 800;
+  font-size: 20px;
+  font-weight: 700;
   color: #fff;
-  margin: 0 0 12px;
-  letter-spacing: 0.01em;
+  margin: 0 0 10px;
+  letter-spacing: -0.03em;
+  line-height: 1.2;
+}
+
+.hscroll-card-body p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.45;
+  color: rgba(255, 255, 255, 0.55);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .hscroll-card-body ul {
@@ -1585,6 +1737,24 @@
   background: #000;
   box-sizing: border-box;
   backface-visibility: hidden;
+}
+
+.hscroll2-sticky::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image: url("/feature-grid.svg");
+  background-repeat: repeat;
+  background-size: 840px 560px;
+  background-position: -40px -24px;
+  opacity: 0.9;
+}
+
+.hscroll2-sticky > .hscroll2-track {
+  position: relative;
+  z-index: 1;
 }
 
 .hscroll2-header {
@@ -1853,9 +2023,9 @@
   width: 7px; height: 7px; border-radius: 50%;
   background: rgba(255,255,255,0.08);
 }
-.pm-bar span:nth-child(1) { background: rgba(255,95,87,0.5); }
-.pm-bar span:nth-child(2) { background: rgba(254,188,46,0.5); }
-.pm-bar span:nth-child(3) { background: rgba(40,200,64,0.5); }
+.pm-bar span:nth-child(1) { background: #d9d9d9; }
+.pm-bar span:nth-child(2) { background: #8a8a8a; }
+.pm-bar span:nth-child(3) { background: #3f3f3f; }
 
 .pm-screen {
   display: flex;
@@ -2024,8 +2194,16 @@
 
 /* mockup color theming via CSS var */
 .portal-mockup--desktop { margin-top: 8px; }
-.pm-stat  { background: rgba(var(--c-rgb, 108,92,231), 0.15) !important; }
-.pm-chart { background: linear-gradient(135deg, rgba(var(--c-rgb, 108,92,231),0.12), rgba(var(--c-rgb,108,92,231),0.03)) !important; }
+.pm-stat  { background: color-mix(in srgb, var(--c, #c8c8c8) 28%, transparent) !important; }
+.pm-chart { background: linear-gradient(135deg, color-mix(in srgb, var(--c, #9a9a9a) 24%, transparent), transparent) !important; }
+
+.hscroll2-track .hscroll-card-orbit span {
+  background: var(--accent, #d0d0d0);
+}
+
+.hscroll2-track .hscroll-card-corners span {
+  border-color: var(--accent, #d0d0d0);
+}
 
 .portal-visual-both {
   position: relative;
@@ -2797,7 +2975,7 @@
   border: 1px solid #ebebeb;
   border-radius: 16px;
   padding: 20px 18px 18px;
-  width: 200px;
+  width: 240px;
   text-align: left;
   position: relative;
   display: flex;
@@ -3116,9 +3294,65 @@
   margin: 0 0 14px;
 }
 
-.pricing-hscroll-header .pricing-toggle {
-  pointer-events: all;
-  margin-bottom: 0;
+.pricing-card__switch {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr 1fr;
+  gap: 2px;
+  padding: 3px;
+  margin: 0 0 12px;
+  background: #ececec;
+  border-radius: 10px;
+}
+
+.pricing-card__switch button {
+  border: 0;
+  background: transparent;
+  border-radius: 8px;
+  padding: 6px 2px 5px;
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 1.15;
+  white-space: nowrap;
+  color: #555;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.pricing-card__switch button em {
+  font-style: normal;
+  font-size: 8px;
+  font-weight: 800;
+  color: #16a34a;
+  letter-spacing: 0;
+}
+
+.pricing-card__switch button.is-on {
+  background: #111;
+  color: #fff;
+}
+
+.pricing-card__switch button.is-on em {
+  color: #86efac;
+}
+
+.pricing-card--highlight .pricing-card__switch {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.pricing-card--highlight .pricing-card__switch button {
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.pricing-card--highlight .pricing-card__switch button.is-on {
+  background: #fff;
+  color: #111;
+}
+
+.pricing-card--highlight .pricing-card__switch button.is-on em {
+  color: #16a34a;
 }
 
 .pricing-hscroll-track {

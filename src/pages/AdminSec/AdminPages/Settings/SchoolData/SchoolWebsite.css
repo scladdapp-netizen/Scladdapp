@@ -1015,6 +1015,56 @@
   flex-direction: column;
   gap: 16px;
 }
+
+.sw-section-request .sw-section-title,
+.sw-section-request .sw-request-title,
+.sw-section-request .sw-website-live-link,
+.sw-section-request .sw-feature-title,
+.sw-section-request .sw-delete-website-title {
+  color: #ffffff;
+}
+
+.sw-section-request .sw-section-sub,
+.sw-section-request .sw-request-desc,
+.sw-section-request .sw-feature-desc,
+.sw-section-request .sw-delete-website-sub,
+.sw-section-request .sw-domain-form-hint,
+.sw-section-request .sw-domain-empty,
+.sw-section-request .sw-domain-empty p {
+  color: rgba(255, 255, 255, 0.62);
+}
+
+.sw-section-request .sw-section-sub strong,
+.sw-section-request .sw-domain-empty-sub,
+.sw-section-request .sw-domain-empty-sub a,
+.sw-section-request .sw-domain-empty-sub a:hover {
+  color: #ffffff;
+}
+
+.sw-section-request .sw-domain-nested {
+  border-top-color: rgba(255, 255, 255, 0.14);
+}
+
+.sw-section-request .sw-domain-empty {
+  border-color: rgba(255, 255, 255, 0.18);
+}
+
+.sw-section-request .sw-domain-form-hint code {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.14);
+  color: #ffffff;
+}
+
+.sw-section-request .sw-domain-remove-btn {
+  border-color: rgba(255, 255, 255, 0.22);
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.sw-section-request .sw-domain-remove-btn:hover {
+  background: rgba(239, 68, 68, 0.12);
+  border-color: rgba(252, 165, 165, 0.45);
+  color: #fecaca;
+}
 .sw-icon-domain { background: #111111; }
 
 /* connected */

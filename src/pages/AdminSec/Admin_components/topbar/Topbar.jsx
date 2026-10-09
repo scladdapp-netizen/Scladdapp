@@ -59,6 +59,7 @@ const Topbar = ({ isMobileMenuOpen, onMenuClick, assistantOpen = false, onToggle
   const admin = user?.admin;
   const school = user?.school;
   const subscription = user?.subscription;
+  const [livePlan, setLivePlan] = useState(null);
   const isSuperAdmin = admin?.admin_role === "Super Admin" || (Array.isArray(admin?.permissions) && admin?.permissions.includes("ALL"));
   const displayName = admin?.username || admin?.email || "Admin";
   const initials = displayName.slice(0, 2).toUpperCase();
@@ -70,7 +71,19 @@ const Topbar = ({ isMobileMenuOpen, onMenuClick, assistantOpen = false, onToggle
   const [bellShake,   setBellShake]   = useState(false);
   const notifWrapRef = useRef(null);
   const adminId  = admin?.admin_id;
-  const schoolId2 = school?.school_id;
+  const schoolId2 = school?.school_id || schoolId;
+
+  useEffect(() => {
+    if (!schoolId2) return;
+    let cancelled = false;
+    fetch(`${import.meta.env.VITE_API_BASE_URL}/api/subscription/school/${schoolId2}/dashboard`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (!cancelled && data?.success) setLivePlan(data.data);
+      })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [schoolId2]);
 
   // Poll for unread count every 60 seconds
   useEffect(() => {
@@ -259,15 +272,15 @@ const Topbar = ({ isMobileMenuOpen, onMenuClick, assistantOpen = false, onToggle
                   <div className="pd-section-label">Subscription</div>
                   <div className="pd-plan-row">
                     <FaCrown size={13} color="#7c3aed" />
-                    <span className="pd-plan-name">{subscription?.plan_name || "Free Plan"}</span>
-                    <span className={`pd-plan-status ${subscription?.subscription_status === "active" ? "active" : "inactive"}`}>
-                      {subscription?.subscription_status || "inactive"}
+                    <span className="pd-plan-name">{livePlan?.plan?.plan_name || subscription?.plan_name || "Free Plan"}</span>
+                    <span className={`pd-plan-status ${(livePlan?.subscription?.subscription_status || subscription?.subscription_status) === "active" ? "active" : "inactive"}`}>
+                      {livePlan?.subscription?.subscription_status || subscription?.subscription_status || "inactive"}
                     </span>
                   </div>
-                  {subscription?.end_date && (
+                  {(livePlan?.subscription?.end_date || subscription?.end_date) && (
                     <p className="pd-school-meta">
-                      {new Date(subscription.end_date) < new Date() ? "Expired" : "Expires"}{" "}
-                      {new Date(subscription.end_date).toLocaleDateString()}
+                      {new Date(livePlan?.subscription?.end_date || subscription.end_date) < new Date() ? "Expired" : "Expires"}{" "}
+                      {new Date(livePlan?.subscription?.end_date || subscription.end_date).toLocaleDateString()}
                     </p>
                   )}
                   <button className="pd-edit-school-btn" onClick={() => { setIsProfileOpen(false); navigate(`/admin/${school?.school_id}/settings/subscriptions?tab=upgrade`); }}>

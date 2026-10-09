@@ -19,6 +19,13 @@ const FALLBACK_VIDEOS = [
 // before placements existed falls back to.
 export const TUTORIAL_PAGE_GENERAL = "";
 export const TUTORIAL_PAGE_WEBSITE_BRIEF = "website-brief";
+export const TUTORIAL_PAGE_LANDING = "landing";
+
+export function tutorialThumb(video, quality = "hqdefault") {
+  if (video?.thumbnail) return video.thumbnail;
+  if (!video?.youtubeId) return "";
+  return `https://img.youtube.com/vi/${video.youtubeId}/${quality}.jpg`;
+}
 
 const normalizePage = (page) => String(page || "").trim().toLowerCase();
 
@@ -46,6 +53,7 @@ function toVideos(docs) {
       duration: block.duration || "",
       category: block.category || "Tutorial",
       page: normalizePage(block.page),
+      thumbnail: block.thumbnail || "",
     }))
     .filter((video) => video.youtubeId);
 }

@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { useLocation } from "react-router-dom";
-import { useTutorialVideos } from "../../../../../api_call/useTutorialVideos";
+import { tutorialThumb, useTutorialVideos } from "../../../../../api_call/useTutorialVideos";
 import "./SetupSchoolVideo.css";
 
 const clampPosition = (x, y, width, height) => ({
@@ -147,7 +147,7 @@ const SetupSchoolVideo = ({
   const video = videos[active];
   if (!isAdminDashboard || dismissed || !video) return null;
 
-  const thumb = `https://img.youtube.com/vi/${video.youtubeId}/hqdefault.jpg`;
+  const thumb = tutorialThumb(video, "hqdefault");
   const panelClass = expanded
     ? "setup-school-video--expanded"
     : playing

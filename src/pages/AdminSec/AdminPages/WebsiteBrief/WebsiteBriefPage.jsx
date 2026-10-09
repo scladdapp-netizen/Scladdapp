@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useNavigate, useParams } from "react-router-dom";
 import { useNotification } from "../../../../context/NotificationProvider/NotificationProvider";
+import { TUTORIAL_PAGE_WEBSITE_BRIEF, tutorialThumb, useTutorialVideos } from "../../../../api_call/useTutorialVideos";
 import "./WebsiteBriefPage.css";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:1234";
@@ -43,7 +44,7 @@ function activeScheme(draft) {
 }
 
 function schemeCss(colors) {
-  return `:root{--sclad-primary:${colors.primary};--sclad-secondary:${colors.secondary};--sclad-accent:${colors.accent};--sclad-background:${colors.background};--sclad-ink:${colors.ink}}body{background-color:var(--sclad-background)!important;color:var(--sclad-ink)!important}header,footer{background-color:var(--sclad-primary)!important;color:#fff!important}h1,h2,h3,h4{color:var(--sclad-primary)!important}a[href*="/apply"],a[href*="/login"]{background-color:var(--sclad-accent)!important;color:#fff!important}`;
+  return `:root{--sclad-primary:${colors.primary};--sclad-secondary:${colors.secondary};--sclad-accent:${colors.accent};--sclad-background:${colors.background};--sclad-ink:${colors.ink}}body{background-color:var(--sclad-background)!important;color:var(--sclad-ink)!important}header,footer{background-color:var(--sclad-primary)!important;color:#fff!important}header :is(h1,h2,h3,h4,a,span,p),footer :is(h1,h2,h3,h4,a,span,p){color:#fff!important}h1,h2,h3,h4{color:var(--sclad-ink)!important}a[href*="/apply"],a[href*="/login"]{background-color:var(--sclad-accent)!important;color:#fff!important}`;
 }
 
 function readScheme(html) {
@@ -687,25 +688,13 @@ async function saveDraftPages(schoolId, pages) {
   return data;
 }
 
-const DEFAULT_SITE_PROMPT = `Build one long scrolling school website for this school. Do not create a second page, and do not link to about.html, team.html, fees.html, or any other file. Every part of the site lives on this single page. The writing should feel warm, clear, and proud, like a real school speaking to parents. Use the school’s real name. Write several sentences in each section, not a single short line. Avoid empty phrases such as “welcome to our world-class institution.” Say something specific a parent would want to know.
+const LEGACY_PROMPT_START = "Build one long scrolling school website for this school.";
 
-The navbar shows the school logo, then the school name, then only these five links: About, Academics, Team, Fees, Contact. Do not add a sixth link. Each of those five links scrolls to its section on this same page. About goes to #about, Academics goes to #academics, Team goes to #team, Fees goes to #fees, and Contact goes to #contact. They must not open another page. Apply and Login stay as buttons, separate from those five links. On a phone, the bar is one calm row with the logo, the school name, and a menu button. The five links, Apply, and Login sit inside that menu.
-
-Home is a full-screen hero. It fills the first screen. Show the school name in large type, then the motto, then a welcome paragraph of three or four sentences about the kind of students the school raises and the care parents can expect. Under that, place an Apply button and a second text link that scrolls to About. The hero picture uses object-fit:cover so it fills the frame.
-
-About tells the school’s story. Open with a paragraph on when the school serves families and what it believes a good education looks like. Follow with three longer points: character, learning, and community. Each point gets a heading and two or three sentences. Close the section with one paragraph on how teachers know the children by name and how the school works with parents.
-
-Academics explains what children learn. Introduce the section with a paragraph on a calm, structured school day. Then describe the stages the school offers, such as early years, primary, and secondary, or the classes this school actually runs. Give each stage a heading and a short paragraph on the subjects, the habits children practise, and how teachers help a child who is finding a subject hard. End with a sentence inviting parents to ask about the right class for their child.
-
-Team introduces the people who look after the children. Open with a paragraph about a staff that knows the pupils and works as one school. Then show several people: the head of the school, a senior teacher, and two or three class teachers or other staff. For each person, give a name, a role, and two sentences on what they care about in the classroom or in the running of the school. If a photo is needed, use a placeholder with object-fit:cover. Do not leave this section as a single line.
-
-Fees is a School Fees section. Start with two sentences explaining that the list is a guide and that the school office confirms the current figure before a child starts. Then show a clear list or table in Nigerian naira, using the ₦ sign. Include lines a parent expects, such as tuition, books, uniform, and other school charges, with a short note under each line about what it covers. Do not invent a payment form. Add one sentence that says families can ask the office about a payment plan.
-
-Admissions explains how a child joins. It is on the page, but it is not one of the five navbar links. Write an opening paragraph about visiting the school and asking questions. Then set out three steps in full sentences: enquire, visit, and apply. Each step should say what the parent does and what the school does next. Place an Apply button at the end of the section, with a line that says the button opens the school’s application page.
-
-Contact closes the page. Write a short paragraph inviting parents to call, email, or visit. Show the school address, phone number, and email. Do not add an input form. Under the details, add one sentence about office hours on school days.
-
-Keep the same five header links and this section order from top to bottom: Home, About, Academics, Team, Fees, Admissions, Contact. The footer repeats the school name and the phone number.`;
+function savedSitePrompt(value) {
+  const text = String(value || "");
+  if (!text.trim() || text.trim().startsWith(LEGACY_PROMPT_START)) return "";
+  return text;
+}
 
 const emptyDraft = {
   step: "welcome",
@@ -715,8 +704,41 @@ const emptyDraft = {
   fontId: "classic",
   templateId: "",
   customName: "",
-  sitePrompt: DEFAULT_SITE_PROMPT,
+  sitePrompt: "",
 };
+
+function HelloTutorial() {
+  const { videos } = useTutorialVideos(TUTORIAL_PAGE_WEBSITE_BRIEF);
+  const video = videos[0];
+  const [playing, setPlaying] = useState(false);
+  if (!video) return null;
+  const thumb = tutorialThumb(video, "hqdefault");
+
+  return (
+    <div className="wbp-hello-tutorial">
+      <p className="wbp-hello-watch">Watch the video to understand the process.</p>
+      <div className="wbp-hello-frame">
+        {playing ? (
+          <iframe
+            src={`https://www.youtube.com/embed/${video.youtubeId}?autoplay=1`}
+            title={video.title || "Website builder tutorial"}
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+          />
+        ) : (
+          <button type="button" className="wbp-hello-poster" onClick={() => setPlaying(true)}>
+            <img src={thumb} alt="" />
+            <span className="wbp-hello-play" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M8 5v14l11-7z" />
+              </svg>
+            </span>
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
 
 const WebsiteBriefPage = ({ aiOnly = false }) => {
   const { schoolId } = useParams();
@@ -734,6 +756,11 @@ const WebsiteBriefPage = ({ aiOnly = false }) => {
   const [shot, setShot] = useState(null);
   const [phase, setPhase] = useState("in");
   const [creating, setCreating] = useState(false);
+  const [promptPicked, setPromptPicked] = useState(false);
+  const [promptId, setPromptId] = useState("");
+  const [fillingPrompt, setFillingPrompt] = useState(false);
+  const [buildWarn, setBuildWarn] = useState(false);
+  const [buildWait, setBuildWait] = useState(null);
   const [pages, setPages] = useState([]);
   const [pageTab, setPageTab] = useState(0);
   const [previewDevice, setPreviewDevice] = useState("desktop");
@@ -764,7 +791,6 @@ const WebsiteBriefPage = ({ aiOnly = false }) => {
   const aiFieldRef = useRef(null);
   const aiCaretRef = useRef(null);
   const [frameHtml, setFrameHtml] = useState("");
-  const [resetWarn, setResetWarn] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [editTab, setEditTab] = useState("layout");
   const [drawerShut, setDrawerShut] = useState(true);
@@ -790,13 +816,31 @@ const WebsiteBriefPage = ({ aiOnly = false }) => {
           ...emptyDraft,
           ...saved,
           schemeId: saved.schemeId || SCHEMES.find((item) => item.primary === saved.color)?.id || "navy",
-          sitePrompt: String(saved.sitePrompt || "").trim() ? saved.sitePrompt : DEFAULT_SITE_PROMPT,
+          sitePrompt: savedSitePrompt(saved.sitePrompt),
           step: saved.step === "creating" ? "template" : saved.step,
         });
       }
     } catch (_) {}
     setReady(true);
   }, [schoolId, aiOnly]);
+
+  useEffect(() => {
+    if (draft.step !== "brief" || !schoolId) return undefined;
+    let cancel = false;
+    (async () => {
+      try {
+        const token = schoolToken();
+        const res = await fetch(`${API_BASE}/api/schools/${schoolId}/ai-website/build-wait`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
+        const data = await res.json();
+        if (!cancel && data.success) setBuildWait(data.data);
+      } catch (_) {}
+    })();
+    return () => {
+      cancel = true;
+    };
+  }, [draft.step, schoolId]);
 
   useEffect(() => {
     if (!ready || aiOnly) return;
@@ -1009,6 +1053,27 @@ const WebsiteBriefPage = ({ aiOnly = false }) => {
     }, 4000);
   };
 
+  const fillDescription = async () => {
+    if (fillingPrompt) return;
+    setFillingPrompt(true);
+    try {
+      const token = schoolToken();
+      const query = promptId ? `?except=${encodeURIComponent(promptId)}` : "";
+      const res = await fetch(`${API_BASE}/api/schools/${schoolId}/ai-website/site-prompt${query}`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.message || "Could not generate a description");
+      setPromptId(data.data.id);
+      setPromptPicked(true);
+      setDraft((prev) => ({ ...prev, sitePrompt: data.data.text }));
+    } catch (err) {
+      notifyError(err.message || "Could not generate a description");
+    } finally {
+      setFillingPrompt(false);
+    }
+  };
+
   const createSite = async () => {
     const image = draft.templateId === "custom" ? customImage : picked?.image;
     if (!image || creating) return;
@@ -1073,21 +1138,6 @@ const WebsiteBriefPage = ({ aiOnly = false }) => {
       }));
     };
     reader.readAsDataURL(file);
-  };
-
-  const startOver = () => {
-    window.clearTimeout(saveTimerRef.current);
-    window.clearTimeout(historyTimerRef.current);
-    setCustomImage("");
-    setHelloOn(false);
-    setPages([]);
-    setFrameHtml("");
-    historyRef.current = [];
-    historyIndexRef.current = -1;
-    setPublishedUrl("");
-    setResetWarn(false);
-    setDraft(emptyDraft);
-    localStorage.removeItem(storageKey(schoolId));
   };
 
   const commitFrame = () => {
@@ -1863,6 +1913,7 @@ const WebsiteBriefPage = ({ aiOnly = false }) => {
             <p className="wbp-hello-copy">
               A color scheme, a font, and one happy page. That’s all it takes, and the AI will put it together for you.
             </p>
+            <HelloTutorial />
             <button type="button" className="wbp-next" onClick={() => go("color")}>
               Next
             </button>
@@ -2047,7 +2098,7 @@ const WebsiteBriefPage = ({ aiOnly = false }) => {
         <section className="wbp-step wbp-step--brief">
           <div>
             <h1>What should the page include?</h1>
-            <p>This starts filled in. Change it if you want different sections, or clear it to follow the template only.</p>
+            <p>Leave this empty to follow the template, or generate a description and change it.</p>
             <textarea
               className="wbp-brief"
               rows={16}
@@ -2055,13 +2106,33 @@ const WebsiteBriefPage = ({ aiOnly = false }) => {
               placeholder="A hero with the school name, then admissions, then a photo gallery and a visit section."
               onChange={(event) => setDraft((prev) => ({ ...prev, sitePrompt: event.target.value }))}
             />
+            <div className="wbp-brief-top">
+              <button
+                type="button"
+                className="wbp-generate"
+                disabled={fillingPrompt}
+                onClick={fillDescription}
+              >
+                {promptPicked ? (
+                  <>
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                      <path d="M20 12a8 8 0 1 1-2.3-5.6" />
+                      <path d="M20 4v5h-5" />
+                    </svg>
+                    Redo
+                  </>
+                ) : (
+                  "Generate description"
+                )}
+              </button>
+            </div>
             <div className="wbp-actions">
               <button type="button" className="wbp-back" onClick={() => go("template")} disabled={creating}>Back</button>
               <button
                 type="button"
                 className="wbp-next"
                 disabled={!draft.templateId || creating}
-                onClick={createSite}
+                onClick={() => setBuildWarn(true)}
               >
                 {creating ? "Creating site…" : "Create site"}
               </button>
@@ -2175,7 +2246,6 @@ const WebsiteBriefPage = ({ aiOnly = false }) => {
               }}>
                 Colors
               </button>
-              {!aiOnly && <button type="button" onClick={() => setResetWarn(true)}>Start over</button>}
               <button type="button" className="wbp-publish" onClick={publishSite} disabled={publishing || !pages.length || unsetCount > 0}>
                 {publishing ? "Publishing…" : "Publish"}
               </button>
@@ -2385,18 +2455,6 @@ const WebsiteBriefPage = ({ aiOnly = false }) => {
             hidden
             onChange={onPreviewImage}
           />
-          {resetWarn && (
-            <div className="wbp-modal is-on" onClick={() => setResetWarn(false)}>
-              <div className="wbp-modal-card wbp-reset-card" onClick={(event) => event.stopPropagation()}>
-                <h2>Start over?</h2>
-                <p>This clears the pages on this screen and takes you back to the beginning. You cannot undo it.</p>
-                <div className="wbp-actions">
-                  <button type="button" className="wbp-back" onClick={() => setResetWarn(false)}>Cancel</button>
-                  <button type="button" className="wbp-next wbp-reset-go" onClick={startOver}>Start over</button>
-                </div>
-              </div>
-            </div>
-          )}
           {/*
           {aiOpen && (
             <form
@@ -2447,6 +2505,43 @@ const WebsiteBriefPage = ({ aiOnly = false }) => {
           )}
           */}
         </section>
+      )}
+      {buildWarn && (
+        <div className="wbp-modal is-on" onClick={() => { if (!creating) setBuildWarn(false); }}>
+          <div className="wbp-modal-card wbp-reset-card" onClick={(event) => event.stopPropagation()}>
+            {buildWait?.locked ? (
+              <>
+                <h2>You can build again later</h2>
+                <p>
+                  A website can be built again 30 days after the last build.
+                  {buildWait.unlocksAt ? ` You can build again on ${new Date(buildWait.unlocksAt).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}.` : ""}
+                </p>
+                <div className="wbp-actions">
+                  <button type="button" className="wbp-next" onClick={() => setBuildWarn(false)}>Close</button>
+                </div>
+              </>
+            ) : (
+              <>
+                <h2>Check everything first</h2>
+                <p>Look over the color, font, template, and description before you build. After this site is built, you will need to wait 30 days before you can build again.</p>
+                <div className="wbp-actions">
+                  <button type="button" className="wbp-back" onClick={() => setBuildWarn(false)} disabled={creating}>Cancel</button>
+                  <button
+                    type="button"
+                    className="wbp-next"
+                    disabled={creating}
+                    onClick={() => {
+                      setBuildWarn(false);
+                      createSite();
+                    }}
+                  >
+                    Build site
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
       )}
       {shot && (
         <div className="wbp-shot" onClick={() => setShot(null)}>

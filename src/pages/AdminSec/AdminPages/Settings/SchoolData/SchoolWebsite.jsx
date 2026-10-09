@@ -571,11 +571,25 @@ const CustomDomainSection = ({
     </div>
   );
 };
-const RequestWebsiteSection = ({ onRequest, onCancel, onDelete, loading, alreadyRequested, briefStatus, scladappWebsiteUrl, onEditWithAI, customDomain, customDomainStatus, schoolId, onCustomDomainUpdated }) => {
+const WEBSITE_DELETE_WAIT_MS = 30 * 24 * 60 * 60 * 1000;
+
+function websiteDeleteUnlocksAt(createdAt) {
+  if (!createdAt) return null;
+  const created = new Date(createdAt);
+  if (Number.isNaN(created.getTime())) return null;
+  return new Date(created.getTime() + WEBSITE_DELETE_WAIT_MS);
+}
+
+const RequestWebsiteSection = ({ onRequest, onCancel, onDelete, loading, alreadyRequested, briefStatus, scladappWebsiteUrl, siteCreatedAt, onEditWithAI, customDomain, customDomainStatus, schoolId, onCustomDomainUpdated }) => {
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deletePhrase, setDeletePhrase] = useState("");
   const deleteInputRef = useRef(null);
   const canConfirmDelete = deletePhrase.trim().toLowerCase() === "delete";
+  const deleteUnlocksAt = websiteDeleteUnlocksAt(siteCreatedAt);
+  const canDeleteSite = !deleteUnlocksAt || Date.now() >= deleteUnlocksAt.getTime();
+  const deleteUnlockLabel = deleteUnlocksAt
+    ? deleteUnlocksAt.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })
+    : null;
 
   const closeDelete = () => {
     if (loading) return;
@@ -688,17 +702,20 @@ const RequestWebsiteSection = ({ onRequest, onCancel, onDelete, loading, already
               <div className="sw-delete-website-copy">
                 <p className="sw-delete-website-title">Delete website</p>
                 <p className="sw-delete-website-sub">
-                  Deletes the brief, the published pages and every uploaded image. The school is reset to never having requested a site.
+                  {canDeleteSite
+                    ? "Deletes the brief, the published pages and every uploaded image. The school is reset to never having requested a site."
+                    : `Available on ${deleteUnlockLabel}. A website can be deleted 30 days after it is created.`}
                 </p>
               </div>
               <button
                 type="button"
                 className="sw-delete-website-btn"
                 onClick={() => {
+                  if (!canDeleteSite) return;
                   setDeletePhrase("");
                   setConfirmDelete(true);
                 }}
-                disabled={loading}
+                disabled={loading || !canDeleteSite}
               >
                 Delete website
               </button>
@@ -942,6 +959,7 @@ export const SchoolWebsiteContent = () => {
             alreadyRequested={alreadyRequested}
             briefStatus={briefData?.status || school?.website_request_status}
             scladappWebsiteUrl={scladappWebsiteUrl}
+            siteCreatedAt={briefData?.scladapp_website_published_at || briefData?.created_at || null}
             onEditWithAI={() => navigate(`/admin/${schoolId}/school/website/ai-editor`)}
             customDomain={briefData?.custom_domain || school?.custom_domain || null}
             customDomainStatus={briefData?.custom_domain_status || school?.custom_domain_status || null}

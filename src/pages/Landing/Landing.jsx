@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import PublicHeader from "../../components/PublicHeader/PublicHeader";
 import Footer from "../../components/Footer/Footer";
 import { getMonthlyRate, formatNaira, isFreePlan } from "../../utils/planPricing";
-import { FeatureVisual, BulletIcon } from "./FeatureIcons";
+import { TUTORIAL_PAGE_LANDING, tutorialThumb, useTutorialVideos } from "../../api_call/useTutorialVideos";
 import "./Landing.css";
 
 const API_BASE_URL = `${import.meta.env.VITE_API_BASE_URL}`;
@@ -21,7 +21,9 @@ const FEATURES = [
   {
     title: "Student Management",
     icon: "students",
-    accent: "#00cec9",
+    accent: "#3a3a3a",
+    face: "#f3f3f3",
+    ink: "#111111",
     bullets: [
       { text: "Student records", icon: "records" },
       { text: "Attendance", icon: "attendance" },
@@ -32,7 +34,10 @@ const FEATURES = [
   {
     title: "Staff Management",
     icon: "staff",
-    accent: "#6c5ce7",
+    accent: "rgba(255,255,255,0.72)",
+    face: "#3d3d3d",
+    ink: "#ffffff",
+    dark: true,
     bullets: [
       { text: "Teacher profiles", icon: "profiles" },
       { text: "Salary / payroll", icon: "payroll" },
@@ -43,7 +48,9 @@ const FEATURES = [
   {
     title: "Timetable System",
     icon: "timetable",
-    accent: "#74b9ff",
+    accent: "#4a4a4a",
+    face: "#d4d4d4",
+    ink: "#161616",
     bullets: [
       { text: "Auto timetable generation", icon: "auto" },
       { text: "Class schedules", icon: "schedule" },
@@ -53,21 +60,39 @@ const FEATURES = [
   {
     title: "Result & Report Cards",
     icon: "reports",
-    accent: "#fd79a8",
+    accent: "rgba(255,255,255,0.7)",
+    face: "#1c1c1c",
+    ink: "#ffffff",
+    dark: true,
     bullets: [
       { text: "End-of-term results", icon: "term" },
       { text: "GPA calculation", icon: "gpa" },
       { text: "Printable report cards", icon: "printable" },
+      { text: "Admins can email report cards to parents", icon: "email" },
     ],
   },
   {
     title: "Notifications",
     icon: "notifications",
-    accent: "#fdcb6e",
+    accent: "#2f2f2f",
+    face: "#bdbdbd",
+    ink: "#141414",
     bullets: [
       { text: "Announcements", icon: "announcements" },
       { text: "Exam alerts", icon: "exam" },
       { text: "SMS / email", icon: "sms" },
+    ],
+  },
+  {
+    title: "AI Assistant",
+    icon: "ai",
+    accent: "#555555",
+    face: "#8a8a8a",
+    ink: "#111111",
+    bullets: [
+      { text: "Analyzes school records", icon: "records" },
+      { text: "Schedules emails", icon: "email" },
+      { text: "Reports such as the best performing student of all time", icon: "results" },
     ],
   },
 ];
@@ -336,6 +361,127 @@ function bindPinnedTracks(pins) {
   };
 }
 
+const INTRO_FALLBACK_ID = "dQw4w9WgXcQ";
+
+function IntroVideo() {
+  const { videos } = useTutorialVideos(TUTORIAL_PAGE_LANDING);
+  const video = videos[0];
+  const youtubeId = video?.youtubeId || INTRO_FALLBACK_ID;
+  const [playing, setPlaying] = useState(false);
+
+  useEffect(() => {
+    setPlaying(false);
+  }, [youtubeId, video?.thumbnail]);
+
+  const thumb = tutorialThumb(
+    { youtubeId, thumbnail: video?.thumbnail || "" },
+    "maxresdefault"
+  );
+
+  return (
+    <div className="intro-video-inner">
+      <div className="intro-video-frame-wrap">
+        <div className="ivs-glow" />
+        <div className="intro-video-frame">
+          {playing ? (
+            <iframe
+              src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1`}
+              title={video?.title || "Scladapp Introduction Video"}
+              frameBorder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
+          ) : (
+            <button type="button" className="intro-video-poster" onClick={() => setPlaying(true)}>
+              <img src={thumb} alt="" />
+              <span className="intro-video-play" aria-hidden="true">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M8 5v14l11-7z" />
+                </svg>
+              </span>
+            </button>
+          )}
+        </div>
+      </div>
+
+      <div className="intro-video-text">
+        <span className="ivs-eyebrow">AI website</span>
+        <h2 className="ivs-heading">
+          Build the<br />school site<br />with AI
+        </h2>
+        <p className="ivs-sub">
+          Pick a look. The page is written for your school. Then change the words and pictures yourself.
+        </p>
+        <div className="ivs-divider" />
+        <span className="ivs-runtime">{video?.duration || "2 min watch"}</span>
+      </div>
+    </div>
+  );
+}
+
+const BILLING_CYCLES = [
+  { id: "monthly", label: "Monthly" },
+  { id: "quarterly", label: "Quarterly", badge: "-10%" },
+  { id: "yearly", label: "Yearly", badge: "-20%" },
+];
+
+function PricingPlanCard({ plan, onSelect }) {
+  const free = isFreePlan(plan);
+  const [cycle, setCycle] = useState("monthly");
+
+  return (
+    <div className={`pricing-card${plan.featured ? " pricing-card--highlight" : ""}`}>
+      <span className="pricing-card__corner-tr" />
+      <span className="pricing-card__corner-bl" />
+      <span className="pricing-card__deco-circle" />
+      <span className="pricing-card__deco-box" />
+      {plan.featured && <span className="pricing-card__popular">Most Popular</span>}
+      <div className="pricing-card__header">
+        <h3>{plan.plan_name}</h3>
+        <p className="pricing-card__desc">{plan.description}</p>
+      </div>
+      {!free && (
+        <div className="pricing-card__switch" role="group" aria-label="Billing cycle">
+          {BILLING_CYCLES.map((c) => (
+            <button
+              key={c.id}
+              type="button"
+              className={cycle === c.id ? "is-on" : ""}
+              aria-pressed={cycle === c.id}
+              onClick={() => setCycle(c.id)}
+            >
+              {c.label}
+              {c.badge && <em>{c.badge}</em>}
+            </button>
+          ))}
+        </div>
+      )}
+      <div className="pricing-card__price">
+        <span className="pricing-card__amount">{free ? "Free" : formatNaira(getMonthlyRate(plan, cycle))}</span>
+        {!free && <span className="pricing-card__period">/mo</span>}
+      </div>
+      <div className="pricing-card__limits">
+        <span>Unlimited students</span>
+        <span>Unlimited staff</span>
+        <span>{plan.max_subadmin} sub-admins</span>
+        <span>{plan.max_storage_gb}GB</span>
+        {plan.ai_assistant && <span>AI</span>}
+      </div>
+      <ul className="pricing-card__features">
+        {(plan.features || []).map((f) => (
+          <li key={f}><span className="pricing-check">✓</span>{f}</li>
+        ))}
+      </ul>
+      <button
+        className={`pricing-card__btn${plan.featured ? " pricing-card__btn--dark" : ""}`}
+        onClick={() => onSelect(plan, free ? "monthly" : cycle)}
+      >
+        {free ? "Get Started Free" : "Get Started"}
+      </button>
+    </div>
+  );
+}
+
 const Landing = () => {
   const navigate = useNavigate();
   const hWrapperRef = useRef(null);
@@ -349,7 +495,6 @@ const Landing = () => {
 
   const [plans, setPlans] = useState([]);
   const [plansLoading, setPlansLoading] = useState(true);
-  const [billingCycle, setBillingCycle] = useState("monthly");
   const [navDark, setNavDark] = useState(false);
 
   useEffect(() => {
@@ -360,15 +505,8 @@ const Landing = () => {
       .finally(() => setPlansLoading(false));
   }, []);
 
-  const getPrice = (plan) => {
-    if (isFreePlan(plan)) return "Free";
-    return formatNaira(getMonthlyRate(plan, billingCycle));
-  };
-
-  const getPeriod = () => "/mo";
-
-  const handleSelectPlan = (plan) => {
-    navigate("/setup/1", { state: { plan } });
+  const handleSelectPlan = (plan, cycle) => {
+    navigate("/setup/1", { state: { plan, priceView: cycle } });
   };
 
   // Horizontal pin sections — one scroller, 1:1 with page scroll
@@ -583,34 +721,7 @@ const Landing = () => {
         <div className="ivs-noise" />
         <div className="ivs-grid" />
 
-        <div className="intro-video-inner">
-          {/* Video — left */}
-          <div className="intro-video-frame-wrap">
-            <div className="ivs-glow" />
-            <div className="intro-video-frame">
-              <iframe
-                src="https://www.youtube.com/embed/dQw4w9WgXcQ"
-                title="Scladapp Introduction Video"
-                frameBorder="0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-              />
-            </div>
-          </div>
-
-          {/* Text — right */}
-          <div className="intro-video-text">
-            <span className="ivs-eyebrow">AI website</span>
-            <h2 className="ivs-heading">
-              Build the<br />school site<br />with AI
-            </h2>
-            <p className="ivs-sub">
-              Pick a look. The page is written for your school. Then change the words and pictures yourself.
-            </p>
-            <div className="ivs-divider" />
-            <span className="ivs-runtime">2 min watch</span>
-          </div>
-        </div>
+        <IntroVideo />
       </div>
 
         {/* Stack 1 — Horizontal feature scroll */}
@@ -641,44 +752,29 @@ const Landing = () => {
               {/* The continuous timeline line inside the track */}
               <div className="hscroll-inline-line" />
 
-              {FEATURES.map((f, i) => {
-                const isUp = i % 2 === 0;
-                return (
-                  <div key={f.title} className={`hscroll-panel ${isUp ? "hscroll-panel--up" : "hscroll-panel--down"}`}>
-                    <div className="hscroll-card hscroll-card--feature" style={{ "--feature-accent": f.accent }}>
-                      <span className="hscroll-card-orbit"><span></span><span></span><span></span><span></span></span>
-                      <span className="hscroll-card-corners"><span></span><span></span><span></span><span></span></span>
-
-                      <div className="hscroll-card-visual">
-                        <span className="hscroll-card-visual__glow" />
-                        <span className="hscroll-card-visual__index">{String(i + 1).padStart(2, "0")}</span>
-                        <FeatureVisual name={f.icon} />
+              {FEATURES.map((f, i) => (
+                  <div key={f.title} className="hscroll-panel">
+                    <div
+                      className={`hscroll-card hscroll-card--feature${f.dark ? " is-dark" : ""}`}
+                      style={{ "--feature-accent": f.accent, "--feature-face": f.face, "--feature-ink": f.ink }}
+                    >
+                      <div className="hscroll-card-face">
+                        <span className="hscroll-card-face__mark">{String(i + 1).padStart(2, "0")}</span>
+                        <span className="hscroll-card-face__name">{f.title}</span>
+                        <span className="hscroll-card-face__label">Features</span>
+                        <svg className="hscroll-card-face__steps" viewBox="0 0 92 76" fill="none" aria-hidden="true">
+                          <rect x="6" y="46" width="22" height="22" stroke="currentColor" strokeWidth="1.4" />
+                          <rect x="32" y="28" width="22" height="22" stroke="currentColor" strokeWidth="1.4" />
+                          <rect x="58" y="10" width="22" height="22" stroke="currentColor" strokeWidth="1.4" />
+                        </svg>
                       </div>
                       <div className="hscroll-card-body">
                         <h3>{f.title}</h3>
-                        <ul>
-                          {f.bullets.map((b) => (
-                            <li key={b.text}>
-                              <BulletIcon name={b.icon} />
-                              <span>{b.text}</span>
-                            </li>
-                          ))}
-                        </ul>
+                        <p>{f.bullets.map((b) => b.text).join(". ")}.</p>
                       </div>
                     </div>
-
-                    {/* SVG curved connector + dot — all same direction (top to bottom) */}
-                    <svg
-                      className="hscroll-svg-connector"
-                      width="40" height="80" viewBox="0 0 40 80"
-                      fill="none" xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path d="M20 0 C20 40, 20 40, 20 72" stroke="rgba(255,255,255,0.5)" strokeWidth="1.5" strokeDasharray="4 3" className="hscroll-svg-path" />
-                      <circle cx="20" cy="76" r="5" fill="#fff" stroke="#000" strokeWidth="2" className="hscroll-svg-dot" />
-                    </svg>
                   </div>
-                );
-              })}
+              ))}
             </div>
           </div>
         </div>
@@ -702,21 +798,21 @@ const Landing = () => {
 
               {[
                 {
-                  key: "student", badge: "Student Portal", accent: "#00cec9",
+                  key: "student", badge: "Student Portal", accent: "#f0f0f0",
                   title: "Students Stay Informed Anywhere.",
                   desc: "From exam results to announcements, students access everything from one secure portal.",
                   features: ["Result checking","Notifications","Timetable","Assignments"],
                   visual: "both",
                 },
                 {
-                  key: "admin", badge: "Admin Portal", accent: "#6c5ce7",
+                  key: "admin", badge: "Admin Portal", accent: "#6e6e6e",
                   title: "Complete Control for School Administrators.",
                   desc: "Command your entire school from one powerful dashboard.",
                   features: ["Student records","Payroll","Finance tracking","Reports","Sessions & terms","Analytics"],
                   visual: "desktop", center: true,
                 },
                 {
-                  key: "staff", badge: "Staff Portal", accent: "#fd79a8",
+                  key: "staff", badge: "Staff Portal", accent: "#bdbdbd",
                   title: "Teaching Management Made Simple.",
                   desc: "Everything a teacher needs to manage their day — in one clean view.",
                   features: ["Assigned classes","Attendance","Upload scores","Class schedules","Head-of-class management"],
@@ -818,58 +914,17 @@ const Landing = () => {
             <span className="landing-section-tag">Simple Pricing</span>
             <h2>Plans that grow with your school</h2>
             <p>No hidden fees. Cancel anytime.</p>
-            <div className="pricing-toggle">
-              {["monthly","quarterly","yearly"].map(c => (
-                <button
-                  key={c}
-                  className={`pricing-toggle__btn${billingCycle === c ? " pricing-toggle__btn--active" : ""}`}
-                  onClick={() => setBillingCycle(c)}
-                >
-                  {c.charAt(0).toUpperCase() + c.slice(1)}
-                  {c === "quarterly" && <span className="pricing-toggle__badge">-10%</span>}
-                  {c === "yearly" && <span className="pricing-toggle__badge">-20%</span>}
-                </button>
-              ))}
-            </div>
           </div>
 
           <div className="pricing-hscroll-track" ref={h3TrackRef}>
             {plansLoading
               ? [1,2,3,4].map(i => <div key={i} className="pricing-skeleton"/>)
               : plans.map(plan => (
-                <div key={plan["$id"] || plan.plan_id} className={`pricing-card${plan.featured ? " pricing-card--highlight" : ""}`}>
-                  <span className="pricing-card__corner-tr" />
-                  <span className="pricing-card__corner-bl" />
-                  <span className="pricing-card__deco-circle" />
-                  <span className="pricing-card__deco-box" />
-                  {plan.featured && <span className="pricing-card__popular">Most Popular</span>}
-                  <div className="pricing-card__header">
-                    <h3>{plan.plan_name}</h3>
-                    <p className="pricing-card__desc">{plan.description}</p>
-                  </div>
-                  <div className="pricing-card__price">
-                    <span className="pricing-card__amount">{getPrice(plan)}</span>
-                    {plan.plan_type !== "Free" && <span className="pricing-card__period">{getPeriod()}</span>}
-                  </div>
-                  <div className="pricing-card__limits">
-                    <span>Unlimited students</span>
-                    <span>Unlimited staff</span>
-                    <span>{plan.max_subadmin} sub-admins</span>
-                    <span>{plan.max_storage_gb}GB</span>
-                    {plan.ai_assistant && <span>AI</span>}
-                  </div>
-                  <ul className="pricing-card__features">
-                    {(plan.features || []).map(f => (
-                      <li key={f}><span className="pricing-check">✓</span>{f}</li>
-                    ))}
-                  </ul>
-                  <button
-                    className={`pricing-card__btn${plan.featured ? " pricing-card__btn--dark" : ""}`}
-                    onClick={() => handleSelectPlan(plan)}
-                  >
-                    {plan.plan_type === "Free" ? "Get Started Free" : "Get Started"}
-                  </button>
-                </div>
+                <PricingPlanCard
+                  key={plan["$id"] || plan.plan_id}
+                  plan={plan}
+                  onSelect={handleSelectPlan}
+                />
               ))
             }
           </div>

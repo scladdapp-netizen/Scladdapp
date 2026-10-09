@@ -43,7 +43,7 @@ import {
 } from "recharts";
 import dashboardData from "../../../../data/DashboardData.json";
 import useDashboard from "../../../../api_call/useDashboard";
-import { useTutorialVideos } from "../../../../api_call/useTutorialVideos";
+import { tutorialThumb, useTutorialVideos } from "../../../../api_call/useTutorialVideos";
 import useSchool from "../../../../api_call/useSchool";
 import useWebsiteRequest from "../../../../api_call/useWebsiteRequest";
 import { publicSiteUrl } from "../../../../utils/publicSiteUrl";
@@ -1010,7 +1010,7 @@ const TutorialVideos = () => {
 
   const video = videos[active];
   if (!video) return null;
-  const thumb = `https://img.youtube.com/vi/${video.youtubeId}/maxresdefault.jpg`;
+  const thumb = tutorialThumb(video, "maxresdefault");
 
   return (
     <div className="tutorial-card card">
