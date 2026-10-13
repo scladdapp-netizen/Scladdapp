@@ -451,16 +451,8 @@ const CombinedTemplates = () => {
             const gf = selectedTemplate.grading_fields || [];
             const gs = selectedTemplate.grading_scheme || [];
             return (
-              <div className="template-detail-container">
+              <div className="template-detail-container ct-detail">
                 <div className="template-detail-header">
-                  {templateAssigned && (
-                    <div style={{ display: "flex", alignItems: "flex-start", gap: "10px", padding: "12px 16px", background: "#fef3c7", border: "1px solid #f59e0b", borderRadius: "8px", marginBottom: "12px" }}>
-                      <FaExclamationTriangle size={16} color="#d97706" style={{ marginTop: 2, flexShrink: 0 }} />
-                      <span style={{ fontSize: "13px", color: "#92400e", lineHeight: 1.5 }}>
-                        This template is assigned to a subsession. It cannot be deactivated or deleted.
-                      </span>
-                    </div>
-                  )}
                   <div className="template-detail-title">
                     <h2>{selectedTemplate.name}</h2>
                     <span className={`template-card-status ${selectedTemplate.status}`}>{selectedTemplate.status}</span>
@@ -475,8 +467,14 @@ const CombinedTemplates = () => {
                 </div>
 
                 <div className="template-detail-content">
+                  {templateAssigned && (
+                    <div className="ct-assigned-note">
+                      <FaExclamationTriangle size={14} color="#d97706" />
+                      <span>This template is assigned to a subsession. It cannot be deactivated or deleted.</span>
+                    </div>
+                  )}
                   {/* Assessment Fields */}
-                  <div className="detail-section">
+                  <div className="detail-section ct-compact">
                     <h3>Assessment Fields ({gf.length})</h3>
                     <div className="assessment-fields-table">
                       <div className="fields-table-header"><span>Field</span><span>Weight</span><span>Max Score</span></div>
@@ -494,7 +492,7 @@ const CombinedTemplates = () => {
                   </div>
 
                   {/* Grading Scheme */}
-                  <div className="detail-section">
+                  <div className="detail-section ct-compact">
                     <h3>Grading Scheme ({gs.length} grades)</h3>
                     <div style={{ overflowX: "auto" }}>
                       <table className="scheme-view-table">
@@ -576,14 +574,18 @@ const CombinedTemplates = () => {
                 </div>
 
                 <div className="template-detail-actions">
-                  <Button variant="secondary" onClick={() => openEdit(selectedTemplate)}><FaEdit size={14} style={{ marginRight: 8 }} />Edit</Button>
-                  <Button variant="secondary" onClick={() => handleDuplicate(selectedTemplate)}><FaCopy size={14} style={{ marginRight: 8 }} />Duplicate</Button>
-                  <Button variant={selectedTemplate.status === "active" ? "warning" : "success"} onClick={() => handleStatusToggle(selectedTemplate)} disabled={templateAssigned}>
-                    {selectedTemplate.status === "active"
-                      ? <><FaBan size={14} style={{ marginRight: 8 }} />Deactivate</>
-                      : <><FaCheckCircle size={14} style={{ marginRight: 8 }} />Activate</>}
+                  <Button variant="secondary" title="Edit" aria-label="Edit" onClick={() => openEdit(selectedTemplate)}><FaEdit size={14} /></Button>
+                  <Button variant="secondary" title="Duplicate" aria-label="Duplicate" onClick={() => handleDuplicate(selectedTemplate)}><FaCopy size={14} /></Button>
+                  <Button
+                    variant={selectedTemplate.status === "active" ? "warning" : "success"}
+                    title={selectedTemplate.status === "active" ? "Deactivate" : "Activate"}
+                    aria-label={selectedTemplate.status === "active" ? "Deactivate" : "Activate"}
+                    onClick={() => handleStatusToggle(selectedTemplate)}
+                    disabled={templateAssigned}
+                  >
+                    {selectedTemplate.status === "active" ? <FaBan size={14} /> : <FaCheckCircle size={14} />}
                   </Button>
-                  <Button variant="danger" onClick={() => handleDelete(selectedTemplate)} disabled={templateAssigned}><FaTrash size={14} style={{ marginRight: 8 }} />Delete</Button>
+                  <Button variant="danger" title="Delete" aria-label="Delete" onClick={() => handleDelete(selectedTemplate)} disabled={templateAssigned}><FaTrash size={14} /></Button>
                 </div>
               </div>
             );

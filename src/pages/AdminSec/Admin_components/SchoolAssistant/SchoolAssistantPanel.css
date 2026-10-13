@@ -293,6 +293,22 @@
   background: #fafafa;
 }
 
+.aa-pdf {
+  margin-top: 8px;
+  padding: 6px 10px;
+  border: 1px solid #e4e4e4;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #111111;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.aa-pdf:hover {
+  background: #f4f4f4;
+}
+
 .aa-typing {
   display: flex;
   align-items: center;
@@ -395,6 +411,12 @@
 [data-theme="dark"] .aa-msg-text th { background: #2a2a2a; }
 [data-theme="dark"] .aa-msg-text th,
 [data-theme="dark"] .aa-msg-text td { border-bottom-color: #3a3a3a; }
+[data-theme="dark"] .aa-pdf {
+  background: #1e1e1e;
+  color: #f0f0f0;
+  border-color: #3a3a3a;
+}
+[data-theme="dark"] .aa-pdf:hover { background: #2a2a2a; }
 [data-theme="dark"] .aa-composer { background: #303030; border-color: #424242; }
 [data-theme="dark"] .aa-composer textarea { color: #ececec; }
 [data-theme="dark"] .aa-composer button { background: #ececec; color: #0d0d0d; }

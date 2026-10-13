@@ -39,6 +39,17 @@ function pageHref(schoolId, pagePath) {
   return `/admin/${schoolId}${pagePath === "/" ? "" : pagePath}`;
 }
 
+function downloadPdf(pdf) {
+  if (!pdf?.base64) return;
+  const bytes = Uint8Array.from(atob(pdf.base64), (char) => char.charCodeAt(0));
+  const url = URL.createObjectURL(new Blob([bytes], { type: "application/pdf" }));
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = pdf.filename || "records.pdf";
+  link.click();
+  URL.revokeObjectURL(url);
+}
+
 function RichText({ schoolId, parts, fallback }) {
   if (!parts?.length) return fallback || null;
   return parts.map((part, index) => (
@@ -99,6 +110,11 @@ function Answer({ result, schoolId }) {
           </div>
         ) : (
           !result.message && <p>No matching records.</p>
+        )}
+        {result.pdf?.base64 && (
+          <button type="button" className="aa-pdf" onClick={() => downloadPdf(result.pdf)}>
+            Download PDF
+          </button>
         )}
       </div>
     );
@@ -199,6 +215,8 @@ const SchoolAssistantPanel = ({ schoolId, onClose }) => {
     if (!q || pendingId) return;
     const chatId = store.activeId || `${Date.now()}`;
     const prior = store.activeId ? messages : [];
+    const lastOffer = [...prior].reverse().find((message) => message.role === "assistant" && message.result?.offerPdf);
+    const wantsPdf = /^(yes|yeah|yep|ok|okay|sure|please|send it|give me the pdf|the pdf)\b/i.test(q);
     const history = prior.slice(-8).map((message) => ({
       role: message.role,
       text: historyText(message).slice(0, 500),
@@ -233,7 +251,11 @@ const SchoolAssistantPanel = ({ schoolId, onClose }) => {
       const res = await fetch(`${API_BASE}/api/schools/${schoolId}/ai-assistant`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question: q, history }),
+        body: JSON.stringify({
+          question: q,
+          history,
+          report: wantsPdf && lastOffer?.result?.report ? lastOffer.result.report : undefined,
+        }),
       });
       const data = await res.json();
       if (!res.ok || data.success === false) throw new Error(data.message || "Could not answer that.");

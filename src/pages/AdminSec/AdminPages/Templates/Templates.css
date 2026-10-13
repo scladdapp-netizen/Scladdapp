@@ -453,6 +453,71 @@
   flex-shrink: 0;
 }
 
+.ct-detail .template-detail-content {
+  padding: 16px 10px 8px;
+}
+
+.ct-assigned-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 0 0 8px;
+  padding: 8px 10px;
+  background: #fef3c7;
+  border: 1px solid #f59e0b;
+  border-radius: 8px;
+  font-size: 12px;
+  color: #92400e;
+  line-height: 1.35;
+}
+
+.ct-assigned-note svg {
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.ct-detail .detail-section h3 {
+  margin: 0;
+  padding: 10px 12px 6px;
+}
+
+.ct-detail .ct-compact {
+  margin: 0;
+  padding: 0;
+}
+
+.ct-detail .ct-compact h3 {
+  margin: 0;
+  padding: 8px 0 4px;
+  border-bottom: none;
+}
+
+.ct-detail .fields-table-header {
+  padding: 8px 12px;
+  color: #6b7280;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.ct-detail .fields-table-row,
+.ct-detail .fields-table-footer {
+  padding: 9px 12px;
+  font-size: 13px;
+}
+
+.ct-detail .template-detail-actions {
+  gap: 8px;
+  padding: 8px 12px;
+}
+
+.ct-detail .template-detail-actions .btn {
+  width: 34px;
+  height: 34px;
+  padding: 0;
+}
+
 /* ── Form row ─────────────────────────────────────────────────────────────── */
 .form-row {
   display: grid;
