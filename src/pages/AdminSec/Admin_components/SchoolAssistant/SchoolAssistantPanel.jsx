@@ -4,6 +4,16 @@ import "./SchoolAssistantPanel.css";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:4000";
 
+// The login token tells the server who is asking, so a sub-admin only gets data they may read.
+function authHeader() {
+  try {
+    const token = JSON.parse(sessionStorage.getItem("user") || "null")?.token;
+    return token ? { Authorization: `Bearer ${token}` } : {};
+  } catch (_) {
+    return {};
+  }
+}
+
 const SUGGESTIONS = [
   "How do I add a student?",
   "How do I create a session?",
@@ -21,13 +31,19 @@ function partText(parts) {
   return (parts || []).map((part) => part.text).join("");
 }
 
+const PDF_YES = /^(yes|yeah|yep|yup|y|ok|okay|sure|please|pls|send( it)?|give( it| me)?( the)?( pdf)?|the pdf|pdf|download( it)?|go ahead)([\s,.!?]+(please|pls|yes))?[\s.!?]*$/i;
+
 function historyText(message) {
   if (message.role === "user") return message.text || "";
   const result = message.result;
-  if (!result) return "";
+  if (!result) return message.error || "";
   if (result.kind === "query") {
-    const names = (result.rows || []).slice(0, 3).map((row) => row.full_name || row.name || row.student_name || row.title || "").filter(Boolean);
-    return [result.message || result.title, names.join(", ")].filter(Boolean).join(": ");
+    const columns = result.columns || [];
+    const lines = (result.rows || []).slice(0, 10).map((row) => (
+      columns.map((col) => `${col.label}: ${row[col.key] ?? "—"}`).join(", ")
+    ));
+    const total = result.total && result.total > lines.length ? ` (${result.total} rows in all)` : "";
+    return [result.message || result.title, lines.length ? `Rows shown${total}: ${lines.join(" | ")}` : ""].filter(Boolean).join("\n");
   }
   if (result.items?.length) {
     return [result.title, ...result.items.map((item) => [item.title, item.text || partText(item.parts)].filter(Boolean).join(": "))].filter(Boolean).join(". ");
@@ -59,11 +75,12 @@ function RichText({ schoolId, parts, fallback }) {
   ));
 }
 
-function Answer({ result, schoolId }) {
+function Answer({ result, schoolId, onPdf }) {
   if (result.kind === "docs" && result.items?.length) {
     return (
       <div className="aa-msg-text">
         {result.title && <p className="aa-msg-title">{result.title}</p>}
+        {result.intro && <p>{result.intro}</p>}
         <ol>
           {result.items.map((item, index) => (
             <li key={index}>
@@ -110,6 +127,14 @@ function Answer({ result, schoolId }) {
           </div>
         ) : (
           !result.message && <p>No matching records.</p>
+        )}
+        {result.rows?.length > 0 && result.total > result.rows.length && (
+          <p className="aa-more">Showing the first {result.rows.length} of {result.total}.</p>
+        )}
+        {onPdf && result.offerPdf && result.report && !result.pdf && (
+          <button type="button" className="aa-pdf" onClick={onPdf}>
+            Download PDF
+          </button>
         )}
         {result.pdf?.base64 && (
           <button type="button" className="aa-pdf" onClick={() => downloadPdf(result.pdf)}>
@@ -190,6 +215,14 @@ const SchoolAssistantPanel = ({ schoolId, onClose }) => {
     if (thread) thread.scrollTop = thread.scrollHeight;
   }, [messages, loading]);
 
+  // Grow the box with the text (up to the CSS max-height); the scrollbar only shows past that.
+  useEffect(() => {
+    const box = inputRef.current;
+    if (!box) return;
+    box.style.height = "auto";
+    box.style.height = `${box.scrollHeight}px`;
+  }, [question]);
+
   const startNew = () => {
     if (pendingId) return;
     setQuestion("");
@@ -210,16 +243,18 @@ const SchoolAssistantPanel = ({ schoolId, onClose }) => {
     });
   };
 
-  const ask = async (text) => {
+  const ask = async (text, { forcePdf = false } = {}) => {
     const q = (text ?? question).trim();
     if (!q || pendingId) return;
     const chatId = store.activeId || `${Date.now()}`;
     const prior = store.activeId ? messages : [];
-    const lastOffer = [...prior].reverse().find((message) => message.role === "assistant" && message.result?.offerPdf);
-    const wantsPdf = /^(yes|yeah|yep|ok|okay|sure|please|send it|give me the pdf|the pdf)\b/i.test(q);
-    const history = prior.slice(-8).map((message) => ({
+    const lastMessage = prior[prior.length - 1];
+    const offeredReport = lastMessage?.role === "assistant" && lastMessage.result?.offerPdf ? lastMessage.result.report : null;
+    const wantsPdf = Boolean(offeredReport) && (forcePdf || PDF_YES.test(q));
+    const history = prior.slice(-12).map((message) => ({
       role: message.role,
-      text: historyText(message).slice(0, 500),
+      text: historyText(message).slice(0, 1500),
+      memo: message.role === "assistant" ? message.result?.memo : undefined,
     })).filter((item) => item.text);
     const userMessage = { id: Date.now(), role: "user", text: q };
     setQuestion("");
@@ -250,16 +285,17 @@ const SchoolAssistantPanel = ({ schoolId, onClose }) => {
     try {
       const res = await fetch(`${API_BASE}/api/schools/${schoolId}/ai-assistant`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...authHeader() },
         body: JSON.stringify({
           question: q,
           history,
-          report: wantsPdf && lastOffer?.result?.report ? lastOffer.result.report : undefined,
+          report: wantsPdf ? offeredReport : undefined,
         }),
       });
       const data = await res.json();
       if (!res.ok || data.success === false) throw new Error(data.message || "Could not answer that.");
       append({ id: Date.now() + 1, role: "assistant", result: data });
+      if (wantsPdf && forcePdf && data.pdf?.base64) downloadPdf(data.pdf);
     } catch (err) {
       append({ id: Date.now() + 1, role: "assistant", error: err.message || "Could not answer that." });
     } finally {
@@ -311,7 +347,7 @@ const SchoolAssistantPanel = ({ schoolId, onClose }) => {
           </div>
         )}
 
-        {messages.map((message) => (
+        {messages.map((message, messageIndex) => (
           message.role === "user" ? (
             <div key={message.id} className="aa-row user">
               <div className="aa-bubble">{message.text}</div>
@@ -321,7 +357,13 @@ const SchoolAssistantPanel = ({ schoolId, onClose }) => {
               <div className="aa-avatar"><Star /></div>
               {message.error
                 ? <div className="aa-msg-text aa-error"><p>{message.error}</p></div>
-                : <Answer result={message.result} schoolId={schoolId} />}
+                : (
+                  <Answer
+                    result={message.result}
+                    schoolId={schoolId}
+                    onPdf={messageIndex === messages.length - 1 && !pendingId ? () => ask("Download the PDF", { forcePdf: true }) : undefined}
+                  />
+                )}
             </div>
           )
         ))}
@@ -337,7 +379,7 @@ const SchoolAssistantPanel = ({ schoolId, onClose }) => {
       </div>
 
       <form
-        className="aa-composer"
+        className={`aa-composer${question.trim() ? " has-text" : ""}`}
         onSubmit={(e) => {
           e.preventDefault();
           ask();

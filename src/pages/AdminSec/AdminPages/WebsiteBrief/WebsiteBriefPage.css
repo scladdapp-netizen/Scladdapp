@@ -554,7 +554,8 @@ body:has(.wbp-root) { overflow: hidden; }
   align-items: center;
   max-width: 1080px;
   margin: 0 auto;
-  padding: 48px 32px 64px;
+  /* room at the bottom so the floating Back / Next bar never covers the content */
+  padding: 48px 32px 120px;
 }
 
 .wbp-step--font,
@@ -2081,7 +2082,7 @@ body:has(.wbp-root) { overflow: hidden; }
     width: 100%;
   }
   .wbp-step h1 { font-size: 26px; }
-  .wbp-step { grid-template-columns: 1fr; padding: 28px 18px 48px; }
+  .wbp-step { grid-template-columns: 1fr; padding: 28px 18px 110px; }
   .wbp-fonts button,
   .wbp-templates button,
   .wbp-templates .wbp-shot-card,

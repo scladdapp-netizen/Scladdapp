@@ -14,7 +14,9 @@ const isAllowlistedUrl = (url) => {
     path.includes("/login") ||
     path.includes("/set-password") ||
     path.includes("/forgot-password") ||
-    path.includes("/api/otp")
+    path.includes("/api/otp") ||
+    // The School Assistant only reads data; the server applies the plan rules to it.
+    /\/api\/schools\/[^/]+\/ai-assistant(\/|\?|$)/.test(path)
   );
 };
 

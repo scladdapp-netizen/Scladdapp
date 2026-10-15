@@ -824,6 +824,35 @@ const WebsiteBriefPage = ({ aiOnly = false }) => {
     setReady(true);
   }, [schoolId, aiOnly]);
 
+  // The wizard's step is remembered only in this browser. On another computer (or after the
+  // browser data is cleared) it would start at "welcome" even though a draft site is already
+  // saved on the server, so ask the server and open the editor with that draft.
+  const stepRef = useRef(draft.step);
+  stepRef.current = draft.step;
+  useEffect(() => {
+    if (!ready || aiOnly || !schoolId) return undefined;
+    let cancelled = false;
+    const token = schoolToken();
+    fetch(`${API_BASE}/api/schools/${schoolId}/ai-website/draft`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (cancelled || data?.data?.source !== "draft") return;
+        // Someone already moved on in this browser: leave their place alone.
+        if (stepRef.current !== "welcome" || pagesRef.current.length) return;
+        const loaded = onlyHome(data.data.pages || []);
+        if (!loaded.length) return;
+        setPages(loaded);
+        setPageTab(0);
+        setDraft((prev) => ({ ...prev, step: "page" }));
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [ready, aiOnly, schoolId]);
+
   useEffect(() => {
     if (draft.step !== "brief" || !schoolId) return undefined;
     let cancel = false;
@@ -1999,7 +2028,7 @@ const WebsiteBriefPage = ({ aiOnly = false }) => {
                 ))}
               </div>
             )}
-            <div className="wbp-actions">
+            <div className="wbp-actions wbp-actions-float">
               <button type="button" className="wbp-back" onClick={() => go("welcome")}>Back</button>
               <button type="button" className="wbp-next" onClick={() => go("font")}>Next</button>
             </div>
@@ -2032,7 +2061,7 @@ const WebsiteBriefPage = ({ aiOnly = false }) => {
                 </button>
               ))}
             </div>
-            <div className="wbp-actions">
+            <div className="wbp-actions wbp-actions-float">
               <button type="button" className="wbp-back" onClick={() => go("color")}>Back</button>
               <button type="button" className="wbp-next" onClick={() => go("template")}>Next</button>
             </div>
@@ -2103,7 +2132,7 @@ const WebsiteBriefPage = ({ aiOnly = false }) => {
               className="wbp-brief"
               rows={16}
               value={draft.sitePrompt}
-              placeholder="A hero with the school name, then admissions, then a photo gallery and a visit section."
+              placeholder="What the page should say: the school's story, the classes it teaches, its fees, how to apply, and how to reach the office."
               onChange={(event) => setDraft((prev) => ({ ...prev, sitePrompt: event.target.value }))}
             />
             <div className="wbp-brief-top">
@@ -2126,7 +2155,7 @@ const WebsiteBriefPage = ({ aiOnly = false }) => {
                 )}
               </button>
             </div>
-            <div className="wbp-actions">
+            <div className="wbp-actions wbp-actions-float">
               <button type="button" className="wbp-back" onClick={() => go("template")} disabled={creating}>Back</button>
               <button
                 type="button"

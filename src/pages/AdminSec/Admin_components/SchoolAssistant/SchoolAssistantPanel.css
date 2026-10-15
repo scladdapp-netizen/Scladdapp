@@ -235,7 +235,7 @@
   color: #0d0d0d;
 }
 
-.aa-msg-text p { margin: 0 0 8px; }
+.aa-msg-text p { margin: 0 0 8px; white-space: pre-line; }
 .aa-msg-title { font-weight: 600; }
 .aa-kicker {
   font-size: 11px;
@@ -245,6 +245,8 @@
   color: #8e8e8e;
 }
 .aa-query { color: #6b6b6b; font-size: 13px; }
+.aa-more { color: #6b6b6b; font-size: 12px; margin: 6px 0 0; }
+[data-theme="dark"] .aa-more { color: #a0a0a0; }
 .aa-error p { color: #b42318; }
 
 .aa-msg-text ol {
@@ -338,10 +340,26 @@
   gap: 8px;
   margin: 0 12px 14px;
   padding: 8px 8px 8px 14px;
-  border: 1px solid #e5e5e5;
+  border: 1px solid #e0e0e6;
   border-radius: 24px;
   background: #ffffff;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  transition: border-color 0.2s ease, box-shadow 0.25s ease;
+}
+
+/* The border lights up while the box is focused, and glows softly while there is text. */
+.aa-composer:focus-within {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.16), 0 0 14px rgba(99, 102, 241, 0.28);
+}
+
+.aa-composer.has-text:focus-within {
+  animation: aa-glow 1.8s ease-in-out infinite;
+}
+
+@keyframes aa-glow {
+  0%, 100% { box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.16), 0 0 10px rgba(99, 102, 241, 0.22); }
+  50% { box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.22), 0 0 20px rgba(139, 92, 246, 0.42); }
 }
 
 .aa-composer textarea {
@@ -350,15 +368,26 @@
   max-height: 120px;
   border: none;
   resize: none;
-  padding: 8px 0;
+  padding: 8px 4px 8px 0;
   font: inherit;
   font-size: 14px;
   line-height: 1.4;
   color: #0d0d0d;
   background: transparent;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(99, 102, 241, 0.4) transparent;
 }
 
 .aa-composer textarea:focus { outline: none; }
+
+.aa-composer textarea::-webkit-scrollbar { width: 6px; }
+.aa-composer textarea::-webkit-scrollbar-track { background: transparent; margin: 4px 0; }
+.aa-composer textarea::-webkit-scrollbar-thumb {
+  background: rgba(99, 102, 241, 0.4);
+  border-radius: 999px;
+}
+.aa-composer textarea::-webkit-scrollbar-thumb:hover { background: rgba(99, 102, 241, 0.7); }
 
 .aa-composer button {
   width: 32px;
@@ -418,7 +447,28 @@
 }
 [data-theme="dark"] .aa-pdf:hover { background: #2a2a2a; }
 [data-theme="dark"] .aa-composer { background: #303030; border-color: #424242; }
-[data-theme="dark"] .aa-composer textarea { color: #ececec; }
+[data-theme="dark"] .aa-composer:focus-within {
+  border-color: #818cf8;
+  box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.2), 0 0 16px rgba(129, 140, 248, 0.35);
+}
+[data-theme="dark"] .aa-composer.has-text:focus-within { animation-name: aa-glow-dark; }
+@keyframes aa-glow-dark {
+  0%, 100% { box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.18), 0 0 10px rgba(129, 140, 248, 0.28); }
+  50% { box-shadow: 0 0 0 4px rgba(129, 140, 248, 0.26), 0 0 22px rgba(167, 139, 250, 0.5); }
+}
+/* index.css forces a box, border and white focus ring on every dark-theme textarea (with
+   !important). Here the composer is the box, so the textarea has to stay see-through. */
+[data-theme="dark"] .aa-composer textarea,
+[data-theme="dark"] .aa-composer textarea:focus {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  outline: none !important;
+  color: #ececec !important;
+}
+[data-theme="dark"] .aa-composer textarea::placeholder { color: #8e8e8e !important; }
+[data-theme="dark"] .aa-composer textarea { scrollbar-color: rgba(165, 180, 252, 0.45) transparent; }
+[data-theme="dark"] .aa-composer textarea::-webkit-scrollbar-thumb { background: rgba(165, 180, 252, 0.45); }
 [data-theme="dark"] .aa-composer button { background: #ececec; color: #0d0d0d; }
 [data-theme="dark"] .aa-composer button:disabled { background: #424242; color: #8e8e8e; }
 
