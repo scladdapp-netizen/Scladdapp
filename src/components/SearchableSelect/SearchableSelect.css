@@ -209,3 +209,14 @@
   .searchable-select-dropdown { max-height: 220px; }
   .searchable-select-option { padding: 10px 12px; }
 }
+
+/* Floating (portal) dropdown: must sit above slide-in menus and modals */
+/* transition:none - Dashboard.css has a global `* { transition: all }` that would
+   otherwise animate the menu sliding from the corner to the input. */
+.searchable-select-dropdown.is-floating {
+  z-index: 2100000;
+  box-sizing: border-box;
+  overscroll-behavior: contain;
+  transition: none !important;
+  animation: none !important;
+}

@@ -55,8 +55,8 @@ const PricingPage = () => {
               onClick={() => setPriceView(v)}
             >
               {v.charAt(0).toUpperCase() + v.slice(1)}
-              {v === "quarterly" && <span className="pricing-pg__toggle-badge">-10%</span>}
-              {v === "yearly" && <span className="pricing-pg__toggle-badge">-20%</span>}
+              {v === "quarterly" && <span className="pricing-pg__toggle-badge">-5%</span>}
+              {v === "yearly" && <span className="pricing-pg__toggle-badge">-10%</span>}
             </button>
           ))}
         </div>

@@ -4,6 +4,8 @@ import Button from "../../../../../components/Button/Button";
 import SlideInMenu from "../../../../../components/SlideInMenu/SlideInMenu";
 import FormInput from "../../../../../components/FormInput";
 import InnerTabCon from "../../../../../components/InnerTabCon/InnerTabCon";
+import { formatCardDate } from "../formatCardDate";
+import "./AnnouncementTemplates.css";
 import { useAnnouncementTemplate } from "../../../../../api_call";
 import { useNotification } from "../../../../../context/NotificationProvider/NotificationProvider";
 import { useAuth } from "../../../../../context/AuthContext/AuthContext";
@@ -1004,34 +1006,46 @@ const AnnouncementTemplates = () => {
               {announcementTemplates.map((template) => (
                 <div
                   key={template.id}
-                  className="template-card"
+                  className="template-card ct-tcard"
                   onClick={() => handleViewTemplate(template)}
-                  style={{ cursor: "pointer" }}
                 >
-                  <div className="template-card-header">
-                    <h4 className="template-card-title">{template.name}</h4>
-                    <span className={`template-card-status ${template.status}`}>
+                  <div className="ct-tcard-top">
+                    <h4 className="ct-tcard-title" title={template.name}>{template.name}</h4>
+                    <span className={`ct-tcard-status ${template.status}`}>
+                      <i />
                       {template.status}
                     </span>
                   </div>
-                  <p className="template-card-description">
-                    {template.description}
-                  </p>
-                  <div className="template-details">
-                    <div className="template-detail-item">
-                      <strong>Category:</strong> {template.category}
+                  {template.description ? (
+                    <p className="ct-tcard-desc">{template.description}</p>
+                  ) : (
+                    <p className="ct-tcard-desc is-empty">No description</p>
+                  )}
+                  <div className="ct-tcard-stats is-2">
+                    <div className="ct-tcard-stat">
+                      <b>{(template.channels || []).length}</b>
+                      <span>Channels</span>
                     </div>
-                    <div className="template-detail-item">
-                      <strong>Channels:</strong> {template.channels.join(", ")}
-                    </div>
-                    <div className="template-detail-item">
-                      <strong>Placeholders:</strong>{" "}
-                      {template.placeholders.length}
+                    <div className="ct-tcard-stat">
+                      <b>{(template.placeholders || []).length}</b>
+                      <span>Placeholders</span>
                     </div>
                   </div>
-                  <div className="template-card-meta">
-                    <span>Modified: {template.lastModified}</span>
-                    <span>By: {template.createdBy}</span>
+                  {(template.channels || []).length > 0 && (
+                    <div className="ct-tcard-chips">
+                      {template.channels.map((c) => (
+                        <span key={c} className="ct-tcard-chip">{c}</span>
+                      ))}
+                    </div>
+                  )}
+                  <div className="ct-tcard-foot">
+                    {template.category ? <span className="ct-tcard-level">{template.category}</span> : <span />}
+                    <span
+                      className="ct-tcard-date"
+                      title={template.createdBy ? `Created by ${template.createdBy}` : undefined}
+                    >
+                      Modified {formatCardDate(template.lastModified)}
+                    </span>
                   </div>
                 </div>
               ))}
@@ -1053,7 +1067,7 @@ const AnnouncementTemplates = () => {
                 <p>Design your announcement template with dynamic content</p>
               </div>
 
-              <div className="create-template-form">
+              <div className="create-template-form an-form">
                 <div className="form-row">
                   <FormInput
                     label="Template Name *"
@@ -1090,20 +1104,16 @@ const AnnouncementTemplates = () => {
 
                   {/* Default Placeholders */}
                   <div className="placeholders-subsection">
-                    <h4
-                      style={{
-                        marginBottom: "12px",
-                        fontSize: "14px",
-                        fontWeight: "600",
-                      }}
-                    >
-                      Default Placeholders
-                    </h4>
+                    <h4 className="ph-sub-title">Default Placeholders</h4>
                     <div className="placeholders-grid">
                       {availablePlaceholders.map((placeholder) => (
                         <label
                           key={placeholder}
-                          className="placeholder-checkbox"
+                          className={`placeholder-checkbox${
+                            formData.placeholders.includes(placeholder)
+                              ? " is-checked"
+                              : ""
+                          }`}
                         >
                           <input
                             type="checkbox"
@@ -1121,28 +1131,10 @@ const AnnouncementTemplates = () => {
                   </div>
 
                   {/* Custom Placeholders */}
-                  <div
-                    className="placeholders-subsection"
-                    style={{ marginTop: "20px" }}
-                  >
-                    <h4
-                      style={{
-                        marginBottom: "12px",
-                        fontSize: "14px",
-                        fontWeight: "600",
-                      }}
-                    >
-                      Custom Placeholders
-                    </h4>
-                    <div
-                      className="custom-placeholder-input"
-                      style={{
-                        display: "flex",
-                        gap: "10px",
-                        marginBottom: "12px",
-                      }}
-                    >
-                      <div style={{ flex: 1 }}>
+                  <div className="placeholders-subsection ph-custom">
+                    <h4 className="ph-sub-title">Custom Placeholders</h4>
+                    <div className="custom-placeholder-input">
+                      <div className="custom-placeholder-field">
                         <FormInput
                           type="text"
                           value={newPlaceholder}
@@ -1154,7 +1146,6 @@ const AnnouncementTemplates = () => {
                         variant="secondary"
                         onClick={handleAddCustomPlaceholder}
                         disabled={!newPlaceholder.trim()}
-                        style={{ whiteSpace: "nowrap" }}
                       >
                         <FaPlus size={12} style={{ marginRight: "6px" }} />
                         Add
@@ -1165,35 +1156,13 @@ const AnnouncementTemplates = () => {
                     {formData.placeholders.filter(
                       (p) => !availablePlaceholders.includes(p)
                     ).length > 0 && (
-                      <div
-                        className="custom-placeholders-list"
-                        style={{
-                          display: "flex",
-                          flexWrap: "wrap",
-                          gap: "8px",
-                          padding: "12px",
-                          backgroundColor: "#f9fafb",
-                          borderRadius: "6px",
-                          border: "1px solid #e5e7eb",
-                        }}
-                      >
+                      <div className="custom-placeholders-list">
                         {formData.placeholders
                           .filter((p) => !availablePlaceholders.includes(p))
                           .map((placeholder) => (
                             <div
                               key={placeholder}
                               className="custom-placeholder-item"
-                              style={{
-                                display: "flex",
-                                alignItems: "center",
-                                gap: "8px",
-                                padding: "6px 12px",
-                                backgroundColor: "#dbeafe",
-                                color: "#1e40af",
-                                borderRadius: "6px",
-                                fontSize: "13px",
-                                fontWeight: "500",
-                              }}
                             >
                               <span className="placeholder-name">
                                 {placeholder}
@@ -1205,26 +1174,6 @@ const AnnouncementTemplates = () => {
                                   handleRemoveCustomPlaceholder(placeholder)
                                 }
                                 title="Remove custom placeholder"
-                                style={{
-                                  background: "none",
-                                  border: "none",
-                                  color: "#dc2626",
-                                  cursor: "pointer",
-                                  padding: "2px",
-                                  display: "flex",
-                                  alignItems: "center",
-                                  justifyContent: "center",
-                                  borderRadius: "4px",
-                                  transition: "background-color 0.2s",
-                                }}
-                                onMouseEnter={(e) =>
-                                  (e.currentTarget.style.backgroundColor =
-                                    "#fee2e2")
-                                }
-                                onMouseLeave={(e) =>
-                                  (e.currentTarget.style.backgroundColor =
-                                    "transparent")
-                                }
                               >
                                 <FaTrash size={12} />
                               </button>
@@ -1620,7 +1569,7 @@ const AnnouncementTemplates = () => {
             width="800px"
           >
             {selectedTemplate && (
-              <div className="template-detail-container">
+              <div className="template-detail-container ct-detail an-detail">
                 <div className="template-detail-header">
                   <div className="template-detail-title">
                     <h2>{selectedTemplate.name}</h2>
@@ -1649,7 +1598,7 @@ const AnnouncementTemplates = () => {
 
                 <div className="template-detail-content">
                   {/* Content Template */}
-                  <div className="detail-section">
+                  <div className="detail-section ct-card">
                     <h3>Content Template</h3>
                     <div className="content-template-display">
                       <div
@@ -1662,7 +1611,7 @@ const AnnouncementTemplates = () => {
                   </div>
 
                   {/* Available Placeholders */}
-                  <div className="detail-section">
+                  <div className="detail-section ct-card">
                     <h3>
                       Available Placeholders (
                       {selectedTemplate.placeholders.length})
@@ -1687,23 +1636,23 @@ const AnnouncementTemplates = () => {
                   </div>
 
                   {/* Announcement Preview */}
-                  <div className="detail-section">
-                    <h3>Announcement Preview</h3>
-
-                    {/* Edit Email Layout button — above the preview */}
-                    <div style={{ marginBottom: "14px" }}>
+                  <div className="detail-section ct-card">
+                    <h3>
+                      Announcement Preview
                       <Button
                         variant="secondary"
+                        title="Edit email layout"
+                        aria-label="Edit email layout"
+                        className="an-detail-icon-btn"
                         onClick={() => navigate(`/admin/${schoolId}/templates/announcement/edit/${selectedTemplate.id}`)}
                       >
-                        <FaEdit size={14} style={{ marginRight: "8px" }} />
-                        Edit Email Layout
+                        <FaEdit size={13} />
                       </Button>
-                    </div>
+                    </h3>
 
                     {/* Full email layout preview */}
                     {detailLoading ? (
-                      <div style={{ padding: "24px", textAlign: "center", color: "#94a3b8", fontSize: "13px" }}>
+                      <div className="an-detail-loading">
                         Loading email preview…
                       </div>
                     ) : (() => {
@@ -1752,27 +1701,30 @@ const AnnouncementTemplates = () => {
                 <div className="template-detail-actions">
                   <Button
                     variant="secondary"
+                    title="Edit content"
+                    aria-label="Edit content"
                     onClick={() => handleEditTemplate(selectedTemplate)}
                     disabled={isSubmitting}
                   >
-                    <FaEdit size={14} style={{ marginRight: "8px" }} />
-                    Edit Content
+                    <FaEdit size={14} />
                   </Button>
                   <Button
                     variant="secondary"
+                    title="Duplicate"
+                    aria-label="Duplicate"
                     onClick={() => handleDuplicate(selectedTemplate)}
                     disabled={isSubmitting}
                   >
-                    <FaCopy size={14} style={{ marginRight: "8px" }} />
-                    Duplicate
+                    <FaCopy size={14} />
                   </Button>
                   <Button
                     variant="danger"
+                    title="Delete"
+                    aria-label="Delete"
                     onClick={() => handleDelete(selectedTemplate)}
                     disabled={isSubmitting}
                   >
-                    <FaTrash size={14} style={{ marginRight: "8px" }} />
-                    Delete
+                    <FaTrash size={14} />
                   </Button>
                 </div>
               </div>

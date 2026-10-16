@@ -16,6 +16,7 @@ const useFetchStudentsPaginated = () => {
         searchField = "",
         sortBy = "admitted_date",
         sortOrder = "desc",
+        status = "all",
       } = params;
 
       const queryParams = new URLSearchParams({
@@ -25,6 +26,7 @@ const useFetchStudentsPaginated = () => {
         searchField: searchField,
         sortBy: sortBy,
         sortOrder: sortOrder,
+        status: status,
       });
 
       const response = await fetch(

@@ -81,6 +81,7 @@ const PublicHeader = ({ dark = false }) => {
 
   const links = [
     { to: "/", label: "Home" },
+    { to: "/features", label: "Features" },
     { to: "/pricing", label: "Pricing" },
     { to: "/docs", label: "Docs" },
     { to: "/contact", label: "Contact Us" },

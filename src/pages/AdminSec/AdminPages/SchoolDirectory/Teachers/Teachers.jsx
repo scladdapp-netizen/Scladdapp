@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import ServerSmartTable from "../../../../../components/ServerSmartTable";
 import InnerTabCon from "../../../../../components/InnerTabCon/InnerTabCon";
+import StatusFilterSwitch from "../../../../../components/StatusFilterSwitch/StatusFilterSwitch";
 import CreateTeacherPanel from "./CreateTeacherPanel";
 import { useNotification } from "../../../../../context/NotificationProvider/NotificationProvider";
 import { useAuth } from "../../../../../context/AuthContext/AuthContext";
@@ -32,13 +33,17 @@ const Teachers = () => {
 
   const [showAddTeacherMenu, setShowAddTeacherMenu] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+  // "active" | "inactive" switch shown in the header
+  const [statusFilter, setStatusFilter] = useState("active");
+  const [statusCounts, setStatusCounts] = useState({ active: null, inactive: null });
 
   // Fetch function for ServerSmartTable
   const fetchTeachersData = async (params) => {
     if (!schoolId) return { success: false, data: [], pagination: {} };
 
     try {
-      const result = await getTeachersPaginated(schoolId, params);
+      const result = await getTeachersPaginated(schoolId, { ...params, status: statusFilter });
+      if (result?.counts) setStatusCounts(result.counts);
       return result;
     } catch (err) {
       console.error("Error fetching teachers data:", err);
@@ -171,12 +176,24 @@ const Teachers = () => {
   return (
     <div>
       <InnerTabCon>
-        <div className="tch-header">
-          <h2>Teachers</h2>
-          <p>All teaching staff with their subjects, departments, and contact information</p>
+        <div className="tch-header dir-header">
+          <div className="dir-header-text">
+            <h2>Teachers</h2>
+            <p>All teaching staff with their subjects, departments, and contact information</p>
+          </div>
+          <StatusFilterSwitch
+            value={statusFilter}
+            onChange={setStatusFilter}
+            counts={statusCounts}
+            activeLabel="Active Teachers"
+            inactiveLabel="Inactive Teachers"
+            inactiveTitle="Teachers who are no longer active"
+            ariaLabel="Teachers status filter"
+          />
         </div>
 
         <ServerSmartTable
+          key={statusFilter}
           columns={columns}
           fetchData={fetchTeachersData}
           onRowClick={handleClick}

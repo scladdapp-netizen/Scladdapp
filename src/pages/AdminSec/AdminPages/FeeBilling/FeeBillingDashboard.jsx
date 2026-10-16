@@ -73,13 +73,29 @@ const BillsTab = () => {
   // Fee bill templates
   const [templates, setTemplates] = useState([]);
   const [selectedTemplateId, setSelectedTemplateId] = useState("");
+  const [templatesLoaded, setTemplatesLoaded] = useState(false);
 
   useEffect(() => {
     fetch(`${import.meta.env.VITE_API_BASE_URL}/fee-bill-template/school/${schoolId}`)
       .then((r) => r.json())
       .then((d) => { if (d.success) setTemplates(d.data || []); })
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => setTemplatesLoaded(true));
   }, [schoolId]);
+
+  // Money in the template's own currency (falls back to a plain code prefix)
+  const fmtMoney = (amount, currency) => {
+    const n = Number(amount) || 0;
+    try {
+      return new Intl.NumberFormat(undefined, {
+        style: "currency",
+        currency: currency || "NGN",
+        maximumFractionDigits: 2,
+      }).format(n);
+    } catch {
+      return `${currency || ""} ${n.toLocaleString()}`.trim();
+    }
+  };
 
   // School accounts
   const [schoolAccountsList, setSchoolAccountsList] = useState([]);
@@ -552,62 +568,115 @@ const BillsTab = () => {
           </div>
 
           <div className="create-fee-form">
-            {/* Fee Bill Template Selector */}
-            <div style={{ marginBottom: 16 }}>
-              <SearchableSelect
-                label="Fee Bill Template *"
-                placeholder="Search and select a template..."
-                options={templates.map((t) => ({
-                  value: t.template_id,
-                  label: t.name,
-                  subtitle: `${t.category || ""} · ₦${t.total_amount?.toLocaleString() || 0}`,
-                }))}
-                value={selectedTemplateId}
-                onChange={handleSelectTemplate}
-                searchable={true}
-              />
-            </div>
+            {/* Fee Bill Template */}
+            <div className="cf-template-section">
+              <div className="cf-section-head">
+                <span className="cf-section-title">
+                  Fee Bill Template <em>*</em>
+                </span>
+                {templatesLoaded && templates.length > 0 && (
+                  <button
+                    type="button"
+                    className="cf-link-btn"
+                    onClick={() => navigate(`/admin/${schoolId}/templates/fee_bill`)}
+                  >
+                    + New template
+                  </button>
+                )}
+              </div>
+              <p className="cf-section-hint">
+                Every fee is created from a fee bill template. The template sets
+                the bill items, total amount, currency and installment options
+                for this fee.
+              </p>
 
-            {/* Template detail preview */}
-            {selectedTemplateId && (() => {
-              const tmpl = templates.find((t) => t.template_id === selectedTemplateId);
-              if (!tmpl) return null;
-              const items = typeof tmpl.bill_items === "string" ? JSON.parse(tmpl.bill_items) : (tmpl.bill_items || []);
-              return (
-                <div className="cf-template-preview">
-                  <div className="cf-template-grid">
-                    {[
-                      { label: "Name", value: tmpl.name },
-                      { label: "Category", value: tmpl.category },
-                      { label: "Total Amount", value: `₦${tmpl.total_amount?.toLocaleString() || 0}` },
-                      { label: "Currency", value: tmpl.currency },
-                      { label: "Installments", value: tmpl.allow_installments ? `Yes (${tmpl.installment_count})` : "No" },
-                    ].map(({ label, value }) => (
-                      <div key={label}>
-                        <p className="cf-template-label">{label}</p>
-                        <p className="cf-template-value">{value || "—"}</p>
-                      </div>
-                    ))}
+              {!templatesLoaded ? (
+                <p className="cf-section-loading">Loading templates...</p>
+              ) : templates.length === 0 ? (
+                <div className="cf-empty">
+                  <div className="cf-empty-icon" aria-hidden="true">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                      <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8l-5-5z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round"/>
+                      <path d="M14 3v5h5M9 13h6M9 17h4" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
                   </div>
-                  {tmpl.description && (
-                    <p className="cf-template-desc">{tmpl.description}</p>
-                  )}
-                  {items.length > 0 && (
-                    <div>
-                      <p className="cf-template-label">Bill Items</p>
-                      <div className="cf-template-items">
-                        {items.map((item, i) => (
-                          <div key={i} className="cf-template-item">
-                            <span>{item.item_name}</span>
-                            <span>₦{Number(item.amount).toLocaleString()}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
+                  <div className="cf-empty-text">
+                    <strong>No fee bill template yet</strong>
+                    <span>
+                      Create one first, then come back here to add the fee.
+                    </span>
+                  </div>
+                  <Button
+                    variant="secondary"
+                    onClick={() => navigate(`/admin/${schoolId}/templates/fee_bill`)}
+                  >
+                    + Add Template
+                  </Button>
                 </div>
-              );
-            })()}
+              ) : (
+                <>
+                  <SearchableSelect
+                    placeholder="Search and select a template..."
+                    options={templates.map((t) => ({
+                      value: t.template_id,
+                      label: t.name,
+                      subtitle: `${t.category || ""} · ${fmtMoney(t.total_amount, t.currency)}`,
+                    }))}
+                    value={selectedTemplateId}
+                    onChange={handleSelectTemplate}
+                    searchable={true}
+                  />
+
+                  {selectedTemplateId && (() => {
+                    const tmpl = templates.find((t) => t.template_id === selectedTemplateId);
+                    if (!tmpl) return null;
+                    const items = typeof tmpl.bill_items === "string" ? JSON.parse(tmpl.bill_items) : (tmpl.bill_items || []);
+                    return (
+                      <div className="cf-template-preview">
+                        <div className="cf-tp-top">
+                          <div className="cf-tp-main">
+                            <p className="cf-template-label">Template</p>
+                            <p className="cf-tp-name">{tmpl.name || "—"}</p>
+                          </div>
+                          <div className="cf-tp-total">
+                            <p className="cf-template-label">Total</p>
+                            <p className="cf-tp-amount">{fmtMoney(tmpl.total_amount, tmpl.currency)}</p>
+                          </div>
+                        </div>
+
+                        <div className="cf-tp-chips">
+                          {tmpl.category && <span className="cf-tp-chip">{tmpl.category}</span>}
+                          {tmpl.currency && <span className="cf-tp-chip">{tmpl.currency}</span>}
+                          <span className="cf-tp-chip">
+                            {tmpl.allow_installments
+                              ? `${tmpl.installment_count} installments`
+                              : "Single payment"}
+                          </span>
+                        </div>
+
+                        {tmpl.description && (
+                          <p className="cf-template-desc">{tmpl.description}</p>
+                        )}
+
+                        {items.length > 0 && (
+                          <div className="cf-tp-items">
+                            <p className="cf-template-label">Bill Items ({items.length})</p>
+                            <div className="cf-template-items">
+                              {items.map((item, i) => (
+                                <div key={i} className="cf-template-item">
+                                  <span>{item.item_name}</span>
+                                  <span>{fmtMoney(item.amount, tmpl.currency)}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })()}
+                </>
+              )}
+            </div>
 
             <div className="form-row">
               <FormInput

@@ -1,4 +1,5 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useLayoutEffect } from "react";
+import { createPortal } from "react-dom";
 import "./SearchableSelect.css";
 
 const SearchableSelect = ({
@@ -18,6 +19,65 @@ const SearchableSelect = ({
   const [filteredOptions, setFilteredOptions] = useState([]);
   const dropdownRef = useRef(null);
   const inputRef = useRef(null);
+  const wrapperRef = useRef(null);
+  const menuRef = useRef(null);
+  // Fixed-position coordinates of the dropdown (null until measured)
+  const [menuPos, setMenuPos] = useState(null);
+
+  // The menu is rendered in a portal with fixed positioning so scrolling
+  // parents and sticky footers can't clip it. It flips upward when there is
+  // not enough room below the input.
+  const updateMenuPosition = () => {
+    const wrapper = wrapperRef.current;
+    const menu = menuRef.current;
+    if (!wrapper || !menu) return;
+
+    const rect = wrapper.getBoundingClientRect();
+    const gap = 4;
+    const margin = 12;
+    const cap = window.innerWidth <= 480 ? 220 : 280;
+    const needed = Math.min(menu.scrollHeight, cap);
+    const spaceBelow = window.innerHeight - rect.bottom - gap - margin;
+    const spaceAbove = rect.top - gap - margin;
+    const openUp = spaceBelow < needed && spaceAbove > spaceBelow;
+    const room = Math.max(120, openUp ? spaceAbove : spaceBelow);
+
+    const next = {
+      left: Math.round(rect.left),
+      width: Math.round(rect.width),
+      maxHeight: Math.round(Math.min(cap, room)),
+      top: openUp ? "auto" : Math.round(rect.bottom + gap),
+      bottom: openUp ? Math.round(window.innerHeight - rect.top + gap) : "auto",
+    };
+
+    // only re-render when something actually moved
+    setMenuPos((prev) =>
+      prev &&
+      prev.left === next.left &&
+      prev.width === next.width &&
+      prev.maxHeight === next.maxHeight &&
+      prev.top === next.top &&
+      prev.bottom === next.bottom
+        ? prev
+        : next
+    );
+  };
+
+  useLayoutEffect(() => {
+    if (!isOpen) {
+      setMenuPos(null);
+      return undefined;
+    }
+    // Follow the field every frame: the field can move while open (scrolling
+    // parents, slide-in panel animation, window resize).
+    let raf = 0;
+    const tick = () => {
+      updateMenuPosition();
+      raf = requestAnimationFrame(tick);
+    };
+    tick();
+    return () => cancelAnimationFrame(raf);
+  }, [isOpen]);
 
   // Filter options based on search term
   useEffect(() => {
@@ -37,7 +97,10 @@ const SearchableSelect = ({
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+      const inside =
+        dropdownRef.current?.contains(event.target) ||
+        menuRef.current?.contains(event.target);
+      if (!inside) {
         setIsOpen(false);
       }
     };
@@ -97,7 +160,7 @@ const SearchableSelect = ({
         </label>
       )}
 
-      <div className="searchable-select-wrapper">
+      <div className="searchable-select-wrapper" ref={wrapperRef}>
         <div className="searchable-select-input-container">
           <input
             ref={inputRef}
@@ -130,8 +193,17 @@ const SearchableSelect = ({
           </div>
         </div>
 
-        {isOpen && (
-          <div className="searchable-select-dropdown">
+        {isOpen &&
+          createPortal(
+          <div
+            className="searchable-select-dropdown is-floating"
+            ref={menuRef}
+            style={
+              menuPos
+                ? { position: "fixed", right: "auto", ...menuPos }
+                : { position: "fixed", visibility: "hidden", top: 0, bottom: "auto", left: 0, right: "auto" }
+            }
+          >
             {filteredOptions.length > 0 ? (
               <>
                 {filteredOptions.map((option, index) => (
@@ -164,7 +236,8 @@ const SearchableSelect = ({
                   : "No options available"}
               </div>
             )}
-          </div>
+          </div>,
+          document.body
         )}
       </div>
     </div>

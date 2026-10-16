@@ -310,9 +310,6 @@ const SchoolAccountsTab = () => {
 
   const mask = (num) => "•".repeat(num.length);
 
-  const formatCurrency = (amount, currency = "NGN") =>
-    `${currency === "NGN" ? "₦" : currency}${parseFloat(amount || 0).toLocaleString()}`;
-
   /* ── Panel form (shared for add/edit) — now defined outside, passed as props ── */
 
   return (
@@ -378,12 +375,6 @@ const SchoolAccountsTab = () => {
                       <span className="sa-card-label">Type</span>
                       <span className={`sa-type-badge ${account.account_type?.toLowerCase()}`}>{account.account_type}</span>
                     </div>
-                    {account.balance && (
-                      <div className="sa-card-row">
-                        <span className="sa-card-label">Balance</span>
-                        <span className="sa-card-balance">{formatCurrency(account.balance, account.currency)}</span>
-                      </div>
-                    )}
                   </div>
 
                   {/* Card actions */}

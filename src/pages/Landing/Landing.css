@@ -547,6 +547,202 @@
   .intro-video-section { padding: 64px 6%; }
 }
 
+/* ── Intro Video: 3 selectable AI items ── */
+/* title + switch */
+.intro-video-head {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  max-width: 1280px;
+  margin: 0 auto 48px;
+  text-align: left;
+}
+.intro-video-head__eyebrow {
+  margin-bottom: 14px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.35);
+}
+.intro-video-head__title {
+  max-width: 640px;
+  margin: 0 0 28px;
+  font-size: clamp(1.7rem, 3.4vw, 2.7rem);
+  font-weight: 900;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  color: #f0ede8;
+}
+
+/* switch: one track, one sliding thumb */
+.intro-video-switch {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(var(--ivs-count, 3), minmax(0, 1fr));
+  width: min(100%, 640px);
+  padding: 4px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+}
+
+.intro-video-switch__thumb {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  left: 4px;
+  width: calc((100% - 8px) / var(--ivs-count, 3));
+  transform: translateX(calc(var(--ivs-index, 0) * 100%));
+  background: #f0ede8;
+  border-radius: 7px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+  transition: transform 0.5s cubic-bezier(0.65, 0, 0.25, 1);
+  overflow: hidden;
+}
+
+/* progress line sits at the bottom of the thumb */
+.intro-video-switch__track {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 3px;
+  background: rgba(17, 17, 17, 0.12);
+  border-radius: 0;
+  overflow: hidden;
+}
+.intro-video-switch__fill {
+  position: absolute;
+  inset: 0;
+  background: #111111;
+  border-radius: 0;
+  transform-origin: left center;
+  transform: scaleX(0);
+  animation-name: ivsProgress;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
+}
+.intro-video-switch.is-paused .intro-video-switch__fill { animation-play-state: paused; }
+@keyframes ivsProgress {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+
+.intro-video-switch__opt {
+  position: relative;
+  z-index: 1;
+  min-width: 0;
+  min-height: 44px;
+  padding: 0 14px 4px;
+  font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 700;
+  line-height: 1.2;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.55);
+  background: transparent;
+  border: 0;
+  border-radius: 7px;
+  cursor: pointer;
+  transition: color 0.35s ease;
+}
+.intro-video-switch__opt:hover { color: #ffffff; }
+.intro-video-switch__opt.is-active { color: #111111; }
+
+/* content swaps with a short slide + fade */
+.intro-video-frame-wrap { animation: ivsMediaIn 0.5s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+@keyframes ivsMediaIn {
+  from { opacity: 0; transform: translateX(-24px) scale(0.985); }
+  to   { opacity: 1; transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .intro-video-frame-wrap,
+  .intro-video-text { animation: none; }
+  .intro-video-switch__thumb,
+  .intro-video-switch__opt { transition: none; }
+}
+
+/* text column keeps a steady height while items change */
+.intro-video-text { min-height: 300px; justify-content: center; animation: ivsTextIn 0.35s ease both; }
+@keyframes ivsTextIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* text-only items: styled panel in place of the video */
+.ivs-panel {
+  padding-bottom: 0;
+  background: #101010;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+  background-size: 22px 22px;
+  min-height: 0;
+}
+.intro-video-frame.ivs-panel { aspect-ratio: 16 / 9; }
+
+.ivs-panel__list {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  margin: 0;
+  padding: 0 clamp(20px, 4vw, 48px);
+  list-style: none;
+}
+
+.ivs-panel__row {
+  display: flex;
+  align-items: center;
+  gap: clamp(14px, 2.4vw, 28px);
+  padding: clamp(12px, 2.2vw, 22px) 0;
+}
+.ivs-panel__row + .ivs-panel__row { border-top: 1px solid rgba(255, 255, 255, 0.1); }
+
+.ivs-panel__num {
+  flex-shrink: 0;
+  width: clamp(36px, 4.4vw, 52px);
+  height: clamp(36px, 4.4vw, 52px);
+  display: grid;
+  place-items: center;
+  font-size: clamp(11px, 1.2vw, 14px);
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  color: #111111;
+  background: #f0ede8;
+  border-radius: 12px;
+}
+
+.ivs-panel__body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.ivs-panel__body strong {
+  font-size: clamp(14px, 1.7vw, 20px);
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: #f0ede8;
+}
+.ivs-panel__body span {
+  font-size: clamp(12px, 1.2vw, 14px);
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+@media (max-width: 900px) {
+  .intro-video-head { margin-bottom: 32px; }
+  .intro-video-text { min-height: 0; }
+}
+
+@media (max-width: 700px) {
+  .intro-video-head__title { margin-bottom: 22px; }
+  .intro-video-switch__opt { padding: 0 8px 4px; font-size: 11.5px; min-height: 48px; }
+}
+
 /* ── Trust ───────────────────────────────────────────────────────────────── */
 .landing__trust {
   background: #f8f9fa;
@@ -1264,8 +1460,8 @@
 .hscroll-track {
   display: flex;
   width: max-content;
-  height: calc(100% - 220px);
-  margin-top: 220px;
+  height: calc(100% - 268px);
+  margin-top: 268px;
   align-items: flex-end;
   will-change: transform;
   backface-visibility: hidden;
@@ -1718,6 +1914,29 @@
   max-width: 380px;
   line-height: 1.65;
 }
+/* "See more features" button under the section subtitle */
+.hscroll-header-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 16px;
+  height: 36px;
+  padding: 0 16px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  color: #111111;
+  background: #ffffff;
+  border: 1px solid #ffffff;
+  border-radius: 8px;
+  cursor: pointer;
+  pointer-events: auto; /* .hscroll-header itself ignores pointer events */
+  transition: background 0.15s, transform 0.15s;
+}
+.hscroll-header-btn span { transition: transform 0.15s; }
+.hscroll-header-btn:hover { background: #e6e6e6; }
+.hscroll-header-btn:hover span { transform: translateX(3px); }
+
 /* ── Reverse Horizontal Scroll (Stack 2) ────────────────────────────────── */
 .hscroll2-wrapper {
   position: relative;

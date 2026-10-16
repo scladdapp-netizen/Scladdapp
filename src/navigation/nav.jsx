@@ -14,6 +14,7 @@ import FeedbackWidget from "../components/FeedbackWidget/FeedbackWidget";
 import Docs from "../pages/Docs/Docs";
 import ContactUs from "../pages/ContactUs/ContactUs";
 import PricingPage from "../pages/PricingPage/PricingPage";
+import Features from "../pages/Features/Features";
 import Landing from "../pages/Landing/Landing";
 import ReportDownload from "../pages/ReportDownload/ReportDownload";
 import ApplicationForm from "../pages/ApplicationForm/ApplicationForm";
@@ -59,6 +60,7 @@ export default function Nav() {
         <Route path="/docs/:topicId" element={<Docs />} />
         <Route path="/contact" element={<ContactUs />} />
         <Route path="/pricing" element={<PricingPage />} />
+        <Route path="/features" element={<Features />} />
         <Route path="/terms" element={<Terms />} />
         <Route path="/privacy" element={<Privacy />} />
         <Route path="/report-download" element={<ReportDownload />} />

@@ -361,17 +361,81 @@ function bindPinnedTracks(pins) {
   };
 }
 
-const INTRO_FALLBACK_ID = "dQw4w9WgXcQ";
+// Only the AI website item has a video (the one saved in admin). The others are text-only.
+const INTRO_ITEMS = [
+  {
+    id: "website",
+    tab: "AI website",
+    blurb: "Build your school site",
+    seconds: 9,
+    video: true,
+    heading: ["Build the", "school site", "with AI"],
+    sub: "Pick a look. The page is written for your school. Then change the words and pictures yourself.",
+  },
+  {
+    id: "assistant",
+    tab: "AI assistant",
+    blurb: "Ask anything about your school",
+    seconds: 7,
+    heading: ["Ask your", "school", "anything"],
+    sub: "Ask questions about your school in plain English and let it take care of routine work.",
+    rows: [
+      { title: "Analyses school records", desc: "Ask about results, attendance and enrolment and get an answer, not a spreadsheet." },
+      { title: "Schedules emails", desc: "Tell it what to send and when, and it handles the rest." },
+      { title: "Performance reports", desc: "Questions like the best performing student of all time, answered in seconds." },
+    ],
+  },
+  {
+    id: "tools",
+    tab: "AI timetable & remarks",
+    blurb: "Timetables and report remarks",
+    seconds: 7,
+    heading: ["Timetables", "and remarks,", "done for you"],
+    sub: "Two of the slowest jobs of every term, now handled for you.",
+    rows: [
+      { title: "AI timetable", desc: "Class and teacher timetables generated automatically." },
+      { title: "Auto-generated report card remarks", desc: "A remark drafted for every student, ready for you to review." },
+    ],
+  },
+];
 
 function IntroVideo() {
   const { videos } = useTutorialVideos(TUTORIAL_PAGE_LANDING);
   const video = videos[0];
-  const youtubeId = video?.youtubeId || INTRO_FALLBACK_ID;
+  const youtubeId = video?.youtubeId || "";
+  const [activeId, setActiveId] = useState(INTRO_ITEMS[0].id);
   const [playing, setPlaying] = useState(false);
+  const [hovering, setHovering] = useState(false);
+  const [inView, setInView] = useState(false);
+  const tabsRef = useRef(null);
+
+  const activeIndex = Math.max(0, INTRO_ITEMS.findIndex((i) => i.id === activeId));
+  const item = INTRO_ITEMS[activeIndex];
+
+  // Only run the progress while the tabs are on screen
+  useEffect(() => {
+    const el = tabsRef.current;
+    if (!el || typeof IntersectionObserver === "undefined") {
+      setInView(true);
+      return undefined;
+    }
+    const io = new IntersectionObserver(([entry]) => setInView(entry.isIntersecting), { threshold: 0.6 });
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+
+  const reducedMotion =
+    typeof window !== "undefined" &&
+    window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+
+  // progress is paused while hovering, while the video plays, or when off screen
+  const paused = hovering || playing || !inView || reducedMotion;
+
+  const goNext = () => setActiveId(INTRO_ITEMS[(activeIndex + 1) % INTRO_ITEMS.length].id);
 
   useEffect(() => {
     setPlaying(false);
-  }, [youtubeId, video?.thumbnail]);
+  }, [activeId, youtubeId, video?.thumbnail]);
 
   const thumb = tutorialThumb(
     { youtubeId, thumbnail: video?.thumbnail || "" },
@@ -379,50 +443,121 @@ function IntroVideo() {
   );
 
   return (
-    <div className="intro-video-inner">
-      <div className="intro-video-frame-wrap">
-        <div className="ivs-glow" />
-        <div className="intro-video-frame">
-          {playing ? (
-            <iframe
-              src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1`}
-              title={video?.title || "Scladapp Introduction Video"}
-              frameBorder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-            />
-          ) : (
-            <button type="button" className="intro-video-poster" onClick={() => setPlaying(true)}>
-              <img src={thumb} alt="" />
-              <span className="intro-video-play" aria-hidden="true">
-                <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M8 5v14l11-7z" />
-                </svg>
-              </span>
+    <>
+      <div className="intro-video-head">
+        <span className="intro-video-head__eyebrow">AI features</span>
+        <h2 className="intro-video-head__title">Empowering your school with smart tools</h2>
+
+        <div
+          className={`intro-video-switch${paused ? " is-paused" : ""}`}
+          role="tablist"
+          aria-label="AI features"
+          ref={tabsRef}
+          onMouseEnter={() => setHovering(true)}
+          onMouseLeave={() => setHovering(false)}
+          style={{ "--ivs-index": activeIndex, "--ivs-count": INTRO_ITEMS.length }}
+        >
+          {/* sliding thumb with the progress line inside it */}
+          <span className="intro-video-switch__thumb" aria-hidden="true">
+            <span className="intro-video-switch__track">
+              <span
+                key={activeId}
+                className="intro-video-switch__fill"
+                style={{ animationDuration: `${item.seconds}s` }}
+                onAnimationEnd={(e) => {
+                  if (e.animationName === "ivsProgress") goNext();
+                }}
+              />
+            </span>
+          </span>
+
+          {INTRO_ITEMS.map((it) => (
+            <button
+              key={it.id}
+              type="button"
+              role="tab"
+              aria-selected={it.id === activeId}
+              className={`intro-video-switch__opt${it.id === activeId ? " is-active" : ""}`}
+              onClick={() => setActiveId(it.id)}
+            >
+              {it.tab}
             </button>
-          )}
+          ))}
         </div>
       </div>
 
-      <div className="intro-video-text">
-        <span className="ivs-eyebrow">AI website</span>
-        <h2 className="ivs-heading">
-          Build the<br />school site<br />with AI
-        </h2>
-        <p className="ivs-sub">
-          Pick a look. The page is written for your school. Then change the words and pictures yourself.
-        </p>
-        <div className="ivs-divider" />
-        <span className="ivs-runtime">{video?.duration || "2 min watch"}</span>
+      <div className="intro-video-inner">
+        <div className="intro-video-frame-wrap" key={`media-${item.id}`}>
+          <div className="ivs-glow" />
+          {item.video ? (
+            youtubeId ? (
+            <div className="intro-video-frame">
+              {playing ? (
+                <iframe
+                  src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1`}
+                  title={video?.title || "Scladapp Introduction Video"}
+                  frameBorder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                />
+              ) : (
+                <button type="button" className="intro-video-poster" onClick={() => setPlaying(true)}>
+                  <img src={thumb} alt="" />
+                  <span className="intro-video-play" aria-hidden="true">
+                    <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M8 5v14l11-7z" />
+                    </svg>
+                  </span>
+                </button>
+              )}
+            </div>
+            ) : (
+              <div className="intro-video-frame" />
+            )
+          ) : (
+            <div className="intro-video-frame ivs-panel">
+              <ol className="ivs-panel__list">
+                {item.rows.map((r, i) => (
+                  <li key={r.title} className="ivs-panel__row">
+                    <span className="ivs-panel__num">{String(i + 1).padStart(2, "0")}</span>
+                    <span className="ivs-panel__body">
+                      <strong>{r.title}</strong>
+                      <span>{r.desc}</span>
+                    </span>
+                  </li>
+                ))}
+              </ol>
+            </div>
+          )}
+        </div>
+
+        <div className="intro-video-text" key={item.id}>
+          <span className="ivs-eyebrow">{item.tab}</span>
+          <h2 className="ivs-heading">
+            {item.heading.map((line, i) => (
+              <span key={line}>
+                {line}
+                {i < item.heading.length - 1 && <br />}
+              </span>
+            ))}
+          </h2>
+          <p className="ivs-sub">{item.sub}</p>
+          {item.video && (
+            <>
+              <div className="ivs-divider" />
+              <span className="ivs-runtime">{video?.duration || "2 min watch"}</span>
+            </>
+          )}
+        </div>
       </div>
-    </div>
+    </>
   );
 }
 
 const BILLING_CYCLES = [
   { id: "monthly", label: "Monthly" },
-  { id: "quarterly", label: "Quarterly", badge: "-10%" },
-  { id: "yearly", label: "Yearly", badge: "-20%" },
+  { id: "quarterly", label: "Quarterly", badge: "-5%" },
+  { id: "yearly", label: "Yearly", badge: "-10%" },
 ];
 
 function PricingPlanCard({ plan, onSelect }) {
@@ -663,7 +798,7 @@ const Landing = () => {
               <strong>Free school website</strong> created and hosted for you
             </span>
           </div>
-          <h1>The Smarter Way to <br /> Experience Education</h1>
+          <h1>Smarter Schools, <br /> Built for Nigeria</h1>
           <HeroTypewriter />
           <p>
             A connected platform for students, teachers, and administrators
@@ -744,6 +879,14 @@ const Landing = () => {
               <span className="hscroll-header-tag">Platform Features</span>
               <h2>Everything your school needs</h2>
               <p>One platform to manage it all — no juggling spreadsheets or disconnected tools.</p>
+              <button
+                type="button"
+                className="hscroll-header-btn"
+                onClick={() => navigate("/features")}
+              >
+                See more features
+                <span aria-hidden="true">&rarr;</span>
+              </button>
             </div>
 
             {/* Panels track — timeline line is inside so it scrolls with cards */}
@@ -788,8 +931,8 @@ const Landing = () => {
           <div className="hscroll2-sticky">
             <div className="hscroll2-header">
               <span className="hscroll2-tag">Three Portals. One Platform.</span>
-              <h2>Powerful Features</h2>
-              <p>Built for every role in your school.</p>
+              <h2>3 Logins for Your School</h2>
+              <p>One login each for students, administrators and staff, built for every role in your school.</p>
             </div>
             <div className="hscroll2-track" ref={h2TrackRef}>
 
@@ -808,7 +951,7 @@ const Landing = () => {
                   key: "admin", badge: "Admin Portal", accent: "#6e6e6e",
                   title: "Complete Control for School Administrators.",
                   desc: "Command your entire school from one powerful dashboard.",
-                  features: ["Student records","Payroll","Finance tracking","Reports","Sessions & terms","Analytics"],
+                  features: ["Student records","Payroll","Finance tracking","Reports","Sessions & terms","Analytics","Fee billing","Timetable generation","Online admissions","Announcements","Class promotion","Admin permissions"],
                   visual: "desktop", center: true,
                 },
                 {

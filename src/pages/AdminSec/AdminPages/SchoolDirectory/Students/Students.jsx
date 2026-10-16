@@ -8,6 +8,7 @@ import LoadingData from "../../../../../components/LoadingData";
 import SearchableSelect from "../../../../../components/SearchableSelect/SearchableSelect";
 import SubscriptionLimitModal from "../../../../../components/SubscriptionLimitModal/SubscriptionLimitModal";
 import InnerTabCon from "../../../../../components/InnerTabCon/InnerTabCon";
+import StatusFilterSwitch from "../../../../../components/StatusFilterSwitch/StatusFilterSwitch";
 import {
   FaArrowRight,
   FaKey,
@@ -19,6 +20,7 @@ import {
   FaPlus,
   FaTrash,
   FaStar,
+  FaUser,
 } from "react-icons/fa";
 import { useNotification } from "../../../../../context/NotificationProvider/NotificationProvider";
 import { useAuth } from "../../../../../context/AuthContext/AuthContext";
@@ -135,6 +137,9 @@ const Students = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [pendingStudents, setPendingStudents] = useState([]);
   const [refreshTable, setRefreshTable] = useState(0); // Trigger to refresh table
+  // "active" = currently enrolled, "inactive" = closed admission / dropouts
+  const [studentFilter, setStudentFilter] = useState("active");
+  const [studentCounts, setStudentCounts] = useState({ active: null, inactive: null });
   const [profilePhotoFile, setProfilePhotoFile] = useState(null);
   const [profilePhotoPreview, setProfilePhotoPreview] = useState(null);
   
@@ -176,9 +181,14 @@ const Students = () => {
       console.log("\n========== FRONTEND FETCH DEBUG ==========");
       console.log("Fetching students with params:", params);
 
-      const result = await getStudentsPaginated(schoolId, params);
+      const result = await getStudentsPaginated(schoolId, {
+        ...params,
+        status: studentFilter,
+      });
 
       console.log("Backend response:", result);
+
+      if (result?.counts) setStudentCounts(result.counts);
 
       if (result.success && result.data) {
         console.log(`Received ${result.data.length} students from backend`);
@@ -223,7 +233,7 @@ const Students = () => {
 
       return result;
     },
-    [schoolId, getStudentsPaginated]
+    [schoolId, getStudentsPaginated, studentFilter]
   );
 
   // Updated columns with Email and Phone instead of Class and Section
@@ -243,11 +253,11 @@ const Students = () => {
               <img src={v} className="std-avatar"
                 onError={(e) => { e.target.style.display = "none"; e.target.nextSibling.style.display = "flex"; }} />
               <div className="std-avatar-fallback" style={{ display: "none" }}>
-                {v.split("/").pop().charAt(0).toUpperCase()}
+                <FaUser />
               </div>
             </>
           ) : (
-            <div className="std-avatar-fallback">?</div>
+            <div className="std-avatar-fallback"><FaUser /></div>
           )}
         </div>
       ),
@@ -946,12 +956,24 @@ const Students = () => {
   return (
     <div>
       <InnerTabCon>
-        <div className="std-header">
-          <h2>Students</h2>
-          <p>All students enrolled in the school across different grades and sections</p>
+        <div className="std-header dir-header">
+          <div className="dir-header-text">
+            <h2>Students</h2>
+            <p>All students enrolled in the school across different grades and sections</p>
+          </div>
+          <StatusFilterSwitch
+            value={studentFilter}
+            onChange={setStudentFilter}
+            counts={studentCounts}
+            activeLabel="Active Students"
+            inactiveLabel="Inactive Students"
+            activeTitle="Students currently enrolled"
+            inactiveTitle="Dropouts: students whose admission has been closed"
+            ariaLabel="Student status filter"
+          />
         </div>
         <ServerSmartTable
-          key={refreshTable}
+          key={`${refreshTable}-${studentFilter}`}
           columns={columns}
           fetchData={fetchStudentsData}
           onRowClick={handleClick}

@@ -2,10 +2,12 @@ import React, { useState, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import ServerSmartTable from "../../../../../components/ServerSmartTable/ServerSmartTable";
 import InnerTabCon from "../../../../../components/InnerTabCon/InnerTabCon";
+import StatusFilterSwitch from "../../../../../components/StatusFilterSwitch/StatusFilterSwitch";
 import StaffFormPanel from "./StaffFormPanel";
 import { useNotification } from "../../../../../context/NotificationProvider/NotificationProvider";
 import { useAuth } from "../../../../../context/AuthContext/AuthContext";
 import { useStaffInfo, useFetchStaffPaginated } from "../../../../../api_call";
+import { FaUser } from "react-icons/fa";
 import "./Staff.css";
 
 const Staff = () => {
@@ -25,11 +27,15 @@ const Staff = () => {
 
   const [showAddStaffMenu, setShowAddStaffMenu] = useState(false);
   const [refreshTable, setRefreshTable] = useState(0); // Trigger to refresh table
+  // "active" | "inactive" switch shown in the header
+  const [statusFilter, setStatusFilter] = useState("active");
+  const [statusCounts, setStatusCounts] = useState({ active: null, inactive: null });
 
   // Function to fetch staff from backend (server-side pagination)
   const fetchStaffData = useCallback(
     async (params) => {
-      const result = await getStaffPaginated(schoolId, params);
+      const result = await getStaffPaginated(schoolId, { ...params, status: statusFilter });
+      if (result?.counts) setStatusCounts(result.counts);
 
       if (result.success && result.data) {
         // Data is already in the correct format from backend
@@ -42,7 +48,7 @@ const Staff = () => {
 
       return result;
     },
-    [schoolId, getStaffPaginated]
+    [schoolId, getStaffPaginated, statusFilter]
   );
 
   const columns = [
@@ -61,12 +67,12 @@ const Staff = () => {
               <img src={v} alt={row.full_name} className="stf-avatar"
                 onError={(e) => { e.target.style.display = "none"; e.target.nextSibling.style.display = "flex"; }} />
               <div className="stf-avatar-fallback" style={{ display: "none" }}>
-                {row.full_name.split(" ").map(n => n[0]).join("").substring(0, 2)}
+                <FaUser />
               </div>
             </>
           ) : (
             <div className="stf-avatar-fallback">
-              {row.full_name?.split(" ").map(n => n[0]).join("").substring(0, 2) || "?"}
+              <FaUser />
             </div>
           )}
         </div>
@@ -186,12 +192,23 @@ const Staff = () => {
   return (
     <div>
       <InnerTabCon>
-        <div className="stf-header">
-          <h2>Staff</h2>
-          <p>All non-teaching staff including administrative, support, and technical personnel</p>
+        <div className="stf-header dir-header">
+          <div className="dir-header-text">
+            <h2>Staff</h2>
+            <p>All non-teaching staff including administrative, support, and technical personnel</p>
+          </div>
+          <StatusFilterSwitch
+            value={statusFilter}
+            onChange={setStatusFilter}
+            counts={statusCounts}
+            activeLabel="Active Staff"
+            inactiveLabel="Inactive Staff"
+            inactiveTitle="Staff members who are no longer active"
+            ariaLabel="Staff status filter"
+          />
         </div>
         <ServerSmartTable
-          key={refreshTable}
+          key={`${refreshTable}-${statusFilter}`}
           columns={columns}
           fetchData={fetchStaffData}
           onRowClick={handleClick}

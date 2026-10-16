@@ -18,6 +18,7 @@ const Footer = () => (
 
       <div className="site-footer__col">
         <h4>Product</h4>
+        <Link to="/features">Features</Link>
         <Link to="/pricing">Pricing</Link>
         <Link to="/docs">Documentation</Link>
       </div>

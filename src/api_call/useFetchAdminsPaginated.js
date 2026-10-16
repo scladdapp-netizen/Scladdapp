@@ -16,6 +16,7 @@ const useFetchAdminsPaginated = () => {
         searchField = "",
         sortBy = "created_at",
         sortOrder = "desc",
+        status = "all",
       } = params;
 
       const queryParams = new URLSearchParams({
@@ -25,6 +26,7 @@ const useFetchAdminsPaginated = () => {
         searchField: searchField,
         sortBy: sortBy,
         sortOrder: sortOrder,
+        status: status,
       });
 
       const response = await fetch(

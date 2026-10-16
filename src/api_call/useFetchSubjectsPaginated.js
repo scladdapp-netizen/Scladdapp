@@ -23,6 +23,7 @@ const useFetchSubjectsPaginated = () => {
       if (params.search) queryParams.append("search", params.search);
       if (params.sortBy) queryParams.append("sortBy", params.sortBy);
       if (params.sortOrder) queryParams.append("sortOrder", params.sortOrder);
+      if (params.status) queryParams.append("status", params.status);
 
       const url = `${API_BASE_URL}/subject/school/${schoolId}/paginated?${queryParams.toString()}`;
       console.log("Fetching from URL:", url);

@@ -2,10 +2,12 @@ import React, { useState, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import ServerSmartTable from "../../../../../components/ServerSmartTable/ServerSmartTable";
 import InnerTabCon from "../../../../../components/InnerTabCon/InnerTabCon";
+import StatusFilterSwitch from "../../../../../components/StatusFilterSwitch/StatusFilterSwitch";
 import PromoteStaffPanel from "./PromoteStaffPanel";
 import { useNotification } from "../../../../../context/NotificationProvider/NotificationProvider";
 import { useAdmin } from "../../../../../api_call/useAdmin";
 import useFetchAdminsPaginated from "../../../../../api_call/useFetchAdminsPaginated";
+import { FaUser } from "react-icons/fa";
 import "./Admins.css";
 
 const Admins = () => {
@@ -17,11 +19,15 @@ const Admins = () => {
 
   const [showPromoteStaffMenu, setShowPromoteStaffMenu] = useState(false);
   const [refreshTable, setRefreshTable] = useState(0); // Trigger to refresh table
+  // "active" | "inactive" switch shown in the header
+  const [statusFilter, setStatusFilter] = useState("active");
+  const [statusCounts, setStatusCounts] = useState({ active: null, inactive: null });
 
   // Function to fetch admins from backend (server-side pagination)
   const fetchAdminsData = useCallback(
     async (params) => {
-      const result = await getAdminsPaginated(schoolId, params);
+      const result = await getAdminsPaginated(schoolId, { ...params, status: statusFilter });
+      if (result?.counts) setStatusCounts(result.counts);
 
       if (result.success && result.data) {
         // Data is already in the correct format from backend
@@ -34,7 +40,7 @@ const Admins = () => {
 
       return result;
     },
-    [schoolId, getAdminsPaginated]
+    [schoolId, getAdminsPaginated, statusFilter]
   );
 
   const getRoleBadgeClass = (role) => {
@@ -68,12 +74,12 @@ const Admins = () => {
                 <img src={v} alt={name} className="adm-avatar"
                   onError={(e) => { e.target.style.display = "none"; e.target.nextSibling.style.display = "flex"; }} />
                 <div className="adm-avatar-fallback" style={{ display: "none" }}>
-                  {name.split(" ").map(n => n[0]).join("").substring(0, 2)}
+                  <FaUser />
                 </div>
               </>
             ) : (
               <div className="adm-avatar-fallback">
-                {name.split(" ").map(n => n[0]).join("").substring(0, 2)}
+                <FaUser />
               </div>
             )}
           </div>
@@ -182,12 +188,23 @@ const Admins = () => {
   return (
     <div>
       <InnerTabCon>
-        <div className="adm-header">
-          <h2>Administrators</h2>
-          <p>System administrators with elevated privileges and access controls</p>
+        <div className="adm-header dir-header">
+          <div className="dir-header-text">
+            <h2>Administrators</h2>
+            <p>System administrators with elevated privileges and access controls</p>
+          </div>
+          <StatusFilterSwitch
+            value={statusFilter}
+            onChange={setStatusFilter}
+            counts={statusCounts}
+            activeLabel="Active Admins"
+            inactiveLabel="Inactive Admins"
+            inactiveTitle="Administrators whose access has been deactivated"
+            ariaLabel="Admins status filter"
+          />
         </div>
         <ServerSmartTable
-          key={refreshTable}
+          key={`${refreshTable}-${statusFilter}`}
           columns={columns}
           fetchData={fetchAdminsData}
           onRowClick={handleClick}

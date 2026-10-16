@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 import "./AdminSubseasionStudents.css";
 import { useNavigate, useParams } from "react-router-dom";
 import SmartTable from "../../../../components/SmartTable/SmartTable";
-import { FaArrowRight } from "react-icons/fa";
+import { FaArrowRight, FaUser } from "react-icons/fa";
 
 const studentData = [
   {
@@ -40,7 +40,17 @@ const columns = [
           <img src={v} style={{ width: 28, height: 28, borderRadius: 999 }} />
         </div>
       ) : (
-        ""
+        <div style={{ display: "flex", justifyContent: "center" }}>
+          <div
+            style={{
+              width: 28, height: 28, borderRadius: "50%",
+              background: "#111", color: "#fff",
+              display: "flex", alignItems: "center", justifyContent: "center",
+            }}
+          >
+            <FaUser size={13} />
+          </div>
+        </div>
       ),
   },
   {

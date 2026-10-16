@@ -3,6 +3,15 @@ import { createPortal } from "react-dom";
 import { useNavigate, useParams } from "react-router-dom";
 import { useNotification } from "../../../../context/NotificationProvider/NotificationProvider";
 import { TUTORIAL_PAGE_WEBSITE_BRIEF, tutorialThumb, useTutorialVideos } from "../../../../api_call/useTutorialVideos";
+import {
+  clearDeviceStyles,
+  forkDeviceStyles,
+  getDeviceStyle,
+  getInheritedStyle,
+  hasDeviceStyles,
+  kebab,
+  setDeviceStyle,
+} from "./deviceStyles";
 import "./WebsiteBriefPage.css";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:1234";
@@ -319,14 +328,29 @@ function nearest(value, options) {
   return options.reduce((best, item) => (Math.abs(item - number) < Math.abs(best - number) ? item : best));
 }
 
-function readSelection(el) {
-  const cs = el.ownerDocument.defaultView.getComputedStyle(el);
+const pxNumber = (value) => {
+  const number = parseFloat(value);
+  return Number.isFinite(number) ? number : 0;
+};
+const pxText = (value) => `${Math.round(pxNumber(value) * 10) / 10}px`;
+
+function readSelection(el, device = "desktop") {
+  const doc = el.ownerDocument;
+  const cs = doc.defaultView.getComputedStyle(el);
+  // What the editor itself set for this screen (or inherited from a bigger one), else what is on the element.
+  const stored = (prop) => getDeviceStyle(doc, el, device, prop) || el.style.getPropertyValue(kebab(prop));
+  const hidden = cs.display === "none";
+  const display = hidden ? "" : /flex/.test(cs.display) ? "flex" : /grid/.test(cs.display) ? "grid" : cs.display === "block" ? "block" : "";
+  const columns = display === "grid" ? String(cs.gridTemplateColumns || "").split(" ").filter(Boolean).length : 0;
+  const marginLeftAuto = stored("marginLeft") === "auto";
+  const marginRightAuto = stored("marginRight") === "auto";
   const kind = el.tagName === "IMG" ? "image" : TEXT_TAGS.has(el.tagName) ? "text" : "box";
   const fontSize = `${Math.round(parseFloat(cs.fontSize) || 16)}px`;
   const family = FONT_OPTIONS.find(([stack, name]) => cs.fontFamily.toLowerCase().includes(name.toLowerCase()));
+  const lineHeightStops = [1, 1.15, 1.3, 1.5, 1.8, 2];
   const lineHeight = cs.lineHeight === "normal"
     ? "1.5"
-    : String(nearest(String(cs.lineHeight).includes("px") ? parseFloat(cs.lineHeight) / (parseFloat(cs.fontSize) || 16) : cs.lineHeight, [1, 1.15, 1.3, 1.5, 1.6, 1.8, 2]));
+    : String(nearest(String(cs.lineHeight).includes("px") ? parseFloat(cs.lineHeight) / (parseFloat(cs.fontSize) || 16) : cs.lineHeight, lineHeightStops));
   const weight = String(nearest(cs.fontWeight, [400, 500, 600, 700]));
   const decoration = ["underline", "overline", "line-through"].find((item) => cs.textDecorationLine?.includes(item) || cs.textDecoration?.includes(item)) || "none";
   const shadow = !cs.textShadow || cs.textShadow === "none"
@@ -341,7 +365,7 @@ function readSelection(el) {
     fontWeight: weight,
     color: toHex(cs.color),
     lineHeight,
-    letterSpacing: cs.letterSpacing === "normal" ? "0px" : `${nearest(cs.letterSpacing, [0, 0.5, 1, 2, 4])}px`,
+    letterSpacing: cs.letterSpacing === "normal" ? "0px" : pxText(cs.letterSpacing),
     textAlign: ["left", "center", "right", "justify"].includes(cs.textAlign) ? cs.textAlign : "left",
     textDecoration: decoration,
     textTransform: ["uppercase", "lowercase", "capitalize"].includes(cs.textTransform) ? cs.textTransform : "none",
@@ -351,24 +375,33 @@ function readSelection(el) {
     whiteSpace: cs.whiteSpace === "nowrap" ? "nowrap" : "normal",
     textOverflow: cs.textOverflow === "ellipsis" ? "ellipsis" : "clip",
     direction: cs.direction === "rtl" ? "rtl" : "ltr",
-    display: cs.display || "block",
+    display,
+    visibility: hidden ? "hide" : "show",
     flexDirection: cs.flexDirection || "row",
-    width: el.style.getPropertyValue("width") || "auto",
-    height: el.style.getPropertyValue("height") || "auto",
+    gridColumns: String(columns || 1),
+    width: stored("width") || "auto",
+    height: stored("height") || "auto",
     minWidth: cs.minWidth === "0px" ? "" : cs.minWidth,
     maxWidth: cs.maxWidth === "none" ? "" : cs.maxWidth,
     minHeight: cs.minHeight === "0px" ? "" : cs.minHeight,
     maxHeight: cs.maxHeight === "none" ? "" : cs.maxHeight,
-    margin: cs.margin || "",
-    padding: cs.padding || "",
-    gap: cs.gap === "normal" ? "" : cs.gap,
-    alignItems: cs.alignItems || "stretch",
-    justifyContent: cs.justifyContent || "flex-start",
+    paddingTop: pxText(cs.paddingTop),
+    paddingRight: pxText(cs.paddingRight),
+    paddingBottom: pxText(cs.paddingBottom),
+    paddingLeft: pxText(cs.paddingLeft),
+    marginTop: pxText(cs.marginTop),
+    marginRight: marginRightAuto ? "auto" : pxText(cs.marginRight),
+    marginBottom: pxText(cs.marginBottom),
+    marginLeft: marginLeftAuto ? "auto" : pxText(cs.marginLeft),
+    gap: pxText(Math.max(pxNumber(cs.columnGap), pxNumber(cs.rowGap))),
+    alignItems: ({ normal: "stretch", start: "flex-start", end: "flex-end", "self-start": "flex-start", "self-end": "flex-end" })[cs.alignItems] || cs.alignItems || "stretch",
+    justifyContent: ({ normal: "flex-start", start: "flex-start", left: "flex-start", end: "flex-end", right: "flex-end" })[cs.justifyContent] || cs.justifyContent || "flex-start",
     flexWrap: cs.flexWrap || "nowrap",
+    blockAlign: marginLeftAuto && marginRightAuto ? "center" : marginLeftAuto ? "right" : "left",
     backgroundColor: toHex(cs.backgroundColor),
     backgroundImage: /url\(/i.test(cs.backgroundImage) ? "image" : "",
     border: cs.border && cs.borderStyle !== "none" ? `${cs.borderWidth} ${cs.borderStyle} ${toHex(cs.borderColor)}` : "",
-    borderRadius: cs.borderRadius === "0px" ? "" : cs.borderRadius,
+    borderRadius: String(cs.borderTopLeftRadius).includes("%") ? "999px" : pxText(cs.borderTopLeftRadius),
     position: cs.position || "static",
     top: cs.top === "auto" ? "" : cs.top,
     right: cs.right === "auto" ? "" : cs.right,
@@ -380,7 +413,7 @@ function readSelection(el) {
     objectFit: cs.objectFit || "cover",
     objectPosition: (cs.objectPosition || "center").split(" ")[0] || "center",
     aspectRatio: cs.aspectRatio === "auto" ? "" : cs.aspectRatio,
-    imageAlign: "left",
+    imageAlign: marginLeftAuto && marginRightAuto ? "center" : marginLeftAuto ? "right" : "left",
     alt: el.getAttribute("alt") || "",
     src: el.getAttribute("src") ? "image" : "",
   };
@@ -435,6 +468,8 @@ function FieldIcon({ name }) {
     picture: "M4 6h16v12H4zM8 14l2-2 2 2 3-3 2 2",
     note: "M7 5h8l3 3v11H7zM15 5v3h3",
     shape: "M6 16l6-9 6 9H6z",
+    columns: "M4 5h4v14H4zM10 5h4v14h-4zM16 5h4v14h-4z",
+    eye: "M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12zM12 9.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5z",
   };
   return (
     <svg className="wbp-field-icon" viewBox="0 0 24 24" aria-hidden="true">
@@ -443,19 +478,40 @@ function FieldIcon({ name }) {
   );
 }
 
-function optionList(field, value) {
-  const options = field.options || [];
-  const known = options.some((item) => (Array.isArray(item) ? item[0] : item) === value);
-  if (known || value === "" || value == null) return options;
-  return [[value, "Custom"], ...options];
+function optionList(field) {
+  return field.options || [];
 }
+
+const isFlex = (styles) => styles.display === "flex";
+const isFlexOrGrid = (styles) => styles.display === "flex" || styles.display === "grid";
+const SIDES = [["Top", "Top"], ["Right", "Right"], ["Bottom", "Bottom"], ["Left", "Left"]];
 
 function StyleFields({ fields, styles, onChange, onPickImage }) {
   let lastGroup = "";
   const main = [];
   const more = [];
   fields.forEach((field) => (field.more ? more : main).push(field));
+  const chipButtons = (field, value, list) => (
+    <div className={`wbp-chips${field.wide ? " is-wide" : ""}`}>
+      {list.map((item) => {
+        const option = Array.isArray(item) ? item[0] : item;
+        const name = Array.isArray(item) ? item[1] : item;
+        return (
+          <button
+            key={option || "empty"}
+            type="button"
+            className={String(option) === String(value) ? "is-on" : ""}
+            style={field.preview === "font" ? { fontFamily: option } : undefined}
+            onClick={() => onChange(field.key, option)}
+          >
+            {name}
+          </button>
+        );
+      })}
+    </div>
+  );
   const renderField = (field) => {
+    if (field.when && !field.when(styles || {})) return null;
     const value = styles?.[field.key] ?? "";
     const showGroup = field.group && field.group !== lastGroup;
     if (field.group) lastGroup = field.group;
@@ -469,30 +525,31 @@ function StyleFields({ fields, styles, onChange, onPickImage }) {
     if (field.type === "image") {
       control = <button type="button" className="wbp-pick" onClick={onPickImage}>{value ? "Change picture" : "Add a picture"}</button>;
     } else if (field.type === "chips" || field.type === "select") {
+      control = chipButtons(field, value, optionList(field));
+    } else if (field.type === "dropdown") {
       control = (
-        <div className={`wbp-chips${field.wide ? " is-wide" : ""}`}>
-          {optionList(field, value).map((item) => {
-            const option = Array.isArray(item) ? item[0] : item;
-            const name = Array.isArray(item) ? item[1] : item;
-            return (
-              <button
-                key={option}
-                type="button"
-                className={option === value ? "is-on" : ""}
-                style={field.preview === "font" ? { fontFamily: option } : undefined}
-                onClick={() => onChange(field.key, option)}
-              >
-                {name}
-              </button>
-            );
-          })}
-        </div>
+        <select
+          className="wbp-select"
+          aria-label={field.label}
+          value={value}
+          style={field.preview === "font" ? { fontFamily: value } : undefined}
+          onChange={(event) => onChange(field.key, event.target.value)}
+        >
+          {optionList(field).map(([option, name]) => (
+            <option key={option} value={option} style={field.preview === "font" ? { fontFamily: option } : undefined}>
+              {name}
+            </option>
+          ))}
+        </select>
       );
     } else if (field.type === "color") {
       control = (
         <span className="wbp-color">
           <input type="color" aria-label={field.label} value={/^#[0-9a-f]{6}$/i.test(value) ? value : "#111111"} onChange={(event) => onChange(field.key, event.target.value)} />
           <em>Tap the circle</em>
+          {field.clear && (
+            <button type="button" className="wbp-clear" onClick={() => onChange(field.key, field.clear)}>None</button>
+          )}
         </span>
       );
     } else if (field.type === "words") {
@@ -505,10 +562,71 @@ function StyleFields({ fields, styles, onChange, onPickImage }) {
           onChange={(event) => onChange(field.key, event.target.value)}
         />
       );
+    } else if (field.type === "px") {
+      const min = field.min ?? 0;
+      const max = field.max ?? 100;
+      const number = pxNumber(value);
+      const setNumber = (next) => {
+        if (next === "" || !Number.isFinite(Number(next))) return;
+        onChange(field.key, `${Number(next)}px`);
+      };
+      control = (
+        <div className="wbp-measure">
+          <span className="wbp-fade">
+            <input
+              type="range"
+              min={min}
+              max={max}
+              step={field.step ?? 1}
+              aria-label={field.label}
+              value={Math.min(Math.max(number, min), max)}
+              onChange={(event) => setNumber(event.target.value)}
+            />
+            <input
+              className="wbp-words"
+              type="number"
+              min={min}
+              step={field.step ?? 1}
+              value={Math.round(number * 10) / 10}
+              onChange={(event) => setNumber(event.target.value)}
+            />
+            <i>px</i>
+          </span>
+          {(field.presets || field.extras) && chipButtons({ ...field, wide: false }, value, field.presets || field.extras)}
+        </div>
+      );
+    } else if (field.type === "sides") {
+      control = (
+        <div className="wbp-sides">
+          {SIDES.map(([suffix, name]) => {
+            const sideKey = `${field.key}${suffix}`;
+            const raw = styles?.[sideKey];
+            const isAuto = raw === "auto";
+            return (
+              <span key={sideKey} className="wbp-side">
+                <em>{name}</em>
+                <input
+                  type="number"
+                  min={field.min ?? 0}
+                  max={500}
+                  aria-label={`${field.label} ${name.toLowerCase()}`}
+                  value={isAuto ? "" : Math.round(pxNumber(raw) * 10) / 10}
+                  placeholder={isAuto ? "auto" : "0"}
+                  onChange={(event) => {
+                    if (event.target.value === "" || !Number.isFinite(Number(event.target.value))) return;
+                    onChange(sideKey, `${Number(event.target.value)}px`);
+                  }}
+                />
+              </span>
+            );
+          })}
+        </div>
+      );
     } else if (field.type === "measure") {
-      const parsed = String(value || "").trim().match(/^(\d*\.?\d+)(%|vh|vw)$/i);
+      const parsed = String(value || "").trim().match(/^(-?\d*\.?\d+)(%|vh|vw|px)$/i);
       const number = parsed ? parsed[1] : "";
       const unit = parsed ? parsed[2].toLowerCase() : "";
+      const max = unit === "px" ? (field.key === "height" ? 1200 : 1600) : 100;
       const setMeasure = (nextNumber, nextUnit) => {
         const amount = String(nextNumber ?? "").trim();
         const chosen = nextUnit || unit || "%";
@@ -520,25 +638,25 @@ function StyleFields({ fields, styles, onChange, onPickImage }) {
             <input
               type="range"
               min="0"
-              max="100"
+              max={max}
               step="1"
               aria-label={field.label}
-              value={number || 0}
+              value={Math.min(Number(number) || 0, max)}
               onChange={(event) => setMeasure(event.target.value, unit || "%")}
             />
             <input
               className="wbp-words"
               type="number"
               min="0"
-              max="100"
               value={number}
-              placeholder="100"
+              placeholder="auto"
               onChange={(event) => setMeasure(event.target.value, unit || "%")}
             />
+            <i>{unit || ""}</i>
           </span>
           <div className="wbp-chips">
-            {[["%", "% of the parent"], ["vw", "Screen width"], ["vh", "Screen height"]].map(([option, name]) => (
-              <button key={option} type="button" className={unit === option ? "is-on" : ""} onClick={() => setMeasure(number || "100", option)}>
+            {[["%", "% of the parent"], ["px", "Pixels"], ["vw", "Screen width"], ["vh", "Screen height"]].map(([option, name]) => (
+              <button key={option} type="button" className={unit === option ? "is-on" : ""} onClick={() => setMeasure(number || (option === "px" ? "300" : "100"), option)}>
                 {name}
               </button>
             ))}
@@ -555,27 +673,16 @@ function StyleFields({ fields, styles, onChange, onPickImage }) {
         </span>
       );
     } else {
-      control = (
-        <div className="wbp-chips">
-          {optionList(field, value).map((item) => {
-            const option = Array.isArray(item) ? item[0] : item;
-            const name = Array.isArray(item) ? item[1] : item;
-            return (
-              <button key={option || "empty"} type="button" className={option === value ? "is-on" : ""} onClick={() => onChange(field.key, option)}>
-                {name}
-              </button>
-            );
-          })}
-        </div>
-      );
+      control = chipButtons(field, value, optionList(field));
     }
+    const Wrapper = field.type === "sides" || field.type === "px" || field.type === "measure" ? "div" : "label";
     return (
       <div key={field.key} className="wbp-field">
         {showGroup && <p className="wbp-style-group">{field.group}</p>}
-        <label>
+        <Wrapper className="wbp-field-row">
           {title}
           {control}
-        </label>
+        </Wrapper>
       </div>
     );
   };
@@ -592,56 +699,71 @@ function StyleFields({ fields, styles, onChange, onPickImage }) {
   );
 }
 
+const SCREENS = [["desktop", "Desktop"], ["tablet", "Tablet"], ["mobile", "Mobile"]];
+const SCREEN_HINT = {
+  desktop: "Changes here apply to every screen, unless you set something different for Tablet or Mobile.",
+  tablet: "Changes here are only for tablets and phones. Desktop stays the same.",
+  mobile: "Changes here are only for phones. Desktop and tablet stay the same.",
+};
+
+const SHOW_FIELD = { group: "Show", key: "visibility", icon: "eye", label: "On this screen", type: "chips", options: [["show", "Show"], ["hide", "Hide"]] };
+
 const TEXT_FIELDS = [
-  { pane: "style", group: "Look", key: "fontFamily", icon: "font", label: "Font", type: "chips", preview: "font", wide: true, options: FONT_OPTIONS },
-  { pane: "style", key: "fontSize", icon: "size", label: "Size", type: "chips", options: [["14px", "Small"], ["16px", "Normal"], ["20px", "Large"], ["28px", "Big"], ["40px", "Huge"], ["64px", "Poster"]] },
-  { pane: "style", key: "fontWeight", icon: "weight", label: "Thickness", type: "chips", options: [["400", "Regular"], ["500", "Medium"], ["600", "Strong"], ["700", "Bold"]] },
-  { pane: "style", key: "color", icon: "color", label: "Text color", type: "color" },
-  { pane: "style", key: "fontStyle", icon: "italic", label: "Slant", type: "chips", options: [["normal", "Upright"], ["italic", "Italic"]] },
-  { pane: "layout", group: "Spacing", key: "lineHeight", icon: "lines", label: "Space between lines", type: "chips", options: [["1.15", "Tight"], ["1.5", "Comfortable"], ["1.8", "Roomy"], ["2", "Loose"]] },
-  { pane: "layout", key: "letterSpacing", icon: "letters", label: "Space between letters", type: "chips", options: [["0px", "Normal"], ["1px", "Open"], ["2px", "Wide"], ["4px", "Very wide"]] },
-  { pane: "layout", key: "textAlign", icon: "align", label: "Line up", type: "chips", options: [["left", "Left"], ["center", "Center"], ["right", "Right"], ["justify", "Even"]] },
-  { pane: "style", group: "Style", key: "textDecoration", icon: "underline", label: "Line on the words", type: "chips", options: [["none", "None"], ["underline", "Underline"], ["line-through", "Strike"]] },
-  { pane: "style", key: "textTransform", icon: "case", label: "Capital letters", type: "chips", options: [["none", "As typed"], ["uppercase", "CAPITALS"], ["lowercase", "lowercase"], ["capitalize", "Title Case"]] },
-  { pane: "style", key: "textShadow", icon: "shadow", label: "Shadow", type: "chips", options: [["none", "None"], ["0 1px 2px rgba(0,0,0,0.25)", "Soft"], ["0 2px 8px rgba(0,0,0,0.35)", "Strong"]] },
-  { pane: "style", key: "opacity", icon: "fade", label: "See-through", type: "range" },
-  { pane: "layout", key: "whiteSpace", icon: "wrap", label: "Long lines", type: "chips", options: [["normal", "Wrap"], ["nowrap", "One line"]] },
-  { pane: "style", key: "textOverflow", icon: "cut", label: "If it does not fit", type: "chips", options: [["clip", "Cut off"], ["ellipsis", "End with ..."]] },
-  { pane: "layout", key: "direction", icon: "read", label: "Reading direction", type: "chips", more: true, options: [["ltr", "Left to right"], ["rtl", "Right to left"]] },
+  { group: "Look", key: "fontFamily", icon: "font", label: "Font", type: "dropdown", preview: "font", options: FONT_OPTIONS },
+  { key: "fontSize", icon: "size", label: "Size", type: "px", min: 8, max: 120, presets: [["14px", "Small"], ["16px", "Normal"], ["20px", "Large"], ["28px", "Big"], ["40px", "Huge"], ["64px", "Poster"]] },
+  { key: "fontWeight", icon: "weight", label: "Thickness", type: "chips", options: [["400", "Regular"], ["500", "Medium"], ["600", "Strong"], ["700", "Bold"]] },
+  { key: "color", icon: "color", label: "Text color", type: "color" },
+  { key: "fontStyle", icon: "italic", label: "Slant", type: "chips", options: [["normal", "Upright"], ["italic", "Italic"]] },
+  { group: "Spacing", key: "lineHeight", icon: "lines", label: "Space between lines", type: "chips", options: [["1", "Tight"], ["1.15", "Snug"], ["1.3", "Even"], ["1.5", "Comfortable"], ["1.8", "Roomy"], ["2", "Loose"]] },
+  { key: "letterSpacing", icon: "letters", label: "Space between letters", type: "px", min: 0, max: 20, step: 0.5 },
+  { key: "textAlign", icon: "align", label: "Line up", type: "chips", options: [["left", "Left"], ["center", "Center"], ["right", "Right"], ["justify", "Even"]] },
+  { group: "Style", key: "textDecoration", icon: "underline", label: "Line on the words", type: "chips", options: [["none", "None"], ["underline", "Underline"], ["line-through", "Strike"]] },
+  { key: "textTransform", icon: "case", label: "Capital letters", type: "chips", options: [["none", "As typed"], ["uppercase", "CAPITALS"], ["lowercase", "lowercase"], ["capitalize", "Title Case"]] },
+  { key: "textShadow", icon: "shadow", label: "Shadow", type: "chips", options: [["none", "None"], ["0 1px 2px rgba(0,0,0,0.25)", "Soft"], ["0 2px 8px rgba(0,0,0,0.35)", "Strong"]] },
+  { key: "opacity", icon: "fade", label: "See-through", type: "range" },
+  { key: "whiteSpace", icon: "wrap", label: "Long lines", type: "chips", options: [["normal", "Wrap"], ["nowrap", "One line"]] },
+  { key: "textOverflow", icon: "cut", label: "If it does not fit", type: "chips", when: (styles) => styles.whiteSpace === "nowrap", options: [["clip", "Cut off"], ["ellipsis", "End with ..."]] },
+  SHOW_FIELD,
+  { key: "margin", icon: "outside", label: "Space outside", type: "sides", min: -200, more: true },
+  { key: "direction", icon: "read", label: "Reading direction", type: "chips", more: true, options: [["ltr", "Left to right"], ["rtl", "Right to left"]] },
 ];
 
 const BOX_FIELDS = [
-  { pane: "layout", group: "Arrange", key: "display", icon: "layout", label: "How items sit", type: "chips", wide: true, options: [["block", "Stacked"], ["flex", "Side by side"], ["grid", "Grid"], ["none", "Hidden"]] },
-  { pane: "layout", key: "flexDirection", icon: "flow", label: "Which way", type: "chips", options: [["row", "Across"], ["column", "Down"]] },
-  { pane: "layout", key: "alignItems", icon: "lineup", label: "Line them up", type: "chips", options: [["flex-start", "Start"], ["center", "Middle"], ["flex-end", "End"], ["stretch", "Stretch"]] },
-  { pane: "layout", key: "justifyContent", icon: "spread", label: "Spread them", type: "chips", options: [["flex-start", "Start"], ["center", "Middle"], ["space-between", "Apart"], ["space-evenly", "Even"]] },
-  { pane: "layout", key: "flexWrap", icon: "wrap", label: "If they do not fit", type: "chips", options: [["nowrap", "One line"], ["wrap", "Next line"]] },
-  { pane: "layout", group: "Size", key: "width", icon: "width", label: "Width", type: "measure" },
-  { pane: "layout", key: "height", icon: "height", label: "Height", type: "measure" },
-  { pane: "layout", group: "Space", key: "padding", icon: "inside", label: "Space inside", type: "chips", options: [["0px", "None"], ["12px", "Tight"], ["24px", "Comfy"], ["40px", "Roomy"]] },
-  { pane: "layout", key: "margin", icon: "outside", label: "Space outside", type: "chips", options: [["0px", "None"], ["12px", "Tight"], ["24px", "Comfy"], ["40px", "Roomy"]] },
-  { pane: "layout", key: "gap", icon: "gap", label: "Space between", type: "chips", options: [["0px", "None"], ["8px", "Tight"], ["16px", "Comfy"], ["28px", "Roomy"]] },
-  { pane: "style", group: "Look", key: "backgroundColor", icon: "color", label: "Fill color", type: "color" },
-  { pane: "style", key: "backgroundImage", icon: "photo", label: "Picture behind it", type: "image" },
-  { pane: "style", key: "borderRadius", icon: "round", label: "Corners", type: "chips", options: [["0px", "Square"], ["12px", "Soft"], ["24px", "Round"], ["999px", "Pill"]] },
-  { pane: "style", key: "border", icon: "border", label: "Outline", type: "chips", options: [["none", "None"], ["1px solid #111111", "Thin"], ["3px solid #111111", "Bold"]] },
-  { pane: "style", key: "boxShadow", icon: "shadow", label: "Shadow", type: "chips", options: [["none", "None"], ["0 8px 24px rgba(0,0,0,0.18)", "Soft"]] },
-  { pane: "style", key: "opacity", icon: "fade", label: "See-through", type: "range" },
-  { pane: "layout", key: "minWidth", icon: "width", label: "Smallest width", type: "chips", more: true, options: [["", "None"], ["160px", "Small"], ["320px", "Medium"]] },
-  { pane: "layout", key: "maxWidth", icon: "width", label: "Widest", type: "chips", more: true, options: [["", "None"], ["640px", "Medium"], ["960px", "Wide"]] },
-  { pane: "layout", key: "position", icon: "pin", label: "Where it sits", type: "chips", more: true, wide: true, options: [["static", "In the flow"], ["relative", "Nudge"], ["absolute", "Float"], ["sticky", "Stick"]] },
-  { pane: "layout", key: "overflow", icon: "spill", label: "If content spills", type: "chips", more: true, options: [["visible", "Show"], ["hidden", "Hide"], ["auto", "Scroll"]] },
+  { group: "Arrange", key: "display", icon: "layout", label: "How items sit", type: "chips", wide: true, options: [["block", "Stacked"], ["flex", "Side by side"], ["grid", "Grid"]] },
+  { key: "flexDirection", icon: "flow", label: "Which way", type: "chips", when: isFlex, options: [["row", "Across"], ["column", "Down"]] },
+  { key: "flexWrap", icon: "wrap", label: "If they do not fit", type: "chips", when: isFlex, options: [["nowrap", "One line"], ["wrap", "Next line"]] },
+  { key: "gridColumns", icon: "columns", label: "Columns", type: "chips", when: (styles) => styles.display === "grid", options: [["1", "1"], ["2", "2"], ["3", "3"], ["4", "4"], ["5", "5"], ["6", "6"]] },
+  { key: "alignItems", icon: "lineup", label: "Line them up", type: "chips", when: isFlexOrGrid, options: [["flex-start", "Start"], ["center", "Middle"], ["flex-end", "End"], ["stretch", "Stretch"]] },
+  { key: "justifyContent", icon: "spread", label: "Spread them", type: "chips", when: isFlex, options: [["flex-start", "Start"], ["center", "Middle"], ["flex-end", "End"], ["space-between", "Apart"], ["space-evenly", "Even"]] },
+  { key: "gap", icon: "gap", label: "Space between", type: "px", min: 0, max: 120, when: isFlexOrGrid },
+  { group: "Size", key: "width", icon: "width", label: "Width", type: "measure" },
+  { key: "height", icon: "height", label: "Height", type: "measure" },
+  { key: "blockAlign", icon: "align", label: "Place the block", type: "chips", options: [["left", "Left"], ["center", "Center"], ["right", "Right"]] },
+  { group: "Space", key: "padding", icon: "inside", label: "Space inside", type: "sides", min: 0 },
+  { key: "margin", icon: "outside", label: "Space outside", type: "sides", min: -200 },
+  { group: "Look", key: "backgroundColor", icon: "color", label: "Fill color", type: "color", clear: "transparent" },
+  { key: "backgroundImage", icon: "photo", label: "Picture behind it", type: "image" },
+  { key: "borderRadius", icon: "round", label: "Corners", type: "px", min: 0, max: 80, extras: [["0px", "Square"], ["999px", "Pill"]] },
+  { key: "border", icon: "border", label: "Outline", type: "chips", options: [["none", "None"], ["1px solid #111111", "Thin"], ["3px solid #111111", "Bold"]] },
+  { key: "boxShadow", icon: "shadow", label: "Shadow", type: "chips", options: [["none", "None"], ["0 8px 24px rgba(0,0,0,0.18)", "Soft"]] },
+  { key: "opacity", icon: "fade", label: "See-through", type: "range" },
+  SHOW_FIELD,
+  { key: "minWidth", icon: "width", label: "Smallest width", type: "chips", more: true, options: [["", "None"], ["160px", "Small"], ["320px", "Medium"]] },
+  { key: "maxWidth", icon: "width", label: "Widest", type: "chips", more: true, options: [["", "None"], ["640px", "Medium"], ["960px", "Wide"]] },
+  { key: "position", icon: "pin", label: "Where it sits", type: "chips", more: true, wide: true, options: [["static", "In the flow"], ["relative", "Nudge"], ["absolute", "Float"], ["sticky", "Stick"]] },
+  { key: "overflow", icon: "spill", label: "If content spills", type: "chips", more: true, options: [["visible", "Show"], ["hidden", "Hide"], ["auto", "Scroll"]] },
 ];
 
 const IMAGE_FIELDS = [
-  { pane: "style", group: "Picture", key: "src", icon: "picture", label: "Picture", type: "image" },
-  { pane: "style", key: "alt", icon: "note", label: "What the picture shows", type: "words", placeholder: "Pupils in class" },
-  { pane: "layout", group: "Size", key: "width", icon: "width", label: "Width", type: "measure" },
-  { pane: "layout", key: "height", icon: "height", label: "Height", type: "measure" },
-  { pane: "style", group: "Fit", key: "objectFit", icon: "photo", label: "How it fills", type: "chips", wide: true, options: [["cover", "Fill and crop"], ["contain", "Show it all"], ["fill", "Stretch"]] },
-  { pane: "layout", key: "objectPosition", icon: "pin", label: "Keep this part", type: "chips", options: [["center", "Middle"], ["top", "Top"], ["bottom", "Bottom"], ["left", "Left"], ["right", "Right"]] },
-  { pane: "style", key: "aspectRatio", icon: "shape", label: "Shape", type: "chips", options: [["auto", "Free"], ["1 / 1", "Square"], ["4 / 3", "Photo"], ["16 / 9", "Wide"]] },
-  { pane: "layout", key: "imageAlign", icon: "align", label: "Place", type: "chips", options: [["left", "Left"], ["center", "Center"], ["right", "Right"]] },
+  { group: "Picture", key: "src", icon: "picture", label: "Picture", type: "image" },
+  { key: "alt", icon: "note", label: "What the picture shows", type: "words", placeholder: "Pupils in class" },
+  { group: "Size", key: "width", icon: "width", label: "Width", type: "measure" },
+  { key: "height", icon: "height", label: "Height", type: "measure" },
+  { group: "Fit", key: "objectFit", icon: "photo", label: "How it fills", type: "chips", wide: true, options: [["cover", "Fill and crop"], ["contain", "Show it all"], ["fill", "Stretch"]] },
+  { key: "objectPosition", icon: "pin", label: "Keep this part", type: "chips", options: [["center", "Middle"], ["top", "Top"], ["bottom", "Bottom"], ["left", "Left"], ["right", "Right"]] },
+  { key: "aspectRatio", icon: "shape", label: "Shape", type: "chips", options: [["auto", "Free"], ["1 / 1", "Square"], ["4 / 3", "Photo"], ["16 / 9", "Wide"]] },
+  { key: "imageAlign", icon: "align", label: "Place", type: "chips", options: [["left", "Left"], ["center", "Center"], ["right", "Right"]] },
+  SHOW_FIELD,
 ];
 
 function compressImageFile(file) {
@@ -764,6 +886,8 @@ const WebsiteBriefPage = ({ aiOnly = false }) => {
   const [pages, setPages] = useState([]);
   const [pageTab, setPageTab] = useState(0);
   const [previewDevice, setPreviewDevice] = useState("desktop");
+  const deviceRef = useRef("desktop");
+  deviceRef.current = previewDevice;
   const [logLines, setLogLines] = useState([]);
   const [loadingDraft, setLoadingDraft] = useState(false);
   const [publishing, setPublishing] = useState(false);
@@ -801,6 +925,9 @@ const WebsiteBriefPage = ({ aiOnly = false }) => {
   const applyPickRef = useRef(() => {});
   const pickedBarPosRef = useRef(() => {});
   const [pickedBar, setPickedBar] = useState(null);
+  const [popText, setPopText] = useState("");
+  const [popBusy, setPopBusy] = useState(false);
+  const popInputRef = useRef(null);
   const [editorScheme, setEditorScheme] = useState(null);
   pagesRef.current = pages;
 
@@ -1324,7 +1451,22 @@ const WebsiteBriefPage = ({ aiOnly = false }) => {
       if (top < frameRect.top + 8) top = frameRect.top + Math.max(8, rect.top + 8);
       let left = frameRect.left + rect.left + Math.max(0, (rect.width - width) / 2);
       left = Math.max(frameRect.left + 8, Math.min(left, frameRect.right - width - 8));
-      pickedBarPosRef.current({ top: Math.round(top), left: Math.round(left) });
+      // The AI box sits just under the selected item, or above its toolbar when there is no room below.
+      const popWidth = Math.min(400, window.innerWidth - 16);
+      const popHeight = 52;
+      const popLeft = Math.max(8, Math.min(frameRect.left + rect.left, window.innerWidth - popWidth - 8));
+      let popTop = frameRect.top + rect.bottom + 10;
+      if (popTop + popHeight > window.innerHeight - 8) {
+        const above = frameRect.top + rect.top - popHeight - 10 - (height + 8);
+        popTop = above >= 8 ? above : window.innerHeight - popHeight - 16;
+      }
+      pickedBarPosRef.current({
+        top: Math.round(top),
+        left: Math.round(left),
+        popTop: Math.round(popTop),
+        popLeft: Math.round(popLeft),
+        popWidth,
+      });
     };
     doc.documentElement._scladPlaceBar = placePickedBar;
     if (doc.documentElement._scladBarOn !== 1) {
@@ -1585,7 +1727,7 @@ const WebsiteBriefPage = ({ aiOnly = false }) => {
         if (aiOpenRef.current) insertAiChip(elementChipLabel(el), targetId);
         if (editOpenRef.current) {
           let picked = { kind: "box", leaf: el.children.length === 0, styles: {} };
-          try { picked = readSelection(el); } catch (_) {}
+          try { picked = readSelection(el, deviceRef.current); } catch (_) {}
           if (picked.kind === "image") imageTargetRef.current = el;
           setEditTab("style");
           refreshLayoutRef.current();
@@ -1650,7 +1792,7 @@ const WebsiteBriefPage = ({ aiOnly = false }) => {
       el.setAttribute("data-sclad-target", targetId);
     }
     let picked = { kind: "box", leaf: el.children.length === 0, styles: {} };
-    try { picked = readSelection(el); } catch (_) {}
+    try { picked = readSelection(el, deviceRef.current); } catch (_) {}
     if (picked.kind === "image") imageTargetRef.current = el;
     setSelectedEl({
       id: targetId,
@@ -1666,7 +1808,8 @@ const WebsiteBriefPage = ({ aiOnly = false }) => {
   pickedBarPosRef.current = (next) => {
     setPickedBar((prev) => {
       if (!next && !prev) return prev;
-      if (next && prev && prev.top === next.top && prev.left === next.left) return prev;
+      if (next && prev && prev.top === next.top && prev.left === next.left
+        && prev.popTop === next.popTop && prev.popLeft === next.popLeft && prev.popWidth === next.popWidth) return prev;
       return next;
     });
   };
@@ -1678,7 +1821,7 @@ const WebsiteBriefPage = ({ aiOnly = false }) => {
       return;
     }
     let picked = { kind: "box", leaf: el.children.length === 0, styles: {} };
-    try { picked = readSelection(el); } catch (_) {}
+    try { picked = readSelection(el, deviceRef.current); } catch (_) {}
     if (picked.kind === "image") imageTargetRef.current = el;
     setSelectedEl({
       id: el.getAttribute("data-sclad-target"),
@@ -1705,6 +1848,8 @@ const WebsiteBriefPage = ({ aiOnly = false }) => {
     const id = `t${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
     copy.setAttribute("data-sclad-target", id);
     copy.setAttribute("data-sclad-picked", "1");
+    // The copy gets its own screen rules, so changing one does not change the other.
+    forkDeviceStyles(doc, el, copy);
     el.parentNode.insertBefore(copy, el.nextSibling);
     applyPickRef.current(copy);
     commitFrame();
@@ -1734,29 +1879,68 @@ const WebsiteBriefPage = ({ aiOnly = false }) => {
     commitFrame();
   };
 
-  const paintStyle = (el, key, value) => {
-    const name = key.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`);
-    if (value === "" || value == null) el.style.removeProperty(name);
-    else el.style.setProperty(name, value, "important");
+  // Read the element again so the panel shows what it really looks like on this screen now.
+  const rereadSelected = (el) => {
+    let picked = null;
+    try { picked = readSelection(el, deviceRef.current); } catch (_) {}
+    if (!picked) return;
+    setSelectedEl((prev) => (prev ? { ...prev, ...picked } : prev));
+    el.ownerDocument.documentElement._scladPlaceBar?.();
+  };
+
+  // What one panel control writes, as [css property, value] pairs. A null value means "back to normal".
+  const styleChanges = (el, key, value, styles, device) => {
+    const doc = el.ownerDocument;
+    if (key === "imageAlign" || key === "blockAlign") {
+      return [
+        ...(el.tagName === "IMG" ? [["display", "block"]] : []),
+        ["marginLeft", value === "left" ? "0px" : "auto"],
+        ["marginRight", value === "right" ? "0px" : "auto"],
+      ];
+    }
+    if (key === "visibility") {
+      if (value === "hide") return [["display", "none"]];
+      // Showing again on a smaller screen undoes a bigger screen's "hide" without losing its layout.
+      return [["display", device !== "desktop" && getInheritedStyle(doc, el, device, "display") === "none" ? "block" : null]];
+    }
+    if (key === "display") {
+      const spaced = pxNumber(styles?.gap) === 0 && value !== "block" ? [["gap", "16px"]] : [];
+      if (value === "grid") {
+        const count = Number(styles?.gridColumns) > 1 ? Number(styles.gridColumns) : 2;
+        return [["display", "grid"], ["gridTemplateColumns", `repeat(${count}, minmax(0, 1fr))`], ...spaced];
+      }
+      return [["display", value], ...spaced];
+    }
+    if (key === "gridColumns") return [["gridTemplateColumns", `repeat(${Number(value) || 1}, minmax(0, 1fr))`]];
+    if (key === "textOverflow" && value === "ellipsis") return [["textOverflow", "ellipsis"], ["overflow", "hidden"], ["whiteSpace", "nowrap"]];
+    if (key === "width" || key === "height") return [[key, value === "auto" ? null : value]];
+    return [[key, value === "" ? null : value]];
   };
 
   const applySelectedStyle = (key, value) => {
     const el = selectedNode();
     if (!el) return;
-    if (key === "fontFamily") ensureWebFonts(el.ownerDocument);
-    if (key === "alt") el.setAttribute("alt", value);
-    else if (key === "imageAlign") {
-      paintStyle(el, "display", "block");
-      paintStyle(el, "marginLeft", value === "left" ? "0" : "auto");
-      paintStyle(el, "marginRight", value === "right" ? "0" : "auto");
+    const doc = el.ownerDocument;
+    if (key === "fontFamily") ensureWebFonts(doc);
+    if (key === "alt") {
+      el.setAttribute("alt", value);
+      setSelectedEl((prev) => (prev ? { ...prev, styles: { ...prev.styles, alt: value } } : prev));
     } else if (key !== "src" && key !== "backgroundImage") {
-      paintStyle(el, key, value);
-      if (key === "textOverflow" && value === "ellipsis") {
-        paintStyle(el, "overflow", "hidden");
-        paintStyle(el, "whiteSpace", "nowrap");
-      }
+      // Desktop changes apply everywhere; Tablet and Mobile changes only to those screens.
+      const device = deviceRef.current;
+      styleChanges(el, key, value, selectedEl?.styles, device).forEach(([prop, next]) => {
+        setDeviceStyle(doc, el, device, prop, next);
+      });
+      rereadSelected(el);
     }
-    setSelectedEl((prev) => (prev ? { ...prev, styles: { ...prev.styles, [key]: value } } : prev));
+    commitFrame();
+  };
+
+  const resetSelectedDevice = () => {
+    const el = selectedNode();
+    if (!el) return;
+    clearDeviceStyles(el.ownerDocument, el, deviceRef.current);
+    rereadSelected(el);
     commitFrame();
   };
 
@@ -1881,6 +2065,82 @@ const WebsiteBriefPage = ({ aiOnly = false }) => {
     }
   };
 
+  // Ask the AI to change the selected item. The server sends back only what it patched, and the
+  // page comes back with just that part different.
+  const sendPopEdit = async (event) => {
+    event?.preventDefault();
+    const prompt = popText.trim();
+    const targetId = selectedEl?.id;
+    if (popBusy || !prompt || !targetId) return;
+    const marked = readMarkedPage(frameRef.current);
+    if (!marked) return;
+    const markedHtml = `<!doctype html>\n${marked.outerHTML}`;
+    const latest = commitFrame() || pagesRef.current;
+    window.clearTimeout(saveTimerRef.current);
+    window.clearTimeout(historyTimerRef.current);
+    const current = latest[pageTab] || latest[0];
+    if (!current?.html) return;
+    pushHistory(current.html);
+    setPopBusy(true);
+    try {
+      const token = schoolToken();
+      const res = await fetch(`${API_BASE}/api/schools/${schoolId}/ai-website/patch-page`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
+          html: markedHtml,
+          prompt,
+          pageId: current.id || "home",
+          targetId,
+          target: { label: selectedEl.label, text: selectedEl.text },
+        }),
+      });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.message || "Could not edit the page");
+      if (data.chat) {
+        addNotification(data.message || "Nothing to change.", "success");
+        return;
+      }
+      const next = latest.map((page, index) => (
+        index === pageTab ? { ...page, html: data.html } : page
+      ));
+      ownEditRef.current = true;
+      pagesRef.current = next;
+      setPages(next);
+      setFrameHtml(data.html);
+      pushHistory(data.html);
+      setPopText("");
+      applyPickRef.current(null);
+      const steps = Array.isArray(data.changes) && data.changes.length ? ` (${data.changes.join(", ")})` : "";
+      addNotification(`${data.note || "Updated."}${steps}`, "success");
+    } catch (err) {
+      notifyError(err.message);
+      saveDraftPages(schoolId, latest).catch(() => {});
+    } finally {
+      setPopBusy(false);
+    }
+  };
+
+  // Switching screen changes the page width, so the panel must show how the item looks on that screen.
+  useEffect(() => {
+    if (!editOpen || !selectedEl?.id) return undefined;
+    const timer = window.setTimeout(() => {
+      const node = selectedNode();
+      if (node) rereadSelected(node);
+    }, 150);
+    return () => window.clearTimeout(timer);
+  }, [previewDevice]);
+
+  // A new selection starts a fresh request, and the box is ready to type in.
+  useEffect(() => {
+    if (!editOpen || !selectedEl?.id) return;
+    setPopText("");
+    popInputRef.current?.focus({ preventScroll: true });
+  }, [editOpen, selectedEl?.id]);
+
   const publishSite = async () => {
     const latest = commitFrame();
     const missing = (latest || []).reduce((sum, page) => sum + unsetImageCount(page.html), 0);
@@ -1930,6 +2190,8 @@ const WebsiteBriefPage = ({ aiOnly = false }) => {
 
   if (!ready) return null;
   const unsetCount = pages.reduce((sum, page) => sum + unsetImageCount(page.html), 0);
+  const selectedDom = editOpen && selectedEl ? selectedNode() : null;
+  const screenEdited = selectedDom ? hasDeviceStyles(selectedDom.ownerDocument, selectedDom, previewDevice) : false;
 
   return (
     <div className="wbp-root">
@@ -2306,6 +2568,46 @@ const WebsiteBriefPage = ({ aiOnly = false }) => {
             </div>,
             document.body,
           )}
+          {editOpen && pickedBar && selectedEl && createPortal(
+            <form
+              className="wbp-ai-pop"
+              style={{ top: pickedBar.popTop, left: pickedBar.popLeft, width: pickedBar.popWidth }}
+              onSubmit={sendPopEdit}
+            >
+              <svg className="wbp-ai-pop-mark" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8zM18.5 15.5l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8z" />
+              </svg>
+              <textarea
+                ref={popInputRef}
+                rows={1}
+                value={popText}
+                disabled={popBusy}
+                placeholder="Ask AI to change this"
+                aria-label="Ask AI to change the selected item"
+                onChange={(event) => {
+                  setPopText(event.target.value);
+                  event.target.style.height = "auto";
+                  event.target.style.height = `${Math.min(event.target.scrollHeight, 96)}px`;
+                }}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" && !event.shiftKey) {
+                    event.preventDefault();
+                    sendPopEdit();
+                  }
+                }}
+              />
+              <button type="submit" className={`wbp-ai-pop-send${popBusy ? " is-busy" : ""}`} aria-label={popBusy ? "Working" : "Send"} disabled={popBusy || !popText.trim()}>
+                {popBusy ? (
+                  <i className="wbp-ai-spin" />
+                ) : (
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M12 19V5M6 11l6-6 6 6" />
+                  </svg>
+                )}
+              </button>
+            </form>,
+            document.body,
+          )}
           {createPortal(
             <button
               ref={imageAddBtnRef}
@@ -2384,6 +2686,29 @@ const WebsiteBriefPage = ({ aiOnly = false }) => {
                   <div className="wbp-edit-selected">
                     <h2>{selectedEl.kind === "image" ? "Picture" : selectedEl.kind === "text" ? "Words" : "This block"}</h2>
                     <strong>{selectedEl.label}</strong>
+                    <div className="wbp-screen">
+                      <span>Editing for</span>
+                      <div className="wbp-screen-tabs" role="tablist" aria-label="Screen to edit">
+                        {SCREENS.map(([id, name]) => (
+                          <button
+                            key={id}
+                            type="button"
+                            role="tab"
+                            aria-selected={previewDevice === id}
+                            className={previewDevice === id ? "is-on" : ""}
+                            onClick={() => setPreviewDevice(id)}
+                          >
+                            {name}
+                          </button>
+                        ))}
+                      </div>
+                      <small>{SCREEN_HINT[previewDevice]}</small>
+                      {screenEdited && (
+                        <button type="button" className="wbp-screen-reset" onClick={resetSelectedDevice}>
+                          Undo my {previewDevice} changes to this item
+                        </button>
+                      )}
+                    </div>
                     {selectedEl.kind === "text" && selectedEl.leaf && (
                       <textarea
                         value={selectedEl.text}

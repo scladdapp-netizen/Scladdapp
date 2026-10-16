@@ -2,6 +2,7 @@ import React, { useState, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import ServerSmartTable from "../../../../../components/ServerSmartTable/ServerSmartTable";
 import InnerTabCon from "../../../../../components/InnerTabCon/InnerTabCon";
+import StatusFilterSwitch from "../../../../../components/StatusFilterSwitch/StatusFilterSwitch";
 import { useNotification } from "../../../../../context/NotificationProvider/NotificationProvider";
 import { useClass } from "../../../../../api_call/useClass";
 import { useAuth } from "../../../../../context/AuthContext/AuthContext";
@@ -26,6 +27,9 @@ const Classes = () => {
 
   const [showAddClassMenu, setShowAddClassMenu] = useState(false);
   const [refreshTable, setRefreshTable] = useState(0); // Trigger to refresh table
+  // "active" | "inactive" switch shown in the header
+  const [statusFilter, setStatusFilter] = useState("active");
+  const [statusCounts, setStatusCounts] = useState({ active: null, inactive: null });
   const [newClassForm, setNewClassForm] = useState({
     className: "",
     classCode: "",
@@ -41,7 +45,8 @@ const Classes = () => {
       console.log("\n========== FRONTEND FETCH DEBUG ==========");
       console.log("Fetching classes with params:", params);
 
-      const result = await getClassesPaginated(schoolId, params);
+      const result = await getClassesPaginated(schoolId, { ...params, status: statusFilter });
+      if (result?.counts) setStatusCounts(result.counts);
 
       console.log("Backend response:", result);
 
@@ -73,7 +78,7 @@ const Classes = () => {
 
       return result;
     },
-    [schoolId, getClassesPaginated]
+    [schoolId, getClassesPaginated, statusFilter]
   );
 
   const columns = [
@@ -291,12 +296,23 @@ const Classes = () => {
   return (
     <div>
       <InnerTabCon>
-        <div className="cls-header">
-          <h2>Classes</h2>
-          <p>All classes in the school with their teachers, students, and room assignments</p>
+        <div className="cls-header dir-header">
+          <div className="dir-header-text">
+            <h2>Classes</h2>
+            <p>All classes in the school with their teachers, students, and room assignments</p>
+          </div>
+          <StatusFilterSwitch
+            value={statusFilter}
+            onChange={setStatusFilter}
+            counts={statusCounts}
+            activeLabel="Active Classes"
+            inactiveLabel="Inactive Classes"
+            inactiveTitle="Classes that have been deactivated"
+            ariaLabel="Classes status filter"
+          />
         </div>
         <ServerSmartTable
-          key={refreshTable}
+          key={`${refreshTable}-${statusFilter}`}
           columns={columns}
           fetchData={fetchClassesData}
           onRowClick={handleClick}

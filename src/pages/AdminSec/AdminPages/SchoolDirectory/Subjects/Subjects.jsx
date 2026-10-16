@@ -2,6 +2,7 @@ import React, { useState, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import ServerSmartTable from "../../../../../components/ServerSmartTable/ServerSmartTable";
 import InnerTabCon from "../../../../../components/InnerTabCon/InnerTabCon";
+import StatusFilterSwitch from "../../../../../components/StatusFilterSwitch/StatusFilterSwitch";
 import { useNotification } from "../../../../../context/NotificationProvider/NotificationProvider";
 import { useAuth } from "../../../../../context/AuthContext/AuthContext";
 import { useSubject } from "../../../../../api_call/useSubject";
@@ -26,6 +27,9 @@ const Subjects = () => {
 
   const [showAddSubjectMenu, setShowAddSubjectMenu] = useState(false);
   const [refreshTable, setRefreshTable] = useState(0); // Trigger to refresh table
+  // "active" | "inactive" switch shown in the header
+  const [statusFilter, setStatusFilter] = useState("active");
+  const [statusCounts, setStatusCounts] = useState({ active: null, inactive: null });
   const [newSubjectForm, setNewSubjectForm] = useState({
     subjectName: "",
     subjectCode: "",
@@ -40,7 +44,8 @@ const Subjects = () => {
       console.log("\n========== FRONTEND FETCH DEBUG ==========");
       console.log("Fetching subjects with params:", params);
 
-      const result = await getSubjectsPaginated(schoolId, params);
+      const result = await getSubjectsPaginated(schoolId, { ...params, status: statusFilter });
+      if (result?.counts) setStatusCounts(result.counts);
 
       console.log("Backend response:", result);
 
@@ -70,7 +75,7 @@ const Subjects = () => {
 
       return result;
     },
-    [schoolId, getSubjectsPaginated]
+    [schoolId, getSubjectsPaginated, statusFilter]
   );
 
   const columns = [
@@ -227,12 +232,23 @@ const Subjects = () => {
   return (
     <div>
       <InnerTabCon>
-        <div className="sub-header">
-          <h2>Subjects</h2>
-          <p>All academic subjects with their coordinators, departments, and enrollment information</p>
+        <div className="sub-header dir-header">
+          <div className="dir-header-text">
+            <h2>Subjects</h2>
+            <p>All academic subjects with their coordinators, departments, and enrollment information</p>
+          </div>
+          <StatusFilterSwitch
+            value={statusFilter}
+            onChange={setStatusFilter}
+            counts={statusCounts}
+            activeLabel="Active Subjects"
+            inactiveLabel="Inactive Subjects"
+            inactiveTitle="Subjects that have been deactivated"
+            ariaLabel="Subjects status filter"
+          />
         </div>
         <ServerSmartTable
-          key={refreshTable}
+          key={`${refreshTable}-${statusFilter}`}
           columns={columns}
           fetchData={fetchSubjectsData}
           onRowClick={handleClick}

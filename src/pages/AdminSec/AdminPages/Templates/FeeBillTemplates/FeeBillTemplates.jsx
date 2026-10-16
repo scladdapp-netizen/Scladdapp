@@ -21,6 +21,14 @@ import {
   FaCheckCircle,
 } from "react-icons/fa";
 
+const formatCardDate = (v) => {
+  if (!v) return "—";
+  const d = new Date(v);
+  return Number.isNaN(d.getTime())
+    ? String(v)
+    : d.toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
+};
+
 const FeeBillTemplates = () => {
   const { schoolId } = useParams();
   const { addNotification } = useNotification();
@@ -630,58 +638,64 @@ const FeeBillTemplates = () => {
                 return (
                   <div
                     key={template.template_id || template.id}
-                    className="template-card"
+                    className="template-card ct-tcard"
                     onClick={() => handleViewTemplate(template)}
-                    style={{ cursor: "pointer" }}
                   >
-                    <div className="template-card-header">
-                      <h4 className="template-card-title">{template.name}</h4>
-                      <span
-                        className={`template-card-status ${template.status}`}
-                      >
+                    <div className="ct-tcard-top">
+                      <h4 className="ct-tcard-title" title={template.name}>
+                        {template.name}
+                      </h4>
+                      <span className={`ct-tcard-status ${template.status}`}>
+                        <i />
                         {template.status}
                       </span>
                     </div>
-                    <p className="template-card-description">
-                      {template.description}
-                    </p>
-                    <div className="template-details">
-                      <div className="template-detail-item">
-                        <strong>Bill Items:</strong> {billItems.length}
+                    {template.description ? (
+                      <p className="ct-tcard-desc">{template.description}</p>
+                    ) : (
+                      <p className="ct-tcard-desc is-empty">No description</p>
+                    )}
+                    <div className="ct-tcard-total">
+                      <span>Total amount</span>
+                      <b>{formatCurrency(totalAmount || 0, template.currency)}</b>
+                    </div>
+                    <div className="ct-tcard-stats is-2">
+                      <div className="ct-tcard-stat">
+                        <b>{(billItems || []).length}</b>
+                        <span>Bill items</span>
                       </div>
-                      <div className="template-detail-item">
-                        <strong>Total Amount:</strong>{" "}
-                        {formatCurrency(totalAmount, template.currency)}
-                      </div>
-                      <div className="template-detail-item">
-                        <strong>Installments:</strong>{" "}
-                        {allowInstallments
-                          ? `${installmentCount} payments`
-                          : "Single payment"}
+                      <div className="ct-tcard-stat">
+                        <b>{allowInstallments ? installmentCount : 1}</b>
+                        <span>
+                          {allowInstallments ? "Installments" : "Single payment"}
+                        </span>
                       </div>
                     </div>
-                    <div className="bill-items-preview">
-                      <strong>Key Items:</strong>
-                      <ul>
+                    {(billItems || []).length > 0 && (
+                      <ul className="ct-tcard-items">
                         {billItems.slice(0, 3).map((item, index) => (
                           <li key={index}>
-                            {item.item_name || item.itemName} (
-                            {formatCurrency(item.amount, template.currency)})
+                            <span>{item.item_name || item.itemName}</span>
+                            <em>{formatCurrency(item.amount || 0, template.currency)}</em>
                           </li>
                         ))}
                         {billItems.length > 3 && (
-                          <li>+{billItems.length - 3} more items</li>
+                          <li className="is-more">+{billItems.length - 3} more items</li>
                         )}
                       </ul>
-                    </div>
-                    <div className="template-card-meta">
-                      <span>
-                        Modified:{" "}
-                        {template.last_modified || template.lastModified}
-                      </span>
-                      <span>
-                        By:{" "}
-                        {template.created_by || template.createdBy || "----"}
+                    )}
+                    <div className="ct-tcard-foot">
+                      <span />
+                      <span
+                        className="ct-tcard-date"
+                        title={
+                          template.created_by || template.createdBy
+                            ? `Created by ${template.created_by || template.createdBy}`
+                            : undefined
+                        }
+                      >
+                        Modified{" "}
+                        {formatCardDate(template.last_modified || template.lastModified)}
                       </span>
                     </div>
                   </div>
@@ -749,20 +763,13 @@ const FeeBillTemplates = () => {
                 </div>
 
                 <div className="bill-items-table">
-                  <div className="items-table-header">
-                    <span></span>
-                    <span>Item Name</span>
-                    <span>Amount</span>
-                    <span>Description</span>
-                    <span>Actions</span>
-                  </div>
-
                   {formData.billItems.map((item, index) => (
                     <div key={index} className="bill-item-row">
                       <div className="drag-handle">
                         {/* <FaGripVertical size={12} /> */}
                       </div>
                       <FormInput
+                        label="Item Name"
                         type="text"
                         value={item.itemName}
                         onChange={(value) =>
@@ -771,6 +778,7 @@ const FeeBillTemplates = () => {
                         placeholder="e.g., Tuition"
                       />
                       <FormInput
+                        label={`Amount (${formData.currency || "NGN"})`}
                         type="number"
                         value={item.amount}
                         onChange={(value) =>
@@ -784,6 +792,7 @@ const FeeBillTemplates = () => {
                         min="0"
                       />
                       <FormInput
+                        label="Description"
                         type="text"
                         value={item.description}
                         onChange={(value) =>
@@ -927,7 +936,7 @@ const FeeBillTemplates = () => {
                 selectedTemplate.dueDateValue;
 
               return (
-                <div className="template-detail-container">
+                <div className="template-detail-container ct-detail fb-detail">
                   <div className="template-detail-header">
                     <div className="template-detail-title">
                       <h2>{selectedTemplate.name}</h2>
@@ -960,7 +969,7 @@ const FeeBillTemplates = () => {
 
                   <div className="template-detail-content">
                     {/* Bill Items Section */}
-                    <div className="detail-section">
+                    <div className="detail-section ct-card">
                       <h3>
                         <FaMoneyBillWave
                           size={16}
@@ -1004,7 +1013,7 @@ const FeeBillTemplates = () => {
                     </div>
 
                     {/* Payment Configuration Section */}
-                    <div className="detail-section">
+                    <div className="detail-section ct-card">
                       <h3>
                         <FaCalendarAlt
                           size={16}
@@ -1042,106 +1051,24 @@ const FeeBillTemplates = () => {
                         )}
                       </div>
                     </div>
-
-                    {/* Bill Preview Section */}
-                    <div className="detail-section">
-                      <h3>Bill Preview</h3>
-                      <div className="bill-preview-container">
-                        <div className="mock-bill">
-                          <div className="bill-header">
-                            <div className="school-info">
-                              <h4>[School Name]</h4>
-                              <p>[School Address]</p>
-                            </div>
-                            <div className="bill-title">
-                              <h3>FEE BILL</h3>
-                              <p>Bill #: FB-2024-001</p>
-                            </div>
-                          </div>
-
-                          <div className="student-info">
-                            <p>
-                              <strong>Student:</strong> [Student Name]
-                            </p>
-                            <p>
-                              <strong>Class:</strong> [Class/Grade]
-                            </p>
-                            <p>
-                              <strong>Session:</strong> 2023/2024
-                            </p>
-                          </div>
-
-                          <div className="bill-items-preview">
-                            <table>
-                              <thead>
-                                <tr>
-                                  <th>Description</th>
-                                  <th>Amount</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {billItems.map((item, index) => (
-                                  <tr key={index}>
-                                    <td>{item.item_name || item.itemName}</td>
-                                    <td>
-                                      {formatCurrency(
-                                        item.amount,
-                                        selectedTemplate.currency
-                                      )}
-                                    </td>
-                                  </tr>
-                                ))}
-                              </tbody>
-                              <tfoot>
-                                <tr>
-                                  <th>Total Amount</th>
-                                  <th>
-                                    {formatCurrency(
-                                      totalAmount,
-                                      selectedTemplate.currency
-                                    )}
-                                  </th>
-                                </tr>
-                              </tfoot>
-                            </table>
-                          </div>
-
-                          <div className="bill-footer">
-                            <p>
-                              <strong>Due Date:</strong>{" "}
-                              {dueDateValue || "Not specified"}
-                            </p>
-                            {allowInstallments && (
-                              <p>
-                                <strong>Installments:</strong>{" "}
-                                {installmentCount} payments allowed (Min:{" "}
-                                {formatCurrency(
-                                  minPayment,
-                                  selectedTemplate.currency
-                                )}
-                                )
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
                   </div>
 
                   <div className="template-detail-actions">
                     <Button
                       variant="secondary"
+                      title="Edit"
+                      aria-label="Edit"
                       onClick={() => handleEditTemplate(selectedTemplate)}
                     >
-                      <FaEdit size={14} style={{ marginRight: "8px" }} />
-                      Edit Template
+                      <FaEdit size={14} />
                     </Button>
                     <Button
                       variant="secondary"
+                      title="Duplicate"
+                      aria-label="Duplicate"
                       onClick={() => handleDuplicate(selectedTemplate)}
                     >
-                      <FaCopy size={14} style={{ marginRight: "8px" }} />
-                      Duplicate
+                      <FaCopy size={14} />
                     </Button>
                     <Button
                       variant={
@@ -1149,29 +1076,31 @@ const FeeBillTemplates = () => {
                           ? "warning"
                           : "success"
                       }
+                      title={
+                        selectedTemplate.status === "active"
+                          ? "Deactivate"
+                          : "Activate"
+                      }
+                      aria-label={
+                        selectedTemplate.status === "active"
+                          ? "Deactivate"
+                          : "Activate"
+                      }
                       onClick={() => handleStatusToggle(selectedTemplate)}
                     >
                       {selectedTemplate.status === "active" ? (
-                        <>
-                          <FaBan size={14} style={{ marginRight: "8px" }} />
-                          Deactivate
-                        </>
+                        <FaBan size={14} />
                       ) : (
-                        <>
-                          <FaCheckCircle
-                            size={14}
-                            style={{ marginRight: "8px" }}
-                          />
-                          Activate
-                        </>
+                        <FaCheckCircle size={14} />
                       )}
                     </Button>
                     <Button
                       variant="danger"
+                      title="Delete"
+                      aria-label="Delete"
                       onClick={() => handleDelete(selectedTemplate)}
                     >
-                      <FaTrash size={14} style={{ marginRight: "8px" }} />
-                      Delete
+                      <FaTrash size={14} />
                     </Button>
                   </div>
                 </div>

@@ -3,17 +3,6 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:1234";
 const TOPIC_ID = "tutorial-videos-library";
 
-const FALLBACK_VIDEOS = [
-  {
-    youtubeId: "dQw4w9WgXcQ",
-    title: "Getting Started with Scladapp",
-    description: "Learn how to set up your school and configure basic settings.",
-    duration: "5:32",
-    category: "Getting Started",
-    page: "",
-  },
-];
-
 // Where a video is shown. An empty key is the general placement — the dashboard
 // tutorial card and the floating helper — which is what every video saved
 // before placements existed falls back to.
@@ -60,11 +49,7 @@ function toVideos(docs) {
 
 function forPage(videos, page) {
   const key = normalizePage(page);
-  const matched = videos.filter((v) => v.page === key);
-  if (matched.length > 0) return matched;
-  // the general placement is never left blank, but a page-specific slot stays
-  // empty until someone assigns a video to it
-  return key ? [] : FALLBACK_VIDEOS;
+  return videos.filter((v) => v.page === key);
 }
 
 export function useTutorialVideos(page = TUTORIAL_PAGE_GENERAL) {

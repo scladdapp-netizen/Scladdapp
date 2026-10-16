@@ -1076,6 +1076,75 @@ body:has(.wbp-root) { overflow: hidden; }
   stroke-linecap: round;
   stroke-linejoin: round;
 }
+.wbp-ai-pop {
+  position: fixed;
+  z-index: 1000004;
+  box-sizing: border-box;
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  padding: 6px 6px 6px 14px;
+  border-radius: 26px;
+  background: #111111;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.32);
+}
+.wbp-ai-pop-mark {
+  width: 18px;
+  height: 18px;
+  margin: 0 0 11px;
+  flex-shrink: 0;
+  fill: #ffffff;
+}
+/* Beats the app-wide dark-theme textarea colors so the box looks the same in both themes. */
+form.wbp-ai-pop textarea,
+form.wbp-ai-pop textarea:focus {
+  flex: 1;
+  min-width: 0;
+  height: 40px;
+  max-height: 96px;
+  box-sizing: border-box;
+  padding: 10px 0;
+  border: 0 !important;
+  border-radius: 0;
+  outline: none !important;
+  box-shadow: none !important;
+  resize: none;
+  background: transparent !important;
+  color: #ffffff !important;
+  font: 14px/20px "Segoe UI", Helvetica, Arial, sans-serif;
+  scrollbar-width: thin;
+  scrollbar-color: #555 transparent;
+}
+form.wbp-ai-pop textarea::placeholder {
+  color: #9a9a9a !important;
+}
+form.wbp-ai-pop textarea:disabled {
+  opacity: 0.6;
+}
+.wbp-ai-pop-send {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: #ffffff;
+  color: #111111;
+  cursor: pointer;
+}
+.wbp-ai-pop-send svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.wbp-ai-pop-send:disabled { opacity: 0.45; cursor: default; }
+.wbp-ai-pop-send.is-busy { opacity: 1; cursor: wait; }
 .wbp-edit-tabs {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -1189,9 +1258,8 @@ body:has(.wbp-root) { overflow: hidden; }
 }
 .wbp-edit-selected {
   margin: 0 0 18px;
-  padding: 12px;
-  border-radius: 16px;
-  background: #f6f6f6;
+  padding: 0;
+  background: transparent;
 }
 .wbp-edit-selected strong {
   display: block;
@@ -1234,7 +1302,7 @@ body:has(.wbp-root) { overflow: hidden; }
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
-.wbp-field label {
+.wbp-field .wbp-field-row {
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -1356,6 +1424,18 @@ body:has(.wbp-root) { overflow: hidden; }
   background: #fff;
   font: 600 13px/1 "Segoe UI", Helvetica, Arial, sans-serif;
 }
+.wbp-select {
+  width: 100%;
+  box-sizing: border-box;
+  height: 40px;
+  padding: 0 12px;
+  border: 1px solid #ececec;
+  border-radius: 12px;
+  background: #fff;
+  color: #111;
+  font: 600 14px/1 "Segoe UI", Helvetica, Arial, sans-serif;
+  cursor: pointer;
+}
 .wbp-more {
   margin-top: 4px;
 }
@@ -1367,6 +1447,91 @@ body:has(.wbp-root) { overflow: hidden; }
 }
 .wbp-more .wbp-field {
   margin-top: 12px;
+}
+.wbp-screen {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0 0 14px;
+  padding: 10px;
+  border-radius: 14px;
+  background: #ffffff;
+  border: 1px solid #ececec;
+}
+.wbp-screen > span {
+  color: #555;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.wbp-screen small {
+  color: #666;
+  font-size: 12px;
+  line-height: 1.45;
+}
+.wbp-edit-selected .wbp-screen-tabs {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+  padding: 3px;
+  border-radius: 999px;
+  background: #f1f1f1;
+}
+.wbp-edit-selected .wbp-screen-tabs button {
+  padding: 8px 4px;
+  background: transparent;
+  color: #444;
+  font-size: 12px;
+}
+.wbp-edit-selected .wbp-screen-tabs button.is-on {
+  background: #111;
+  color: #fff;
+}
+.wbp-edit-selected .wbp-screen-reset {
+  align-self: flex-start;
+  padding: 7px 12px;
+  border: 1px solid #d8d8d8;
+  background: #fff;
+  color: #111;
+  font-size: 12px;
+}
+.wbp-edit-selected .wbp-clear {
+  padding: 6px 12px;
+  border: 1px solid #d8d8d8;
+  background: #fff;
+  color: #111;
+  font-size: 12px;
+}
+.wbp-sides {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+}
+.wbp-side {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.wbp-side em {
+  color: #777;
+  font-style: normal;
+  font-size: 11px;
+  font-weight: 700;
+  text-align: center;
+}
+.wbp-side input {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  height: 36px;
+  padding: 0 4px;
+  border: 1px solid #ececec;
+  border-radius: 10px;
+  background: #fff;
+  font: 600 13px/1 "Segoe UI", Helvetica, Arial, sans-serif;
+  text-align: center;
 }
 .wbp-edit-side h2 {
   margin: 0 0 8px;

@@ -204,3 +204,161 @@
 [data-theme="dark"] .tas-year-option.selected { border-color: #f0f0f0; background: #252525; }
 [data-theme="dark"] .tas-year-label { color: #e0e0e0; }
 [data-theme="dark"] .tas-year-count { color: #555555; }
+
+/* ==========================================================================
+   Refined layout: grouped options, wrapping descriptions, list-style recipients
+   ========================================================================== */
+.tas-wrap { gap: 16px; }
+
+.tas-wrap .tas-groups { display: flex; flex-direction: column; gap: 16px; }
+
+.tas-wrap .tas-group-label {
+  margin: 0 0 8px;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: #9ca3af;
+}
+
+.tas-wrap .tas-grid {
+  gap: 8px;
+  overflow: visible;
+  padding-right: 0;
+  align-items: stretch;
+}
+
+.tas-wrap .tas-option {
+  align-items: flex-start;
+  gap: 10px;
+  min-width: 0;
+  padding: 11px 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  background: #ffffff;
+}
+
+.tas-wrap .tas-option:hover { border-color: #b8bcc4; background: #ffffff; }
+
+.tas-wrap .tas-option.selected {
+  border-color: #111111;
+  background: #ffffff;
+  box-shadow: 0 0 0 1px #111111;
+}
+
+.tas-wrap .tas-option-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
+.tas-wrap .tas-option-body { gap: 2px; padding-right: 18px; }
+
+.tas-wrap .tas-option-label {
+  font-size: 12.5px;
+  font-weight: 700;
+  line-height: 1.3;
+  color: #111111;
+}
+
+.tas-wrap .tas-option-desc {
+  font-size: 11px;
+  line-height: 1.4;
+  color: #6b7280;
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+}
+
+.tas-wrap .tas-option-check {
+  position: absolute;
+  top: 9px;
+  right: 9px;
+  width: 16px;
+  height: 16px;
+}
+
+/* summary */
+.tas-wrap .tas-summary {
+  gap: 8px;
+  padding: 10px 14px;
+  background: #f7f7f8;
+  border: 1px solid #ececf0;
+  border-radius: 10px;
+  font-size: 12.5px;
+  line-height: 1.4;
+}
+
+/* recipients: one bordered list with divider rows */
+.tas-wrap .tas-recipients { gap: 8px; }
+
+.tas-wrap .tas-recipients-title,
+.tas-wrap .tas-section-label {
+  font-size: 10.5px;
+  letter-spacing: 0.07em;
+  color: #9ca3af;
+}
+
+.tas-wrap .tas-recipients-grid {
+  grid-template-columns: 1fr;
+  gap: 0;
+  max-height: 240px;
+  padding: 0;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  background: #ffffff;
+}
+
+.tas-wrap .tas-recipient-card {
+  padding: 9px 12px;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid #f0f0f3;
+  border-radius: 0;
+}
+
+.tas-wrap .tas-recipient-card:last-child { border-bottom: none; }
+.tas-wrap .tas-recipient-card:hover { background: #fafafb; }
+
+.tas-wrap .tas-recipient-sub { font-size: 11px; }
+
+.tas-wrap .tas-type-badge { padding: 2px 8px; font-size: 9.5px; letter-spacing: 0.02em; }
+
+.tas-wrap .tas-remove-btn { width: 24px; height: 24px; padding: 0; border-radius: 6px; }
+
+/* graduation years */
+.tas-wrap .tas-year-option {
+  padding: 11px 10px;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+}
+
+.tas-wrap .tas-year-option:hover { border-color: #b8bcc4; background: #ffffff; }
+.tas-wrap .tas-year-option.selected { border-color: #111111; background: #ffffff; box-shadow: 0 0 0 1px #111111; }
+
+/* dark */
+[data-theme="dark"] .tas-wrap .tas-group-label,
+[data-theme="dark"] .tas-wrap .tas-recipients-title,
+[data-theme="dark"] .tas-wrap .tas-section-label { color: #666666; }
+
+[data-theme="dark"] .tas-wrap .tas-option { background: #1e1e1e; border-color: #2a2a2a; }
+[data-theme="dark"] .tas-wrap .tas-option:hover { background: #1e1e1e; border-color: #555555; }
+[data-theme="dark"] .tas-wrap .tas-option.selected { background: #1e1e1e; border-color: #f0f0f0; box-shadow: 0 0 0 1px #f0f0f0; }
+[data-theme="dark"] .tas-wrap .tas-option-icon { background: #2a2a2a; color: #9a9a9a; }
+[data-theme="dark"] .tas-wrap .tas-option.selected .tas-option-icon { background: #f0f0f0; color: #111111; }
+[data-theme="dark"] .tas-wrap .tas-option-desc { color: #8a8a8a; }
+
+[data-theme="dark"] .tas-wrap .tas-summary { background: #1e1e1e; border-color: #2a2a2a; }
+
+[data-theme="dark"] .tas-wrap .tas-recipients-grid { background: #1a1a1a; border-color: #2a2a2a; }
+[data-theme="dark"] .tas-wrap .tas-recipient-card { background: transparent; border-bottom-color: #262626; }
+[data-theme="dark"] .tas-wrap .tas-recipient-card:last-child { border-bottom: none; }
+[data-theme="dark"] .tas-wrap .tas-recipient-card:hover { background: #222222; }
+
+[data-theme="dark"] .tas-wrap .tas-year-option { background: #1e1e1e; border-color: #2a2a2a; }
+[data-theme="dark"] .tas-wrap .tas-year-option:hover { background: #1e1e1e; border-color: #555555; }
+[data-theme="dark"] .tas-wrap .tas-year-option.selected { background: #1e1e1e; border-color: #f0f0f0; box-shadow: 0 0 0 1px #f0f0f0; }
+[data-theme="dark"] .tas-wrap .tas-option-label { color: #e8e8e8; }
+[data-theme="dark"] .tas-wrap .tas-option-check { background: #f0f0f0; color: #111111; }

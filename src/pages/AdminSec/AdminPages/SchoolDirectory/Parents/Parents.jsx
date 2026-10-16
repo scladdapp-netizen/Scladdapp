@@ -186,11 +186,7 @@ const Parents = () => {
               textTransform: "uppercase",
             }}
           >
-            {row.name
-              .split(" ")
-              .map((n) => n[0])
-              .join("")
-              .substring(0, 2)}
+            <FaUser size={13} />
           </div>
         </div>
       ),

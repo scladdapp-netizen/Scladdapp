@@ -3,7 +3,7 @@
   max-width: 100%;
 }
 
-/* ── Header ───────────────────────────────────────────────────────────────── */
+/* ââ Header âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ */
 .templates-header {
   display: flex;
   justify-content: space-between;
@@ -37,7 +37,7 @@
   flex-shrink: 0;
 }
 
-/* ── Empty state ──────────────────────────────────────────────────────────── */
+/* ââ Empty state ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ */
 .kk-template-empty-state {
   padding: 40px;
   text-align: center;
@@ -60,7 +60,7 @@
   color: #888888;
 }
 
-/* ── Template section wrapper — invisible, just spacing ───────────────────── */
+/* ââ Template section wrapper â invisible, just spacing âââââââââââââââââââââ */
 .template-section {
   margin-bottom: 0;
 }
@@ -69,14 +69,14 @@
   display: none;
 }
 
-/* ── Template grid ────────────────────────────────────────────────────────── */
+/* ââ Template grid ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ */
 .template-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 14px;
 }
 
-/* ── Template card — noise bg, structured ────────────────────────────────── */
+/* ââ Template card â noise bg, structured ââââââââââââââââââââââââââââââââââ */
 .template-card {
   background-color: #f4f4f4;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23noise)' opacity='0.08'/%3E%3C/svg%3E");
@@ -245,7 +245,7 @@
   border-color: #333333;
 }
 
-/* ── Empty State ──────────────────────────────────────────────────────────── */
+/* ââ Empty State ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ */
 .empty-state {
   text-align: center;
   padding: 60px 20px;
@@ -274,7 +274,7 @@
   margin: 0 0 12px;
 }
 
-/* ── Create/Edit panel ────────────────────────────────────────────────────── */
+/* ââ Create/Edit panel ââââââââââââââââââââââââââââââââââââââââââââââââââââââ */
 .create-template-container {
   display: flex;
   flex-direction: column;
@@ -345,7 +345,7 @@
   flex-shrink: 0;
 }
 
-/* ── Detail panel ─────────────────────────────────────────────────────────── */
+/* ââ Detail panel âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ */
 .template-detail-container {
   display: flex;
   flex-direction: column;
@@ -518,14 +518,14 @@
   padding: 0;
 }
 
-/* ── Form row ─────────────────────────────────────────────────────────────── */
+/* ââ Form row âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ */
 .form-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 14px;
 }
 
-/* ── Responsive ───────────────────────────────────────────────────────────── */
+/* ââ Responsive âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ */
 @media (max-width: 768px) {
   .templates-header { flex-direction: column; gap: 14px; }
   .template-grid { grid-template-columns: 1fr; gap: 12px; }
@@ -540,7 +540,7 @@
   .template-card-actions { flex-direction: column; gap: 6px; }
 }
 
-/* ── Dark theme ───────────────────────────────────────────────────────────── */
+/* ââ Dark theme âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ */
 [data-theme="dark"] .templates-header-left h2 { color: #f0f0f0; }
 [data-theme="dark"] .templates-header-left p  { color: #555555; }
 [data-theme="dark"] .templates-header { border-bottom-color: #2a2a2a; }
@@ -578,7 +578,7 @@
 [data-theme="dark"] .template-detail-actions { background: #1e1e1e; border-top-color: #2a2a2a; }
 [data-theme="dark"] .detail-section h3 { color: #555555; border-bottom-color: #2a2a2a; }
 
-/* ── Form row ─────────────────────────────────────────────────────────────── */
+/* ââ Form row âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ */
 .form-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -1110,6 +1110,7 @@
 
 .grading-fields-section,
 .grading-scheme-section {
+  margin-top: 20px;
   border: 1px solid #e5e7eb;
   border-radius: 8px;
   padding: 16px;
@@ -1473,7 +1474,7 @@
     padding: 6px;
   }
 }
-/* ── Template Details (card body) ─────────────────────────────────────────── */
+/* ââ Template Details (card body) âââââââââââââââââââââââââââââââââââââââââââ */
 .assessment-fields-table {
   background: white;
   border: 1px solid #e5e7eb;
@@ -1572,7 +1573,7 @@
   color: #991b1b;
 }
 
-/* ── Assessment Fields Table ──────────────────────────────────────────────── */
+/* ââ Assessment Fields Table ââââââââââââââââââââââââââââââââââââââââââââââââ */
 .bill-items-preview {
   margin: 12px 0;
   font-size: 13px;
@@ -4199,7 +4200,7 @@
   background: #e5e7eb;
 }
 
-/* Heading variant — slightly wider, monospaced label */
+/* Heading variant â slightly wider, monospaced label */
 .format-btn-heading {
   font-size: 11px;
   font-weight: 700;
@@ -4382,7 +4383,7 @@
   }
 }
 
-/* ── Dark theme for rich text editor ─────────────────────────────────────── */
+/* ââ Dark theme for rich text editor âââââââââââââââââââââââââââââââââââââââ */
 [data-theme="dark"] .rich-text-editor-container {
   background: #1e1e1e;
   border-color: #3a3a3a;
@@ -4815,7 +4816,7 @@
   color: #3b82f6;
 }
 
-/* ── Class Promotion Mapping (detail panel) ──────────────────────────────── */
+/* ââ Class Promotion Mapping (detail panel) ââââââââââââââââââââââââââââââââ */
 .cpm-info-section {
   margin-bottom: 22px;
   padding: 0;
@@ -5195,7 +5196,7 @@
 }
 
 .to-class.alumni::before {
-  content: "🎓";
+  content: "ð";
   margin-right: 4px;
 }
 
@@ -5231,11 +5232,11 @@
 }
 
 
-/* ═══════════════════════════════════════════════════════════════════════════
-   DARK THEME — Create Template Form Components
-   ═══════════════════════════════════════════════════════════════════════════ */
+/* âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+   DARK THEME â Create Template Form Components
+   âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ */
 
-/* ── Section containers (grade ranges, fields, content, options, breaks) ─── */
+/* ââ Section containers (grade ranges, fields, content, options, breaks) âââ */
 [data-theme="dark"] .grade-ranges-section,
 [data-theme="dark"] .template-fields-section,
 [data-theme="dark"] .template-sections-section,
@@ -5261,7 +5262,7 @@
   border-color: #2a2a2a;
 }
 
-/* ── Section headings ─────────────────────────────────────────────────────── */
+/* ââ Section headings âââââââââââââââââââââââââââââââââââââââââââââââââââââââ */
 [data-theme="dark"] .grade-ranges-header h3,
 [data-theme="dark"] .breaks-header h3,
 [data-theme="dark"] .bill-items-header h3,
@@ -5293,7 +5294,7 @@
   color: #555555;
 }
 
-/* ── Row items (grade-range-row, break-row, bill-item-row, etc.) ──────────── */
+/* ââ Row items (grade-range-row, break-row, bill-item-row, etc.) ââââââââââââ */
 [data-theme="dark"] .grade-range-row,
 [data-theme="dark"] .break-row,
 [data-theme="dark"] .bill-item-row,
@@ -5314,7 +5315,7 @@
   background: #2a1a1a;
 }
 
-/* ── Checkbox items ───────────────────────────────────────────────────────── */
+/* ââ Checkbox items âââââââââââââââââââââââââââââââââââââââââââââââââââââââââ */
 [data-theme="dark"] .field-checkbox,
 [data-theme="dark"] .section-checkbox,
 [data-theme="dark"] .placeholder-checkbox,
@@ -5336,12 +5337,12 @@
   border-color: #f0f0f0;
 }
 
-/* ── Display options divider ──────────────────────────────────────────────── */
+/* ââ Display options divider ââââââââââââââââââââââââââââââââââââââââââââââââ */
 [data-theme="dark"] .display-options {
   border-top-color: #2a2a2a;
 }
 
-/* ── Installment checkbox label ───────────────────────────────────────────── */
+/* ââ Installment checkbox label âââââââââââââââââââââââââââââââââââââââââââââ */
 [data-theme="dark"] .installment-checkbox {
   color: #cccccc;
 }
@@ -5350,13 +5351,13 @@
   border-left-color: #3a3a3a;
 }
 
-/* ── Total amount display ─────────────────────────────────────────────────── */
+/* ââ Total amount display âââââââââââââââââââââââââââââââââââââââââââââââââââ */
 [data-theme="dark"] .total-amount-display {
   background: #052e16;
   border-color: #166634;
 }
 
-/* ── Weight / range indicators ────────────────────────────────────────────── */
+/* ââ Weight / range indicators ââââââââââââââââââââââââââââââââââââââââââââââ */
 [data-theme="dark"] .total-weight.valid,
 [data-theme="dark"] .total-range.valid {
   background: #052e16;
@@ -5369,7 +5370,7 @@
   color: #f87171;
 }
 
-/* ── Warning banners ──────────────────────────────────────────────────────── */
+/* ââ Warning banners ââââââââââââââââââââââââââââââââââââââââââââââââââââââââ */
 [data-theme="dark"] .weight-warning,
 [data-theme="dark"] .range-warning {
   background: #2a1a1a;
@@ -5377,13 +5378,13 @@
   color: #f87171;
 }
 
-/* ── Scheme table header ──────────────────────────────────────────────────── */
+/* ââ Scheme table header ââââââââââââââââââââââââââââââââââââââââââââââââââââ */
 [data-theme="dark"] .scheme-table-header {
   background: #252525;
   color: #888888;
 }
 
-/* ── Fields table ─────────────────────────────────────────────────────────── */
+/* ââ Fields table âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ */
 [data-theme="dark"] .fields-table-header,
 [data-theme="dark"] .items-table-header,
 [data-theme="dark"] .items-detail-header {
@@ -5405,14 +5406,14 @@
   color: #cccccc;
 }
 
-/* ── Assessment fields table ──────────────────────────────────────────────── */
+/* ââ Assessment fields table ââââââââââââââââââââââââââââââââââââââââââââââââ */
 [data-theme="dark"] .assessment-fields-table,
 [data-theme="dark"] .bill-items-detail-table {
   background: #1e1e1e;
   border-color: #2a2a2a;
 }
 
-/* ── Grading scheme table ─────────────────────────────────────────────────── */
+/* ââ Grading scheme table âââââââââââââââââââââââââââââââââââââââââââââââââââ */
 [data-theme="dark"] .grading-scheme-table {
   border-color: #2a2a2a;
 }
@@ -5429,7 +5430,7 @@
   color: #cccccc;
 }
 
-/* ── Config items ─────────────────────────────────────────────────────────── */
+/* ââ Config items âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ */
 [data-theme="dark"] .config-item {
   background: #252525;
   border-color: #3a3a3a;
@@ -5438,14 +5439,14 @@
 [data-theme="dark"] .config-item strong { color: #555555; }
 [data-theme="dark"] .config-item span   { color: #cccccc; }
 
-/* ── Drag handle ──────────────────────────────────────────────────────────── */
+/* ââ Drag handle ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ */
 [data-theme="dark"] .drag-handle { color: #555555; }
 
-/* ── Promotion criteria preview ───────────────────────────────────────────── */
+/* ââ Promotion criteria preview âââââââââââââââââââââââââââââââââââââââââââââ */
 [data-theme="dark"] .promotion-criteria-preview ul,
 [data-theme="dark"] .promotion-criteria-preview li { color: #555555; }
 
-/* ── Section items (report card sections overview) ───────────────────────── */
+/* ââ Section items (report card sections overview) âââââââââââââââââââââââââ */
 [data-theme="dark"] .section-item {
   background: #252525;
   border-color: #3a3a3a;
@@ -5453,7 +5454,7 @@
 
 [data-theme="dark"] .section-name { color: #cccccc; }
 
-/* ── Timetable preview ────────────────────────────────────────────────────── */
+/* ââ Timetable preview ââââââââââââââââââââââââââââââââââââââââââââââââââââââ */
 [data-theme="dark"] .timetable-preview-container {
   background: #1e1e1e;
   border-color: #2a2a2a;
@@ -5471,7 +5472,7 @@
 [data-theme="dark"] .break-name  { color: #e0e0e0; }
 [data-theme="dark"] .break-details { color: #888888; }
 
-/* ── Bill preview ─────────────────────────────────────────────────────────── */
+/* ââ Bill preview âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ */
 [data-theme="dark"] .bill-preview-container { background: #1e1e1e; border-color: #2a2a2a; }
 [data-theme="dark"] .mock-bill { color: #cccccc; }
 [data-theme="dark"] .school-info h4 { color: #f0f0f0; }
@@ -5484,7 +5485,7 @@
 [data-theme="dark"] .bill-footer    { border-top-color: #2a2a2a; }
 [data-theme="dark"] .bill-footer p  { color: #888888; }
 
-/* ── Report card preview ──────────────────────────────────────────────────── */
+/* ââ Report card preview ââââââââââââââââââââââââââââââââââââââââââââââââââââ */
 [data-theme="dark"] .report-card-preview-container { background: #1a1a1a; border-color: #2a2a2a; }
 [data-theme="dark"] .report-card-preview { background: #1e1e1e; border-color: #2a2a2a; color: #cccccc; }
 [data-theme="dark"] .student-info-section { background: #252525; border-left-color: #3a3a3a; }
@@ -5497,12 +5498,12 @@
 [data-theme="dark"] .competency-name { color: #e0e0e0; }
 [data-theme="dark"] .competency-level { color: #555555; }
 
-/* ── Template detail view ─────────────────────────────────────────────────── */
+/* ââ Template detail view âââââââââââââââââââââââââââââââââââââââââââââââââââ */
 [data-theme="dark"] .template-detail-description { color: rgba(255,255,255,0.55); }
 [data-theme="dark"] .template-meta-item { color: rgba(255,255,255,0.5); }
 [data-theme="dark"] .template-meta-item strong { color: rgba(255,255,255,0.8); }
 
-/* ── Behavioral Traits Section (Combined + Report Card) ──────────────────── */
+/* ââ Behavioral Traits Section (Combined + Report Card) ââââââââââââââââââââ */
 [data-theme="dark"] .behavioral-traits-section {
   background: #1e1e1e;
   border-color: #2a2a2a;
@@ -5540,7 +5541,7 @@
   border-color: #2a2a2a;
 }
 
-/* ── Timetable: Days Selection, Periods, Daily Schedule, Breaks ──────────── */
+/* ââ Timetable: Days Selection, Periods, Daily Schedule, Breaks ââââââââââââ */
 [data-theme="dark"] .days-selection-section,
 [data-theme="dark"] .periods-section,
 [data-theme="dark"] .daily-schedule-section {
@@ -5582,7 +5583,7 @@
 
 [data-theme="dark"] .time-inputs { }
 
-/* ── Class Promotion Mapping ──────────────────────────────────────────────── */
+/* ââ Class Promotion Mapping ââââââââââââââââââââââââââââââââââââââââââââââââ */
 [data-theme="dark"] .class-promotion-section {
   background: #1e1e1e;
   border-color: #2a2a2a;
@@ -5600,14 +5601,14 @@
 
 [data-theme="dark"] .promotion-arrow { color: #555555; }
 
-/* ── Announcement Content (rich text editor already has dark theme) ───────── */
+/* ââ Announcement Content (rich text editor already has dark theme) âââââââââ */
 /* Already covered by rich-text-editor-container dark theme rules added earlier */
 
-/* ── Behavioral Traits Section heading ───────────────────────────────────── */
+/* ââ Behavioral Traits Section heading âââââââââââââââââââââââââââââââââââââ */
 [data-theme="dark"] .behavioral-traits-section h3 { color: #e0e0e0; }
 [data-theme="dark"] .behavioral-traits-section p  { color: #555555; }
 
-/* ── Day checkbox label text ──────────────────────────────────────────────── */
+/* ââ Day checkbox label text ââââââââââââââââââââââââââââââââââââââââââââââââ */
 [data-theme="dark"] .day-checkbox {
   background: #252525;
   border-color: #3a3a3a;
@@ -5619,7 +5620,7 @@
 }
 [data-theme="dark"] .day-checkbox input:checked + span { color: #f0f0f0; }
 
-/* ── Promotion mapping display (detail view) ──────────────────────────────── */
+/* ââ Promotion mapping display (detail view) ââââââââââââââââââââââââââââââââ */
 [data-theme="dark"] .mapping-note { color: #555555; }
 [data-theme="dark"] .mapping-note strong { color: #888888; }
 
@@ -5691,13 +5692,13 @@
   color: #888888;
 }
 
-/* ── Class promotion section heading ─────────────────────────────────────── */
+/* ââ Class promotion section heading âââââââââââââââââââââââââââââââââââââââ */
 [data-theme="dark"] .class-promotion-section h3 { color: #e0e0e0; }
 
-/* ── Promotion arrow ──────────────────────────────────────────────────────── */
+/* ââ Promotion arrow ââââââââââââââââââââââââââââââââââââââââââââââââââââââââ */
 [data-theme="dark"] .promotion-arrow { color: #555555; }
 
-/* ── Announcement content section ────────────────────────────────────────── */
+/* ââ Announcement content section ââââââââââââââââââââââââââââââââââââââââââ */
 /* The rich-text-editor-container dark theme is already applied via Templates.css */
 /* Additional announcement-specific containers */
 [data-theme="dark"] .content-section h3,
@@ -5705,7 +5706,7 @@
 [data-theme="dark"] .content-section p,
 [data-theme="dark"] .template-content-section p  { color: #555555; }
 
-/* ── detail-section (template detail view body sections) ─────────────────── */
+/* ââ detail-section (template detail view body sections) âââââââââââââââââââ */
 [data-theme="dark"] .detail-section {
   background: transparent;
 }
@@ -5743,11 +5744,11 @@
 
 [data-theme="dark"] .description-content p { color: #cccccc; }
 
-/* ═══════════════════════════════════════════════════════════════════════════
-   DARK THEME — Fee Bill Template Detail + Class Promotion Template Detail
-   ═══════════════════════════════════════════════════════════════════════════ */
+/* âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+   DARK THEME â Fee Bill Template Detail + Class Promotion Template Detail
+   âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ */
 
-/* ── Bill items detail table ──────────────────────────────────────────────── */
+/* ââ Bill items detail table ââââââââââââââââââââââââââââââââââââââââââââââââ */
 [data-theme="dark"] .bill-items-detail-table {
   background: #1e1e1e;
   border-color: #2a2a2a;
@@ -5773,7 +5774,7 @@
 [data-theme="dark"] .amount-cell  { color: #4ade80; }
 [data-theme="dark"] .total-amount { color: #4ade80; }
 
-/* ── Payment config grid ──────────────────────────────────────────────────── */
+/* ââ Payment config grid ââââââââââââââââââââââââââââââââââââââââââââââââââââ */
 [data-theme="dark"] .payment-config-grid { }
 
 [data-theme="dark"] .config-item {
@@ -5784,10 +5785,10 @@
 [data-theme="dark"] .config-item strong { color: #888888; }
 [data-theme="dark"] .config-item span   { color: #e0e0e0; }
 
-/* ── Config grid (class promotion) ───────────────────────────────────────── */
+/* ââ Config grid (class promotion) âââââââââââââââââââââââââââââââââââââââââ */
 [data-theme="dark"] .config-grid { }
 
-/* ── Criteria detail table ────────────────────────────────────────────────── */
+/* ââ Criteria detail table ââââââââââââââââââââââââââââââââââââââââââââââââââ */
 [data-theme="dark"] .criteria-detail-table {
   background: #1e1e1e;
   border-color: #2a2a2a;
@@ -5810,7 +5811,7 @@
   color: #cccccc;
 }
 
-/* ── Mapping items ────────────────────────────────────────────────────────── */
+/* ââ Mapping items ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ */
 [data-theme="dark"] .mapping-item {
   background: #252525;
   border-color: #3a3a3a;
@@ -5833,7 +5834,7 @@
 [data-theme="dark"] .mapping-note em { color: #555555; }
 [data-theme="dark"] .mapping-note strong { color: #888888; }
 
-/* ── Policies display ─────────────────────────────────────────────────────── */
+/* ââ Policies display âââââââââââââââââââââââââââââââââââââââââââââââââââââââ */
 [data-theme="dark"] .policies-display { }
 
 [data-theme="dark"] .policy-item {
@@ -5844,16 +5845,16 @@
 [data-theme="dark"] .policy-item h4 { color: #e0e0e0; }
 [data-theme="dark"] .policy-item p  { color: #888888; }
 
-/* ── Status badge inside detail ───────────────────────────────────────────── */
+/* ââ Status badge inside detail âââââââââââââââââââââââââââââââââââââââââââââ */
 [data-theme="dark"] .status-badge.active   { background: #052e16; color: #4ade80; }
 [data-theme="dark"] .status-badge.inactive { background: #2a1a1a; color: #f87171; }
 [data-theme="dark"] .status-badge.draft    { background: #1c1200; color: #fbbf24; }
 
-/* ═══════════════════════════════════════════════════════════════════════════
-   DARK THEME — Announcement Template Detail Panel
-   ═══════════════════════════════════════════════════════════════════════════ */
+/* âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+   DARK THEME â Announcement Template Detail Panel
+   âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ */
 
-/* ── Content template display ─────────────────────────────────────────────── */
+/* ââ Content template display âââââââââââââââââââââââââââââââââââââââââââââââ */
 [data-theme="dark"] .content-template-display {
   background: #1e1e1e;
   border-color: #2a2a2a;
@@ -5866,7 +5867,7 @@
 
 [data-theme="dark"] .template-content p { color: #cccccc; }
 
-/* ── Placeholders overview ────────────────────────────────────────────────── */
+/* ââ Placeholders overview ââââââââââââââââââââââââââââââââââââââââââââââââââ */
 [data-theme="dark"] .placeholder-overview-item {
   background: #252525;
   border-color: #3a3a3a;
@@ -5879,13 +5880,13 @@
 
 [data-theme="dark"] .placeholder-name { color: #cccccc; }
 
-/* ── Announcement preview container ──────────────────────────────────────── */
+/* ââ Announcement preview container ââââââââââââââââââââââââââââââââââââââââ */
 [data-theme="dark"] .announcement-preview-container {
   background: #1a1a1a;
   border-color: #2a2a2a;
 }
 
-/* ── Email preview ────────────────────────────────────────────────────────── */
+/* ââ Email preview ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ */
 [data-theme="dark"] .email-preview {
   background: #1e1e1e;
   border-color: #2a2a2a;
@@ -5904,7 +5905,7 @@
 [data-theme="dark"] .email-content { color: #cccccc; }
 [data-theme="dark"] .email-content p { color: #cccccc; }
 
-/* ── Config grid (announcement) ───────────────────────────────────────────── */
+/* ââ Config grid (announcement) âââââââââââââââââââââââââââââââââââââââââââââ */
 [data-theme="dark"] .config-grid .config-item {
   background: #252525;
   border-color: #3a3a3a;
@@ -5913,7 +5914,7 @@
 [data-theme="dark"] .config-grid .config-item strong { color: #888888; }
 [data-theme="dark"] .config-grid .config-item span   { color: #e0e0e0; }
 
-/* ── Grading Scheme — edit table (create/edit panel) ─────────────────────── */
+/* ââ Grading Scheme â edit table (create/edit panel) âââââââââââââââââââââââ */
 .scheme-edit-table {
   width: 100%;
   border-collapse: collapse;
@@ -5949,7 +5950,7 @@
   border-bottom: none;
 }
 
-/* ── Grading Scheme — view table (detail panel) ───────────────────────────── */
+/* ââ Grading Scheme â view table (detail panel) âââââââââââââââââââââââââââââ */
 .scheme-view-table {
   width: 100%;
   border-collapse: collapse;
@@ -6003,7 +6004,7 @@
 }
 
 
-/* ── Full email layout preview in detail panel ────────────────────────────── */
+/* ââ Full email layout preview in detail panel ââââââââââââââââââââââââââââââ */
 .at-email-full-preview {
   border-radius: 10px;
   overflow: hidden;
@@ -6016,7 +6017,7 @@
 }
 
 
-/* ── Link insertion modal ─────────────────────────────────────────────────── */
+/* ââ Link insertion modal âââââââââââââââââââââââââââââââââââââââââââââââââââ */
 .at-link-modal-overlay {
   position: fixed;
   inset: 0;
@@ -6140,3 +6141,1133 @@
   color: #888888;
 }
 [data-theme="dark"] .at-link-modal-cancel:hover { background: #252525; }
+
+
+/* --------------------------------------------------------------------------
+   Combined template  detail panel content (cards)
+   -------------------------------------------------------------------------- */
+.ct-detail .template-detail-content {
+  padding: 18px 20px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  background: #f7f7f8;
+}
+
+/* children must keep their natural height; the panel itself scrolls */
+.ct-detail .template-detail-content > * { flex-shrink: 0; }
+
+.ct-detail .ct-card {
+  margin: 0;
+  padding: 0;
+  background: #ffffff;
+  border: 1px solid #e8e8ec;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.ct-detail .ct-card > h3 {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 0;
+  padding: 11px 16px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #6b7280;
+  background: #fafafb;
+  border-bottom: 1px solid #ececf0;
+}
+
+/* assessment fields */
+.ct-detail .ct-card .assessment-fields-table {
+  border: none;
+  border-radius: 0;
+  background: transparent;
+}
+
+.ct-detail .ct-card .fields-table-header,
+.ct-detail .ct-card .fields-table-row,
+.ct-detail .ct-card .fields-table-footer {
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr);
+  gap: 12px;
+  padding: 10px 16px;
+  align-items: center;
+}
+
+.ct-detail .ct-card .fields-table-header {
+  background: transparent;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #9ca3af;
+  border-bottom: 1px solid #f0f0f3;
+}
+
+.ct-detail .ct-card .fields-table-row {
+  font-size: 13px;
+  color: #1f2937;
+  border-bottom: 1px solid #f3f3f6;
+}
+
+.ct-detail .ct-card .fields-table-row span:first-child { font-weight: 600; }
+
+.ct-detail .ct-card .fields-table-footer {
+  font-size: 13px;
+  background: #fafafb;
+  border-top: 1px solid #ececf0;
+  color: #111111;
+}
+
+.ct-detail .ct-card .fields-table-header span:not(:first-child),
+.ct-detail .ct-card .fields-table-row span:not(:first-child),
+.ct-detail .ct-card .fields-table-footer span:not(:first-child) {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* grading scheme */
+.ct-detail .ct-card .scheme-view-table { min-width: 0; font-size: 13px; }
+
+.ct-detail .ct-card .scheme-view-table th {
+  padding: 10px 16px;
+  background: transparent;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: #9ca3af;
+  border-bottom: 1px solid #f0f0f3;
+}
+
+.ct-detail .ct-card .scheme-view-table td {
+  padding: 10px 16px;
+  color: #1f2937;
+  border-bottom: 1px solid #f3f3f6;
+  font-variant-numeric: tabular-nums;
+}
+
+.ct-detail .ct-card .scheme-view-table tbody tr:nth-child(even) td { background: transparent; }
+.ct-detail .ct-card .scheme-view-table tbody tr:last-child td { border-bottom: none; }
+.ct-detail .ct-card .scheme-view-table td:first-child { font-weight: 700; color: #111111; }
+
+.pass-fail {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  line-height: 1.3;
+}
+
+.pass-fail.pass { background: #dcfce7; color: #166534; }
+.pass-fail.fail { background: #fee2e2; color: #991b1b; }
+
+/* behavioral traits */
+.ct-detail .ct-card .behavioral-traits-overview {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  padding: 14px 16px 16px;
+}
+
+.ct-detail .ct-card .trait-overview-item {
+  gap: 10px;
+  padding: 8px 12px;
+  background: #fafafb;
+  border: 1px solid #ececf0;
+  border-radius: 8px;
+  min-width: 0;
+}
+
+.ct-detail .ct-card .trait-number {
+  width: 22px;
+  height: 22px;
+  font-size: 11px;
+  background: #111111;
+}
+
+.ct-detail .ct-card .trait-name {
+  font-size: 13px;
+  color: #1f2937;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 520px) {
+  .ct-detail .ct-card .behavioral-traits-overview { grid-template-columns: 1fr; }
+}
+
+/* -- dark ------------------------------------------------------------------- */
+[data-theme="dark"] .ct-detail .template-detail-content { background: #141414; }
+
+[data-theme="dark"] .ct-detail .ct-card {
+  background: #1a1a1a;
+  border-color: #2a2a2a;
+}
+
+[data-theme="dark"] .ct-detail .ct-card > h3 {
+  background: #202020;
+  color: #8a8a8a;
+  border-bottom-color: #2a2a2a;
+}
+
+[data-theme="dark"] .ct-detail .ct-card .fields-table-header,
+[data-theme="dark"] .ct-detail .ct-card .scheme-view-table th {
+  background: transparent;
+  color: #666666;
+  border-bottom-color: #262626;
+}
+
+[data-theme="dark"] .ct-detail .ct-card .fields-table-row,
+[data-theme="dark"] .ct-detail .ct-card .scheme-view-table td {
+  color: #e0e0e0;
+  border-bottom-color: #242424;
+}
+
+[data-theme="dark"] .ct-detail .ct-card .scheme-view-table tbody tr:nth-child(even) td { background: transparent; }
+[data-theme="dark"] .ct-detail .ct-card .scheme-view-table td:first-child { color: #ffffff; }
+[data-theme="dark"] .ct-detail .ct-card .scheme-view-table tbody tr:last-child td { border-bottom: none; }
+
+[data-theme="dark"] .ct-detail .ct-card .fields-table-footer {
+  background: #202020;
+  border-top-color: #2a2a2a;
+  color: #ffffff;
+}
+
+[data-theme="dark"] .pass-fail.pass { background: rgba(34, 197, 94, 0.15); color: #4ade80; }
+[data-theme="dark"] .pass-fail.fail { background: rgba(239, 68, 68, 0.15); color: #f87171; }
+
+[data-theme="dark"] .ct-detail .ct-card .trait-overview-item {
+  background: #202020;
+  border-color: #2a2a2a;
+}
+
+[data-theme="dark"] .ct-detail .ct-card .trait-number { background: #f0f0f0; color: #111111; }
+[data-theme="dark"] .ct-detail .ct-card .trait-name { color: #e0e0e0; }
+
+
+/* -- Slim scroll bar for the grading-scheme tables -------------------------- */
+.scheme-scroll {
+  padding-bottom: 6px;
+}
+
+.scheme-scroll::-webkit-scrollbar {
+  height: 6px;
+  width: 6px;
+}
+
+.scheme-scroll::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 999px;
+}
+
+.scheme-scroll::-webkit-scrollbar-thumb {
+  background: #c4c7ce;
+  border-radius: 999px;
+}
+
+.scheme-scroll::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
+
+@supports not selector(::-webkit-scrollbar) {
+  .scheme-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: #c4c7ce rgba(0, 0, 0, 0.05);
+  }
+}
+
+[data-theme="dark"] .scheme-scroll::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.05); }
+[data-theme="dark"] .scheme-scroll::-webkit-scrollbar-thumb { background: #3a3a3a; }
+[data-theme="dark"] .scheme-scroll::-webkit-scrollbar-thumb:hover { background: #555555; }
+
+@supports not selector(::-webkit-scrollbar) {
+  [data-theme="dark"] .scheme-scroll {
+    scrollbar-color: #3a3a3a rgba(255, 255, 255, 0.05);
+  }
+}
+
+
+/* --------------------------------------------------------------------------
+   Behavioral traits � create / edit form
+   -------------------------------------------------------------------------- */
+.behavioral-traits-section.bt-section {
+  padding: 16px;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+}
+
+.bt-section .bt-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+
+.behavioral-traits-section.bt-section h3 { margin: 0; }
+
+.bt-section .bt-count {
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #4b5563;
+  background: #eceef2;
+  white-space: nowrap;
+}
+
+.behavioral-traits-section.bt-section .bt-hint {
+  margin: 0 0 12px;
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.bt-section .bt-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.bt-section .bt-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px 5px 8px;
+  border-radius: 999px;
+  border: 1px solid #d9dce2;
+  background: #ffffff;
+  color: #374151;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.2;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s, transform 0.1s;
+}
+
+.bt-section .bt-chip:hover { border-color: #111111; color: #111111; }
+.bt-section .bt-chip:active { transform: scale(0.97); }
+
+.bt-section .bt-chip-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  font-size: 11px;
+  font-weight: 700;
+  background: #eceef2;
+  color: #6b7280;
+}
+
+.bt-section .bt-chip.is-on {
+  background: #111111;
+  border-color: #111111;
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.bt-section .bt-chip.is-on .bt-chip-mark { background: rgba(255, 255, 255, 0.2); color: #ffffff; }
+
+.bt-section .bt-add {
+  display: flex;
+  gap: 8px;
+  align-items: stretch;
+  margin-bottom: 14px;
+}
+
+.create-template-form .bt-section input.bt-input {
+  flex: 1;
+  min-width: 0;
+  padding: 9px 12px;
+  font-size: 13px;
+  color: #111827;
+  background: #ffffff;
+  border: 1px solid #d9dce2;
+  border-radius: 8px;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.create-template-form .bt-section input.bt-input:focus {
+  border-color: #111111;
+  box-shadow: 0 0 0 3px rgba(17, 17, 17, 0.08);
+}
+
+.bt-section .bt-selected {
+  padding-top: 12px;
+  border-top: 1px dashed #dcdfe5;
+}
+
+.bt-section .bt-selected-label {
+  margin-bottom: 8px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #9ca3af;
+}
+
+.bt-section .bt-selected-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.bt-section .bt-tag {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  padding: 6px 8px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 12px;
+  color: #1f2937;
+}
+
+.bt-section .bt-tag-num {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #111111;
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.bt-section .bt-tag-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 500;
+}
+
+.bt-section .bt-tag-x {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: #9ca3af;
+  font-size: 11px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.bt-section .bt-tag-x:hover { background: #fee2e2; color: #b91c1c; }
+
+@media (max-width: 520px) {
+  .bt-section .bt-selected-list { grid-template-columns: 1fr; }
+}
+
+/* -- dark ------------------------------------------------------------------- */
+[data-theme="dark"] .behavioral-traits-section.bt-section {
+  background: #1e1e1e;
+  border-color: #2a2a2a;
+}
+
+[data-theme="dark"] .behavioral-traits-section.bt-section h3 { color: #f0f0f0; }
+[data-theme="dark"] .behavioral-traits-section.bt-section .bt-hint { color: #777777; }
+[data-theme="dark"] .bt-section .bt-count { background: #2a2a2a; color: #aaaaaa; }
+
+[data-theme="dark"] .bt-section .bt-chip {
+  background: #252525;
+  border-color: #3a3a3a;
+  color: #cccccc;
+}
+
+[data-theme="dark"] .bt-section .bt-chip:hover { border-color: #f0f0f0; color: #ffffff; }
+[data-theme="dark"] .bt-section .bt-chip-mark { background: #333333; color: #999999; }
+
+[data-theme="dark"] .bt-section .bt-chip.is-on {
+  background: #f0f0f0;
+  border-color: #f0f0f0;
+  color: #111111;
+}
+
+[data-theme="dark"] .bt-section .bt-chip.is-on .bt-chip-mark { background: rgba(0, 0, 0, 0.15); color: #111111; }
+
+[data-theme="dark"] .create-template-form .bt-section input.bt-input {
+  color: #f0f0f0 !important;
+  background: #252525 !important;
+  border-color: #3a3a3a !important;
+}
+
+[data-theme="dark"] .create-template-form .bt-section input.bt-input:focus {
+  border-color: #f0f0f0 !important;
+  box-shadow: 0 0 0 3px rgba(240, 240, 240, 0.1);
+}
+
+[data-theme="dark"] .bt-section .bt-selected { border-top-color: #333333; }
+[data-theme="dark"] .bt-section .bt-selected-label { color: #666666; }
+
+[data-theme="dark"] .bt-section .bt-tag {
+  background: #252525;
+  border-color: #333333;
+  color: #e0e0e0;
+}
+
+[data-theme="dark"] .bt-section .bt-tag-num { background: #f0f0f0; color: #111111; }
+[data-theme="dark"] .bt-section .bt-tag-x { color: #777777; }
+[data-theme="dark"] .bt-section .bt-tag-x:hover { background: rgba(239, 68, 68, 0.18); color: #f87171; }
+
+
+/* --------------------------------------------------------------------------
+   Combined template � grid card
+   -------------------------------------------------------------------------- */
+.template-card.ct-tcard {
+  padding: 16px;
+  gap: 12px;
+  background: #ffffff;
+  background-image: none;
+  border: 1px solid #e8e8ec;
+  border-radius: 14px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  transition: box-shadow 0.18s, border-color 0.18s, transform 0.18s;
+}
+
+.template-card.ct-tcard:hover {
+  transform: translateY(-2px);
+  border-color: #c9ccd3;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.09);
+}
+
+.ct-tcard-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.ct-tcard-title {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  line-height: 1.3;
+  color: #111111;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ct-tcard-status {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  background: #eceef2;
+  color: #4b5563;
+}
+
+.ct-tcard-status i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.ct-tcard-status.active   { background: #dcfce7; color: #166534; }
+.ct-tcard-status.inactive,
+.ct-tcard-status.archived { background: #f1f1f4; color: #6b7280; }
+.ct-tcard-status.draft    { background: #fef3c7; color: #92400e; }
+
+.ct-tcard-desc {
+  margin: 0;
+  flex: 1;
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: #6b7280;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  word-break: break-word;
+}
+
+.ct-tcard-desc.is-empty { font-style: italic; color: #a1a5ae; }
+
+.ct-tcard-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.ct-tcard-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+  padding: 9px 12px;
+  background: #f6f6f8;
+  border: 1px solid #efeff2;
+  border-radius: 10px;
+}
+
+.ct-tcard-stat b {
+  font-size: 18px;
+  font-weight: 800;
+  line-height: 1.1;
+  color: #111111;
+  font-variant-numeric: tabular-nums;
+}
+
+.ct-tcard-stat span {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #9ca3af;
+}
+
+.ct-tcard-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding-top: 12px;
+  border-top: 1px solid #f0f0f3;
+  font-size: 11px;
+  color: #9ca3af;
+}
+
+.ct-tcard-level {
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: #eceef2;
+  color: #4b5563;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.ct-tcard-date { margin-left: auto; white-space: nowrap; }
+
+/* -- dark ------------------------------------------------------------------- */
+[data-theme="dark"] .template-card.ct-tcard {
+  background: #1a1a1a;
+  background-image: none;
+  border-color: #2a2a2a;
+  box-shadow: none;
+}
+
+[data-theme="dark"] .template-card.ct-tcard:hover {
+  border-color: #444444;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.4);
+}
+
+[data-theme="dark"] .ct-tcard-title { color: #f0f0f0; }
+[data-theme="dark"] .ct-tcard-desc { color: #8a8a8a; }
+[data-theme="dark"] .ct-tcard-desc.is-empty { color: #5a5a5a; }
+
+[data-theme="dark"] .ct-tcard-status { background: #2a2a2a; color: #aaaaaa; }
+[data-theme="dark"] .ct-tcard-status.active { background: rgba(34, 197, 94, 0.15); color: #4ade80; }
+[data-theme="dark"] .ct-tcard-status.inactive,
+[data-theme="dark"] .ct-tcard-status.archived { background: #2a2a2a; color: #888888; }
+[data-theme="dark"] .ct-tcard-status.draft { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
+
+[data-theme="dark"] .ct-tcard-stat { background: #222222; border-color: #2a2a2a; }
+[data-theme="dark"] .ct-tcard-stat b { color: #f0f0f0; }
+[data-theme="dark"] .ct-tcard-stat span { color: #666666; }
+
+[data-theme="dark"] .ct-tcard-foot { border-top-color: #262626; color: #666666; }
+[data-theme="dark"] .ct-tcard-level { background: #2a2a2a; color: #aaaaaa; }
+
+
+/* -- Fee bill card extras (shares the .ct-tcard base) ----------------------- */
+.ct-tcard-stats.is-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+.ct-tcard-total {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 11px 14px;
+  background: #111111;
+  border-radius: 10px;
+  color: #ffffff;
+}
+
+.ct-tcard-total span {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.ct-tcard-total b {
+  font-size: 19px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+}
+
+.ct-tcard-items {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.ct-tcard-items li {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 12px;
+  color: #374151;
+}
+
+.ct-tcard-items li span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ct-tcard-items li em {
+  flex-shrink: 0;
+  font-style: normal;
+  font-weight: 600;
+  color: #111111;
+  font-variant-numeric: tabular-nums;
+}
+
+.ct-tcard-items li.is-more {
+  justify-content: flex-start;
+  font-size: 11px;
+  color: #9ca3af;
+}
+
+[data-theme="dark"] .ct-tcard-total { background: #f0f0f0; color: #111111; }
+[data-theme="dark"] .ct-tcard-total span { color: rgba(0, 0, 0, 0.55); }
+[data-theme="dark"] .ct-tcard-items li { color: #bbbbbb; }
+[data-theme="dark"] .ct-tcard-items li em { color: #f0f0f0; }
+[data-theme="dark"] .ct-tcard-items li.is-more { color: #666666; }
+
+
+/* -- Card extras for timetable / announcement / promotion ------------------- */
+.ct-tcard-stat b small {
+  margin-left: 3px;
+  font-size: 10px;
+  font-weight: 600;
+  color: #9ca3af;
+  text-transform: uppercase;
+}
+
+.ct-tcard-stat b.is-text {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding: 2px 0;
+  font-size: 14px;
+  line-height: 1.3;
+  text-transform: capitalize;
+}
+
+.ct-tcard-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.ct-tcard-chip {
+  padding: 3px 10px;
+  border-radius: 999px;
+  border: 1px solid #e3e5ea;
+  background: #ffffff;
+  color: #4b5563;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+[data-theme="dark"] .ct-tcard-stat b small { color: #666666; }
+[data-theme="dark"] .ct-tcard-chip { background: #222222; border-color: #333333; color: #bbbbbb; }
+
+
+/* --------------------------------------------------------------------------
+   Fee bill: create / edit form
+   -------------------------------------------------------------------------- */
+.create-template-form .bill-items-section,
+.create-template-form .payment-options-section {
+  padding: 16px 18px 18px;
+  background: #ffffff;
+  border: 1px solid #e8e8ec;
+  border-radius: 12px;
+}
+
+/* section titles */
+.create-template-form .bill-items-header h3,
+.create-template-form .payment-options-section > h3 {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #6b7280;
+}
+
+.create-template-form .payment-options-section > h3 {
+  margin-bottom: 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #f0f0f3;
+}
+
+/* bill items header: title � total � add */
+.create-template-form .bill-items-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #f0f0f3;
+}
+
+.create-template-form .bill-items-header h3 { flex: 1; }
+
+.create-template-form .total-amount-display {
+  gap: 8px;
+  padding: 6px 14px;
+  background: #111111;
+  border: none;
+  border-radius: 999px;
+}
+
+.create-template-form .total-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.create-template-form .total-value {
+  font-size: 15px;
+  font-weight: 800;
+  color: #ffffff;
+  font-variant-numeric: tabular-nums;
+}
+
+/* table: header and rows share one grid so the columns line up */
+/* each item is a two-line card:  [ name ............ ] [x]
+                                  [ amount ][ description ]       */
+.create-template-form .bill-item-row {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr) 36px;
+  gap: 10px 12px;
+}
+
+.create-template-form .bill-item-row > .drag-handle { display: none; }
+.create-template-form .bill-item-row > :nth-child(2) { grid-column: 1 / 3; grid-row: 1; }
+.create-template-form .bill-item-row > :nth-child(3) { grid-column: 1; grid-row: 2; }
+.create-template-form .bill-item-row > :nth-child(4) { grid-column: 2 / 4; grid-row: 2; }
+.create-template-form .bill-item-row > button { grid-column: 3; grid-row: 1; }
+
+.create-template-form .bill-item-row .form-input-container,
+.create-template-form .bill-item-row .form-group { margin: 0; }
+
+.create-template-form .bill-item-row input {
+  padding: 9px 12px;
+  font-size: 14px;
+}
+
+/* the old column header is not used any more */
+.create-template-form .items-table-header { display: none; }
+
+.create-template-form .bill-items-table { gap: 8px; }
+
+.create-template-form .items-table-header {
+  padding: 0 12px 2px;
+  background: transparent;
+  border-radius: 0;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #9ca3af;
+}
+
+.create-template-form .items-table-header > span:last-child { text-align: center; }
+
+.create-template-form .bill-item-row {
+  align-items: end;
+  padding: 12px;
+  background: #fafafb;
+  border: 1px solid #ececf0;
+  border-radius: 10px;
+}
+
+.create-template-form .bill-item-row:hover {
+  border-color: #c9ccd3;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.create-template-form .bill-item-row > button { justify-self: center; }
+
+.create-template-form .remove-item-btn {
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  background: transparent;
+  color: #9ca3af;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.create-template-form .remove-item-btn:hover {
+  background: #fee2e2;
+  color: #b91c1c;
+  border-color: #fecaca;
+}
+
+/* installments */
+.create-template-form .installments-section {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #f0f0f3;
+}
+
+.create-template-form .installment-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  padding: 10px 14px;
+  background: #fafafb;
+  border: 1px solid #ececf0;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #1f2937;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.create-template-form .installment-checkbox:hover { border-color: #c9ccd3; }
+
+.create-template-form .installment-checkbox input {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  accent-color: #111111;
+  cursor: pointer;
+}
+
+.create-template-form .installment-details {
+  margin-top: 12px;
+  padding: 14px 16px;
+  background: #fafafb;
+  border: 1px solid #ececf0;
+  border-left: 3px solid #111111;
+  border-radius: 10px;
+}
+
+@media (max-width: 420px) {
+  .create-template-form .bill-item-row { grid-template-columns: minmax(0, 1fr) 36px; }
+  .create-template-form .bill-item-row > :nth-child(2) { grid-column: 1; grid-row: 1; }
+  .create-template-form .bill-item-row > :nth-child(3) { grid-column: 1 / 3; grid-row: 2; }
+  .create-template-form .bill-item-row > :nth-child(4) { grid-column: 1 / 3; grid-row: 3; }
+}
+
+/* -- dark ------------------------------------------------------------------- */
+[data-theme="dark"] .create-template-form .bill-items-section,
+[data-theme="dark"] .create-template-form .payment-options-section {
+  background: #1a1a1a;
+  border-color: #2a2a2a;
+}
+
+[data-theme="dark"] .create-template-form .bill-items-header h3,
+[data-theme="dark"] .create-template-form .payment-options-section > h3 { color: #8a8a8a; }
+
+[data-theme="dark"] .create-template-form .bill-items-header,
+[data-theme="dark"] .create-template-form .payment-options-section > h3,
+[data-theme="dark"] .create-template-form .installments-section { border-color: #262626; }
+
+[data-theme="dark"] .create-template-form .total-amount-display { background: #f0f0f0; border: none; }
+[data-theme="dark"] .create-template-form .total-label { color: rgba(0, 0, 0, 0.55); }
+[data-theme="dark"] .create-template-form .total-value { color: #111111; }
+
+[data-theme="dark"] .create-template-form .items-table-header { background: transparent; color: #666666; }
+
+[data-theme="dark"] .create-template-form .bill-item-row,
+[data-theme="dark"] .create-template-form .installment-checkbox,
+[data-theme="dark"] .create-template-form .installment-details {
+  background: #202020;
+  border-color: #2e2e2e;
+}
+
+[data-theme="dark"] .create-template-form .installment-details { border-left-color: #f0f0f0; }
+
+[data-theme="dark"] .create-template-form .bill-item-row:hover,
+[data-theme="dark"] .create-template-form .installment-checkbox:hover {
+  border-color: #4a4a4a;
+  box-shadow: none;
+}
+
+[data-theme="dark"] .create-template-form .installment-checkbox { color: #e0e0e0; }
+[data-theme="dark"] .create-template-form .installment-checkbox input { accent-color: #f0f0f0; }
+
+[data-theme="dark"] .create-template-form .remove-item-btn { background: transparent; color: #777777; }
+[data-theme="dark"] .create-template-form .remove-item-btn:hover {
+  background: rgba(239, 68, 68, 0.18);
+  color: #f87171;
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+/* --------------------------------------------------------------------------
+   Fee bill template detail panel (reuses the .ct-detail card shell)
+   -------------------------------------------------------------------------- */
+.fb-detail .ct-card .bill-items-detail-table {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+}
+
+.fb-detail .ct-card .items-detail-header,
+.fb-detail .ct-card .items-detail-row,
+.fb-detail .ct-card .items-detail-footer {
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) minmax(0, 1.5fr);
+  gap: 12px;
+  align-items: center;
+  padding: 10px 16px;
+}
+
+.fb-detail .ct-card .items-detail-header {
+  background: transparent;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #9ca3af;
+  border-bottom: 1px solid #f0f0f3;
+}
+
+.fb-detail .ct-card .items-detail-row {
+  font-size: 13px;
+  color: #1f2937;
+  border-bottom: 1px solid #f3f3f6;
+}
+
+.fb-detail .ct-card .items-detail-row:last-of-type { border-bottom: none; }
+.fb-detail .ct-card .items-detail-row span:first-child { font-weight: 600; word-break: break-word; }
+.fb-detail .ct-card .items-detail-row span:last-child { color: #6b7280; word-break: break-word; }
+
+.fb-detail .ct-card .items-detail-header span:nth-child(2),
+.fb-detail .ct-card .items-detail-row .amount-cell,
+.fb-detail .ct-card .items-detail-footer .total-amount {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.fb-detail .ct-card .amount-cell {
+  color: #111111;
+  font-weight: 700;
+}
+
+.fb-detail .ct-card .items-detail-footer {
+  background: #fafafb;
+  border-top: 1px solid #ececf0;
+  font-size: 13px;
+  color: #111111;
+}
+
+.fb-detail .ct-card .items-detail-footer .total-amount {
+  color: #111111;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+/* payment configuration: label above value, two per row */
+.fb-detail .ct-card .payment-config-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0;
+  padding: 4px 0;
+}
+
+.fb-detail .ct-card .config-item {
+  gap: 3px;
+  padding: 12px 16px;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  min-width: 0;
+}
+
+.fb-detail .ct-card .config-item strong {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: #9ca3af;
+}
+
+.fb-detail .ct-card .config-item span {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #111111;
+  word-break: break-word;
+}
+
+@media (max-width: 520px) {
+  .fb-detail .ct-card .payment-config-grid { grid-template-columns: 1fr; }
+}
+
+/* dark */
+[data-theme="dark"] .fb-detail .ct-card .bill-items-detail-table { background: transparent; border: none; }
+
+[data-theme="dark"] .fb-detail .ct-card .items-detail-header {
+  background: transparent;
+  color: #666666;
+  border-bottom-color: #262626;
+}
+
+[data-theme="dark"] .fb-detail .ct-card .items-detail-row {
+  background: transparent;
+  color: #e0e0e0;
+  border-bottom-color: #242424;
+}
+
+[data-theme="dark"] .fb-detail .ct-card .items-detail-row:last-of-type { border-bottom: none; }
+[data-theme="dark"] .fb-detail .ct-card .items-detail-row span:last-child { color: #8a8a8a; }
+[data-theme="dark"] .fb-detail .ct-card .amount-cell { color: #f0f0f0; }
+
+[data-theme="dark"] .fb-detail .ct-card .items-detail-footer {
+  background: #202020;
+  border-top-color: #2a2a2a;
+  color: #f0f0f0;
+}
+
+[data-theme="dark"] .fb-detail .ct-card .items-detail-footer .total-amount { color: #ffffff; }
+[data-theme="dark"] .fb-detail .ct-card .config-item { background: transparent; border: none; }
+[data-theme="dark"] .fb-detail .ct-card .config-item strong { color: #666666; }
+[data-theme="dark"] .fb-detail .ct-card .config-item span { color: #f0f0f0; }

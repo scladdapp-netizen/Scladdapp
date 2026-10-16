@@ -1344,18 +1344,35 @@ const CreateSessionWizard = () => {
               >
                 <div className="template-card-header">
                   <h4 className="template-card-title">{template.name}</h4>
-                  <span className={`template-card-status ${template.status}`}>
-                    {template.status}
+                  <span className="template-card-header-end">
+                    <span className={`template-card-status ${template.status}`}>
+                      {template.status}
+                    </span>
+                    {sessionData.selectedPromotionTemplate === template.template_id && (
+                      <span className="template-card-check" aria-label="Selected">
+                        <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                          <path d="M2.5 6.5l2.5 2.5 4.5-5.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                      </span>
+                    )}
                   </span>
                 </div>
-                <p className="template-card-description">
-                  {template.description || "No description provided"}
-                </p>
+                <div className="template-card-body">
+                  <p className={`template-card-description${template.description ? "" : " is-empty"}`}>
+                    {template.description || "No description provided"}
+                  </p>
+                </div>
                 <div className="template-card-meta">
-                  <span>Level: {template.level}</span>
-                  <span>
-                    Last Modified: {new Date(template.last_modified).toLocaleDateString()}
-                  </span>
+                  <div className="template-card-meta-row">
+                    <span className="template-card-meta-label">Level</span>
+                    <span className="template-card-meta-value">{template.level || "All Levels"}</span>
+                  </div>
+                  <div className="template-card-meta-row">
+                    <span className="template-card-meta-label">Last Modified</span>
+                    <span className="template-card-meta-value">
+                      {new Date(template.last_modified).toLocaleDateString()}
+                    </span>
+                  </div>
                 </div>
               </div>
             ))

@@ -292,33 +292,46 @@ const TargetAudienceSelector = ({
       count: alumni.filter(a => a.graduationYear === year).length,
     }));
 
+  const groupOptions = filteredOptions.filter((o) => !o.value.startsWith("specific_"));
+  const specificOptions = filteredOptions.filter((o) => o.value.startsWith("specific_"));
+
+  const renderOption = (opt) => (
+    <div
+      key={opt.value}
+      className={`tas-option ${selectedType === opt.value ? "selected" : ""}`}
+      onClick={() => handleTypeChange(opt.value)}
+    >
+      <div className="tas-option-icon">{ICONS[opt.value]}</div>
+      <div className="tas-option-body">
+        <span className="tas-option-label">{opt.label}</span>
+        <span className="tas-option-desc">{opt.description}</span>
+      </div>
+      {selectedType === opt.value && (
+        <div className="tas-option-check">
+          <svg width="10" height="10" viewBox="0 0 12 12" fill="none">
+            <path d="M2 6l3 3 5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </div>
+      )}
+    </div>
+  );
+
   return (
     <div className="tas-wrap">
 
-      {/* ── Option grid ── */}
-      <div className="tas-grid">
-        {filteredOptions.map((opt) => (
-          <div
-            key={opt.value}
-            className={`tas-option ${selectedType === opt.value ? "selected" : ""}`}
-            onClick={() => handleTypeChange(opt.value)}
-          >
-            <div className="tas-option-icon">
-              {ICONS[opt.value]}
+      {/* ── Option groups ── */}
+      <div className="tas-groups">
+        {[
+          { key: "groups", label: "Groups", items: groupOptions },
+          { key: "specific", label: "Pick individually", items: specificOptions },
+        ]
+          .filter((g) => g.items.length > 0)
+          .map((g) => (
+            <div key={g.key} className="tas-group">
+              <p className="tas-group-label">{g.label}</p>
+              <div className="tas-grid">{g.items.map(renderOption)}</div>
             </div>
-            <div className="tas-option-body">
-              <span className="tas-option-label">{opt.label}</span>
-              <span className="tas-option-desc">{opt.description}</span>
-            </div>
-            {selectedType === opt.value && (
-              <div className="tas-option-check">
-                <svg width="11" height="11" viewBox="0 0 12 12" fill="none">
-                  <path d="M2 6l3 3 5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-              </div>
-            )}
-          </div>
-        ))}
+          ))}
       </div>
 
       {/* ── Summary banner ── */}

@@ -1,0 +1,461 @@
+/* ══════════════════════════════════════════════════════════════════════════
+   Class promotion template: create / edit form  (scoped to .cp-form)
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* FormInput adds its own 1rem bottom margin; the form gap handles spacing */
+.create-template-form.cp-form [style*="margin-bottom"] { margin-bottom: 0 !important; }
+
+.create-template-form.cp-form { gap: 18px; }
+.create-template-form.cp-form .form-row { gap: 14px; }
+
+/* ── open section (no card) ───────────────────────────────────────────────── */
+.create-template-form.cp-form .class-promotion-section {
+  margin: 4px 0 0;
+  padding: 20px 0 0;
+  background: transparent;
+  border: none;
+  border-top: 1px solid #ececf0;
+  border-radius: 0;
+}
+
+.create-template-form.cp-form .criteria-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.create-template-form.cp-form .class-promotion-section h3 {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #6b7280;
+}
+
+.create-template-form.cp-form .header-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* the two icon buttons */
+.create-template-form.cp-form .create-class-btn,
+.create-template-form.cp-form .refresh-classes-btn {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  background: #ffffff;
+  color: #4b5563;
+  border: 1px solid #d9dce2;
+  border-radius: 8px;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.create-template-form.cp-form .create-class-btn:hover,
+.create-template-form.cp-form .refresh-classes-btn:hover {
+  background: #111111;
+  border-color: #111111;
+  color: #ffffff;
+}
+
+.create-template-form.cp-form .section-description {
+  margin: 0 0 16px;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.6;
+  color: #9ca3af;
+}
+
+.create-template-form.cp-form .section-description strong {
+  display: inline-block;
+  padding: 0 7px;
+  border-radius: 999px;
+  background: #111111;
+  color: #ffffff;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+/* ── rule rows:  [ from ]  →  [ to ]  [x] ─────────────────────────────────── */
+.create-template-form.cp-form .class-promotion-section .criterion-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 28px minmax(0, 1fr) 34px;
+  align-items: end;
+  gap: 8px;
+  margin: 0;
+  padding: 10px 0;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid #f0f0f3;
+  border-radius: 0;
+}
+
+.create-template-form.cp-form .class-promotion-section .criterion-row:last-child {
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.create-template-form.cp-form .class-promotion-section .section-description + .criterion-row { padding-top: 0; }
+
+.create-template-form.cp-form .criterion-row > .form-field:nth-child(1) { grid-column: 1; grid-row: 1; }
+.create-template-form.cp-form .criterion-row > .promotion-arrow { grid-column: 2; grid-row: 1; }
+.create-template-form.cp-form .criterion-row > .form-field:nth-child(2) { grid-column: 3; grid-row: 1; }
+.create-template-form.cp-form .criterion-row > .remove-criterion-btn { grid-column: 4; grid-row: 1; }
+
+.create-template-form.cp-form .criterion-row .form-field { min-width: 0; }
+
+/* captions only above the first rule, like a table header */
+.create-template-form.cp-form .criterion-row .form-field > label {
+  display: none;
+  margin-bottom: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: #555555;
+}
+
+.create-template-form.cp-form .section-description + .criterion-row .form-field > label { display: block; }
+
+.create-template-form.cp-form .promotion-arrow {
+  height: 40px;
+  min-width: 0;
+  padding: 0;
+  color: #9ca3af;
+  font-size: 16px;
+  font-weight: 400;
+}
+
+/* searchable selects: same look as the other inputs in this form */
+.create-template-form.cp-form .searchable-select-container { margin-bottom: 0; }
+
+.create-template-form.cp-form .searchable-select-input {
+  height: 40px;
+  padding: 0 34px 0 10px;
+  background: #ffffff;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 14px;
+  color: #6b7280;
+}
+
+.create-template-form.cp-form .searchable-select-input.has-value {
+  border-color: #ccc;
+  color: #111111;
+  font-weight: 600;
+}
+
+.create-template-form.cp-form .searchable-select-input:focus {
+  border-color: #111111;
+  box-shadow: 0 0 0 3px rgba(17, 17, 17, 0.08);
+}
+
+.create-template-form.cp-form .remove-criterion-btn {
+  width: 34px;
+  height: 40px;
+  padding: 0;
+  background: transparent;
+  color: #9ca3af;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.create-template-form.cp-form .remove-criterion-btn:hover {
+  background: #fee2e2;
+  color: #b91c1c;
+  border-color: #fecaca;
+}
+
+/* ══ dark ═══════════════════════════════════════════════════════════════════ */
+body[data-theme="dark"] .create-template-form.cp-form .class-promotion-section {
+  background: transparent;
+  border: none;
+  border-top: 1px solid #2a2a2a;
+}
+
+body[data-theme="dark"] .create-template-form.cp-form .class-promotion-section h3 { color: #8a8a8a; }
+body[data-theme="dark"] .create-template-form.cp-form .section-description { color: #666666; }
+
+body[data-theme="dark"] .create-template-form.cp-form .section-description strong {
+  background: #f0f0f0;
+  color: #111111;
+}
+
+body[data-theme="dark"] .create-template-form.cp-form .create-class-btn,
+body[data-theme="dark"] .create-template-form.cp-form .refresh-classes-btn {
+  background: #252525;
+  border-color: #3a3a3a;
+  color: #bbbbbb;
+}
+
+body[data-theme="dark"] .create-template-form.cp-form .create-class-btn:hover,
+body[data-theme="dark"] .create-template-form.cp-form .refresh-classes-btn:hover {
+  background: #f0f0f0;
+  border-color: #f0f0f0;
+  color: #111111;
+}
+
+body[data-theme="dark"] .create-template-form.cp-form .class-promotion-section .criterion-row {
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid #262626;
+}
+
+body[data-theme="dark"] .create-template-form.cp-form .class-promotion-section .criterion-row:last-child { border-bottom: none; }
+body[data-theme="dark"] .create-template-form.cp-form .criterion-row .form-field > label { color: #888888; }
+body[data-theme="dark"] .create-template-form.cp-form .promotion-arrow { color: #666666; }
+
+body[data-theme="dark"] .create-template-form.cp-form .searchable-select-input {
+  background: #252525;
+  border-color: #3a3a3a;
+  color: #777777;
+}
+
+body[data-theme="dark"] .create-template-form.cp-form .searchable-select-input.has-value {
+  background: #252525;
+  border-color: #3a3a3a;
+  color: #f0f0f0;
+}
+
+body[data-theme="dark"] .create-template-form.cp-form .searchable-select-input:focus {
+  border-color: #f0f0f0;
+  box-shadow: 0 0 0 3px rgba(240, 240, 240, 0.1);
+}
+
+body[data-theme="dark"] .create-template-form.cp-form .remove-criterion-btn { background: transparent; color: #777777; }
+
+body[data-theme="dark"] .create-template-form.cp-form .remove-criterion-btn:hover {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.3);
+  color: #f87171;
+}
+
+/* ── narrow panel: stack from / to, keep the captions ─────────────────────── */
+@media (max-width: 420px) {
+  .create-template-form.cp-form .class-promotion-section .criterion-row {
+    grid-template-columns: minmax(0, 1fr) 34px;
+    row-gap: 10px;
+  }
+
+  .create-template-form.cp-form .criterion-row > .form-field:nth-child(1) { grid-column: 1; grid-row: 1; }
+  .create-template-form.cp-form .criterion-row > .promotion-arrow { display: none; }
+  .create-template-form.cp-form .criterion-row > .form-field:nth-child(2) { grid-column: 1; grid-row: 2; }
+  .create-template-form.cp-form .criterion-row > .remove-criterion-btn { grid-column: 2; grid-row: 1 / 3; align-self: center; }
+  .create-template-form.cp-form .criterion-row .form-field > label { display: block; }
+}
+
+/* --------------------------------------------------------------------------
+   Class promotion template detail panel (reuses the .ct-detail card shell)
+   -------------------------------------------------------------------------- */
+.cpm-detail .ct-card.cpm-detail-section > h3 .cpm-detail-count {
+  padding: 2px 9px;
+  background: #111111;
+  border: none;
+  color: #ffffff;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: none;
+}
+
+.cpm-detail .cpm-detail-hint {
+  margin: 0;
+  padding: 12px 16px 10px;
+  font-size: 12px;
+  line-height: 1.55;
+  color: #9ca3af;
+}
+
+.cpm-detail .cpm-detail-hint strong {
+  display: inline-block;
+  padding: 0 7px;
+  border-radius: 999px;
+  background: #111111;
+  color: #ffffff;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.cpm-detail .cpm-mapping-list { gap: 0; }
+
+.cpm-detail .cpm-mapping-row {
+  grid-template-columns: 24px minmax(0, 1fr) 16px minmax(0, 1fr);
+  gap: 10px;
+  padding: 10px 16px;
+  background: transparent;
+  border: none;
+  border-top: 1px solid #f3f3f6;
+  border-radius: 0;
+}
+
+.cpm-detail .cpm-mapping-row--alumni { background: transparent; border-color: #f3f3f6; }
+
+.cpm-detail .cpm-mapping-step {
+  width: 22px;
+  height: 22px;
+  background: transparent;
+  border: 1px solid #e3e3e8;
+  color: #9ca3af;
+  font-size: 10.5px;
+}
+
+.cpm-detail .cpm-mapping-chip {
+  justify-self: start;
+  max-width: 100%;
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.cpm-detail .cpm-mapping-chip--from { background: #f3f3f6; border-color: #e3e3e8; color: #111111; }
+.cpm-detail .cpm-mapping-chip--to { background: #111111; border-color: #111111; color: #ffffff; }
+.cpm-detail .cpm-mapping-chip--alumni { background: #fef3c7; border-color: #fcd34d; color: #92400e; }
+
+.cpm-detail .cpm-mapping-arrow { font-size: 14px; font-weight: 400; color: #9ca3af; }
+
+.cpm-detail .cpm-mapping-empty {
+  margin: 0;
+  padding: 22px 16px;
+  background: transparent;
+  border: none;
+  border-top: 1px solid #f3f3f6;
+  border-radius: 0;
+  font-size: 13px;
+  color: #9ca3af;
+}
+
+@media (max-width: 560px) {
+  .cpm-detail .cpm-mapping-row { grid-template-columns: 24px minmax(0, 1fr); }
+  .cpm-detail .cpm-mapping-arrow { display: none; }
+  .cpm-detail .cpm-mapping-chip--to,
+  .cpm-detail .cpm-mapping-chip--alumni { grid-column: 2; }
+}
+
+/* dark */
+[data-theme="dark"] .cpm-detail .ct-card.cpm-detail-section > h3 .cpm-detail-count { background: #f0f0f0; color: #111111; }
+[data-theme="dark"] .cpm-detail .cpm-detail-hint { color: #666666; }
+[data-theme="dark"] .cpm-detail .cpm-detail-hint strong { background: #f0f0f0; color: #111111; }
+
+[data-theme="dark"] .cpm-detail .cpm-mapping-row {
+  background: transparent;
+  border-color: #242424;
+}
+
+[data-theme="dark"] .cpm-detail .cpm-mapping-step { background: transparent; border-color: #333333; color: #777777; }
+[data-theme="dark"] .cpm-detail .cpm-mapping-chip--from { background: #252525; border-color: #333333; color: #f0f0f0; }
+[data-theme="dark"] .cpm-detail .cpm-mapping-chip--to { background: #f0f0f0; border-color: #f0f0f0; color: #111111; }
+[data-theme="dark"] .cpm-detail .cpm-mapping-chip--alumni { background: rgba(245, 158, 11, 0.15); border-color: rgba(245, 158, 11, 0.4); color: #fbbf24; }
+[data-theme="dark"] .cpm-detail .cpm-mapping-arrow { color: #666666; }
+[data-theme="dark"] .cpm-detail .cpm-mapping-empty { background: transparent; border-color: #242424; color: #666666; }
+
+/* name / grade level / description block sits above the mapping card */
+/* simple: one white card, label above value, hairline between rows */
+.cpm-detail .cpm-info-section {
+  margin: 0;
+  padding: 0;
+  background: #ffffff;
+  border: 1px solid #e8e8ec;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.cpm-detail .cpm-info-section .cpm-info-hero {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  padding: 14px 16px;
+  background: transparent;
+  border-radius: 0;
+}
+
+.cpm-detail .cpm-info-section .cpm-info-hero::before { display: none; }
+
+.cpm-detail .cpm-info-section .cpm-info-label {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: #9ca3af;
+}
+
+.cpm-detail .cpm-info-section .cpm-info-name {
+  margin: 0;
+  padding: 0;
+  border: none;
+  text-transform: none;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: #111111;
+}
+
+.cpm-detail .cpm-info-section .cpm-info-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.cpm-detail .cpm-info-section .cpm-info-card {
+  gap: 4px;
+  padding: 12px 16px;
+  background: transparent;
+  border: none;
+  border-top: 1px solid #f0f0f3;
+  border-radius: 0;
+}
+
+.cpm-detail .cpm-info-section .cpm-info-level {
+  padding: 0;
+  background: transparent;
+  color: #111111;
+  font-size: 13.5px;
+  font-weight: 600;
+  border-radius: 0;
+}
+
+.cpm-detail .cpm-info-section .cpm-info-desc {
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: #374151;
+}
+
+/* dark */
+[data-theme="dark"] .cpm-detail .cpm-info-section { background: #1a1a1a; border-color: #2a2a2a; }
+[data-theme="dark"] .cpm-detail .cpm-info-section .cpm-info-hero { background: transparent; }
+[data-theme="dark"] .cpm-detail .cpm-info-section .cpm-info-label { color: #666666; }
+[data-theme="dark"] .cpm-detail .cpm-info-section .cpm-info-name { color: #f0f0f0; }
+[data-theme="dark"] .cpm-detail .cpm-info-section .cpm-info-card { background: transparent; border-color: #262626; }
+[data-theme="dark"] .cpm-detail .cpm-info-section .cpm-info-level { background: transparent; color: #f0f0f0; }
+[data-theme="dark"] .cpm-detail .cpm-info-section .cpm-info-desc { color: #c4c4c4; }
+
+/* each side: code pill with the class name underneath */
+.cpm-detail .cpm-mapping-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  min-width: 0;
+}
+
+.cpm-detail .cpm-mapping-name {
+  max-width: 100%;
+  padding-left: 2px;
+  font-size: 11.5px;
+  font-weight: 500;
+  line-height: 1.3;
+  color: #6b7280;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+[data-theme="dark"] .cpm-detail .cpm-mapping-name { color: #8a8a8a; }

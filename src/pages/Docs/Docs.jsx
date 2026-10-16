@@ -8,6 +8,16 @@ import { getTopicBlocks, getStepBlocks, topicSearchText } from "./docsBlocksUtil
 import "./Docs.css";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:1234";
+const HIDDEN_DOC_IDS = new Set(["tutorial-videos-library"]);
+
+function publicDocs(data) {
+  return data
+    .map((section) => ({
+      ...section,
+      items: (section.items || []).filter((item) => !HIDDEN_DOC_IDS.has(item.id)),
+    }))
+    .filter((section) => section.items.length > 0);
+}
 
 function DocsStatusPanel({ type, message, onRetry }) {
   const isLoading = type === "loading";
@@ -62,7 +72,7 @@ const Docs = () => {
       })
       .then((res) => {
         if (res.success && Array.isArray(res.data) && res.data.length > 0) {
-          setDocsContent(res.data);
+          setDocsContent(publicDocs(res.data));
           setError(null);
         } else {
           setDocsContent([]);

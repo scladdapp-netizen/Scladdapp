@@ -4,6 +4,7 @@ import Button from "../../../../../components/Button/Button";
 import SlideInMenu from "../../../../../components/SlideInMenu/SlideInMenu";
 import FormInput from "../../../../../components/FormInput";
 import InnerTabCon from "../../../../../components/InnerTabCon/InnerTabCon";
+import { formatCardDate } from "../formatCardDate";
 import Timetable from "../../../../../components/timetable/Timetable";
 import { useTimetableTemplate } from "../../../../../api_call";
 import { useNotification } from "../../../../../context/NotificationProvider/NotificationProvider";
@@ -642,38 +643,43 @@ const TimetableTemplates = () => {
               {timetableTemplates.map((template) => (
                 <div
                   key={template.id}
-                  className="template-card"
+                  className="template-card ct-tcard"
                   onClick={() => handleViewTemplate(template)}
-                  style={{ cursor: "pointer" }}
                 >
-                  <div className="template-card-header">
-                    <h4 className="template-card-title">{template.name}</h4>
-                    <span className={`template-card-status ${template.status}`}>
+                  <div className="ct-tcard-top">
+                    <h4 className="ct-tcard-title" title={template.name}>{template.name}</h4>
+                    <span className={`ct-tcard-status ${template.status}`}>
+                      <i />
                       {template.status}
                     </span>
                   </div>
-                  <p className="template-card-description">
-                    {template.description}
-                  </p>
-                  <div className="template-details">
-                    <div className="template-detail-item">
-                      <strong>Type:</strong> {template.type}
+                  {template.description ? (
+                    <p className="ct-tcard-desc">{template.description}</p>
+                  ) : (
+                    <p className="ct-tcard-desc is-empty">No description</p>
+                  )}
+                  <div className="ct-tcard-stats">
+                    <div className="ct-tcard-stat">
+                      <b>{(template.selectedDays || []).length}</b>
+                      <span>Days / week</span>
                     </div>
-                    <div className="template-detail-item">
-                      <strong>Days:</strong> {template.selectedDays.length}{" "}
-                      days/week
+                    <div className="ct-tcard-stat">
+                      <b>{template.maxPeriodDuration}<small>min</small></b>
+                      <span>Max period</span>
                     </div>
-                    <div className="template-detail-item">
-                      <strong>Max Duration:</strong>{" "}
-                      {template.maxPeriodDuration} min
-                    </div>
-                    <div className="template-detail-item">
-                      <strong>Breaks:</strong> {template.breaks.length}
+                    <div className="ct-tcard-stat">
+                      <b>{(template.breaks || []).length}</b>
+                      <span>Breaks</span>
                     </div>
                   </div>
-                  <div className="template-card-meta">
-                    <span>Modified: {template.lastModified}</span>
-                    <span>By: {template.createdBy}</span>
+                  <div className="ct-tcard-foot">
+                    {template.type ? <span className="ct-tcard-level">{template.type}</span> : <span />}
+                    <span
+                      className="ct-tcard-date"
+                      title={template.createdBy ? `Created by ${template.createdBy}` : undefined}
+                    >
+                      Modified {formatCardDate(template.lastModified)}
+                    </span>
                   </div>
                 </div>
               ))}
@@ -695,7 +701,7 @@ const TimetableTemplates = () => {
                 <p>Configure your timetable structure and layout</p>
               </div>
 
-              <div className="create-template-form">
+              <div className="create-template-form tt-form">
                 <div className="form-row">
                   <FormInput
                     label="Template Name *"
@@ -970,7 +976,7 @@ const TimetableTemplates = () => {
             width="720px"
           >
             {selectedTemplate && (
-              <div className="template-detail-container tt-detail">
+              <div className="template-detail-container ct-detail tt-detail">
                 <div className="template-detail-header">
                   <div className="template-detail-title">
                     <h2>{selectedTemplate.name}</h2>
@@ -1092,27 +1098,30 @@ const TimetableTemplates = () => {
                 <div className="template-detail-actions">
                   <Button
                     variant="secondary"
+                    title="Edit"
+                    aria-label="Edit"
                     onClick={() => handleEditTemplate(selectedTemplate)}
                     disabled={isSubmitting}
                   >
-                    <FaEdit size={14} style={{ marginRight: "8px" }} />
-                    Edit
+                    <FaEdit size={14} />
                   </Button>
                   <Button
                     variant="secondary"
+                    title="Duplicate"
+                    aria-label="Duplicate"
                     onClick={() => handleDuplicate(selectedTemplate)}
                     disabled={isSubmitting}
                   >
-                    <FaCopy size={14} style={{ marginRight: "8px" }} />
-                    Duplicate
+                    <FaCopy size={14} />
                   </Button>
                   <Button
                     variant="danger"
+                    title="Delete"
+                    aria-label="Delete"
                     onClick={() => handleDelete(selectedTemplate)}
                     disabled={isSubmitting}
                   >
-                    <FaTrash size={14} style={{ marginRight: "8px" }} />
-                    Delete
+                    <FaTrash size={14} />
                   </Button>
                 </div>
               </div>

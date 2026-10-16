@@ -77,6 +77,31 @@ const UnifiedDetailSidebar = ({
     return location.pathname.includes(`/${sessionId}/${navId}`);
   };
 
+  // Sessions / subsessions: only started terms (active + past), newest on top.
+  // Falls back to the order from the backend (reversed) when dates are missing.
+  const orderedSessions = (() => {
+    const todayStr = new Date().toLocaleDateString("en-CA");
+    const ts = (v) => (v ? new Date(v).getTime() : NaN);
+    const byNewest = (a, b, key) => {
+      const x = ts(a[key]);
+      const y = ts(b[key]);
+      if (Number.isNaN(x) || Number.isNaN(y)) return 0;
+      return y - x;
+    };
+
+    return [...(sessionData || [])]
+      .reverse()
+      .map((session) => {
+        const subs = [...(session.subsessions || [])]
+          .reverse()
+          .filter((sub) => !sub.subsession_start_date || sub.subsession_start_date <= todayStr)
+          .sort((a, b) => byNewest(a, b, "subsession_start_date"));
+        return { ...session, subsessions: subs };
+      })
+      .filter((session) => session.subsessions.length > 0)
+      .sort((a, b) => byNewest(a, b, "session_start_date"));
+  })();
+
   const handleSessionClick = (sessionId) => {
     // Only expand/collapse, don't navigate
     if (expandedSession === sessionId) {
@@ -149,7 +174,7 @@ const UnifiedDetailSidebar = ({
       {/* Sessions List with nested navigation */}
       {sessionItems && sessionItems.length > 0 && sessionData && sessionData.length > 0 && (
         <div className="sessions-section">
-          {[...sessionData].reverse().map((session) => {
+          {orderedSessions.map((session) => {
             // Determine if this session is currently active
             const today = new Date();
             today.setHours(0, 0, 0, 0);
@@ -159,7 +184,13 @@ const UnifiedDetailSidebar = ({
 
             return (
               <div key={session.session_id}>
-                {session.subsessions && session.subsessions.map((subsession) => (
+                {session.subsessions && session.subsessions.map((subsession) => {
+                  const isActiveSubsession =
+                    subsession.subsession_start_date && subsession.subsession_end_date
+                      ? today >= new Date(subsession.subsession_start_date) &&
+                        today <= new Date(subsession.subsession_end_date)
+                      : isActiveSession;
+                  return (
                   <div key={subsession.subsession_id} className="session-folder">
                     <div
                       className="sidebar-item"
@@ -174,13 +205,13 @@ const UnifiedDetailSidebar = ({
                         <div className="session-text">
                           <p className={`session-name ${subsession.subsession_id === subseasion ? "active-session" : ""}`}>
                             {session.session_name}
-                            {isActiveSession && (
+                            {isActiveSubsession && (
                               <span style={{
                                 display: "inline-block", width: 7, height: 7,
                                 borderRadius: "50%", background: "#10b981",
                                 marginLeft: 6, verticalAlign: "middle",
                                 flexShrink: 0,
-                              }} title="Active session" />
+                              }} title="Active term" />
                             )}
                           </p>
                           <p className={`subsession-name ${subsession.subsession_id === subseasion ? "active-subsession" : ""}`}>
@@ -205,7 +236,8 @@ const UnifiedDetailSidebar = ({
                       </div>
                     )}
                   </div>
-                ))}
+                  );
+                })}
               </div>
             );
           })}

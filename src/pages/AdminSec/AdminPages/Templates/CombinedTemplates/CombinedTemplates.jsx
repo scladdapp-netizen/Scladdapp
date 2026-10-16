@@ -24,6 +24,12 @@ const EMPTY_FORM = {
   behavioralTraits: [],
 };
 
+const formatCardDate = (v) => {
+  if (!v) return "—";
+  const d = new Date(v);
+  return Number.isNaN(d.getTime()) ? String(v) : d.toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
+};
+
 const CombinedTemplates = () => {
   const { schoolId } = useParams();
   const navigate = useNavigate();
@@ -88,6 +94,27 @@ const CombinedTemplates = () => {
     return overlaps;
   };
   const overlaps = checkOverlaps();
+
+  // How much of 0–100% the grade ranges cover (overlaps counted once), and what is left uncovered.
+  const schemeCoverage = (() => {
+    const covered = new Array(101).fill(false);
+    formData.gradingScheme.forEach((s) => {
+      if (s.minRange === "" || s.maxRange === "") return;
+      const lo = Math.max(0, parseInt(s.minRange));
+      const hi = Math.min(100, parseInt(s.maxRange));
+      if (Number.isNaN(lo) || Number.isNaN(hi) || lo > hi) return;
+      for (let p = lo; p <= hi; p++) covered[p] = true;
+    });
+    const gaps = [];
+    let start = null;
+    for (let p = 0; p <= 101; p++) {
+      if (p <= 100 && !covered[p]) { if (start === null) start = p; }
+      else if (start !== null) { gaps.push(start === p - 1 ? `${start}%` : `${start}–${p - 1}%`); start = null; }
+    }
+    const percent = Math.round((covered.filter(Boolean).length / 101) * 100);
+    return { percent, gaps, full: gaps.length === 0 };
+  })();
+  const isSchemeValid = schemeCoverage.full && overlaps.length === 0;
 
   const set = (field) => (value) => setFormData((p) => ({ ...p, [field]: value }));
 
@@ -277,21 +304,22 @@ const CombinedTemplates = () => {
           ) : (
             <div className="template-grid">
               {templates.map((t) => (
-                <div key={t.template_id} className="template-card" onClick={async () => { setSelectedTemplate(t); const r = await checkIsAssigned(t.template_id); setTemplateAssigned(r.assigned); setIsDetailMenuOpen(true); }} style={{ cursor: "pointer" }}>
-                  <div className="template-card-header">
-                    <h4 className="template-card-title">{t.name}</h4>
-                    <span className={`template-card-status ${t.status}`}>{t.status}</span>
+                <div key={t.template_id} className="template-card ct-tcard" onClick={async () => { setSelectedTemplate(t); const r = await checkIsAssigned(t.template_id); setTemplateAssigned(r.assigned); setIsDetailMenuOpen(true); }}>
+                  <div className="ct-tcard-top">
+                    <h4 className="ct-tcard-title" title={t.name}>{t.name}</h4>
+                    <span className={`ct-tcard-status ${t.status}`}><i />{t.status}</span>
                   </div>
-                  <p className="template-card-description">{t.description}</p>
-                  <div className="template-details">
-                    <div className="template-detail-item"><strong>Fields:</strong> {(t.grading_fields || []).length}</div>
-                    <div className="template-detail-item"><strong>Grades:</strong> {(t.grading_scheme || []).length}</div>
-                    <div className="template-detail-item"><strong>Level:</strong> {t.level}</div>
-                    <div className="template-detail-item"><strong>Sections:</strong> {(t.sections || []).length}</div>
+                  {t.description
+                    ? <p className="ct-tcard-desc">{t.description}</p>
+                    : <p className="ct-tcard-desc is-empty">No description</p>}
+                  <div className="ct-tcard-stats">
+                    <div className="ct-tcard-stat"><b>{(t.grading_fields || []).length}</b><span>Fields</span></div>
+                    <div className="ct-tcard-stat"><b>{(t.grading_scheme || []).length}</b><span>Grades</span></div>
+                    <div className="ct-tcard-stat"><b>{(t.sections || []).length}</b><span>Sections</span></div>
                   </div>
-                  <div className="template-card-meta">
-                    <span>Modified: {t.last_modified}</span>
-                    <span>By: {t.created_by || "----"}</span>
+                  <div className="ct-tcard-foot">
+                    {t.level ? <span className="ct-tcard-level">{t.level}</span> : <span />}
+                    <span className="ct-tcard-date" title={t.created_by ? `Created by ${t.created_by}` : undefined}>Modified {formatCardDate(t.last_modified)}</span>
                   </div>
                 </div>
               ))}
@@ -363,11 +391,15 @@ const CombinedTemplates = () => {
                 <div className="grading-scheme-section">
                   <div className="grading-scheme-header">
                     <h3>Grading Scheme</h3>
+                    <span className={`total-weight ${isSchemeValid ? "valid" : "invalid"}`} title="How much of 0%–100% your grades cover">
+                      Total: {schemeCoverage.percent}%
+                      {!isSchemeValid && <FaExclamationTriangle size={12} style={{ marginLeft: 4 }} />}
+                    </span>
                     <Button variant="secondary" onClick={() => setFormData((p) => ({ ...p, gradingScheme: [...p.gradingScheme, { gradeLetter: "", minRange: "", maxRange: "", gradePoint: "", passFail: "Pass" }] }))}>
                       <FaPlus size={12} /> Add Grade
                     </Button>
                   </div>
-                  <div style={{ overflowX: "auto", width: "100%" }}>
+                  <div className="scheme-scroll" style={{ overflowX: "auto", width: "100%" }}>
                     <table className="scheme-edit-table">
                       <thead>
                         <tr>
@@ -399,34 +431,43 @@ const CombinedTemplates = () => {
                       </tbody>
                     </table>
                   </div>
+                  {!schemeCoverage.full && <div className="weight-warning"><FaExclamationTriangle size={14} /><span>Grades should cover 0% to 100%. Not covered: {schemeCoverage.gaps.join(", ")}</span></div>}
                   {overlaps.length > 0 && <div className="range-warning"><FaExclamationTriangle size={14} /><span>{overlaps.join(", ")}</span></div>}
                 </div>
 
                 {/* ── Behavioral Traits ── */}
-                <div className="behavioral-traits-section" style={{ marginTop: "16px" }}>
-                  <h3>Behavioral Traits</h3>
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 12 }}>
+                <div className="behavioral-traits-section bt-section" style={{ marginTop: "16px" }}>
+                  <div className="bt-head">
+                    <h3>Behavioral Traits</h3>
+                    <span className="bt-count">{formData.behavioralTraits.length} selected</span>
+                  </div>
+                  <p className="bt-hint">Pick the traits teachers will rate on the report card.</p>
+                  <div className="bt-chips">
                     {["Neatness","Punctuality","Politeness","Honesty","Leadership","Cooperation","Attentiveness","Initiative","Self-Control","Respect for Others","Responsibility","Perseverance","Creativity","Problem Solving","Time Management","Teamwork"].map((t) => {
                       const selected = formData.behavioralTraits.includes(t);
                       return (
-                        <button key={t} onClick={() => toggleTrait(t)} style={{ padding: "4px 10px", borderRadius: 20, fontSize: 12, cursor: "pointer", border: selected ? "1px solid #3b82f6" : "1px solid #d1d5db", background: selected ? "#eff6ff" : "#f9fafb", color: selected ? "#1d4ed8" : "#374151", fontWeight: selected ? 600 : 400 }}>
-                          {selected ? "✓ " : "+ "}{t}
+                        <button key={t} type="button" onClick={() => toggleTrait(t)} className={`bt-chip${selected ? " is-on" : ""}`}>
+                          <span className="bt-chip-mark">{selected ? "✓" : "+"}</span>{t}
                         </button>
                       );
                     })}
                   </div>
-                  <div style={{ display: "flex", gap: 8, marginBottom: 10 }}>
-                    <input type="text" value={traitInput} onChange={(e) => setTraitInput(e.target.value)} onKeyDown={(e) => e.key === "Enter" && addCustomTrait()} placeholder="Or type a custom trait and press Add..." style={{ flex: 1, padding: "8px 12px", border: "1px solid #d1d5db", borderRadius: 6, fontSize: 13 }} />
+                  <div className="bt-add">
+                    <input type="text" className="bt-input" value={traitInput} onChange={(e) => setTraitInput(e.target.value)} onKeyDown={(e) => e.key === "Enter" && addCustomTrait()} placeholder="Or type a custom trait and press Add..." />
                     <Button variant="secondary" onClick={addCustomTrait}>Add</Button>
                   </div>
                   {formData.behavioralTraits.length > 0 && (
-                    <div className="traits-grid">
-                      {formData.behavioralTraits.map((t) => (
-                        <div key={t} style={{ display: "flex", alignItems: "center", gap: 6, padding: "4px 10px", background: "#eff6ff", border: "1px solid #bfdbfe", borderRadius: 6, fontSize: 13 }}>
-                          <span style={{ flex: 1 }}>{t}</span>
-                          <button onClick={() => toggleTrait(t)} style={{ background: "none", border: "none", cursor: "pointer", color: "#6b7280", padding: 0, lineHeight: 1 }}>✕</button>
-                        </div>
-                      ))}
+                    <div className="bt-selected">
+                      <div className="bt-selected-label">Selected</div>
+                      <div className="bt-selected-list">
+                        {formData.behavioralTraits.map((t, i) => (
+                          <div key={t} className="bt-tag">
+                            <span className="bt-tag-num">{i + 1}</span>
+                            <span className="bt-tag-name">{t}</span>
+                            <button type="button" className="bt-tag-x" aria-label={`Remove ${t}`} onClick={() => toggleTrait(t)}>✕</button>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   )}
                 </div>
@@ -474,7 +515,7 @@ const CombinedTemplates = () => {
                     </div>
                   )}
                   {/* Assessment Fields */}
-                  <div className="detail-section ct-compact">
+                  <div className="detail-section ct-compact ct-card">
                     <h3>Assessment Fields ({gf.length})</h3>
                     <div className="assessment-fields-table">
                       <div className="fields-table-header"><span>Field</span><span>Weight</span><span>Max Score</span></div>
@@ -492,9 +533,9 @@ const CombinedTemplates = () => {
                   </div>
 
                   {/* Grading Scheme */}
-                  <div className="detail-section ct-compact">
+                  <div className="detail-section ct-compact ct-card">
                     <h3>Grading Scheme ({gs.length} grades)</h3>
-                    <div style={{ overflowX: "auto" }}>
+                    <div className="scheme-scroll" style={{ overflowX: "auto" }}>
                       <table className="scheme-view-table">
                         <thead>
                           <tr>
@@ -536,7 +577,7 @@ const CombinedTemplates = () => {
 
                   {/* Behavioral Traits */}
                   {(selectedTemplate.behavioral_traits || []).length > 0 && (
-                    <div className="detail-section">
+                    <div className="detail-section ct-card">
                       <h3>Behavioral Traits ({selectedTemplate.behavioral_traits.length})</h3>
                       <div className="behavioral-traits-overview">
                         {selectedTemplate.behavioral_traits.map((t, i) => (
