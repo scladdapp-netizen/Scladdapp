@@ -191,7 +191,7 @@ const AdminSubseasionCalendar = ({ setsetsubId }) => {
       render: (v, row) => (
         <div className="asc-item-cell">
           <span className="asc-item-title">{v}</span>
-          <span className="asc-item-desc">{row.description}</span>
+          <span className="asc-item-desc" title={row.description}>{row.description}</span>
         </div>
       ),
     },

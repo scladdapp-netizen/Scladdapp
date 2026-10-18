@@ -60,7 +60,10 @@ const TeacherAssignedSubjects = ({ teacherData }) => {
 
   const [isPanelOpen, setIsPanelOpen]         = useState(false);
   const [availableSubjects, setAvailableSubjects] = useState([]);
+  const [classAssignments, setClassAssignments] = useState([]);
+  const [teacherAssignments, setTeacherAssignments] = useState([]);
   const [selectedSubjectId, setSelectedSubjectId] = useState("");
+  const [selectedClassIds, setSelectedClassIds] = useState([]);
   const [saving, setSaving]                   = useState(false);
   const [reloadKey, setReloadKey]             = useState(0);
   const [panelLoading, setPanelLoading]       = useState(false);
@@ -113,19 +116,19 @@ const TeacherAssignedSubjects = ({ teacherData }) => {
     setPanelLoading(true);
     Promise.all([
       fetch(`${API_BASE_URL}/subject/school/${schoolId}`).then(r => r.json()),
-      fetch(`${API_BASE_URL}/teacher-subject/teacher/${teacherId}?limit=200`).then(r => r.json()),
+      fetch(`${API_BASE_URL}/teacher-subject/school/${schoolId}/active`).then(r => r.json()),
       fetch(`${API_BASE_URL}/class-subject/school/${schoolId}/active`).then(r => r.json()),
     ])
       .then(([subjectsRes, teacherAssignRes, classSubjectRes]) => {
         const allSubjects = subjectsRes.success ? subjectsRes.data : [];
-        const assignedIds = new Set((teacherAssignRes.success ? teacherAssignRes.data : []).map(a => a.subject_id));
-        const classMap = {};
-        if (classSubjectRes.success) classSubjectRes.data.forEach(ca => { classMap[ca.subject_id] = { class_name: ca.class_name, class_code: ca.class_code }; });
+        setTeacherAssignments(teacherAssignRes.success ? teacherAssignRes.data : []);
+        setClassAssignments(classSubjectRes.success ? classSubjectRes.data : []);
         setAvailableSubjects(
-          allSubjects.filter(s => !assignedIds.has(s.subject_id)).map(s => {
-            const cls = classMap[s.subject_id];
-            return { value: s.subject_id, label: s.subject_name, subtitle: cls ? `${s.subject_code} • ${cls.class_name}` : s.subject_code };
-          })
+          allSubjects.map(s => ({
+            value: s.subject_id,
+            label: s.subject_name,
+            subtitle: s.subject_code,
+          }))
         );
       })
       .catch(() => addNotification("Failed to load subjects", "error"))
@@ -134,21 +137,52 @@ const TeacherAssignedSubjects = ({ teacherData }) => {
 
   const fetchData = useMemo(() => (teacherId ? makeTeacherSubjectsFetcher(teacherId, false) : null), [teacherId, reloadKey]);
 
+  const toggleClass = (classId) => {
+    setSelectedClassIds((prev) =>
+      prev.some((id) => String(id) === String(classId))
+        ? prev.filter((id) => String(id) !== String(classId))
+        : [...prev, classId]
+    );
+  };
+
   const handleAssign = async () => {
     if (!selectedSubjectId) return addNotification("Please select a subject", "error");
+    if (selectedClassIds.length === 0) return addNotification("Please select at least one class", "error");
     setSaving(true);
+    const today = new Date().toISOString().split("T")[0];
+    let done = 0;
+    let failed = null;
     try {
-      const res = await fetch(`${API_BASE_URL}/teacher-subject`, {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ teacher_id: teacherId, subject_id: selectedSubjectId, school_id: schoolId, start_date: new Date().toISOString().split("T")[0] }),
-      });
-      const result = await res.json();
-      if (result.success) {
-        addNotification("Subject assigned successfully", "success");
-        setIsPanelOpen(false); setSelectedSubjectId(""); setReloadKey(k => k + 1);
-      } else addNotification(result.message || "Failed to assign subject", "error");
+      for (const classId of selectedClassIds) {
+        const res = await fetch(`${API_BASE_URL}/teacher-subject`, {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            teacher_id: teacherId,
+            subject_id: selectedSubjectId,
+            class_id: classId,
+            school_id: schoolId,
+            start_date: today,
+          }),
+        });
+        const result = await res.json();
+        if (!result.success) { failed = result.message || "Failed to assign subject"; break; }
+        done += 1;
+      }
+      if (failed) addNotification(done ? `${failed} (${done} class${done === 1 ? "" : "es"} were assigned.)` : failed, "error");
+      else addNotification(done === 1 ? "Subject assigned successfully" : `Assigned to ${done} classes`, "success");
+      if (done > 0 && !failed) {
+        setIsPanelOpen(false); setSelectedSubjectId(""); setSelectedClassIds([]); setReloadKey(k => k + 1);
+      } else if (done > 0) {
+        setReloadKey(k => k + 1);
+      }
     } catch { addNotification("Failed to assign subject", "error"); }
     finally { setSaving(false); }
+  };
+
+  const closeAssignPanel = () => {
+    setIsPanelOpen(false);
+    setSelectedSubjectId("");
+    setSelectedClassIds([]);
   };
 
   const columns = [
@@ -214,7 +248,18 @@ const TeacherAssignedSubjects = ({ teacherData }) => {
   ];
 
   const selectedSubject = availableSubjects.find(o => o.value === selectedSubjectId);
-  const [subjectCode, subjectClass] = (selectedSubject?.subtitle || "").split(" • ");
+  const subjectClasses = classAssignments.filter((c) => String(c.subject_id) === String(selectedSubjectId) && c.is_active !== false);
+  const teacherForClass = (classId) => teacherAssignments.find(
+    (t) => String(t.subject_id) === String(selectedSubjectId) && String(t.class_id) === String(classId) && t.is_active !== false
+  );
+  const replacingClasses = selectedClassIds
+    .map((id) => {
+      const current = teacherForClass(id);
+      if (!current || current.teacher_id === teacherId) return null;
+      const cls = subjectClasses.find((c) => String(c.class_id) === String(id));
+      return `${cls?.class_name || "Class"} (${current.teacher_name})`;
+    })
+    .filter(Boolean);
 
   return (
     <InnerTabCon>
@@ -317,7 +362,7 @@ const TeacherAssignedSubjects = ({ teacherData }) => {
         </SlideInMenu>
 
         {/* Assign Subject Panel */}
-        <SlideInMenu isShow={isPanelOpen} onClose={() => { setIsPanelOpen(false); setSelectedSubjectId(""); }} width="500px">
+        <SlideInMenu isShow={isPanelOpen} onClose={closeAssignPanel} width="520px">
           <div className="tas-panel">
             <div className="tas-panel-header default">
               <span className="tas-panel-header-deco" aria-hidden="true" />
@@ -331,13 +376,13 @@ const TeacherAssignedSubjects = ({ teacherData }) => {
                 </div>
                 <div className="tas-panel-header-text">
                   <h2>Assign Subject</h2>
-                  <p>Assign a subject to {teacherName}</p>
+                  <p>Assign a subject and class to {teacherName}</p>
                 </div>
               </div>
             </div>
             <div className="tas-panel-body">
               <div className="tas-info-box info">
-                Only subjects not yet assigned to this teacher are shown. Each subject also displays its assigned class.
+                Pick a subject, then one or more classes it is taught in. Each class shows its current teacher. If a class already has a teacher, assigning {teacherName} ends that assignment and replaces them.
               </div>
 
               <div>
@@ -345,51 +390,66 @@ const TeacherAssignedSubjects = ({ teacherData }) => {
                 {panelLoading ? (
                   <p className="tas-panel-empty">Loading subjects...</p>
                 ) : availableSubjects.length === 0 ? (
-                  <p className="tas-panel-empty">All subjects are already assigned to this teacher.</p>
+                  <p className="tas-panel-empty">No subjects found for this school.</p>
                 ) : (
                   <SearchableSelect
-                    placeholder="Search by name, code or class..."
+                    placeholder="Search by name or code..."
                     options={availableSubjects}
                     value={selectedSubjectId}
-                    onChange={setSelectedSubjectId}
+                    onChange={(id) => { setSelectedSubjectId(id); setSelectedClassIds([]); }}
                     searchKeys={["label", "subtitle"]}
                   />
                 )}
               </div>
 
               {selectedSubjectId && selectedSubject && (
-                <div className="tas-selected-preview">
-                  <span className="tas-selected-preview-label">Selected Subject</span>
-                  <div className="tas-selected-preview-top">
-                    <div className="tas-selected-preview-icon">
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
-                        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
-                      </svg>
-                    </div>
-                    <div>
-                      <p className="tas-selected-preview-name">{selectedSubject.label}</p>
-                      <p className="tas-selected-preview-code">{subjectCode}</p>
-                    </div>
-                  </div>
-                  {subjectClass ? (
-                    <div className="tas-selected-preview-class">
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
-                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
-                        <circle cx="9" cy="7" r="4" stroke="currentColor" strokeWidth="1.8"/>
-                      </svg>
-                      {subjectClass}
-                    </div>
+                <div>
+                  <span className="tas-section-label">Classes for {selectedSubject.label}</span>
+                  {subjectClasses.length === 0 ? (
+                    <p className="tas-panel-empty">This subject is not assigned to any class yet.</p>
                   ) : (
-                    <p className="tas-selected-preview-no-class">No class assigned to this subject yet</p>
+                    <div className="tas-class-list">
+                      {subjectClasses.map((cls) => {
+                        const current = teacherForClass(cls.class_id);
+                        const isMine = current?.teacher_id === teacherId;
+                        const selected = selectedClassIds.some((id) => String(id) === String(cls.class_id));
+                        return (
+                          <button
+                            key={cls.class_id}
+                            type="button"
+                            className={`tas-class-option${selected ? " selected" : ""}${isMine ? " mine" : ""}`}
+                            onClick={() => { if (!isMine) toggleClass(cls.class_id); }}
+                            disabled={isMine}
+                          >
+                            <span className="tas-class-option-main">
+                              <span className="tas-class-option-name">{cls.class_name}</span>
+                              {cls.class_code && <span className="tas-class-option-code">{cls.class_code}</span>}
+                            </span>
+                            <span className={`tas-class-option-teacher${current && !isMine ? " taken" : ""}`}>
+                              {isMine
+                                ? "Already assigned to this teacher"
+                                : current?.teacher_name
+                                  ? `Current teacher: ${current.teacher_name}`
+                                  : "No teacher yet"}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
                   )}
+                </div>
+              )}
+
+              {replacingClasses.length > 0 && (
+                <div className="tas-info-box warn">
+                  {replacingClasses.join(", ")} already {replacingClasses.length === 1 ? "has" : "have"} a teacher. Assigning {teacherName} ends {replacingClasses.length === 1 ? "that assignment" : "those assignments"} and gives {replacingClasses.length === 1 ? "the class" : "the classes"} to {teacherName}.
                 </div>
               )}
             </div>
             <div className="tas-panel-footer">
-              <Button variant="secondary" onClick={() => { setIsPanelOpen(false); setSelectedSubjectId(""); }} disabled={saving}>Cancel</Button>
-              <Button onClick={handleAssign} disabled={!selectedSubjectId || saving || panelLoading}>
-                {saving ? "Assigning..." : "Assign Subject"}
+              <Button variant="secondary" onClick={closeAssignPanel} disabled={saving}>Cancel</Button>
+              <Button onClick={handleAssign} disabled={!selectedSubjectId || selectedClassIds.length === 0 || saving || panelLoading}>
+                {saving ? "Assigning..." : replacingClasses.length ? "Replace and Assign" : selectedClassIds.length > 1 ? `Assign ${selectedClassIds.length} Classes` : "Assign Subject"}
               </Button>
             </div>
           </div>

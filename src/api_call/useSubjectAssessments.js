@@ -4,8 +4,9 @@ const BASE = `${import.meta.env.VITE_API_BASE_URL}/api/student-report`;
 
 export const useSubjectAssessments = (subjectId, subsessionId, modifiedBy = null) => {
   const fetchScores = useCallback(
-    async ({ page = 1, limit = 20, search = "" } = {}) => {
+    async ({ page = 1, limit = 20, search = "", classId = "" } = {}) => {
       const params = new URLSearchParams({ page, limit, search });
+      if (classId) params.set("classId", classId);
       const res = await fetch(
         `${BASE}/subject/${subjectId}/subsession/${subsessionId}/scores?${params}`
       );

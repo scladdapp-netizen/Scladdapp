@@ -182,7 +182,7 @@ const AdminSubseasionEvents = ({ setsetsubId }) => {
       render: (v, row) => (
         <div className="ase-event-cell">
           <span className="ase-event-title">{v}</span>
-          <span className="ase-event-desc">{row.description}</span>
+          <span className="ase-event-desc" title={row.description}>{row.description}</span>
         </div>
       ),
     },

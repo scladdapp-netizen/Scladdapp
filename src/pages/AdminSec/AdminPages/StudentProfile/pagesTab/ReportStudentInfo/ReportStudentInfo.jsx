@@ -386,6 +386,7 @@ const ReportStudentInfo = () => {
 
   const rankings = classAverage?.student_rankings ?? [];
   const classPos = rankings.findIndex((r) => r.student_id === studentId) + 1;
+  const classSize = Number(classAverage?.student_count) || rankings.length;
 
   // ── PDF Export ────────────────────────────────────────────────────────────
   const handleExportPDF = async () => {
@@ -436,7 +437,7 @@ const ReportStudentInfo = () => {
             session:        sessionName,
             term:           termName,
             admissionId:    previewData?.student?.admissionId ?? "—",
-            position:       classPosN > 0 ? `${classPosN} / ${rankings.length}` : "—",
+            position:       classPosN > 0 ? `${classPosN} / ${classSize}` : "—",
             gender:         previewData?.student?.gender ?? "—",
             dob:            previewData?.student?.dob    ?? "—",
             profileImg,
@@ -448,7 +449,7 @@ const ReportStudentInfo = () => {
           traitScores:       exportTraitScores,
           classAverage,
           classPos:          classPosN,
-          totalStudents:     rankings.length,
+          totalStudents:     classSize,
           grandTotal:        exportGrandTotal,
           subjectPositions,
         });
@@ -473,7 +474,7 @@ const ReportStudentInfo = () => {
       grandTotal: exportGrandTotal,
       classAverage,
       classPos: classPosN,
-      totalStudents: rankings.length,
+      totalStudents: classSize,
       reportCard,
     });
   };
@@ -498,7 +499,7 @@ const ReportStudentInfo = () => {
               {classPos > 0 && (
                 <div className="rsi-stat-pill">
                   <span className="rsi-stat-label">Position</span>
-                  <span className="rsi-stat-value">{classPos} / {rankings.length}</span>
+                  <span className="rsi-stat-value">{classPos} / {classSize}</span>
                 </div>
               )}
               {classAverage && (

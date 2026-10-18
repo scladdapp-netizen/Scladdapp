@@ -36,8 +36,8 @@ const Assessment = ({ subjectData }) => {
 
   const modifiedBy = user?.staff?.staff_id || user?.admin?.admin_id || user?.user_id;
 
-  const { assignment: myAssignment } = useTeacherSubjectAssignment(assignmentId);
-  const assignedClassId = myAssignment?.class_id || null;
+  const { assignment: myAssignment, loading: assignmentLoading } = useTeacherSubjectAssignment(assignmentId);
+  const assignedClassId = myAssignment?.class_id ? String(myAssignment.class_id) : null;
 
   const { fetchScores, updateScore, createScore } = useSubjectAssessments(subjectId, subseasion, modifiedBy);
 
@@ -65,23 +65,29 @@ const Assessment = ({ subjectData }) => {
 
   /* ── Fetch ──────────────────────────────────────────────────────────────── */
   const load = useCallback(async () => {
+    if (assignmentId && !assignedClassId) {
+      setRows([]);
+      setLoading(false);
+      return;
+    }
     setLoading(true);
-    const result = await fetchScores({ page: 1, limit: 1000, search: "" });
+    const result = await fetchScores({ page: 1, limit: 1000, search: "", classId: assignedClassId || "" });
     setLoading(false);
     if (result.success) {
       let data = result.data || [];
-      if (assignedClassId) data = data.filter((r) => r.class_id === assignedClassId);
+      if (assignedClassId) data = data.filter((r) => String(r.class_id) === assignedClassId);
       setRows(data);
       if (result.grading_fields?.length) setGradingFields(result.grading_fields);
       // Reset overrides on fresh load
       setScoreOverrides({});
       setHasScoreSet(new Set());
     }
-  }, [fetchScores, assignedClassId]);
+  }, [fetchScores, assignedClassId, assignmentId]);
 
   useEffect(() => {
-    if (subjectId && subseasion) load();
-  }, [subjectId, subseasion, load]);
+    if (!subjectId || !subseasion || assignmentLoading) return;
+    load();
+  }, [subjectId, subseasion, assignmentLoading, load]);
 
   /* ── Search filter (client-side since we fetched all) ───────────────────── */
   const filteredRows = search.trim()
