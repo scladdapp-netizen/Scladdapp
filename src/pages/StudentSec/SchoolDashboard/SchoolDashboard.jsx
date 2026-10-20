@@ -8,6 +8,7 @@ import SchoolInfo   from "./pages/SchoolInfo/SchoolInfo";
 import Bill         from "./pages/Bill/Bill";
 import Alumni       from "./pages/Alumni/Alumni";
 import Notification from "./pages/Notification/Notification";
+import ExamPage     from "./pages/Exam/ExamPage";
 import "../../TeacherSec/TeacherSec.css";
 
 const SchoolDashboard = () => {
@@ -39,6 +40,7 @@ const SchoolDashboard = () => {
             <Route path="/bill"         element={<Bill />} />
             <Route path="/alumni/*"     element={<Alumni />} />
             <Route path="/notification" element={<Notification />} />
+            <Route path="/exam"         element={<ExamPage />} />
           </Routes>
         </div>
       </div>

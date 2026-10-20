@@ -208,16 +208,26 @@
 .al_search_mobile { display: none; }
 
 .aa-star-btn {
-  width: 34px;
   height: 34px;
+  padding: 0 10px 0 8px;
+  gap: 6px;
   border-radius: 9px;
   background: #eef2ff;
   border: 1px solid #c7d2fe;
+  color: #3730a3;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+}
+
+.aa-star-label {
+  line-height: 1;
 }
 
 .aa-star-btn:hover,
@@ -229,6 +239,7 @@
 [data-theme="dark"] .aa-star-btn {
   background: #1e1b4b;
   border-color: #4338ca;
+  color: #c7d2fe;
 }
 
 /* ── Profile avatar ───────────────────────────────────────────────────────── */
@@ -782,6 +793,21 @@
 
   /* Show mobile search icon */
   .al_search_mobile { display: flex; }
+
+  .aa-star-btn {
+    padding: 0 8px 0 7px;
+    gap: 5px;
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .aa-star-label { display: none; }
+
+  .aa-star-btn {
+    width: 34px;
+    padding: 0;
+  }
 }
 
 /* ══════════════════════════════════════════════════════════════

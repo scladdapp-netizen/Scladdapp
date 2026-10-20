@@ -7,6 +7,7 @@ import SubjectClasses from "../AdminPages/subjectProfile/SubjectClasses/SubjectC
 import SubjectTeachers from "../AdminPages/subjectProfile/SubjectTeachers/SubjectTeachers";
 import SubjectBooks from "../AdminPages/subjectProfile/SubjectBooks/SubjectBooks";
 import SubjectAssessments from "../AdminPages/subjectProfile/SubjectAssessments/SubjectAssessments";
+import SubjectCbt from "../AdminPages/subjectProfile/SubjectCbt/SubjectCbt";
 import useFetchSubjectDetail from "../../../api_call/useFetchSubjectDetail";
 import { useSubject } from "../../../api_call/useSubject";
 import LoadingData from "../../../components/LoadingData/LoadingData";
@@ -99,6 +100,16 @@ const SubjectDetailRoute = () => {
           <SubAdminGuard permission="subject">
             <SubjectDetailWrapper>
               <SubjectAssessments />
+            </SubjectDetailWrapper>
+          </SubAdminGuard>
+        }
+      />
+      <Route
+        path="/:subseasion/cbt"
+        element={
+          <SubAdminGuard permission="subject">
+            <SubjectDetailWrapper>
+              <SubjectCbt />
             </SubjectDetailWrapper>
           </SubAdminGuard>
         }
@@ -208,7 +219,10 @@ const SubjectDetailWrapper = ({ children }) => {
   // Define routes based on context
   const getRoutes = () => {
     const routes = subseasion
-      ? [{ label: "Assessments", link: `/assessments` }]
+      ? [
+          { label: "Assessments", link: `/assessments` },
+          { label: "CBT", link: `/cbt` },
+        ]
       : [
           { label: "Overview", link: `` }, // Empty link for default route
           { label: "Classes", link: `/classes` },
@@ -279,10 +293,10 @@ const SubjectDetailWrapper = ({ children }) => {
   const getSubtitle = () => {
     const subtitle =
       subseasion && currentSession
-        ? `${currentSession.subseasionname} • ${subject.subject_code} • ${
+        ? `${currentSession.subseasionname} � ${subject.subject_code} � ${
             subject.is_active ? "Active" : "Inactive"
           }`
-        : `Subject Code: ${subject.subject_code} • ${
+        : `Subject Code: ${subject.subject_code} � ${
             subject.is_active ? "Active" : "Inactive"
           }`;
     console.log("Generated subtitle:", subtitle);

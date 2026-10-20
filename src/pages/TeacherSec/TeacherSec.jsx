@@ -9,6 +9,8 @@ import EventsCalendar from "./pages/EventsCalendar/EventsCalendar";
 import Profile from "./pages/Profile/Profile";
 import SubjectDashboard from "./pages/SubjectDashboard/SubjectDashboard";
 import ClassDashboard from "./pages/ClassDashboard/ClassDashboard";
+import TeacherCbtEditor from "./pages/SubjectDashboard/pages/Tests/TeacherCbtEditor";
+import TeacherCbtDetail from "./pages/SubjectDashboard/pages/Tests/TeacherCbtDetail";
 import SchoolInfo from "../StudentSec/SchoolDashboard/pages/SchoolInfo/SchoolInfo";
 import SubscriptionExpiredBanner from "../../components/SubscriptionExpiredBanner/SubscriptionExpiredBanner";
 import { useBlockExpiredMutations } from "../../hooks/useBlockExpiredMutations";
@@ -23,7 +25,7 @@ const TeacherSec = () => {
 
   useBlockExpiredMutations();
 
-  return (
+  const layout = (
     <div className={`t_layout${!canMutate ? " t_layout--sub-banner" : ""}`}>
       <TeacherTopbar
         isMobileMenuOpen={isMobileMenuOpen}
@@ -60,6 +62,17 @@ const TeacherSec = () => {
         </div>
       </div>
     </div>
+  );
+
+  return (
+    <Routes>
+      {/* Full-page test editor: no sidebar or topbar */}
+      <Route path="/subject/:subjectId/:assignmentId/tests/:subseasionId/:testId/detail" element={<TeacherCbtDetail />} />
+      <Route path="/subject/:subjectId/tests/:subseasionId/:testId/detail" element={<TeacherCbtDetail />} />
+      <Route path="/subject/:subjectId/:assignmentId/tests/:subseasionId/:testId" element={<TeacherCbtEditor />} />
+      <Route path="/subject/:subjectId/tests/:subseasionId/:testId" element={<TeacherCbtEditor />} />
+      <Route path="*" element={layout} />
+    </Routes>
   );
 };
 

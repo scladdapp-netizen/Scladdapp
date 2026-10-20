@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import "./StaffInfoCard.css";
 import InfoField from "../../../../../../components/infoField/InfoField";
-import { FaEllipsisV, FaEdit, FaPaperPlane, FaFileExport, FaPrint, FaUserCheck, FaUserTimes } from "react-icons/fa";
+import { FaEllipsisV, FaEdit, FaPaperPlane, FaFileExport, FaIdCard, FaPrint, FaUserCheck, FaUserTimes } from "react-icons/fa";
 
 const StaffInfoCard = ({
   staffData: propStaffData,
@@ -10,6 +10,7 @@ const StaffInfoCard = ({
   onToggleStatus,
   onExport,
   onPrint,
+  onGenerateIdCard,
   staffStatus = "active",
 }) => {
   const [showDropdown, setShowDropdown] = useState(false);
@@ -79,6 +80,9 @@ const StaffInfoCard = ({
                 {staffStatus === "active" ? <><FaUserTimes size={13} /> Deactivate Staff</> : <><FaUserCheck size={13} /> Activate Staff</>}
               </button>
               <div className="sic2-dropdown-divider" />
+              <button className="sic2-dropdown-item" onClick={() => { onGenerateIdCard?.(); setShowDropdown(false); }}>
+                <FaIdCard size={13} /> Generate ID Card
+              </button>
               <button className="sic2-dropdown-item" onClick={() => { onExport?.(); setShowDropdown(false); }}>
                 <FaFileExport size={13} /> Export PDF
               </button>

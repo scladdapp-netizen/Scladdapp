@@ -1,0 +1,183 @@
+.idc-page { display: flex; flex-direction: column; gap: 16px; }
+.idc-header h2 { margin: 0 0 4px; font-size: 22px; font-weight: 800; color: #111111; letter-spacing: -0.02em; }
+.idc-header p, .idc-muted { margin: 0; font-size: 13px; color: #888888; font-weight: 500; }
+.idc-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.idc-filters {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 240px;
+}
+.idc-search,
+.idc-filter {
+  height: 38px;
+  border: 1px solid #e5e7eb;
+  border-radius: 9px;
+  padding: 0 12px;
+  font: inherit;
+  font-size: 13px;
+  color: #111111;
+  background: #ffffff;
+}
+.idc-search { flex: 1; min-width: 160px; max-width: 280px; }
+.idc-filter { max-width: 260px; }
+.idc-actions { display: flex; gap: 8px; flex-wrap: wrap; flex-shrink: 0; }
+.idc-select-all {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: -8px;
+}
+.idc-select-all button {
+  height: 32px;
+  padding: 0 12px;
+  border: 1px solid #111111;
+  border-radius: 9px;
+  background: #111111;
+  color: #ffffff;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.idc-select-all span { font-size: 13px; font-weight: 600; color: #666666; }
+.idc-empty { margin: 12px 0; font-size: 14px; color: #666666; }
+.idc-loading { display: flex; flex-direction: column; gap: 12px; }
+.idc-loading-label {
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 650;
+  color: #525252;
+}
+.idc-loading-label:before {
+  content: "";
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid #e5e7eb;
+  border-top-color: #111111;
+  animation: idc-spin 0.7s linear infinite;
+}
+.idc-skel { cursor: default; pointer-events: none; }
+.idc-skel-photo,
+.idc-skel-line,
+.idc-skel-tick {
+  display: block;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #f3f4f6 0%, #e9eaee 45%, #f3f4f6 100%);
+  background-size: 220% 100%;
+  animation: idc-shimmer 1.3s ease-in-out infinite;
+}
+.idc-skel-photo { width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0; }
+.idc-skel-line { height: 10px; width: 72%; }
+.idc-skel-line.is-name { height: 12px; width: 58%; }
+.idc-skel-line.is-id { width: 36%; }
+.idc-skel-tick { width: 16px; height: 16px; border-radius: 4px; flex-shrink: 0; }
+@keyframes idc-spin { to { transform: rotate(360deg); } }
+@keyframes idc-shimmer { to { background-position: -220% 0; } }
+
+.idc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+.idc-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-align: left;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 12px;
+  cursor: pointer;
+  color: inherit;
+  font: inherit;
+}
+.idc-card.selected { border-color: #111111; box-shadow: 0 0 0 1px #111111; }
+.idc-photo { width: 40px; height: 40px; object-fit: cover; border-radius: 50%; flex-shrink: 0; background: #f3f4f6; }
+.idc-photo.fallback { display: flex; align-items: center; justify-content: center; color: #111111; font-weight: 800; font-size: 14px; }
+.idc-copy { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; }
+.idc-copy strong { font-size: 14px; color: #111111; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.idc-copy span { font-size: 12px; color: #666666; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.idc-id { font-family: ui-monospace, monospace; font-weight: 700; color: #111111 !important; }
+.idc-tick { flex-shrink: 0; width: 16px; height: 16px; }
+
+@media (max-width: 720px) {
+  .idc-filters { flex-direction: column; align-items: stretch; min-width: 0; width: 100%; }
+  .idc-search, .idc-filter { max-width: none; width: 100%; }
+  .idc-actions, .idc-actions .btn { width: 100%; }
+}
+
+[data-theme="dark"] .idc-header h2,
+[data-theme="dark"] .idc-copy strong,
+[data-theme="dark"] .idc-id { color: #f0f0f0; }
+[data-theme="dark"] .idc-card { background: #1a1a1a; border-color: #2e2e2e; }
+[data-theme="dark"] .idc-card.selected { border-color: #f0f0f0; box-shadow: 0 0 0 1px #f0f0f0; }
+[data-theme="dark"] .idc-photo { background: #2a2a2a; }
+[data-theme="dark"] .idc-photo.fallback { color: #f0f0f0; }
+[data-theme="dark"] .idc-search,
+[data-theme="dark"] .idc-filter { background: #1a1a1a; border-color: #333333; color: #f0f0f0; }
+[data-theme="dark"] .idc-select-all button { background: #f0f0f0; border-color: #f0f0f0; color: #111111; }
+[data-theme="dark"] .idc-select-all span { color: #aaaaaa; }
+[data-theme="dark"] .idc-loading-label { color: #d4d4d4; }
+[data-theme="dark"] .idc-loading-label:before { border-color: #333333; border-top-color: #f0f0f0; }
+[data-theme="dark"] .idc-skel-photo,
+[data-theme="dark"] .idc-skel-line,
+[data-theme="dark"] .idc-skel-tick {
+  background: linear-gradient(90deg, #242424 0%, #333333 45%, #242424 100%);
+  background-size: 220% 100%;
+}
+
+.idc-pop {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px 16px;
+  background: rgba(17, 17, 17, 0.55);
+}
+.idc-pop-card {
+  width: min(720px, 100%);
+  max-height: calc(100vh - 40px);
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 16px;
+  border-radius: 18px;
+  background: #ffffff;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.22);
+}
+.idc-pop-head {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.idc-pop-head strong { font-size: 16px; color: #111111; }
+.idc-pop-head button {
+  height: 34px;
+  padding: 0 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 9px;
+  background: #ffffff;
+  color: #111111;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+[data-theme="dark"] .idc-pop-card { background: #1a1a1a; }
+[data-theme="dark"] .idc-pop-head strong { color: #f0f0f0; }
+[data-theme="dark"] .idc-pop-head button { background: #141414; border-color: #333333; color: #f0f0f0; }

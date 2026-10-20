@@ -10,6 +10,7 @@ const PROFILE_ITEMS = [
 
 const SESSION_NAV = [
   { id: "assessment", label: "Assessment", icon: Icons.Report },
+  { id: "tests", label: "Tests", icon: Icons.Report },
 ];
 
 const SubjectDashboardSidebar = ({ sessionData = [] }) => {

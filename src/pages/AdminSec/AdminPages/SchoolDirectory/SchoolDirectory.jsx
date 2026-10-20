@@ -6,6 +6,7 @@ import Teachers from "./Teachers/Teachers";
 import Staff from "./Staff/Staff";
 import Subjects from "./Subjects/Subjects";
 import Admins from "./Admins/Admins";
+import IdCards from "./IdCards/IdCards";
 import SubAdminGuard from "../../../../components/SubAdminGuard/SubAdminGuard";
 
 const SchoolDirectory = () => {
@@ -15,6 +16,7 @@ const SchoolDirectory = () => {
     { label: "Classes", link: "/classes" },
     { label: "Teachers", link: "/teachers" },
     { label: "Staff", link: "/staff" },
+    { label: "ID Cards", link: "/id-cards" },
     { label: "Subjects", link: "/subjects" },
     { label: "Admins", link: "/admins" },
   ];
@@ -31,6 +33,7 @@ const SchoolDirectory = () => {
         <Route path="/classes" element={<SubAdminGuard permission="classes"><Classes /></SubAdminGuard>} />
         <Route path="/teachers" element={<SubAdminGuard permission="teachers"><Teachers /></SubAdminGuard>} />
         <Route path="/staff" element={<SubAdminGuard permission="staff"><Staff /></SubAdminGuard>} />
+        <Route path="/id-cards" element={<IdCards />} />
         <Route path="/subjects" element={<SubAdminGuard permission="subject"><Subjects /></SubAdminGuard>} />
         <Route path="/admins" element={<SubAdminGuard><Admins /></SubAdminGuard>} />
       </Routes>

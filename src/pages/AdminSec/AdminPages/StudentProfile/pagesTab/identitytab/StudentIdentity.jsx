@@ -10,6 +10,8 @@ import {
 } from "../../../../../../api_call";
 import { useNotification } from "../../../../../../context/NotificationProvider/NotificationProvider";
 import { useAuth } from "../../../../../../context/AuthContext/AuthContext";
+import { exportIdCardsPDF, schoolForIdCard, sessionValidUntil } from "../../../../../../utils/exportIdCardPDF";
+import { loadPublishedTemplate } from "../../../SchoolDirectory/IdCards/editor/model";
 import "./StudentIdentity.css";
 
 const StudentIdentity = () => {
@@ -649,6 +651,52 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     }
   };
 
+  const handleGenerateIdCard = async () => {
+    const student = studentData?.student;
+    if (!student) {
+      addNotification("No student data to print", "error");
+      return;
+    }
+    const admission = (studentData.admissions || []).find((row) => row.school_id === schoolId)
+      || (studentData.admissions || [])[0];
+    const assignment = (studentData.class_assignments || []).find((row) => row.is_active !== false);
+    const role = [assignment?.class_name, assignment?.stream].filter(Boolean).join(" ")
+      || admission?.admission_class_name
+      || "";
+    try {
+      await exportIdCardsPDF({
+        cards: [{
+          id: student.student_id,
+          kind: "student",
+          name: student.full_name,
+          fullName: student.full_name,
+          idNumber: student.admission_number || student.student_id,
+          admissionNumber: student.admission_number || "",
+          className: assignment?.class_name || "",
+          classArm: assignment?.stream || "",
+          dateOfBirth: student.date_of_birth || "",
+          phone: student.phone || "",
+          email: student.email || "",
+          address: student.address || [student.house_number_street, student.area_estate, student.city, student.state_of_residence].filter(Boolean).join(", "),
+          gender: student.gender || "",
+          bloodGroup: student.blood_group || "",
+          role,
+          session: (studentData.sessions || []).find((row) => row.session_status === "active")?.session_name || "",
+          photoUrl: student.student_photo || "",
+          emergencyName: student.emergency_contact_name || "",
+          emergencyPhone: student.emergency_contact_phone || "",
+        }],
+        school: schoolForIdCard(user?.school),
+        validUntil: sessionValidUntil(studentData.sessions),
+        template: loadPublishedTemplate(schoolId, "student"),
+        filename: `student-id-card-${student.admission_number || student.student_id}.pdf`,
+      });
+      addNotification("ID card downloaded", "success");
+    } catch (err) {
+      addNotification(err.message || "Could not create the ID card", "error");
+    }
+  };
+
   return (
     <InnerTabCon>
       {/* Admission Status Card */}
@@ -734,6 +782,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
         schoolId={schoolId}
         onExport={handleExportStudent}
         onPrint={handlePrintStudent}
+        onGenerateIdCard={handleGenerateIdCard}
         onEdit={handleOpenEdit}
         onResendInvite={() => setShowInvitePanel(true)}
         onRemoveFromSchool={() => {

@@ -220,8 +220,8 @@ const StudentDetailTopTab = ({
         );
       }
       // Assessment tab — match prefix since subseasionId is in the path
-      if (link === "/assessment") {
-        return location.pathname.startsWith(`${base}/assessment`);
+      if (link === "/assessment" || link === "/tests") {
+        return location.pathname.startsWith(`${base}${link}`);
       }
       return location.pathname === `${base}${link}`;
     }
@@ -393,6 +393,13 @@ const StudentDetailTopTab = ({
       const base = assignmentId
         ? `/teacher/${schoolId}/subject/${subjectId}/${assignmentId}`
         : `/teacher/${schoolId}/subject/${subjectId}`;
+      if (link === "/assessment" || link === "/tests") {
+        const current = location.pathname.match(/\/(?:assessment|tests)\/([^/]+)/);
+        if (current?.[1]) {
+          navigate(`${base}${link}/${current[1]}`);
+          return;
+        }
+      }
       navigate(`${base}${link || "/info"}`);
       return;
     }

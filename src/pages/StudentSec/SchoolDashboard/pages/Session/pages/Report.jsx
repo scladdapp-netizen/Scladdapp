@@ -4,6 +4,7 @@ import { useAuth } from "../../../../../../context/AuthContext/AuthContext";
 import useStudentReport from "../../../../../../api_call/useStudentReport";
 import InnerTabCon from "../../../../../../components/InnerTabCon/InnerTabCon";
 import LoadingData from "../../../../../../components/LoadingData/LoadingData";
+import StudentCbtResults from "./StudentCbtResults";
 import { exportReportPDF } from "../../../../../../utils/exportReportPDF";
 import { exportReportHtml, resolveReportExportTemplate } from "../../../../../../utils/exportReportHtml";
 import "../../../../../AdminSec/AdminPages/StudentProfile/pagesTab/ReportStudentInfo/ReportStudentInfo.css";
@@ -276,6 +277,8 @@ const Report = () => {
           )}
 
         </>)}
+
+        <StudentCbtResults subsessionId={subseasion} />
       </div>
     </InnerTabCon>
   );

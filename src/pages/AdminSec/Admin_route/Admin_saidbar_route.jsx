@@ -23,6 +23,9 @@ import NotificationDetail from "../AdminPages/Communication/Notifications/Notifi
 import WebsiteBriefPage from "../AdminPages/WebsiteBrief/WebsiteBriefPage.jsx";
 import EditTemplatePage from "../AdminPages/Templates/EditTemplatePage/EditTemplatePage.jsx";
 import EditAnnouncementTemplatePage from "../AdminPages/Templates/EditAnnouncementTemplatePage/EditAnnouncementTemplatePage.jsx";
+import IdCardTemplatePage from "../AdminPages/SchoolDirectory/IdCards/IdCardTemplatePage.jsx";
+import SubjectCbtEditor from "../AdminPages/subjectProfile/SubjectCbt/SubjectCbtEditor.jsx";
+import SubjectCbtDetail from "../AdminPages/subjectProfile/SubjectCbt/SubjectCbtDetail.jsx";
 
 const Dash = () => {
   return <div>dash</div>;
@@ -61,6 +64,10 @@ const Admin = () => {
       <Route path="/school/website/brief"     element={<WebsiteBriefPage />} />
       <Route path="/templates/edit/:templateId" element={<SubscriptionGuard><SubAdminGuard permission="report_template"><EditTemplatePage /></SubAdminGuard></SubscriptionGuard>} />
       <Route path="/templates/announcement/edit/:templateId" element={<SubscriptionGuard><SubAdminGuard permission="announcement_template"><EditAnnouncementTemplatePage /></SubAdminGuard></SubscriptionGuard>} />
+      <Route path="/school_directory/id-card-template" element={<IdCardTemplatePage />} />
+      <Route path="/subjects/:subjectId/:subseasion/cbt/new" element={<SubscriptionGuard><SubAdminGuard permission="subject"><SubjectCbtEditor /></SubAdminGuard></SubscriptionGuard>} />
+      <Route path="/subjects/:subjectId/:subseasion/cbt/:testId/detail" element={<SubscriptionGuard><SubAdminGuard permission="subject"><SubjectCbtDetail /></SubAdminGuard></SubscriptionGuard>} />
+      <Route path="/subjects/:subjectId/:subseasion/cbt/:testId" element={<SubscriptionGuard><SubAdminGuard permission="subject"><SubjectCbtEditor /></SubAdminGuard></SubscriptionGuard>} />
 
       {/* ── Standard layout ── */}
       <Route path="/*" element={

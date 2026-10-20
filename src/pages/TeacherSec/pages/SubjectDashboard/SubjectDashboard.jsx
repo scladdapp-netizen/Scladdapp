@@ -6,6 +6,7 @@ import SubjectInfo      from "./pages/SubjectInfo/SubjectInfo";
 import SubjectBooks     from "./pages/SubjectBooks/SubjectBooks";
 import SubjectResources from "./pages/SubjectResources/SubjectResources";
 import Assessment       from "./pages/Assessment/Assessment";
+import Tests            from "./pages/Tests/Tests";
 import useFetchSubjectDetail from "../../../../api_call/useFetchSubjectDetail";
 import "../../../../pages/AdminSec/AdminLayout/UnifiedLayout.css";
 
@@ -17,6 +18,7 @@ const NON_SESSION_TABS = [
 
 const SESSION_TABS = [
   { label: "Assessment", link: "/assessment" },
+  { label: "Tests", link: "/tests" },
 ];
 
 const SubjectDashboard = () => {
@@ -37,8 +39,8 @@ const SubjectDashboard = () => {
     ? `/teacher/${schoolId}/subject/${subjectId}/${assignmentId}`
     : `/teacher/${schoolId}/subject/${subjectId}`;
   const afterBase = location.pathname.replace(base, "");
-  const isSessionRoute = afterBase.startsWith("/assessment/");
-  const activeSubseasion = isSessionRoute ? afterBase.replace("/assessment/", "") : null;
+  const isSessionRoute = afterBase.startsWith("/assessment/") || afterBase.startsWith("/tests/");
+  const activeSubseasion = isSessionRoute ? afterBase.split("/").filter(Boolean)[1] : null;
 
   // Find session/subsession names for the session header
   let sessionTitle = title;
@@ -91,6 +93,7 @@ const SubjectDashboard = () => {
           >
             <Routes>
               <Route path="/assessment/:subseasionId" element={<Assessment subjectData={subjectData} />} />
+              <Route path="/tests/:subseasionId" element={<Tests subjectData={subjectData} />} />
             </Routes>
           </StudentDetailTopTab>
         ) : (

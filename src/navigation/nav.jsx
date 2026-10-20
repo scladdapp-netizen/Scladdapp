@@ -6,6 +6,7 @@ import NotFound from "../pages/NotFound/NotFound";
 import ProductPricing from "../components/ProductPricing/ProductPricing";
 import SchoolSetup from "../pages/SchoolSetup/SchoolSetup";
 import LogIn from "../pages/LogIn/LogIn";
+import ExamPage from "../pages/StudentSec/SchoolDashboard/pages/Exam/ExamPage";
 import ForgotPassword from "../pages/ForgotPassword/ForgotPassword";
 import TeacherSec from "../pages/TeacherSec/TeacherSec";
 import StudentSec from "../pages/StudentSec/StudentSec";
@@ -20,6 +21,23 @@ import ReportDownload from "../pages/ReportDownload/ReportDownload";
 import ApplicationForm from "../pages/ApplicationForm/ApplicationForm";
 import Terms from "../pages/Legal/Terms";
 import Privacy from "../pages/Legal/Privacy";
+
+// The exam link teachers share. It is a public address that never redirects: a signed-in student
+// sees the exam page, and anyone else sees the sign-in form right here and returns to /exam after.
+const ExamEntry = () => {
+  const { isAuthenticated, user } = useAuth();
+  if (!isAuthenticated) {
+    sessionStorage.setItem("post_login_path", "/exam");
+    return <LogIn />;
+  }
+  if (user?.student) return <ExamPage />;
+  return (
+    <div style={{ maxWidth: 480, margin: "80px auto", padding: 24, textAlign: "center" }}>
+      <h1 style={{ fontSize: 22 }}>This page is for students</h1>
+      <p>You are signed in as school staff. Sign out and sign in with a student account to take a test.</p>
+    </div>
+  );
+};
 
 export default function Nav() {
   const { isAuthenticated, user } = useAuth();
@@ -36,6 +54,8 @@ export default function Nav() {
     } else if (user.teacher || user.staff) {
       return `/teacher/${schoolId}`;
     } else if (user.student) {
+      // After following the exam link and logging in, land on the exam page.
+      if (sessionStorage.getItem("post_login_path") === "/exam") return "/exam";
       return `/student/${user.student.student_id}`;
     }
 
@@ -108,6 +128,9 @@ export default function Nav() {
             )
           }
         />
+
+        {/* Exam link teachers share with students: not listed anywhere in the student dashboard */}
+        <Route path="/exam" element={<ExamEntry />} />
 
         {/* Protected routes - only accessible when authenticated */}
         <Route

@@ -5,6 +5,7 @@ import InfoField from "../../../../../../components/infoField/InfoField";
 import {
   FaEllipsisV,
   FaFileExport,
+  FaIdCard,
   FaPrint,
   FaUserTimes,
   FaEdit,
@@ -15,6 +16,7 @@ const StudentInfoCard = ({
   studentData,
   onExport,
   onPrint,
+  onGenerateIdCard,
   onRemoveFromSchool,
   onEdit,
   onResendInvite,
@@ -136,6 +138,9 @@ const StudentInfoCard = ({
                   <FaPaperPlane size={13} /> Resend Invite Link
                 </button>
                 <div className="sic-dropdown-divider" />
+                <button className="sic-dropdown-item" onClick={() => { onGenerateIdCard?.(); setShowDropdown(false); }}>
+                  <FaIdCard size={13} /> Generate ID Card
+                </button>
                 <button className="sic-dropdown-item" onClick={() => { onExport?.(); setShowDropdown(false); }}>
                   <FaFileExport size={13} /> Export
                 </button>

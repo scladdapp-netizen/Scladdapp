@@ -96,7 +96,9 @@ export const AuthProvider = ({ children }) => {
           } else if (data.data.teacher || data.data.staff) {
             navigate(`/teacher/${schoolId}`);
           } else if (data.data.student) {
-            navigate(`/student/${data.data.student.student_id}`);
+            // A student who followed the exam link goes straight to the exam page after logging in.
+            const toExam = sessionStorage.getItem("post_login_path") === "/exam";
+            navigate(toExam ? "/exam" : `/student/${data.data.student.student_id}`);
           }
 
           return { success: true, data: data.data };

@@ -162,13 +162,14 @@ const Topbar = ({ isMobileMenuOpen, onMenuClick, assistantOpen = false, onToggle
               type="button"
               className={`aa-star-btn${assistantOpen ? " open" : ""}`}
               onClick={onToggleAssistant}
-              title="Assistant"
-              aria-label="Open assistant"
+              title="AI Assistant"
+              aria-label="AI Assistant"
             >
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                 <path d="M12 2.2l1.7 6.1L20 10l-6.3 1.7L12 17.8l-1.7-6.1L4 10l6.3-1.7L12 2.2z" fill="#4F46E5" />
                 <path d="M18.2 14.2l.7 2.4 2.3.7-2.3.7-.7 2.4-.7-2.4-2.3-.7 2.3-.7.7-2.4z" fill="#818CF8" />
               </svg>
+              <span className="aa-star-label">AI Assistant</span>
             </button>
           )}
 

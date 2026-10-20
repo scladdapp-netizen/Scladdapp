@@ -86,6 +86,7 @@ export const subjectSidebarConfig = {
   ],
   sessionItems: [
     { id: "assessments", label: "Assessments", icon: Icons.Report },
+    { id: "cbt", label: "CBT", icon: Icons.Report },
   ],
 };
 

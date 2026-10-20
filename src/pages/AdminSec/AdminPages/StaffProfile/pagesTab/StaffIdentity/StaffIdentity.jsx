@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useParams } from "react-router-dom";
 import "./StaffIdentity.css";
 import StaffInfoCard from "../../components/staffInfoCard/StaffInfoCard";
 import InnerTabCon from "../../../../../../components/InnerTabCon/InnerTabCon";
@@ -7,10 +8,15 @@ import Button from "../../../../../../components/Button/Button";
 import SlideInMenu from "../../../../../../components/SlideInMenu/SlideInMenu";
 import { useNotification } from "../../../../../../context/NotificationProvider/NotificationProvider";
 import { useAuth } from "../../../../../../context/AuthContext/AuthContext";
+import { useSession } from "../../../../../../api_call";
+import { exportIdCardsPDF, schoolForIdCard, sessionValidUntil } from "../../../../../../utils/exportIdCardPDF";
+import { loadPublishedTemplate } from "../../../SchoolDirectory/IdCards/editor/model";
 
 const StaffIdentity = ({ staffData: propStaffData, onStaffUpdate, refreshStaffData }) => {
+  const { schoolId } = useParams();
   const { addNotification } = useNotification();
   const { user } = useAuth();
+  const { getSessionsBySchool } = useSession();
 
   const admin = user?.admin;
   const isSuperAdmin = admin?.admin_role === "Super Admin" || (Array.isArray(admin?.permissions) && admin?.permissions.includes("ALL"));
@@ -423,6 +429,54 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     }
   };
 
+  const handleGenerateIdCard = async () => {
+    if (!staffData?.full_name) {
+      addNotification("No staff data to print", "error");
+      return;
+    }
+    let validUntil = "";
+    let sessionName = "";
+    try {
+      const sessions = await getSessionsBySchool(schoolId || staffData.school_id);
+      validUntil = sessionValidUntil(sessions?.data);
+      sessionName = (sessions?.data || []).find((row) => row.session_status === "active")?.session_name || "";
+    } catch { /* the card still downloads without a date */ }
+    try {
+      await exportIdCardsPDF({
+        cards: [{
+          id: staffData.staff_id,
+          kind: "staff",
+          name: staffData.full_name,
+          fullName: staffData.full_name,
+          idNumber: staffData.staff_id,
+          employeeId: staffData.staff_id,
+          jobTitle: staffData.job_title || staffData.position || "",
+          department: staffData.department || "",
+          dateOfBirth: staffData.date_of_birth || "",
+          phone: staffData.phone || "",
+          email: staffData.email || "",
+          address: staffData.address || [staffData.house_number_street, staffData.area_estate, staffData.city, staffData.state_of_residence].filter(Boolean).join(", "),
+          gender: staffData.gender || "",
+          qualification: staffData.qualification || "",
+          joiningDate: staffData.joining_date || "",
+          bloodGroup: staffData.blood_group || "",
+          role: [staffData.position, staffData.department].filter(Boolean).join(" · "),
+          session: sessionName,
+          photoUrl: staffData.staff_photo || "",
+          emergencyName: staffData.emergency_contact_name || "",
+          emergencyPhone: staffData.emergency_contact_phone || "",
+        }],
+        school: schoolForIdCard(user?.school),
+        validUntil,
+        template: loadPublishedTemplate(schoolId || staffData.school_id, "staff"),
+        filename: `staff-id-card-${staffData.staff_id}.pdf`,
+      });
+      addNotification("ID card downloaded", "success");
+    } catch (err) {
+      addNotification(err.message || "Could not create the ID card", "error");
+    }
+  };
+
   return (
     <InnerTabCon>
       <StaffInfoCard
@@ -435,6 +489,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
         }}
         onExport={handleExportPDF}
         onPrint={handlePrintStaff}
+        onGenerateIdCard={handleGenerateIdCard}
         staffStatus={staffStatus}
       />
 
