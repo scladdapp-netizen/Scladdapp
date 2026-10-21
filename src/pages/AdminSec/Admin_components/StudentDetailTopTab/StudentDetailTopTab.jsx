@@ -16,6 +16,9 @@ const StudentDetailTopTab = ({
   onSubmit,
   onButtonClick,
   showButton = false,
+  leading = null,
+  activeLink,
+  onTabSelect,
 }) => {
   const [isEditMenuOpen, setIsEditMenuOpen] = useState(false);
 
@@ -135,6 +138,7 @@ const StudentDetailTopTab = ({
   );
 
   const isActive = (link) => {
+    if (activeLink !== undefined) return link === activeLink;
     // Handle alumni context
     if (isAlumniContext) {
       if (!link) {
@@ -328,6 +332,10 @@ const StudentDetailTopTab = ({
   };
 
   const handleNavigation = (link) => {
+    if (onTabSelect) {
+      onTabSelect(link);
+      return;
+    }
     // Handle alumni context
     if (isAlumniContext) {
       if (!link) {
@@ -522,7 +530,14 @@ const StudentDetailTopTab = ({
         <div className="sdtttstss">
           <div className="sdtttstssts">
             <div className="sdtttstssls">
-              <h1>{title}</h1>
+              {leading ? (
+                <div className="sdttts-title">
+                  {leading}
+                  <h1>{title}</h1>
+                </div>
+              ) : (
+                <h1>{title}</h1>
+              )}
               {showButton && (
                 <Button onClick={handleButtonClick}>
                   <p className="df">{buttonText}</p>

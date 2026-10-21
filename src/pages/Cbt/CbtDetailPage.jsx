@@ -1,17 +1,13 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useNotification } from "../../context/NotificationProvider/NotificationProvider";
-import { cbtClose, cbtGet, cbtReopen } from "../../api_call/useCbt";
+import { cbtClose, cbtGet, cbtPublish, cbtReopen, cbtReset, cbtRoster } from "../../api_call/useCbt";
 import InnerTabCon from "../../components/InnerTabCon/InnerTabCon";
+import StudentDetailTopTab from "../AdminSec/Admin_components/StudentDetailTopTab/StudentDetailTopTab";
 import { ConfirmDialog } from "./CbtModal";
-import CbtActivity from "./CbtActivity";
-import CbtMarkByQuestion from "./CbtMarkByQuestion";
 import CbtMarking from "./CbtMarking";
 import CbtOverview from "./CbtOverview";
-import CbtPublishModal from "./CbtPublishModal";
-import CbtRelease from "./CbtRelease";
-import CbtResults from "./CbtResults";
-import CbtScores from "./CbtScores";
+import CbtSessions from "./CbtSessions";
 import CbtSitting from "./CbtSitting";
 import { STATUS_LABEL } from "./cbtUtils";
 import "./CbtDesk.css";
@@ -19,9 +15,7 @@ import "./CbtDesk.css";
 const TABS = [
   { id: "overview", label: "Overview" },
   { id: "students", label: "Students" },
-  { id: "marking", label: "Marking" },
-  { id: "scores", label: "Scores" },
-  { id: "activity", label: "Activity" },
+  { id: "session", label: "Test session" },
 ];
 
 // Same frame as the tests list: the grey content area, 1100px wide, with the same heading style.
@@ -32,19 +26,21 @@ const Shell = ({ children }) => (
 );
 
 /**
- * One test, run from start to finish: who writes it and when, marking, scores, release and the
- * activity log. Admins and teachers both land here from the tests list.
+ * One test: the overview and the students who are writing it. Admins and teachers both land here
+ * from the tests list.
  */
 const CbtDetailPage = ({ testId, listPath, editorPath }) => {
   const navigate = useNavigate();
   const { addNotification } = useNotification();
   const [params, setParams] = useSearchParams();
   const [test, setTest] = useState(null);
+  const [stats, setStats] = useState(null);
+  const [ready, setReady] = useState(false);
   const [error, setError] = useState("");
   const [sub, setSub] = useState(null);
-  const [markMode, setMarkMode] = useState("student");
-  const [assigning, setAssigning] = useState(false);
+  const [assignNote, setAssignNote] = useState("");
   const [confirm, setConfirm] = useState("");
+  const assignTried = useRef("");
   const [busy, setBusy] = useState(false);
 
   const requested = params.get("tab");
@@ -55,27 +51,55 @@ const CbtDetailPage = ({ testId, listPath, editorPath }) => {
   };
 
   const load = useCallback(async () => {
-    const res = await cbtGet(testId);
+    const [res, roster] = await Promise.all([cbtGet(testId), cbtRoster(testId)]);
     if (res.success) {
       setTest(res.data);
       setError("");
     } else {
       setError(res.message || "Could not open this test.");
     }
+    setStats(roster.success ? roster.data.stats : {
+      assigned: 0, not_started: 0, in_progress: 0, awaiting_marking: 0, graded: 0, released: 0,
+    });
+    setReady(true);
   }, [testId]);
 
   useEffect(() => {
     load();
   }, [load]);
 
-  // The marking and release screens open over the current tab and return to it.
+  // A finished draft is assigned to every student in the class for this term, with no extra step.
+  useEffect(() => {
+    if (!test || test.status !== "draft" || assignTried.current === test.test_id) return;
+    assignTried.current = test.test_id;
+    const testIdNow = test.test_id;
+    (async () => {
+      const res = await cbtPublish(testIdNow, {});
+      if (res.success || res.code === "not_draft") {
+        if (res.success) addNotification(`All ${res.assigned} students in the class for this term are assigned.`, "success");
+        load();
+        return;
+      }
+      const unfinished = (res.errors || []).some((item) => item.field !== "student_ids");
+      if (!unfinished) setAssignNote(res.message || "The class could not be assigned.");
+    })();
+  }, [test, load, addNotification]);
+
+  // Marking one student opens over the Students tab and returns to it.
   const go = (name, extra = {}) => {
     if (name === "marking") setSub({ name: "marking", attemptId: extra.attemptId });
-    else if (name === "release") setSub({ name: "release" });
-    else if (name === "results") setTab("scores");
   };
 
   const runConfirm = async () => {
+    if (confirm === "edit") {
+      setBusy(true);
+      const res = test.status === "draft" ? { success: true } : await cbtReset(testId);
+      setBusy(false);
+      setConfirm("");
+      if (!res.success) return addNotification(res.message || "That did not work.", "error");
+      if (test.status !== "draft") addNotification("Answers, marks and assessment scores for this test were deleted.", "success");
+      return navigate(editorPath(testId));
+    }
     setBusy(true);
     const res = confirm === "close" ? await cbtClose(testId) : await cbtReopen(testId);
     setBusy(false);
@@ -86,10 +110,18 @@ const CbtDetailPage = ({ testId, listPath, editorPath }) => {
   };
 
   const back = () => navigate(listPath);
+  const backButton = (
+    <button type="button" className="cbt-back" onClick={back} aria-label="Back to tests">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+        <path d="M15 18l-6-6 6-6" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    </button>
+  );
 
   if (error && !test) {
     return (
-      <Shell>
+      <StudentDetailTopTab title="Test" leading={backButton} route={[]}>
+        <Shell>
           <div className="cbt-card cbt-empty">
             <p className="cbt-error">{error}</p>
             <div className="cbt-inline" style={{ justifyContent: "center" }}>
@@ -97,88 +129,74 @@ const CbtDetailPage = ({ testId, listPath, editorPath }) => {
               <button type="button" className="cbt-btn" onClick={load}>Try again</button>
             </div>
           </div>
-      </Shell>
+        </Shell>
+      </StudentDetailTopTab>
     );
   }
-  if (!test) return <Shell><div className="cbt-card cbt-empty">Opening test...</div></Shell>;
+  if (!test || !ready) {
+    return (
+      <StudentDetailTopTab title="Test" leading={backButton} route={[]}>
+        <Shell><div className="cbt-card cbt-empty">Opening test...</div></Shell>
+      </StudentDetailTopTab>
+    );
+  }
 
-  const editable = test.status === "draft";
+  const subtitle = [
+    test.class_name,
+    test.subject_name,
+    `${test.questions.length} questions`,
+    `${test.total_marks} marks`,
+    STATUS_LABEL[test.status],
+    test.release_state === "released" ? "Results released" : "",
+  ].filter(Boolean).join(" · ");
 
   return (
+    <StudentDetailTopTab
+      title={test.title || "Untitled test"}
+      subtitle={subtitle}
+      route={TABS.map((item) => ({ label: item.label, link: item.id }))}
+      activeLink={tab}
+      onTabSelect={setTab}
+      leading={backButton}
+    >
     <Shell>
-        <div className="cbt-head is-flush">
-          <div className="cbt-head-copy">
-            <div className="cbt-title-row">
-              <h1>{test.title || "Untitled test"}</h1>
-              <span className={`cbt-pill is-${test.status}`}>{STATUS_LABEL[test.status]}</span>
-              {test.release_state === "released" && <span className="cbt-pill is-released">Results released</span>}
-            </div>
-            <p className="cbt-muted">
-              {test.class_name} · {test.subject_name} · {test.questions.length} questions · {test.total_marks} marks · {test.duration_minutes} minutes
-            </p>
-          </div>
-          <div className="cbt-actions">
-            <button type="button" className="cbt-ghost" onClick={back}>Back to tests</button>
-            {editable && <button type="button" className="cbt-ghost" onClick={() => navigate(editorPath(testId))}>Edit test</button>}
-            {editable && <button type="button" className="cbt-btn" onClick={() => setAssigning(true)}>Assign students</button>}
-            {test.status === "published" && <button type="button" className="cbt-ghost is-danger-text" onClick={() => setConfirm("close")}>Close test</button>}
-            {test.status === "closed" && <button type="button" className="cbt-btn" onClick={() => setConfirm("reopen")}>Reopen test</button>}
-          </div>
-        </div>
-
-        <div className="cbt-tabs" role="tablist" aria-label="Test sections">
-          {TABS.map((item) => (
-            <button key={item.id} type="button" role="tab" aria-selected={tab === item.id} className={`cbt-tab${tab === item.id ? " is-on" : ""}`} onClick={() => setTab(item.id)}>
-              {item.label}
-            </button>
-          ))}
-        </div>
-
         {sub?.name === "marking" && <CbtMarking testId={testId} attemptId={sub.attemptId} onBack={() => setSub(null)} />}
-        {sub?.name === "release" && <CbtRelease testId={testId} onBack={() => setSub(null)} go={go} />}
 
-        {!sub && tab === "overview" && <CbtOverview test={test} onChanged={load} onAssign={() => setAssigning(true)} />}
-        {!sub && tab === "students" && <CbtSitting testId={testId} onAssign={() => setAssigning(true)} onChanged={load} go={go} />}
-        {!sub && tab === "marking" && (
-          <div className="cbt-stack">
-            <div className="cbt-chips" role="tablist" aria-label="Marking view">
-              <button type="button" role="tab" aria-selected={markMode === "student"} className={`cbt-chip${markMode === "student" ? " is-on" : ""}`} onClick={() => setMarkMode("student")}>By student</button>
-              <button type="button" role="tab" aria-selected={markMode === "question"} className={`cbt-chip${markMode === "question" ? " is-on" : ""}`} onClick={() => setMarkMode("question")}>By question</button>
-            </div>
-            {markMode === "student" ? <CbtResults testId={testId} initialFilter="awaiting_marking" go={go} /> : <CbtMarkByQuestion testId={testId} />}
-          </div>
+        {assignNote && <p className="cbt-note">{assignNote}</p>}
+        {!sub && tab === "overview" && (
+          <CbtOverview
+            test={test}
+            initialStats={stats}
+            onChanged={load}
+            onClose={() => setConfirm("close")}
+            onReopen={() => setConfirm("reopen")}
+            onEdit={() => setConfirm("edit")}
+          />
         )}
-        {!sub && tab === "scores" && <CbtScores testId={testId} go={go} />}
-        {!sub && tab === "activity" && <CbtActivity testId={testId} />}
-
-      {assigning && (
-        <CbtPublishModal
-          test={{ test_id: test.test_id, title: test.title, total_marks: test.total_marks, duration_minutes: test.duration_minutes }}
-          onClose={() => setAssigning(false)}
-          onDone={() => {
-            setAssigning(false);
-            load();
-            setTab("students");
-          }}
-        />
-      )}
+        {!sub && tab === "students" && <CbtSitting testId={testId} onChanged={load} go={go} />}
+        {!sub && tab === "session" && <CbtSessions testId={testId} />}
 
       {confirm && (
         <ConfirmDialog
-          title={confirm === "close" ? "Close this test?" : "Reopen this test?"}
+          title={confirm === "edit" ? "Edit this CBT?" : confirm === "close" ? "Close this test?" : "Reopen this test?"}
           message={
-            confirm === "close"
+            confirm === "edit"
+              ? test.status === "draft"
+                ? "You can change the questions and the class before anyone writes."
+                : `Every answer, mark and assessment score recorded for "${test.title || "this test"}" will be deleted. The class starts this test again from the beginning. This cannot be undone.`
+              : confirm === "close"
               ? "Anything still being written is submitted as it stands, and nobody can start or continue. Results are not released automatically."
               : "Students can be started again, and finished students can be allowed to rewrite. Results that were already released stay released."
           }
-          confirmLabel={confirm === "close" ? "Close test" : "Reopen test"}
-          danger={confirm === "close"}
+          confirmLabel={confirm === "edit" ? (test.status === "draft" ? "Edit CBT" : "Delete records and edit") : confirm === "close" ? "Close test" : "Reopen test"}
+          danger={confirm === "close" || (confirm === "edit" && test.status !== "draft")}
           busy={busy}
           onConfirm={runConfirm}
           onCancel={() => setConfirm("")}
         />
       )}
     </Shell>
+    </StudentDetailTopTab>
   );
 };
 

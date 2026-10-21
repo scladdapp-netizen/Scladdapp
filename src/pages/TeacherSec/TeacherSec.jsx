@@ -55,6 +55,8 @@ const TeacherSec = () => {
             <Route path="/events/*" element={<EventsCalendar />} />
             <Route path="/school/*" element={<SchoolInfo />} />
             <Route path="/profile/*" element={<Profile />} />
+            <Route path="/subject/:subjectId/:assignmentId/tests/:subseasionId/:testId/detail" element={<TeacherCbtDetail />} />
+            <Route path="/subject/:subjectId/tests/:subseasionId/:testId/detail" element={<TeacherCbtDetail />} />
             <Route path="/subject/:subjectId/:assignmentId/*" element={<SubjectDashboard />} />
             <Route path="/subject/:subjectId/*" element={<SubjectDashboard />} />
             <Route path="/class/:classId/*" element={<ClassDashboard />} />
@@ -67,8 +69,6 @@ const TeacherSec = () => {
   return (
     <Routes>
       {/* Full-page test editor: no sidebar or topbar */}
-      <Route path="/subject/:subjectId/:assignmentId/tests/:subseasionId/:testId/detail" element={<TeacherCbtDetail />} />
-      <Route path="/subject/:subjectId/tests/:subseasionId/:testId/detail" element={<TeacherCbtDetail />} />
       <Route path="/subject/:subjectId/:assignmentId/tests/:subseasionId/:testId" element={<TeacherCbtEditor />} />
       <Route path="/subject/:subjectId/tests/:subseasionId/:testId" element={<TeacherCbtEditor />} />
       <Route path="*" element={layout} />

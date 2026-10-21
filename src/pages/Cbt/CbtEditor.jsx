@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNotification } from "../../context/NotificationProvider/NotificationProvider";
-import { cbtCreate, cbtGet, cbtUpdate } from "../../api_call/useCbt";
+import { cbtCreate, cbtGet, cbtPublish, cbtUpdate } from "../../api_call/useCbt";
 import { ConfirmDialog } from "./CbtModal";
 import {
   QUESTION_TYPES,
@@ -177,6 +177,14 @@ const CbtEditor = ({ ctx, testId, lockedClassId, onBack, onSaved }) => {
     };
   }, [initialId]);
 
+  const takenFields = useMemo(() => {
+    if (!form.class_id) return [];
+    const names = (ctx.used_assessments || [])
+      .filter((row) => row.class_id === form.class_id && row.grading_field && row.test_id !== form.test_id)
+      .map((row) => row.grading_field);
+    return [...new Set(names)];
+  }, [ctx.used_assessments, form.class_id, form.test_id]);
+  const openFields = ctx.fields.filter((item) => !takenFields.includes(item.field_name));
   const assessmentMax = useMemo(() => ctx.fields.find((item) => item.field_name === form.grading_field)?.max_score ?? null, [ctx.fields, form.grading_field]);
   const problems = useMemo(() => formProblems(form, assessmentMax), [form, assessmentMax]);
   const total = totalMarks(form.questions);
@@ -223,7 +231,16 @@ const CbtEditor = ({ ctx, testId, lockedClassId, onBack, onSaved }) => {
   const saveAndClose = async () => {
     const result = await save({ leaving: true });
     if (!result) return;
-    addNotification("Test saved.", "success");
+    if (problems.length === 0) {
+      const published = await cbtPublish(result.test_id, {});
+      if (!published.success) {
+        addNotification(published.message || "The test was saved, but the class could not be assigned.", "error");
+        return;
+      }
+      addNotification(`Test saved. All ${published.assigned} students in ${ctx.term.term_name} for this class are assigned.`, "success");
+    } else {
+      addNotification("Test saved.", "success");
+    }
     onBack();
   };
 
@@ -267,7 +284,15 @@ const CbtEditor = ({ ctx, testId, lockedClassId, onBack, onSaved }) => {
             </label>
             <label className="cbt-field">
               Class
-              <select value={form.class_id} onChange={(event) => edit({ class_id: event.target.value })} disabled={Boolean(lockedClassId) || readOnly}>
+              <select
+                value={form.class_id}
+                onChange={(event) => {
+                  const classId = event.target.value;
+                  const blocked = (ctx.used_assessments || []).some((row) => row.class_id === classId && row.grading_field === form.grading_field && row.test_id !== form.test_id);
+                  edit(blocked ? { class_id: classId, grading_field: "" } : { class_id: classId });
+                }}
+                disabled={Boolean(lockedClassId) || readOnly}
+              >
                 <option value="">Choose a class</option>
                 {ctx.classes.map((item) => <option key={item.class_id} value={item.class_id}>{item.class_name}</option>)}
               </select>
@@ -276,9 +301,12 @@ const CbtEditor = ({ ctx, testId, lockedClassId, onBack, onSaved }) => {
               Report assessment
               <select value={form.grading_field} onChange={(event) => edit({ grading_field: event.target.value })}>
                 <option value="">Choose the assessment this test feeds</option>
-                {ctx.fields.map((item) => <option key={item.field_name} value={item.field_name}>{item.field_name} (out of {item.max_score})</option>)}
+                {openFields.map((item) => <option key={item.field_name} value={item.field_name}>{item.field_name} (out of {item.max_score})</option>)}
               </select>
             </label>
+            {takenFields.length > 0 && (
+              <p className="cbt-note">There is an existing CBT for {takenFields.length === 1 ? takenFields[0] : `${takenFields.slice(0, -1).join(", ")} and ${takenFields.at(-1)}`}.</p>
+            )}
             <p className="cbt-muted">
               {assessmentMax
                 ? `The question marks must add up to ${assessmentMax}. Each student's total goes into ${form.grading_field} on the score sheet once you release the results.`
@@ -290,10 +318,6 @@ const CbtEditor = ({ ctx, testId, lockedClassId, onBack, onSaved }) => {
             </label>
 
             <h3 className="cbt-subhead">Examination settings</h3>
-            <label className="cbt-field">
-              Duration (minutes)
-              <input type="number" min="1" max="600" value={form.duration_minutes} onChange={(event) => edit({ duration_minutes: event.target.value })} />
-            </label>
             <label className="cbt-check">
               <input type="checkbox" checked={form.release_explanations} onChange={(event) => edit({ release_explanations: event.target.checked })} />
               Show question explanations to students after results are released

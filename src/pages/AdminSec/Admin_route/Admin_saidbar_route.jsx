@@ -66,7 +66,6 @@ const Admin = () => {
       <Route path="/templates/announcement/edit/:templateId" element={<SubscriptionGuard><SubAdminGuard permission="announcement_template"><EditAnnouncementTemplatePage /></SubAdminGuard></SubscriptionGuard>} />
       <Route path="/school_directory/id-card-template" element={<IdCardTemplatePage />} />
       <Route path="/subjects/:subjectId/:subseasion/cbt/new" element={<SubscriptionGuard><SubAdminGuard permission="subject"><SubjectCbtEditor /></SubAdminGuard></SubscriptionGuard>} />
-      <Route path="/subjects/:subjectId/:subseasion/cbt/:testId/detail" element={<SubscriptionGuard><SubAdminGuard permission="subject"><SubjectCbtDetail /></SubAdminGuard></SubscriptionGuard>} />
       <Route path="/subjects/:subjectId/:subseasion/cbt/:testId" element={<SubscriptionGuard><SubAdminGuard permission="subject"><SubjectCbtEditor /></SubAdminGuard></SubscriptionGuard>} />
 
       {/* ── Standard layout ── */}
@@ -86,6 +85,7 @@ const Admin = () => {
             <Route path="/school/*" element={<SubscriptionGuard><SubAdminGuard blockAll><SchoolPage /></SubAdminGuard></SubscriptionGuard>} />
             <Route path="/Profile/:studentId/*" element={<SubscriptionGuard><StudentDetailRoute /></SubscriptionGuard>} />
             <Route path="/Class/:classId/*" element={<SubscriptionGuard><ClassDetailRoute /></SubscriptionGuard>} />
+            <Route path="/subjects/:subjectId/:subseasion/cbt/:testId/detail" element={<SubscriptionGuard><SubAdminGuard permission="subject"><SubjectCbtDetail /></SubAdminGuard></SubscriptionGuard>} />
             <Route path="/subjects/:subjectId/*" element={<SubscriptionGuard><SubjectDetailRoute /></SubscriptionGuard>} />
             <Route path="/teachers/:teacherId/*" element={<SubscriptionGuard><TeacherDetailRoute /></SubscriptionGuard>} />
             <Route path="/staff/:staffId/*" element={<SubscriptionGuard><StaffDetailRoute /></SubscriptionGuard>} />

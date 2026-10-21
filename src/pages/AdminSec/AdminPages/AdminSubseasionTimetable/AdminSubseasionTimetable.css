@@ -29,6 +29,40 @@
 }
 
 .ast-ai-btn:hover { opacity: 0.88; transform: translateY(-1px); }
+.ast-ai-btn:disabled { opacity: 0.55; cursor: default; transform: none; }
+
+.ast-work-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.ast-work-dialog {
+  width: min(420px, 100%);
+  background: #ffffff;
+  color: #111111;
+  border-radius: 14px;
+  padding: 22px 22px 18px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.18);
+}
+
+.ast-work-dialog h3 {
+  margin: 0 0 8px;
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.ast-work-dialog p {
+  margin: 0 0 16px;
+  font-size: 14px;
+  line-height: 1.45;
+  color: #444444;
+}
 
 /* ── Class card grid ──────────────────────────────────────────────────────── */
 .ast-grid { display: flex; flex-direction: column; gap: 16px; }
@@ -237,6 +271,25 @@
   letter-spacing: 0.07em; color: #888888;
 }
 
+.ast-ai-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.ast-ai-add-template {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  font-size: 11px;
+  font-weight: 700;
+  color: #111111;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
 .ast-ai-select {
   width: 100%; padding: 9px 12px; border-radius: 8px;
   border: 1px solid #e8e8e8; font-size: 13px; font-weight: 600;
@@ -339,6 +392,8 @@
 }
 
 /* ── Dark theme ───────────────────────────────────────────────────────────── */
+[data-theme="dark"] .ast-work-dialog { background: #1a1a1a; color: #f0f0f0; }
+[data-theme="dark"] .ast-work-dialog p { color: #bbbbbb; }
 [data-theme="dark"] .ast-header h2 { color: #f0f0f0; }
 [data-theme="dark"] .ast-header p  { color: #555555; }
 [data-theme="dark"] .ast-ai-btn { background: linear-gradient(135deg, #1a1a1a, #2a2a2a); box-shadow: 0 2px 8px rgba(0,0,0,0.4); }
@@ -362,6 +417,7 @@
 [data-theme="dark"] .ast-ai-body { background: #1a1a1a; }
 [data-theme="dark"] .ast-ai-body::-webkit-scrollbar-thumb { background: #2a2a2a; }
 [data-theme="dark"] .ast-ai-field label { color: #555555; }
+[data-theme="dark"] .ast-ai-add-template { color: #f0f0f0; }
 [data-theme="dark"] .ast-ai-select { background: #252525; border-color: #3a3a3a; color: #e0e0e0; }
 [data-theme="dark"] .ast-ai-select:focus { border-color: #f0f0f0; background: #2a2a2a; }
 [data-theme="dark"] .ast-ai-textarea { background: #252525; border-color: #3a3a3a; color: #e0e0e0; }

@@ -1,3 +1,4 @@
+import { useParams } from "react-router-dom";
 import InnerTabCon from "../../../../../../components/InnerTabCon/InnerTabCon";
 import InfoField from "../../../../../../components/infoField/InfoField";
 import "./SubjectInfo.css";
@@ -13,9 +14,18 @@ const fmt = (d) =>
   d ? new Date(d).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }) : "N/A";
 
 const SubjectInfo = ({ subjectData }) => {
+  const { assignmentId } = useParams();
   const subjectInfo   = subjectData?.subject || {};
   const isActive      = subjectInfo.is_active;
-  const activeClass   = subjectData?.class_assignments?.find((c) => c.is_active) ?? subjectData?.class_assignments?.[0];
+  const mine = assignmentId
+    ? subjectData?.teacher_assignments?.find((row) => String(row.assignment_id) === String(assignmentId))
+    : null;
+  const linked = mine?.class_id
+    ? subjectData?.class_assignments?.find((row) => String(row.class_id) === String(mine.class_id) && row.is_active)
+      || subjectData?.class_assignments?.find((row) => String(row.class_id) === String(mine.class_id))
+    : null;
+  const fallback = subjectData?.class_assignments?.find((row) => row.is_active) ?? subjectData?.class_assignments?.[0];
+  const className = linked?.class_name || mine?.class_name || fallback?.class_name || "N/A";
 
   return (
     <InnerTabCon>
@@ -66,7 +76,7 @@ const SubjectInfo = ({ subjectData }) => {
                 <InfoField label="Subject ID"   value={subjectInfo.subject_id   || "N/A"} />
                 <InfoField label="Stream"       value={STREAM_LABELS[subjectInfo.stream] || subjectInfo.stream || "No stream"} />
                 <InfoField label="Status"       value={isActive ? "Active" : "Inactive"} />
-                <InfoField label="Class"        value={activeClass?.class_name || "N/A"} />
+                <InfoField label="Class"        value={className} />
                 <InfoField label="Created"      value={fmt(subjectInfo.created_at)} />
               </div>
             </div>

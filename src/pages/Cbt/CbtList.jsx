@@ -1,7 +1,7 @@
 import { useCallback, useState } from "react";
 import ServerSmartTable from "../../components/ServerSmartTable/ServerSmartTable";
 import { useNotification } from "../../context/NotificationProvider/NotificationProvider";
-import { cbtClose, cbtDelete, cbtList } from "../../api_call/useCbt";
+import { cbtClose, cbtDelete, cbtList, cbtReset } from "../../api_call/useCbt";
 import { ConfirmDialog } from "./CbtModal";
 import CbtRowMenu from "./CbtRowMenu";
 import { fmt } from "./cbtUtils";
@@ -27,11 +27,21 @@ const CbtList = ({ ctx, lockedClassId, go }) => {
   const run = async () => {
     if (!confirm) return;
     setBusy(true);
-    const res = confirm.kind === "delete" ? await cbtDelete(confirm.test.test_id) : await cbtClose(confirm.test.test_id);
+    const res = confirm.kind === "delete"
+      ? await cbtDelete(confirm.test.test_id)
+      : confirm.kind === "edit"
+        ? await cbtReset(confirm.test.test_id)
+        : await cbtClose(confirm.test.test_id);
     setBusy(false);
     if (!res.success) {
       addNotification(res.message || "That did not work.", "error");
       return;
+    }
+    if (confirm.kind === "edit") {
+      addNotification("Answers, marks and assessment scores for this test were deleted.", "success");
+      const id = confirm.test.test_id;
+      setConfirm(null);
+      return go("editor", { testId: id });
     }
     addNotification(confirm.kind === "delete" ? (res.data?.archived ? "Test archived. Attempts and results are kept." : "Draft deleted.") : "Test closed. Results are not released until you release them.", "success");
     setConfirm(null);
@@ -45,9 +55,11 @@ const CbtList = ({ ctx, lockedClassId, go }) => {
     const items = [{ label: "View details", onClick: () => go("detail", { testId: id }) }];
     if (test.status === "draft") {
       items.push(
-        { label: "Edit", onClick: () => go("editor", { testId: id }) },
+        { label: "Edit test", onClick: () => go("editor", { testId: id }) },
         { label: "Delete", danger: true, onClick: () => setConfirm({ kind: "delete", test }) }
       );
+    } else if (test.status !== "archived") {
+      items.push({ label: "Edit test", danger: true, onClick: () => setConfirm({ kind: "edit", test }) });
     }
     if (test.status === "published") items.push({ label: "Close test", danger: true, onClick: () => setConfirm({ kind: "close", test }) });
     if (test.status === "closed") items.push({ label: "Archive", danger: true, onClick: () => setConfirm({ kind: "delete", test }) });
@@ -120,15 +132,17 @@ const CbtList = ({ ctx, lockedClassId, go }) => {
 
       {confirm && (
         <ConfirmDialog
-          title={confirm.kind === "delete" ? (confirm.test.status === "draft" ? "Delete this draft?" : "Archive this test?") : "Close this test?"}
+          title={confirm.kind === "edit" ? "Edit this test?" : confirm.kind === "delete" ? (confirm.test.status === "draft" ? "Delete this draft?" : "Archive this test?") : "Close this test?"}
           message={
-            confirm.kind === "delete"
+            confirm.kind === "edit"
+              ? `Every answer, mark and assessment score recorded for "${confirm.test.title || "Untitled test"}" will be deleted. The class starts this test again from the beginning. This cannot be undone.`
+              : confirm.kind === "delete"
               ? confirm.test.status === "draft"
                 ? `"${confirm.test.title || "Untitled test"}" will be deleted. This cannot be undone.`
                 : `"${confirm.test.title}" will be hidden from this list. Student attempts and released results are kept.`
               : `Students can no longer continue "${confirm.test.title}". Anything still being written is submitted as it stands. Results are not released automatically.`
           }
-          confirmLabel={confirm.kind === "delete" ? (confirm.test.status === "draft" ? "Delete draft" : "Archive test") : "Close test"}
+          confirmLabel={confirm.kind === "edit" ? "Delete records and edit" : confirm.kind === "delete" ? (confirm.test.status === "draft" ? "Delete draft" : "Archive test") : "Close test"}
           danger
           busy={busy}
           onConfirm={run}

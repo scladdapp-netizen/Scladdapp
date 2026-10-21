@@ -1,8 +1,35 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { examAccess, examResume, examSave, examStart, examSubmit } from "../../../../../api_call/useCbt";
+import { useParams } from "react-router-dom";
+import { examAccess, examEnter, examResume, examSave, examStart, examSubmit } from "../../../../../api_call/useCbt";
+import { useTheme } from "../../../../../context/ThemeContext/ThemeContext";
 import { ConfirmDialog } from "../../../../Cbt/CbtModal";
 import "../../../../Cbt/CbtDesk.css";
 import "./Exam.css";
+
+const ThemeButton = () => {
+  const { theme, setTheme } = useTheme();
+  const next = theme === "light" ? "dark" : theme === "dark" ? "system" : "light";
+  const label = theme === "dark" ? "Dark theme" : theme === "system" ? "System theme" : "Light theme";
+  return (
+    <button type="button" className="exam-theme" onClick={() => setTheme(next)} aria-label={label} title={`${label}. Click to change.`}>
+      {theme === "dark" ? (
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+          <path d="M15 10.5A7 7 0 017.5 3a7 7 0 100 12 7 7 0 007.5-4.5z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+        </svg>
+      ) : theme === "system" ? (
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+          <rect x="2" y="3" width="14" height="9" rx="1.5" stroke="currentColor" strokeWidth="1.5" />
+          <path d="M6 15h6M9 12v3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+        </svg>
+      ) : (
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+          <circle cx="9" cy="9" r="3.2" stroke="currentColor" strokeWidth="1.5" />
+          <path d="M9 1.5v2M9 14.5v2M1.5 9h2M14.5 9h2M3.4 3.4l1.4 1.4M13.2 13.2l1.4 1.4M3.4 14.6l1.4-1.4M13.2 4.8l1.4-1.4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+        </svg>
+      )}
+    </button>
+  );
+};
 
 const STORE_KEY = "cbt-exam-attempt";
 const SAVE_DELAY = 800;
@@ -73,7 +100,7 @@ const Sitting = ({ session, onFinished }) => {
     pending.current = {};
     inFlight.current = true;
     setSaveState("saving");
-    const res = await examSave(attempt.attempt_id, ids.map((id) => ({ question_id: id, ...batch[id] })));
+    const res = await examSave(attempt.attempt_id, ids.map((id) => ({ question_id: id, ...batch[id] })), session.linkToken);
     inFlight.current = false;
     if (res.success) {
       setSaveState(Object.keys(pending.current).length ? "saving" : "saved");
@@ -90,7 +117,7 @@ const Sitting = ({ session, onFinished }) => {
     });
     setSaveState("error");
     timer.current = setTimeout(flush, RETRY_DELAY);
-  }, [attempt.attempt_id, finish]);
+  }, [attempt.attempt_id, finish, session.linkToken]);
 
   const queue = (id, patch) => {
     pending.current[id] = { ...pending.current[id], ...patch };
@@ -120,7 +147,7 @@ const Sitting = ({ session, onFinished }) => {
       setSubmitError("");
       clearTimeout(timer.current);
       const snapshot = questions.map((q) => ({ question_id: q.question_id, answer: answersRef.current[q.question_id] || "", flagged: Boolean(flagsRef.current[q.question_id]) }));
-      const res = await examSubmit(attempt.attempt_id, snapshot);
+      const res = await examSubmit(attempt.attempt_id, snapshot, session.linkToken);
       submittingRef.current = false;
       setSubmitting(false);
       if (res.success) {
@@ -129,7 +156,7 @@ const Sitting = ({ session, onFinished }) => {
         setSubmitError(res.message || "Could not submit. Check your connection and try again.");
       }
     },
-    [attempt.attempt_id, questions, finish]
+    [attempt.attempt_id, questions, finish, session.linkToken]
   );
 
   useEffect(() => {
@@ -169,9 +196,10 @@ const Sitting = ({ session, onFinished }) => {
       <div className="exam-bar">
         <div>
           <strong>{test.title}</strong>
-          <span className="cbt-muted"> · {test.subject_name}</span>
+          <span className="cbt-muted"> · {test.subject_name}{session.student_name ? ` · ${session.student_name}` : ""}</span>
         </div>
         <div className="exam-bar-right">
+          <ThemeButton />
           <span className={`exam-save is-${saveState}`}>
             {saveState === "saved" ? "All answers saved" : saveState === "saving" ? "Saving..." : "Not saved. Retrying..."}
           </span>
@@ -253,6 +281,8 @@ const Sitting = ({ session, onFinished }) => {
 };
 
 const ExamPage = () => {
+  const { studentCode, sessionCode } = useParams();
+  const viaLink = Boolean(studentCode && sessionCode);
   const [code, setCode] = useState("");
   const [busy, setBusy] = useState(true);
   const [error, setError] = useState("");
@@ -260,8 +290,32 @@ const ExamPage = () => {
   const [session, setSession] = useState(null);
   const [ended, setEnded] = useState("");
 
+  // A personal link opens the sitting straight away. Refreshing the same address loads it again.
+  useEffect(() => {
+    if (!viaLink) return undefined;
+    let cancelled = false;
+    (async () => {
+      const res = await examEnter(studentCode, sessionCode);
+      if (cancelled) return;
+      setBusy(false);
+      if (!res.success) {
+        setError(res.message || "This exam link is not valid.");
+        return;
+      }
+      if (res.data.state !== "in_progress") {
+        setEnded("You have already submitted this test.");
+        return;
+      }
+      setSession({ ...res.data, linkToken: res.data.token });
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [viaLink, studentCode, sessionCode]);
+
   // After a refresh, pick the attempt back up. The attempt belongs to the signed-in student.
   useEffect(() => {
+    if (viaLink) return undefined;
     // The exam link brought them here, so the "go to the exam after login" note has done its job.
     sessionStorage.removeItem("post_login_path");
     const saved = sessionStorage.getItem(STORE_KEY);
@@ -275,7 +329,8 @@ const ExamPage = () => {
       else sessionStorage.removeItem(STORE_KEY);
       setBusy(false);
     })();
-  }, []);
+    return undefined;
+  }, [viaLink]);
 
   const lookup = async (event) => {
     event.preventDefault();
@@ -341,8 +396,28 @@ const ExamPage = () => {
 
   if (session) return <div className="cbt exam"><Sitting session={session} onFinished={finished} /></div>;
 
+  if (viaLink) {
+    return (
+      <div className="cbt exam">
+        <ThemeButton />
+        <div className="exam-card cbt-card">
+          <h1>Take a test</h1>
+          {busy && <p className="cbt-muted">Opening your test...</p>}
+          {!busy && ended && (
+            <>
+              <p className="cbt-modal-text">{ended}</p>
+              <p className="cbt-muted">Your teacher marks the test and releases results. You will find yours on the Report tab for the term once they are released.</p>
+            </>
+          )}
+          {!busy && error && <p className="cbt-error">{error}</p>}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="cbt exam">
+      <ThemeButton />
       <div className="exam-card cbt-card">
         <h1>Take a test</h1>
 

@@ -129,7 +129,9 @@ export default function Nav() {
           }
         />
 
-        {/* Exam link teachers share with students: not listed anywhere in the student dashboard */}
+        {/* Personal sitting link: /exam/{student code}/{session code}. No login. */}
+        <Route path="/exam/:studentCode/:sessionCode" element={<ExamPage />} />
+        {/* Shared exam code, for a student who is already signed in */}
         <Route path="/exam" element={<ExamEntry />} />
 
         {/* Protected routes - only accessible when authenticated */}

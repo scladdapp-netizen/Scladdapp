@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import Timetable from "../../../../components/timetable/Timetable";
 import TimetableEditor from "../classProfile/ClassTimetable/TimetableEditor";
 import SlideInMenu from "../../../../components/SlideInMenu/SlideInMenu";
@@ -7,7 +7,7 @@ import Button from "../../../../components/Button/Button";
 import LoadingData from "../../../../components/LoadingData/LoadingData";
 import InnerTabCon from "../../../../components/InnerTabCon/InnerTabCon";
 import useSubsessionTimetable from "../../../../api_call/useSubsessionTimetable";
-import useAITimetable, { useAITimetableModels } from "../../../../api_call/useAITimetable";
+import useAITimetable from "../../../../api_call/useAITimetable";
 import { useTimetableTemplate } from "../../../../api_call";
 import { useAuth } from "../../../../context/AuthContext/AuthContext";
 import { useNotification } from "../../../../context/NotificationProvider/NotificationProvider";
@@ -41,6 +41,7 @@ const IcoPlus = () => (
 
 const AdminSubseasionTimetable = () => {
   const { schoolId } = useParams();
+  const navigate = useNavigate();
   const { user } = useAuth();
   const { addNotification } = useNotification();
 
@@ -51,7 +52,6 @@ const AdminSubseasionTimetable = () => {
     useSubsessionTimetable(schoolId, subsessionId);
 
   const { generating, generate } = useAITimetable();
-  const { models } = useAITimetableModels();
   const { getTimetableTemplatesBySchool } = useTimetableTemplate();
 
   const [editorOpen, setEditorOpen]               = useState(false);
@@ -63,14 +63,7 @@ const AdminSubseasionTimetable = () => {
   const [templatesLoading, setTemplatesLoading]   = useState(false);
   const [selectedTemplateId, setSelectedTemplateId] = useState("");
   const [aiNotes, setAiNotes]                     = useState("");
-  const [configId, setConfigId]                     = useState("");
-
-  useEffect(() => {
-    if (models.length > 0 && !configId) {
-      const active = models.find((m) => m.is_active) || models[0];
-      if (active) setConfigId(active.config_id);
-    }
-  }, [models, configId]);
+  const [workNotice, setWorkNotice]               = useState(false);
 
   useEffect(() => {
     if (!aiPanelOpen || !schoolId) return;
@@ -95,7 +88,7 @@ const AdminSubseasionTimetable = () => {
 
   const openAIPanel = (cls) => {
     if (!canEdit) { addNotification("No permission to generate timetables.", "error"); return; }
-    setAiTargetClass(cls);
+    setAiTargetClass(cls || null);
     setAiPanelOpen(true);
   };
 
@@ -115,11 +108,31 @@ const AdminSubseasionTimetable = () => {
     }
   };
 
+  const generatingAll = aiPanelOpen && !aiTargetClass;
+
   const handleAIGenerate = async () => {
-    if (!aiTargetClass?.class_id) {
+    if (!generatingAll && !aiTargetClass?.class_id) {
       addNotification("No class selected for AI generation.", "error");
       return;
     }
+    if (generatingAll) {
+      closeAIPanel();
+      setWorkNotice(true);
+      const started = await generate({
+        templateId: selectedTemplateId,
+        schoolId,
+        subsessionId,
+        classId: null,
+        notes: aiNotes,
+        generatedBy: user?.admin?.admin_id || user?.user_id,
+      });
+      if (!started.success) {
+        setWorkNotice(false);
+        addNotification(started.message || "AI generation failed.", "error");
+      }
+      return;
+    }
+
     const result = await generate({
       templateId: selectedTemplateId,
       schoolId,
@@ -127,11 +140,13 @@ const AdminSubseasionTimetable = () => {
       classId: aiTargetClass.class_id,
       notes: aiNotes,
       generatedBy: user?.admin?.admin_id || user?.user_id,
-      configId: configId || null,
     });
     if (result.success) {
       addNotification(
-        result.message || `Timetable generated for ${aiTargetClass.class_name}`,
+        result.message ||
+          (generatingAll
+            ? `Timetables generated for ${classes.length} classes`
+            : `Timetable generated for ${aiTargetClass.class_name}`),
         "success"
       );
       closeAIPanel();
@@ -250,32 +265,28 @@ const AdminSubseasionTimetable = () => {
             <div className="ast-ai-header-content">
               <div className="ast-ai-icon"><IcoAI /></div>
               <div className="ast-ai-header-text">
-                <h2>AI Generate — {aiTargetClass?.class_name || "Class"}</h2>
-                <p>Generate a timetable for this class only</p>
+                <h2>{generatingAll ? "AI Generate — All classes" : `AI Generate — ${aiTargetClass?.class_name || "Class"}`}</h2>
+                <p>
+                  {generatingAll
+                    ? `Generate timetables for all ${classes.length} classes in this subsession`
+                    : "Generate a timetable for this class only"}
+                </p>
               </div>
             </div>
           </div>
 
           <div className="ast-ai-body">
-            {models.length > 0 && (
-              <div className="ast-ai-field">
-                <label>AI Model</label>
-                <select
-                  className="ast-ai-select"
-                  value={configId}
-                  onChange={(e) => setConfigId(e.target.value)}
-                >
-                  {models.map((m) => (
-                    <option key={m.config_id} value={m.config_id}>
-                      {m.label} ({m.model}){m.is_active ? " — active" : ""}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
-
             <div className="ast-ai-field">
-              <label>Timetable Template *</label>
+              <div className="ast-ai-label-row">
+                <label>Timetable Template *</label>
+                <button
+                  type="button"
+                  className="ast-ai-add-template"
+                  onClick={() => navigate(`/admin/${schoolId}/templates/timetable`)}
+                >
+                  Add template
+                </button>
+              </div>
               {templatesLoading ? (
                 <p className="ast-ai-hint">Loading templates...</p>
               ) : templates.length === 0 ? (
@@ -353,10 +364,19 @@ const AdminSubseasionTimetable = () => {
             <div className="ast-ai-info">
               <IcoAI />
               <p>
-                This will generate and save a timetable for{" "}
-                <strong>{aiTargetClass?.class_name || "this class"}</strong> only.
-                Other class schedules are used to avoid teacher/subject conflicts.
-                An existing timetable for this class will be overwritten.
+                {generatingAll ? (
+                  <>
+                    This will generate and save a timetable for{" "}
+                    <strong>every class in this subsession</strong>. Teachers are not booked in two classes at the same time. Existing timetables for these classes will be overwritten.
+                  </>
+                ) : (
+                  <>
+                    This will generate and save a timetable for{" "}
+                    <strong>{aiTargetClass?.class_name || "this class"}</strong> only.
+                    Other class schedules are used to avoid teacher conflicts.
+                    An existing timetable for this class will be overwritten.
+                  </>
+                )}
               </p>
             </div>
           </div>
@@ -368,13 +388,27 @@ const AdminSubseasionTimetable = () => {
             <button
               className="ast-ai-generate-btn"
               onClick={handleAIGenerate}
-              disabled={generating || !selectedTemplateId || !aiTargetClass}
+              disabled={generating || !selectedTemplateId || (!generatingAll && !aiTargetClass)}
             >
               <IcoAI /> {generating ? "Generating..." : "Generate"}
             </button>
           </div>
         </div>
       </SlideInMenu>
+
+      {workNotice && (
+        <div className="ast-work-backdrop">
+          <div className="ast-work-dialog" role="dialog" aria-labelledby="ast-work-title">
+            <h3 id="ast-work-title">AI is working</h3>
+            <p>
+              AI is working on the timetables, one class at a time, and making sure teachers do not clash. Come back in a few minutes.
+            </p>
+            <button type="button" className="ast-ai-btn" onClick={() => setWorkNotice(false)}>
+              OK
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
