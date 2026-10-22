@@ -70,7 +70,7 @@ const SessionAttendance = () => {
     const defaultDate = today >= startDate && today <= endDate ? today : endDate || today;
     setMarkDate(defaultDate);
     const initial = {};
-    students.forEach((s) => { initial[s.id] = s.attendance?.[defaultDate] || "present"; });
+    students.forEach((s) => { initial[s.id] = s.attendance?.[defaultDate] || ""; });
     setStatuses(initial);
     setSaveState({});
     setPanelOpen(true);
@@ -79,7 +79,7 @@ const SessionAttendance = () => {
   const handleDateChange = (date) => {
     setMarkDate(date);
     const initial = {};
-    students.forEach((s) => { initial[s.id] = s.attendance?.[date] || "present"; });
+    students.forEach((s) => { initial[s.id] = s.attendance?.[date] || ""; });
     setStatuses(initial);
     setSaveState({});
   };
@@ -207,7 +207,7 @@ const SessionAttendance = () => {
 
       {/* Mark Attendance Panel */}
       <SlideInMenu isShow={panelOpen} onClose={() => setPanelOpen(false)} width="520px">
-        <div className="cs-panel">
+        <div className="cs-panel sa-mark-panel">
           <div className="cs-panel-header default">
             <span className="cs-panel-header-deco" aria-hidden="true" />
             <div className="cs-panel-header-content">

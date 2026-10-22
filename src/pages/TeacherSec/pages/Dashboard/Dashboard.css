@@ -1,0 +1,177 @@
+/* Staff dashboard uses the admin dashboard stylesheet.
+   These rules only adjust spans so the staff cards fill the same grid. */
+
+.staff-dashboard .school-info-card,
+.staff-dashboard .quick-actions-card {
+  grid-column: 1 / -1;
+}
+
+.staff-dashboard .quick-actions-card {
+  max-height: none;
+}
+
+.staff-dashboard .quick-actions-card .card-content {
+  padding: 16px;
+}
+
+.staff-dashboard .quick-actions-card .card-title {
+  margin: 0 0 12px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #888888;
+}
+
+.staff-dashboard .actions-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.staff-dashboard .action-button {
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 10px;
+  min-height: 48px;
+  height: 100%;
+  padding: 8px 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  background: #ffffff;
+  box-shadow: none;
+  text-align: left;
+}
+
+.staff-dashboard .action-button:hover {
+  border-color: #111111;
+  background: #fafafa;
+  transform: none;
+  box-shadow: none;
+}
+
+.staff-dashboard .action-button:active {
+  background: #f3f3f3;
+}
+
+.staff-dashboard .action-icon {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  flex-shrink: 0;
+  background: #111111;
+  color: #ffffff;
+  font-size: 13px;
+}
+
+.staff-dashboard .action-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  line-height: 1.2;
+  text-align: left;
+  color: #111111;
+  white-space: normal;
+}
+
+.staff-dashboard .stats-row {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.staff-dashboard .stat-card.is-link,
+.staff-dashboard .is-clickable {
+  cursor: pointer;
+}
+
+.staff-dashboard button.activity-row {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+}
+
+.staff-dashboard button.activity-row:hover {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.staff-dashboard .activity-row.is-unread .activity-badge {
+  background: #111111;
+  color: #ffffff;
+}
+
+[data-theme="dark"] .staff-dashboard button.activity-row:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+[data-theme="dark"] .staff-dashboard .activity-row.is-unread .activity-badge {
+  background: #f0f0f0;
+  color: #111111;
+}
+
+[data-theme="dark"] .staff-dashboard .quick-actions-card .card-title {
+  color: #888888;
+}
+
+[data-theme="dark"] .staff-dashboard .action-button {
+  background: #1a1a1a;
+  border-color: #2a2a2a;
+}
+
+[data-theme="dark"] .staff-dashboard .action-button:hover {
+  border-color: #f0f0f0;
+  background: #242424;
+}
+
+[data-theme="dark"] .staff-dashboard .action-button:active {
+  background: #2a2a2a;
+}
+
+[data-theme="dark"] .staff-dashboard .action-icon {
+  background: #f0f0f0;
+  color: #111111;
+}
+
+[data-theme="dark"] .staff-dashboard .action-label {
+  color: #f0f0f0;
+}
+
+@media (min-width: 1100px) {
+  .staff-dashboard .actions-grid {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .staff-dashboard .quick-actions-card .card-content {
+    padding: 12px;
+  }
+
+  .staff-dashboard .actions-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .staff-dashboard .action-button {
+    min-height: 44px;
+    padding: 8px 10px;
+    gap: 8px;
+  }
+
+  .staff-dashboard .action-icon {
+    width: 28px;
+    height: 28px;
+    font-size: 12px;
+  }
+
+  .staff-dashboard .action-label {
+    font-size: 0.75rem;
+  }
+}
+
+@media (max-width: 700px) {
+  .staff-dashboard .stats-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

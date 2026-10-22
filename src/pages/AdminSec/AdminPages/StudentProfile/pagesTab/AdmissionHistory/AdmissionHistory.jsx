@@ -77,17 +77,6 @@ const AdmissionHistory = () => {
     addNotification("PDF exported!", "success");
   };
 
-  const handlePrint = () => {
-    if (!admissionData.length) { addNotification("No records to print.", "error"); return; }
-    const w = window.open("","_blank");
-    w.document.open();
-    w.document.write(`<html><head><title>Admission History</title><style>body{font-family:Arial,sans-serif;margin:24px;color:#111}h1{font-size:18px;font-weight:800;margin:0 0 4px}.sub{font-size:12px;color:#888;margin:0 0 20px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}.card{border:1px solid #e8e8e8;border-radius:10px;overflow:hidden}.ch{background:#f7f7f7;padding:12px 16px;border-bottom:1px solid #e8e8e8;display:flex;justify-content:space-between;align-items:flex-start}.sess{font-size:13px;font-weight:800;margin:0 0 3px}.meta{font-size:11px;color:#888}.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;text-transform:uppercase}.active{background:#dcfce7;color:#166534}.graduated{background:#dbeafe;color:#1e40af}.closed{background:#fef9c3;color:#854d0e}.inactive{background:#fecaca;color:#991b1b}.cb{padding:12px 16px;display:grid;grid-template-columns:1fr 1fr;gap:10px}.f label{font-size:9px;font-weight:700;text-transform:uppercase;color:#aaa;display:block;margin-bottom:2px}.f span{font-size:12px;color:#111}@media print{body{margin:12px}}</style></head><body>
-    <h1>Admission History</h1><p class="sub">Student: ${studentName} | ${new Date().toLocaleDateString()}</p>
-    <div class="grid">${admissionData.map(r=>{const s=getStatusLabel(r).toLowerCase();return`<div class="card"><div class="ch"><div><div class="sess">${r.admission_session||"N/A"}</div><div class="meta">${r.admission_type||"N/A"} • ${r.admission_term||"N/A"}</div></div><span class="badge ${s}">${getStatusLabel(r)}</span></div><div class="cb"><div class="f"><label>Class</label><span>${r.admission_class_name||r.admission_class||"N/A"}</span></div><div class="f"><label>Admitted</label><span>${fmt(r.admitted_date)}</span></div><div class="f"><label>Closed</label><span>${fmt(r.close_date)}</span></div><div class="f"><label>Type</label><span>${r.admission_type||"N/A"}</span></div></div></div>`;}).join("")}</div>
-    </body></html>`);
-    w.document.close(); w.focus(); setTimeout(()=>{w.print();w.close();},400);
-  };
-
   const AdmissionCard = ({ record }) => {
     const status = getStatusLabel(record);
     return (
@@ -150,7 +139,6 @@ const AdmissionHistory = () => {
           </div>
           <div className="topExButton">
             <Button variant="secondary" onClick={handleExportPDF}>Export PDF</Button>
-            <Button variant="secondary" onClick={handlePrint}>Print</Button>
           </div>
         </div>
 

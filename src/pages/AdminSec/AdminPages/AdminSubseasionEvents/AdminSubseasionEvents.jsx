@@ -181,7 +181,7 @@ const AdminSubseasionEvents = ({ setsetsubId }) => {
       label: "Event", accessor: "title",
       render: (v, row) => (
         <div className="ase-event-cell">
-          <span className="ase-event-title">{v}</span>
+          <span className="ase-event-title" title={v}>{v}</span>
           <span className="ase-event-desc" title={row.description}>{row.description}</span>
         </div>
       ),

@@ -2507,6 +2507,65 @@
   .attendance-stat {
     min-width: auto;
   }
+
+  .activities-card-header {
+    padding: 14px 14px 12px;
+  }
+
+  .activities-card-body {
+    padding: 2px 0 6px;
+  }
+
+  .activity-row {
+    display: grid;
+    grid-template-columns: 34px minmax(0, 1fr);
+    grid-template-areas:
+      "avatar content"
+      "avatar badge";
+    column-gap: 10px;
+    row-gap: 6px;
+    align-items: start;
+    padding: 12px 14px;
+  }
+
+  .activity-avatar-initials {
+    grid-area: avatar;
+  }
+
+  .activity-content {
+    grid-area: content;
+  }
+
+  .activity-name {
+    font-size: 13px;
+  }
+
+  .activity-desc {
+    white-space: normal;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: unset;
+  }
+
+  .activity-time {
+    display: block;
+    margin-top: 3px;
+    line-height: 1.3;
+  }
+
+  .activity-badge {
+    grid-area: badge;
+    justify-self: start;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .activity-divider-line {
+    margin: 0 14px;
+  }
 }
 
 @media (max-width: 480px) {

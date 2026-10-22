@@ -107,7 +107,8 @@ const CbtList = ({ ctx, lockedClassId, go }) => {
         <div className="cbt-head-copy">
           <h1>CBT</h1>
           <p className="cbt-muted">
-            Computer-based tests for {ctx.subject.subject_name}, {ctx.term.term_name}. Scores feed the report card after you release results.
+            <span className="cbt-head-where">Computer-based tests for {ctx.subject.subject_name}, {ctx.term.term_name}.</span>
+            <span className="cbt-head-note">Scores feed the report card after you release results.</span>
           </p>
         </div>
         <button type="button" className="cbt-btn" disabled={!canCreate} onClick={() => go("editor", {})}>New test</button>

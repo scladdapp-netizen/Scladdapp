@@ -72,8 +72,27 @@
 
 /* ── Responsive ───────────────────────────────────────────────────────────── */
 @media (max-width: 768px) {
-  .stf-res-header { flex-direction: column; gap: 14px; }
-  .stf-res-grid   { grid-template-columns: 1fr; }
+  .staffResources .stf-res-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    padding-bottom: 12px;
+    margin-bottom: 14px;
+  }
+
+  .staffResources .stf-res-title { font-size: 16px; line-height: 1.25; }
+  .staffResources .stf-res-subtitle { line-height: 1.4; }
+
+  .staffResources .stf-res-header .btn {
+    width: 100%;
+    min-height: 40px;
+    height: auto;
+    padding: 8px 10px;
+    font-size: 0.82rem;
+  }
+
+  .staffResources .stf-res-search-wrap { max-width: none; }
+  .stf-res-grid { grid-template-columns: 1fr; }
 }
 
 /* ── Dark theme ───────────────────────────────────────────────────────────── */

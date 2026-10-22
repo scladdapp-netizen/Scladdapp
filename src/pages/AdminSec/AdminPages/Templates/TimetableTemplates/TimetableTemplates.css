@@ -963,6 +963,56 @@ body[data-theme="dark"] .create-template-form .remove-break-btn:hover {
 
 .tt-detail .tt-empty-note { padding: 14px 16px; }
 
+@media (max-width: 768px) {
+  .ct-detail.tt-detail .template-detail-content {
+    padding: 12px 12px 16px;
+    gap: 10px;
+  }
+
+  .tt-detail .tt-stat-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .tt-detail .tt-stat-card {
+    gap: 4px;
+    padding: 10px 8px;
+    min-width: 0;
+    border-right: 1px solid #f0f0f3;
+    border-bottom: none;
+  }
+
+  .tt-detail .tt-stat-card:last-child { border-right: none; }
+
+  .tt-detail .tt-stat-label {
+    font-size: 9px;
+    line-height: 1.2;
+    letter-spacing: 0.03em;
+  }
+
+  .tt-detail .tt-stat-value {
+    font-size: 16px;
+    overflow-wrap: anywhere;
+  }
+
+  .tt-detail .tt-detail-section-title {
+    padding: 10px 12px;
+  }
+
+  .tt-detail .tt-detail-section > .tt-day-chips {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 6px;
+    padding: 10px 12px 12px;
+  }
+
+  .tt-detail .tt-day-chip {
+    justify-content: center;
+    padding: 6px 2px;
+    font-size: 10px;
+    white-space: nowrap;
+  }
+}
+
 /* dark */
 body[data-theme="dark"] .tt-detail .template-detail-content { background: #141414; }
 

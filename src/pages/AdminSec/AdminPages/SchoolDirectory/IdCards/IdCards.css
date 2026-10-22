@@ -109,10 +109,47 @@
 .idc-id { font-family: ui-monospace, monospace; font-weight: 700; color: #111111 !important; }
 .idc-tick { flex-shrink: 0; width: 16px; height: 16px; }
 
-@media (max-width: 720px) {
-  .idc-filters { flex-direction: column; align-items: stretch; min-width: 0; width: 100%; }
-  .idc-search, .idc-filter { max-width: none; width: 100%; }
-  .idc-actions, .idc-actions .btn { width: 100%; }
+@media (max-width: 768px) {
+  .idc-bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .idc-filters {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 8px;
+    min-width: 0;
+    width: 100%;
+  }
+
+  .idc-search,
+  .idc-filter {
+    width: 100%;
+    max-width: none;
+    min-width: 0;
+    height: 40px;
+    box-sizing: border-box;
+  }
+
+  .idc-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .idc-actions .btn {
+    width: 100%;
+    min-width: 0;
+    height: 42px;
+    padding: 0 8px;
+    font-size: 12px;
+    line-height: 1.2;
+    white-space: normal;
+    text-align: center;
+  }
 }
 
 [data-theme="dark"] .idc-header h2,
@@ -181,3 +218,61 @@
 [data-theme="dark"] .idc-pop-card { background: #1a1a1a; }
 [data-theme="dark"] .idc-pop-head strong { color: #f0f0f0; }
 [data-theme="dark"] .idc-pop-head button { background: #141414; border-color: #333333; color: #f0f0f0; }
+
+.idc-preview-slot {
+  width: min(430px, 100%);
+  margin: 0 auto;
+}
+.idc-preview-fit {
+  width: 100%;
+  position: relative;
+  container-type: inline-size;
+}
+.idc-preview-scale {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform-origin: top left;
+  transform: scale(calc(100cqw / 430px));
+}
+.idc-pop-card .ict-board {
+  width: 100%;
+}
+
+@media (max-width: 768px) {
+  .idc-pop {
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  .idc-pop-card {
+    width: 100%;
+    max-height: min(92vh, 100%);
+    border-radius: 18px 18px 0 0;
+    padding: 14px 14px calc(16px + env(safe-area-inset-bottom));
+    gap: 12px;
+    align-items: stretch;
+  }
+
+  .idc-pop-head strong {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 15px;
+  }
+
+  .idc-pop-head button {
+    flex-shrink: 0;
+  }
+
+  .idc-pop-card .ict-side {
+    width: 100%;
+    max-width: 220px;
+    margin: 0 auto;
+  }
+
+  .idc-pop-card .ict-board {
+    width: 100%;
+  }
+}

@@ -7,6 +7,49 @@ import { useSubscriptionAccess } from "../../hooks/useSubscriptionAccess";
 import { useNotification } from "../../context/NotificationProvider/NotificationProvider";
 import { useAuth } from "../../context/AuthContext/AuthContext";
 
+function cardCellClass(col) {
+  const accessor = String(col.accessor || "").toLowerCase();
+  const label = (typeof col.label === "string" ? col.label : "").trim().toLowerCase();
+
+  if (label === "status" || accessor === "status" || accessor.endsWith("_status")) {
+    return "st-card-badge";
+  }
+  if (
+    accessor === "name" ||
+    accessor === "student_name" ||
+    accessor === "studentname" ||
+    accessor === "fullname" ||
+    accessor === "full_name" ||
+    accessor === "subjectname" ||
+    accessor === "subject_name" ||
+    label === "name" ||
+    label === "student name" ||
+    label === "full name" ||
+    label === "subject name" ||
+    label === "subject"
+  ) {
+    return "st-card-title";
+  }
+  if (
+    accessor === "photo" ||
+    accessor === "passport" ||
+    accessor === "avatar" ||
+    label === "passport" ||
+    label === "photo"
+  ) {
+    return "st-card-media";
+  }
+  if (
+    accessor === "studentid" ||
+    accessor === "student_id" ||
+    label === "id" ||
+    label === "student id"
+  ) {
+    return "st-card-sub";
+  }
+  return "st-card-field";
+}
+
 export default function ServerSmartTable({
   columns = [],
   fetchData,
@@ -351,7 +394,11 @@ export default function ServerSmartTable({
                         </td>
                       )}
                       {columns.map((col, colIndex) => (
-                        <td key={`${col.accessor}-${colIndex}`} data-label={typeof col.label === "string" ? col.label : col.accessor}>
+                        <td
+                          key={`${col.accessor}-${colIndex}`}
+                          className={cardCellClass(col)}
+                          data-label={typeof col.label === "string" ? col.label : col.accessor}
+                        >
                           {col.render ? col.render(row[col.accessor], row) : row[col.accessor]}
                         </td>
                       ))}

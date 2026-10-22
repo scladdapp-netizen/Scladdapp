@@ -52,6 +52,9 @@ const AdminCredentials = ({ adminData, refreshAdminData }) => {
   const { addNotification } = useNotification();
 
   const admin = adminData?.admin;
+  const isSuperAdmin =
+    admin?.admin_role === "Super Admin" ||
+    (Array.isArray(admin?.permissions) && admin.permissions.includes("ALL"));
   const [editMode, setEditMode] = useState(false);
   const [permissions, setPermissions] = useState(() => normalisePermissions(admin?.permissions));
   const [accessScope, setAccessScope] = useState(admin?.access_scope || "limited");
@@ -129,27 +132,32 @@ const AdminCredentials = ({ adminData, refreshAdminData }) => {
               <h2 className="acred-title">Permissions & Access Rights</h2>
               <p className="acred-subtitle">
                 {admin.admin_role} · Access scope:&nbsp;
-                <span className={`acred-scope-label ${accessScope === "full" ? "full" : ""}`}>
-                  {accessScope === "full" ? "Full Access" : "Limited Access"}
+                <span className={`acred-scope-label ${(isSuperAdmin || accessScope === "full") ? "full" : ""}`}>
+                  {isSuperAdmin || accessScope === "full" ? "Full Access" : "Limited Access"}
                 </span>
               </p>
+              {isSuperAdmin && (
+                <p className="acred-locked-note">Super Admin access cannot be changed.</p>
+              )}
             </div>
           </div>
-          <div className="acred-header-actions">
-            {editMode ? (
-              <>
-                <Button variant="secondary" onClick={handleCancel} disabled={loading}>Cancel</Button>
-                <Button onClick={handleSave} disabled={loading}>
-                  {loading ? "Saving..." : "Save Changes"}
-                </Button>
-              </>
-            ) : (
-              <Button onClick={() => setEditMode(true)}>Edit Permissions</Button>
-            )}
-          </div>
+          {!isSuperAdmin && (
+            <div className="acred-header-actions">
+              {editMode ? (
+                <>
+                  <Button variant="secondary" onClick={handleCancel} disabled={loading}>Cancel</Button>
+                  <Button onClick={handleSave} disabled={loading}>
+                    {loading ? "Saving..." : "Save Changes"}
+                  </Button>
+                </>
+              ) : (
+                <Button onClick={() => setEditMode(true)}>Edit Permissions</Button>
+              )}
+            </div>
+          )}
         </div>
 
-        {editMode && (
+        {editMode && !isSuperAdmin && (
           <div className="acred-scope-row">
             <span className="acred-scope-row-label">Access Scope:</span>
             {["limited", "full"].map((s) => (
@@ -179,7 +187,9 @@ const AdminCredentials = ({ adminData, refreshAdminData }) => {
           </div>
 
           {MODULES.map((mod, i) => {
-            const perms = permissions[mod.id] || { read: false, create: false, edit: false, delete: false };
+            const perms = isSuperAdmin
+              ? { read: true, create: true, edit: true, delete: true }
+              : (permissions[mod.id] || { read: false, create: false, edit: false, delete: false });
             const allOn = ACTIONS.every((a) => perms[a]);
             const anyOn = ACTIONS.some((a) => perms[a]);
 
@@ -194,7 +204,7 @@ const AdminCredentials = ({ adminData, refreshAdminData }) => {
                   const isReadLocked = action === "read" && (perms.create || perms.edit || perms.delete);
                   return (
                     <div key={action} className="acred-col-action">
-                      {editMode ? (
+                      {editMode && !isSuperAdmin ? (
                         <label className={`acred-check-label ${isReadLocked ? "locked" : ""}`}>
                           <input
                             type="checkbox"
@@ -228,7 +238,7 @@ const AdminCredentials = ({ adminData, refreshAdminData }) => {
                 })}
 
                 <div className="acred-col-all">
-                  {editMode ? (
+                  {editMode && !isSuperAdmin ? (
                     <label className="acred-check-label">
                       <input
                         type="checkbox"

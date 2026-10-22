@@ -358,6 +358,9 @@ const TeacherAssignedSubjects = ({ teacherData }) => {
                 ))
               )}
             </div>
+            <div className="tas-panel-footer">
+              <Button variant="secondary" onClick={() => setIsHistoryOpen(false)}>Close</Button>
+            </div>
           </div>
         </SlideInMenu>
 

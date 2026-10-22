@@ -3,6 +3,7 @@ import { Routes, Route, Navigate, useParams } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext/AuthContext";
 import TeacherSidebar from "./TeacherSidebar";
 import TeacherTopbar from "./TeacherTopbar";
+import Dashboard from "./pages/Dashboard/Dashboard";
 import Assignments from "./pages/Assignments/Assignments";
 import Notifications from "./pages/Notifications/Notifications";
 import EventsCalendar from "./pages/EventsCalendar/EventsCalendar";
@@ -49,7 +50,8 @@ const TeacherSec = () => {
             }
           />
           <Routes>
-            <Route path="/" element={<Navigate to={`/teacher/${schoolId}/assignments`} replace />} />
+            <Route path="/" element={<Navigate to={`/teacher/${schoolId}/dashboard`} replace />} />
+            <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/assignments/*" element={<Assignments />} />
             <Route path="/notifications" element={<Notifications />} />
             <Route path="/events/*" element={<EventsCalendar />} />

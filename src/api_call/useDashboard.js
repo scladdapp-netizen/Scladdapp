@@ -17,7 +17,7 @@ const useDashboard = (schoolId) => {
 
   const [feePayments, setFeePayments] = useState(null);
   const [feeLoading, setFeeLoading] = useState(true);
-  const [feeRange, setFeeRange] = useState("today");
+  const [feeRange, setFeeRange] = useState("week");
 
   const [genderData, setGenderData] = useState([]);
   const [genderLoading, setGenderLoading] = useState(true);
@@ -67,7 +67,7 @@ const useDashboard = (schoolId) => {
     get(`/api/schools/${schoolId}/recent-activities?page=1&pageSize=4`, setRecentActivities, setActivitiesLoading);
     get(`/api/schools/${schoolId}/monthly-financials`, setMonthlyFinancials, setFinancialsLoading);
 
-    fetchFeePayments("today");
+    fetchFeePayments("week");
 
   }, [schoolId, fetchFeePayments]);
 

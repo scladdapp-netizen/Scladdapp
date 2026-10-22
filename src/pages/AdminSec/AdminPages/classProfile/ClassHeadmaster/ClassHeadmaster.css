@@ -255,14 +255,68 @@
 .chm-panel-header-text p  { margin: 0; font-size: 12px; color: rgba(255,255,255,0.5); }
 
 /* ── Responsive ───────────────────────────────────────────────────────────── */
-@media (max-width: 640px) {
-  .headmasterHeader { flex-direction: column; gap: 14px; }
-  .chm-grid { grid-template-columns: 1fr 1fr; }
-  .chm-card-header { flex-direction: column; align-items: flex-start; }
-}
+@media (max-width: 768px) {
+  .classHeadmaster .headmasterHeader {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    padding-bottom: 12px;
+    margin-bottom: 14px;
+  }
 
-@media (max-width: 400px) {
-  .chm-grid { grid-template-columns: 1fr; }
+  .classHeadmaster .headmasterTitle { font-size: 16px; line-height: 1.25; }
+  .classHeadmaster .headmasterSubtitle { line-height: 1.4; }
+  .classHeadmaster .headmasterHeaderRight { width: 100%; }
+
+  .classHeadmaster .headmasterHeaderRight .btn {
+    width: 100%;
+    min-height: 40px;
+    height: auto;
+    padding: 8px 10px;
+    font-size: 0.82rem;
+  }
+
+  .classHeadmaster .chm-banner { height: 52px; }
+
+  .classHeadmaster .chm-card-header {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    padding: 0 14px 14px;
+    gap: 8px 12px;
+  }
+
+  .classHeadmaster .chm-avatar-wrap { margin-top: -22px; }
+
+  .classHeadmaster .chm-avatar {
+    width: 52px;
+    height: 52px;
+    font-size: 18px;
+    border-radius: 14px;
+  }
+
+  .classHeadmaster .chm-card-name-wrap { padding-top: 6px; }
+  .classHeadmaster .chm-teacher-name { font-size: 15px; white-space: normal; }
+
+  .classHeadmaster .chm-card-actions {
+    grid-column: 1 / -1;
+    width: 100%;
+    padding-top: 0;
+  }
+
+  .classHeadmaster .chm-card-actions .btn {
+    flex: 1;
+    min-width: 0;
+    min-height: 38px;
+    height: auto;
+    padding: 8px 10px;
+    font-size: 0.8rem;
+  }
+
+  .classHeadmaster .chm-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+  .classHeadmaster .chm-card-body { padding: 0 14px 14px; }
+  .classHeadmaster .chm-grid .ssp-info-item { padding: 8px 10px; }
+  .classHeadmaster .chm-grid .ssp-info-value { font-size: 12px; }
 }
 
 /* ── Dark theme ───────────────────────────────────────────────────────────── */

@@ -22,7 +22,6 @@ const SetupSchoolVideo = ({
   corner = "bottom-right",
   // each placement remembers where it was dragged to on its own
   storageKey = "ssv_pos",
-  collapsedText = "Watch the setup guide while you configure your school dashboard.",
 }) => {
   const location = useLocation();
   const { videos } = useTutorialVideos(page);
@@ -33,20 +32,11 @@ const SetupSchoolVideo = ({
   const timerRef = useRef(null);
 
   const [dismissed, setDismissed] = useState(false);
-  const [expanded, setExpanded] = useState(true);
+  const [expanded, setExpanded] = useState(false);
   const [playing, setPlaying] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [active, setActive] = useState(0);
-  const [pos, setPos] = useState(() => {
-    try {
-      const saved = sessionStorage.getItem(storageKey);
-      if (saved) {
-        const p = JSON.parse(saved);
-        return clampPosition(p.x, p.y, p.w || 420, p.h || 150);
-      }
-    } catch {}
-    return getDefaultPosition(corner);
-  });
+  const [pos, setPos] = useState(() => getDefaultPosition(corner));
 
   posRef.current = pos;
 
@@ -81,17 +71,25 @@ const SetupSchoolVideo = ({
   }, [pos, storageKey]);
 
   useEffect(() => {
-    const onResize = () => {
+    const place = () => {
       const el = wrapRef.current;
       if (!el) return;
-      setPos((current) =>
-        clampPosition(current.x, current.y, el.offsetWidth, el.offsetHeight)
+      const width = el.offsetWidth;
+      const height = el.offsetHeight;
+      setPos(
+        clampPosition(
+          window.innerWidth - width - 12,
+          window.innerHeight - height - 12,
+          width,
+          height
+        )
       );
     };
 
-    window.addEventListener("resize", onResize);
-    return () => window.removeEventListener("resize", onResize);
-  }, []);
+    place();
+    window.addEventListener("resize", place);
+    return () => window.removeEventListener("resize", place);
+  }, [expanded, playing, videos.length]);
 
   if (!isAdminDashboard || dismissed) return null;
 
@@ -104,7 +102,12 @@ const SetupSchoolVideo = ({
   const handlePlay = (e) => {
     e.stopPropagation();
     setExpanded(true);
-    setPlaying(true);
+  };
+
+  const handleMinimize = (e) => {
+    e.stopPropagation();
+    setExpanded(false);
+    setPlaying(false);
   };
 
   const onPointerDown = (e) => {
@@ -175,17 +178,30 @@ const SetupSchoolVideo = ({
           <>
             <div className="setup-school-video__header setup-school-video__drag" title="Drag to move">
               <span className="setup-school-video__title">{video.title}</span>
-              <button
-                type="button"
-                className="setup-school-video__btn setup-school-video__btn--close"
-                onClick={handleDismiss}
-                aria-label="Close setup video"
-                title="Close"
-              >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M18 6L6 18M6 6l12 12" />
-                </svg>
-              </button>
+              <span className="setup-school-video__actions">
+                <button
+                  type="button"
+                  className="setup-school-video__btn"
+                  onClick={handleMinimize}
+                  aria-label="Minimize setup video"
+                  title="Minimize"
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M5 12h14" />
+                  </svg>
+                </button>
+                <button
+                  type="button"
+                  className="setup-school-video__btn setup-school-video__btn--close"
+                  onClick={handleDismiss}
+                  aria-label="Close setup video"
+                  title="Close"
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M18 6L6 18M6 6l12 12" />
+                  </svg>
+                </button>
+              </span>
             </div>
             <div className="setup-school-video__player">
               {playing ? (
@@ -218,15 +234,12 @@ const SetupSchoolVideo = ({
             </p>
           </>
         ) : (
-          <div className="setup-school-video__collapsed-body">
-            <p className="setup-school-video__collapsed-text">{collapsedText}</p>
-            <button type="button" className="setup-school-video__watch-btn" onClick={handlePlay}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                <path d="M8 5v14l11-7z" />
-              </svg>
-              Watch guide
-            </button>
-          </div>
+          <button type="button" className="setup-school-video__watch-btn" onClick={handlePlay}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M8 5v14l11-7z" />
+            </svg>
+            Watch tutorials
+          </button>
         )}
       </div>
     </div>,

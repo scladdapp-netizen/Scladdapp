@@ -175,3 +175,16 @@
 [data-theme="dark"] .sic-section-title { color: #555555; border-bottom-color: #2a2a2a; }
 [data-theme="dark"] .sic-more-guardians { color: #555555; }
 [data-theme="dark"] .sic-empty { color: #555555; }
+
+@media (max-width: 768px) {
+  .sic-body { padding: 0 12px 16px; gap: 16px; }
+
+  .sic-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .sic-grid .ssp-info-item { padding: 8px 10px; }
+  .sic-grid .ssp-info-label { font-size: 9px; letter-spacing: 0.04em; }
+  .sic-grid .ssp-info-value { font-size: 12px; }
+}

@@ -227,7 +227,7 @@
   }
 
   .said_top_bar {
-    display: flex;
+    display: none;
   }
 }
 

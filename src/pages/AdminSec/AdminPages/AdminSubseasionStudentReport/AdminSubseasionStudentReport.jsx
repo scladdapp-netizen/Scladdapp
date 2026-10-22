@@ -341,10 +341,6 @@ const AdminSubseasionStudentReport = ({ setsetsubId }) => {
       className: "btn-primary", disabled: bulkLoading,
       onClick: (ids, clearSel, reload) => handleSendEmail(ids, clearSel, reload),
     },
-    {
-      label: "Clear", className: "", disabled: bulkLoading,
-      onClick: (_ids, clearSel) => { clearSel(); setBulkMsg(null); },
-    },
   ];
 
   return (

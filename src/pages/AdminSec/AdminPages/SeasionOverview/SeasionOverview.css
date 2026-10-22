@@ -919,16 +919,34 @@
 }
 
 @media (max-width: 768px) {
-  .so { padding: 16px; gap: 20px; }
+  .so { padding: 0; gap: 20px; }
+  .so .innerlkk { padding: 14px 12px 24px; }
   .sotp { grid-template-columns: 1fr; }
   .sots { grid-template-columns: 1fr; }
-  .subsession_header_pr { flex-direction: column; align-items: flex-start; }
+  .subsession_header_pr {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+  .subsession_title_pr { font-size: 16px; }
+  .subsession_header_actions {
+    flex-wrap: nowrap;
+    justify-content: flex-end;
+  }
+  .add_subsession_btn_pr,
+  .view_archived_btn_pr {
+    padding: 8px 10px;
+    white-space: nowrap;
+  }
   .overlap-modal-footer { flex-direction: column-reverse; }
   .overlap-modal-footer button { width: 100%; justify-content: center; }
 }
 
 @media (max-width: 480px) {
-  .so { padding: 12px; }
+  .so { padding: 0; }
+  .so .innerlkk { padding: 12px 12px 20px; }
   .sotpi { padding: 16px; }
   .soypitls h1 { font-size: 22px; }
 }

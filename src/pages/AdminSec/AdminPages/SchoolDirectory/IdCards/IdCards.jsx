@@ -388,15 +388,25 @@ const IdCards = () => {
             </div>
             <div className="ict-board">
               {template.editorVersion === 2 ? (
-                <div style={{ width: 430, height: Math.round(430 * ((template.heightMm || 54) / (template.widthMm || 86))) }}>
-                  <CardSurface
-                    template={template}
-                    side={previewSide}
-                    person={{ ...preview, session: sessionName }}
-                    school={school}
-                    extras={{ issueDate: formatCardDate(new Date().toISOString().slice(0, 10)), expiryDate: formatCardDate(validUntil) }}
-                    preview
-                  />
+                <div className="idc-preview-slot">
+                  <div
+                    className="idc-preview-fit"
+                    style={{ aspectRatio: `${430} / ${Math.round(430 * ((template.heightMm || 54) / (template.widthMm || 86)))}` }}
+                  >
+                    <div
+                      className="idc-preview-scale"
+                      style={{ width: 430, height: Math.round(430 * ((template.heightMm || 54) / (template.widthMm || 86))) }}
+                    >
+                      <CardSurface
+                        template={template}
+                        side={previewSide}
+                        person={{ ...preview, session: sessionName }}
+                        school={school}
+                        extras={{ issueDate: formatCardDate(new Date().toISOString().slice(0, 10)), expiryDate: formatCardDate(validUntil) }}
+                        preview
+                      />
+                    </div>
+                  </div>
                 </div>
               ) : previewSide === "back" ? (
                 <CardBack blank={Array.isArray(template.placements?.back)} design={template} person={{ ...preview, session: sessionName }} school={school} />

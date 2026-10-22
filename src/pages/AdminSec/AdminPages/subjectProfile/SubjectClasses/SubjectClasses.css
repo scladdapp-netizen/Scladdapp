@@ -113,8 +113,8 @@
   font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;
   flex-shrink: 0;
 }
-.sc-status-badge.active   { background: #dcfce7; color: #166634; }
-.sc-status-badge.inactive { background: #f0f0f0; color: #888888; }
+.sc-status-badge.active   { background: #111111; color: #ffffff; }
+.sc-status-badge.inactive { background: #f4f4f4; color: #555555; }
 
 /* Teacher avatar */
 .sc-teacher-avatar {
@@ -143,8 +143,13 @@
   padding: 8px 10px; border-radius: 8px; margin-top: 6px;
   font-size: 12px;
 }
-.sc-class-row.active   { background: rgba(16,185,129,0.06); border: 1px solid #86efac; }
-.sc-class-row.inactive { background: rgba(156,163,175,0.08); border: 1px solid #e8e8e8; }
+.sc-class-row.active,
+.sc-class-row.inactive {
+  background: #ffffff;
+  border: 1px solid #e8e8e8;
+}
+
+.sc-class-row.active { border-left: 3px solid #111111; }
 
 .sc-class-row-left { display: flex; align-items: center; gap: 8px; }
 .sc-class-row-name { font-weight: 700; color: #111111; }
@@ -289,10 +294,66 @@
 
 /* ── Responsive ───────────────────────────────────────────────────────────── */
 @media (max-width: 768px) {
-  .scHeader { flex-direction: column; gap: 14px; }
+  .subjectClasses .scHeader {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    padding-bottom: 12px;
+    margin-bottom: 14px;
+  }
+
+  .subjectClasses .scTitle { font-size: 16px; line-height: 1.3; }
+  .subjectClasses .scSubtitle { line-height: 1.4; }
+  .subjectClasses .scHeaderRight { width: 100%; }
+
+  .subjectClasses .scHeaderRight .btn {
+    width: 100%;
+    min-height: 40px;
+    height: auto;
+    padding: 8px 10px;
+    font-size: 0.82rem;
+  }
+
+  .subjectClasses .scSearchInputWrapper { max-width: none; }
   .scClassesList { grid-template-columns: 1fr; }
   .sc-form-grid { grid-template-columns: 1fr; }
   .sc-detail-grid { grid-template-columns: 1fr; }
+
+  .scClassBody { padding: 10px 12px 12px; }
+
+  .sc-class-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 6px 10px;
+    padding: 10px 12px;
+    margin-top: 8px;
+  }
+
+  .sc-class-row-left {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+  }
+
+  .sc-class-row-name {
+    width: 100%;
+    font-size: 13px;
+    line-height: 1.3;
+  }
+
+  .sc-class-row-actions {
+    width: auto;
+    align-self: center;
+  }
+
+  .sc-class-row-actions .sc-action-btn {
+    flex: none;
+    min-height: 32px;
+    white-space: nowrap;
+  }
 }
 
 /* ── Dark theme ───────────────────────────────────────────────────────────── */
@@ -309,7 +370,15 @@
 [data-theme="dark"] .scClassHeader { background: #252525; border-bottom-color: #2a2a2a; }
 [data-theme="dark"] .scClassName { color: #f0f0f0; }
 [data-theme="dark"] .scClassId { color: #555555; }
-[data-theme="dark"] .sc-status-badge.inactive { background: #252525; color: #555555; }
+[data-theme="dark"] .sc-status-badge.active { background: #f0f0f0; color: #111111; }
+[data-theme="dark"] .sc-status-badge.inactive { background: #252525; color: #888888; }
+[data-theme="dark"] .sc-class-row.active {
+  background: #1a1a1a;
+  border-color: #2a2a2a;
+  border-left-color: #f0f0f0;
+}
+[data-theme="dark"] .sc-class-row.inactive { background: #1a1a1a; border-color: #2a2a2a; }
+[data-theme="dark"] .sc-class-row-name { color: #f0f0f0; }
 [data-theme="dark"] .sc-teacher-avatar { background: #2a2a2a; color: #555555; }
 [data-theme="dark"] .scDetailValue { color: #cccccc; }
 [data-theme="dark"] .scClassFooter { border-top-color: #2a2a2a; }

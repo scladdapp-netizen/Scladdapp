@@ -1,31 +1,17 @@
-import { useState, useCallback, useEffect } from "react";
+import { useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import ServerSmartTable from "../../../../components/ServerSmartTable/ServerSmartTable";
 import InnerTabCon from "../../../../components/InnerTabCon/InnerTabCon";
 import "./SessionGraduation.css";
 
-const IcoDots = () => (
-  <svg width="14" height="14" viewBox="0 0 22 22" fill="none">
-    <circle cx="11" cy="5" r="1.5" fill="currentColor"/>
-    <circle cx="11" cy="11" r="1.5" fill="currentColor"/>
-    <circle cx="11" cy="17" r="1.5" fill="currentColor"/>
-  </svg>
-);
-const IcoEye = () => (
-  <svg width="13" height="13" viewBox="0 0 22 22" fill="none">
-    <path d="M1 11s4-7 10-7 10 7 10 7-4 7-10 7S1 11 1 11z" stroke="currentColor" strokeWidth="1.7"/>
-    <circle cx="11" cy="11" r="3" stroke="currentColor" strokeWidth="1.7"/>
-  </svg>
-);
-
 const SessionGraduation = () => {
   const { seasionId, schoolId } = useParams();
   const navigate = useNavigate();
-  const [showActionMenu, setShowActionMenu] = useState(null);
-  const [selected, setSelected] = useState(null);
 
   const openProfile = (alumni) => {
-    navigate(`/admin/${schoolId}/alumni/profile/${alumni.alumniId}`);
+    const id = alumni?.alumniId || alumni?.id;
+    if (!id) return;
+    navigate(`/admin/${schoolId}/alumni/profile/${id}`);
   };
 
   const fetchGraduates = useCallback(async (params) => {
@@ -68,18 +54,6 @@ const SessionGraduation = () => {
     }
   }, [seasionId]);
 
-  useEffect(() => {
-    const close = () => setShowActionMenu(null);
-    document.addEventListener("click", close);
-    return () => document.removeEventListener("click", close);
-  }, []);
-
-  const openDetails = (alumni) => {
-    setSelected(alumni);
-    setShowDetails(true);
-    setShowActionMenu(null);
-  };
-
   const columns = [
     {
       label: "Student Name", accessor: "studentName",
@@ -95,27 +69,6 @@ const SessionGraduation = () => {
       render: (v) => v ? new Date(v).toLocaleDateString("en-US", { month: "long", year: "numeric" }) : "N/A",
     },
     { label: "Email", accessor: "contactEmail" },
-    {
-      label: "Actions", accessor: "actions", searchable: false,
-      render: (_, row) => (
-        <div className="sg-action-wrap" onClick={(e) => e.stopPropagation()}>
-          <button className="sg-action-btn" onClick={(e) => {
-            e.stopPropagation();
-            setSelected(row);
-            setShowActionMenu(showActionMenu === row.id ? null : row.id);
-          }}>
-            <IcoDots />
-          </button>
-          {showActionMenu === row.id && (
-            <div className="sg-action-menu">
-              <button className="sg-action-item" onClick={() => openProfile(row)}>
-                <IcoEye /> View Profile
-              </button>
-            </div>
-          )}
-        </div>
-      ),
-    },
   ];
 
   return (

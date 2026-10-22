@@ -472,7 +472,6 @@ export default function AttendanceTable({
                       />
                     </th>
                   )}
-                  <th className="att_col_id">ID</th>
                   <th className="att_col_name">Name</th>
                 </tr>
               </thead>
@@ -499,14 +498,13 @@ export default function AttendanceTable({
                         />
                       </td>
                     )}
-                    <td className="att_col_id">{st.id}</td>
                     <td className="att_col_name">{st.name}</td>
                   </tr>
                 ))}
                 {pagedStudents.length === 0 && (
                   <tr>
                     <td
-                      colSpan={enableSelect ? 3 : 2}
+                      colSpan={enableSelect ? 2 : 1}
                       style={{ textAlign: "center", padding: 20 }}
                     >
                       No students

@@ -705,9 +705,6 @@ const ClassPromotionTemplates = () => {
                 >
                   Cancel
                 </Button>
-                <Button variant="secondary" disabled={isSubmitting}>
-                  Preview
-                </Button>
                 <Button
                   onClick={handleSubmit}
                   disabled={
@@ -839,6 +836,13 @@ const ClassPromotionTemplates = () => {
                 </div>
 
                 <div className="template-detail-actions">
+                  <Button
+                    variant="secondary"
+                    className="detail-close-btn"
+                    onClick={() => setIsDetailMenuOpen(false)}
+                  >
+                    Close
+                  </Button>
                   <Button
                     variant="secondary"
                     title="Edit"

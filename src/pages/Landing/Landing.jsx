@@ -556,8 +556,8 @@ function IntroVideo() {
 
 const BILLING_CYCLES = [
   { id: "monthly", label: "Monthly" },
-  { id: "quarterly", label: "Quarterly", badge: "-5%" },
-  { id: "yearly", label: "Yearly", badge: "-10%" },
+  { id: "quarterly", label: "Quarterly", badge: "-10%" },
+  { id: "yearly", label: "Yearly", badge: "-20%" },
 ];
 
 function PricingPlanCard({ plan, onSelect }) {

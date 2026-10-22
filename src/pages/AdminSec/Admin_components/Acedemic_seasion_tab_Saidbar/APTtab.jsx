@@ -172,10 +172,10 @@ const APTtab = ({}) => {
   ];
 
   const subSessionItems = [
-    { name: "School Events",    link: "/ss_events",         icon: IcoEvents },
-    { name: "School Calendar",  link: "/ss_calendar",       icon: IcoCalendar },
     { name: "Student Report",   link: "/ss_student_report", icon: IcoReport },
     { name: "Timetable",        link: "/ss_timetable",      icon: IcoTimetable },
+    { name: "School Events",    link: "/ss_events",         icon: IcoEvents },
+    { name: "School Calendar",  link: "/ss_calendar",       icon: IcoCalendar },
   ];
 
   useEffect(() => { if (schoolId) fetchSessionsData(); }, [schoolId]);

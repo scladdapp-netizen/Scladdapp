@@ -5,6 +5,13 @@ import useStudentBills from "../../../api_call/useStudentBills";
 import FeedbackPanel from "../../../components/FeedbackPanel/FeedbackPanel";
 import "../../TeacherSec/TeacherSec.css";
 
+const IconHome = () => (
+  <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+    <path d="M3 10l8-7 8 7v9a1 1 0 01-1 1H4a1 1 0 01-1-1V10z" fill="#111111" opacity="0.15" stroke="#111111" strokeWidth="1.6" />
+    <rect x="8" y="13" width="6" height="6" rx="1" fill="#111111" opacity="0.5" />
+  </svg>
+);
+
 const IconSession = () => (
   <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
     <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" stroke="#111111" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
@@ -58,6 +65,7 @@ const IconReport = () => (
 );
 
 const NAV_ITEMS = [
+  { id: "dashboard",    name: "Dashboard",     icon: <IconHome /> },
   { id: "session",      name: "Session",       icon: <IconSession /> },
   { id: "school",       name: "School",        icon: <IconSchool /> },
   { id: "bill",         name: "Bills",         icon: <IconBill /> },

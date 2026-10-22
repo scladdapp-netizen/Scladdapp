@@ -441,6 +441,13 @@ body[data-theme="dark"] .create-template-form.an-form .rich-text-editor .placeho
   margin: 16px;
 }
 
+@media (max-width: 768px) {
+  .an-detail .ct-card .at-email-full-preview,
+  .an-detail .ct-card .announcement-preview-container {
+    margin: 0;
+  }
+}
+
 .an-detail .ct-card .at-email-full-preview {
   border: 1px solid #ececf0;
   border-radius: 10px;

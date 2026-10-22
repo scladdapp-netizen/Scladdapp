@@ -438,18 +438,6 @@ const TimetableTemplates = () => {
     setIsDetailMenuOpen(true);
   };
 
-  const handlePreview = () => {
-    const errors = validateTimetableData(formData);
-    if (errors.length > 0) {
-      // Show validation errors as notifications
-      errors.forEach((error) => {
-        addNotification(error, "error");
-      });
-      return;
-    }
-    setIsPreviewOpen(true);
-  };
-
   const handleSubmit = async () => {
     const errors = validateTimetableData(formData);
     if (errors.length > 0) {
@@ -944,13 +932,6 @@ const TimetableTemplates = () => {
                   Cancel
                 </Button>
                 <Button
-                  variant="secondary"
-                  onClick={handlePreview}
-                  disabled={isSubmitting}
-                >
-                  Preview
-                </Button>
-                <Button
                   onClick={handleSubmit}
                   disabled={
                     !formData.name ||
@@ -1096,6 +1077,13 @@ const TimetableTemplates = () => {
                 </div>
 
                 <div className="template-detail-actions">
+                  <Button
+                    variant="secondary"
+                    className="detail-close-btn"
+                    onClick={() => setIsDetailMenuOpen(false)}
+                  >
+                    Close
+                  </Button>
                   <Button
                     variant="secondary"
                     title="Edit"

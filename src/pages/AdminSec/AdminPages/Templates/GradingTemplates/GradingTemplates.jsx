@@ -993,6 +993,13 @@ const GradingTemplates = () => {
                   <div className="template-detail-actions">
                     <Button
                       variant="secondary"
+                      className="detail-close-btn"
+                      onClick={() => setIsDetailMenuOpen(false)}
+                    >
+                      Close
+                    </Button>
+                    <Button
+                      variant="secondary"
                       onClick={() => handleEditTemplate(selectedTemplate)}
                     >
                       <FaEdit size={14} style={{ marginRight: "8px" }} />

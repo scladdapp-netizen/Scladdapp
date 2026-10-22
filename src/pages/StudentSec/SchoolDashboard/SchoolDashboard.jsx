@@ -9,6 +9,7 @@ import Bill         from "./pages/Bill/Bill";
 import Alumni       from "./pages/Alumni/Alumni";
 import Notification from "./pages/Notification/Notification";
 import ExamPage     from "./pages/Exam/ExamPage";
+import Dashboard    from "./pages/Dashboard/Dashboard";
 import "../../TeacherSec/TeacherSec.css";
 
 const SchoolDashboard = () => {
@@ -33,7 +34,8 @@ const SchoolDashboard = () => {
           onClick={() => isMobileMenuOpen && setIsMobileMenuOpen(false)}
         >
           <Routes>
-            <Route path="/" element={<Navigate to={`${base}/session`} replace />} />
+            <Route path="/" element={<Navigate to={`${base}/dashboard`} replace />} />
+            <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/session"      element={<SessionList />} />
             <Route path="/session/*"    element={<Session />} />
             <Route path="/school/*"     element={<SchoolInfo />} />

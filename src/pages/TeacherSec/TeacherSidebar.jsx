@@ -5,6 +5,13 @@ import FeedbackPanel from "../../components/FeedbackPanel/FeedbackPanel";
 import "./TeacherSec.css";
 
 /* ── 2-color SVG icons ─────────────────────────────────────────────────── */
+const IconHome = () => (
+  <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+    <path d="M3 10l8-7 8 7v9a1 1 0 01-1 1H4a1 1 0 01-1-1V10z" fill="#111111" opacity="0.15" stroke="#111111" strokeWidth="1.6" />
+    <rect x="8" y="13" width="6" height="6" rx="1" fill="#111111" opacity="0.5" />
+  </svg>
+);
+
 const IconAssignments = () => (
   <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
     <rect x="3" y="3" width="16" height="16" rx="2.5" fill="#111111" opacity="0.12" stroke="#111111" strokeWidth="1.6" />
@@ -62,6 +69,7 @@ const IconReport = () => (
 );
 
 const NAV_ITEMS = [
+  { id: "dashboard",     name: "Dashboard",            icon: <IconHome /> },
   { id: "assignments",   name: "Assignments",          icon: <IconAssignments /> },
   { id: "notifications", name: "School Notifications", icon: <IconNotifications /> },
   { id: "events",        name: "Events & Calendar",    icon: <IconEvents /> },

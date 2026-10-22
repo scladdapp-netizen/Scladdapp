@@ -1,18 +1,13 @@
 import { useState, useCallback } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import ServerSmartTable from "../../../../components/ServerSmartTable/ServerSmartTable";
-import SlideInMenu from "../../../../components/SlideInMenu/SlideInMenu";
-import Button from "../../../../components/Button/Button";
-import InfoField from "../../../../components/infoField/InfoField";
 import InnerTabCon from "../../../../components/InnerTabCon/InnerTabCon";
 import "./SessionAdmissionsTab.css";
 
 const SessionAdmissionsTab = () => {
   const { schoolId, seasionId } = useParams();
-  const [selectedAdmission, setSelectedAdmission] = useState(null);
-  const [isDetailMenuOpen, setIsDetailMenuOpen] = useState(false);
+  const navigate = useNavigate();
   const [stats, setStats] = useState({ active: 0, inactive: 0, total: 0 });
-  const [selectedIds, setSelectedIds] = useState([]);
 
   // Fetch student admissions for this session (only admission method)
   const fetchSessionAdmissions = useCallback(
@@ -99,9 +94,10 @@ const SessionAdmissionsTab = () => {
     [seasionId]
   );
 
-  const handleViewDetails = (admission) => {
-    setSelectedAdmission(admission);
-    setIsDetailMenuOpen(true);
+  const openStudentProfile = (admission) => {
+    const id = admission?.student_id;
+    if (!id) return;
+    navigate(`/admin/${schoolId}/Profile/${id}`);
   };
 
   const handleExport = ({ format, columns: cols, selectedIds: ids }) => {
@@ -206,10 +202,9 @@ const SessionAdmissionsTab = () => {
           <ServerSmartTable
             columns={columns}
             fetchData={fetchSessionAdmissions}
-            onRowClick={(r) => handleViewDetails(r)}
+            onRowClick={(r) => openStudentProfile(r)}
             maxRowsPerPage={20}
             enableSelect
-            onSelectChange={setSelectedIds}
             exportDefaults={{
               includeColumns: ["student_id", "student_name", "admission_class", "stream", "admitted_date", "active_status"],
               format: "csv",
@@ -218,62 +213,6 @@ const SessionAdmissionsTab = () => {
           />
         </div>
       </InnerTabCon>
-
-      {/* ── Detail panel ── */}
-      <SlideInMenu isShow={isDetailMenuOpen} onClose={() => setIsDetailMenuOpen(false)} width="500px">
-        {selectedAdmission && (
-          <div className="sa-detail-container">
-
-            {/* Header */}
-            <div className="sa-detail-header">
-              <span className="sa-detail-header-deco" aria-hidden="true" />
-              <span className="sa-detail-header-deco2" aria-hidden="true" />
-              <div className="sa-detail-header-content">
-                <div className="sa-detail-avatar">
-                  <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-                    <circle cx="11" cy="7" r="4" fill="currentColor" opacity="0.3" stroke="currentColor" strokeWidth="1.6"/>
-                    <path d="M3 19c0-3.3 2.7-6 6-6h4c3.3 0 6 2.7 6 6" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/>
-                  </svg>
-                </div>
-                <div className="sa-detail-header-text">
-                  <h2>{selectedAdmission.student_name}</h2>
-                  <p>ID: {selectedAdmission.student_id}</p>
-                </div>
-                <span className={`sa-status-pill ${selectedAdmission.active_status ? "active" : "inactive"}`}>
-                  {selectedAdmission.active_status ? "Active" : "Inactive"}
-                </span>
-              </div>
-            </div>
-
-            {/* Body */}
-            <div className="sa-detail-body">
-              <div className="sa-detail-section">
-                <p className="sa-detail-section-title">Admission Info</p>
-                <div className="sa-detail-grid">
-                  <InfoField label="Assignment ID" value={selectedAdmission.assignment_id} />
-                  <InfoField label="Admitted Date" value={selectedAdmission.admitted_date ? new Date(selectedAdmission.admitted_date).toLocaleDateString() : "N/A"} />
-                  <InfoField label="Class"   value={selectedAdmission.admission_class} />
-                  <InfoField label="Stream"  value={selectedAdmission.stream} />
-                  <InfoField label="Session" value={selectedAdmission.admission_session || "N/A"} />
-                </div>
-              </div>
-
-              {selectedAdmission.remarks && (
-                <div className="sa-detail-section">
-                  <p className="sa-detail-section-title">Remarks</p>
-                  <p className="sa-remarks">{selectedAdmission.remarks}</p>
-                </div>
-              )}
-            </div>
-
-            {/* Footer */}
-            <div className="sa-detail-footer">
-              <Button variant="secondary" onClick={() => setIsDetailMenuOpen(false)}>Close</Button>
-            </div>
-
-          </div>
-        )}
-      </SlideInMenu>
     </div>
   );
 };

@@ -264,7 +264,7 @@ const IdCardTemplatePage = () => {
   const insertElement = (element) => {
     if (!canInsert(elements, element)) {
       addNotification("That item is already on this side of the card", "error");
-      return;
+      return false;
     }
     const placed = { ...element };
     if (placed.name !== "Background shape" && placed.name !== "Border" && placed.name !== "Pattern") {
@@ -278,6 +278,7 @@ const IdCardTemplatePage = () => {
       [side]: atBack ? [placed, ...current[side]] : [...current[side], placed],
     }));
     setSelected([placed.id]);
+    return true;
   };
 
   const onDrop = (event) => {
@@ -564,7 +565,7 @@ const IdCardTemplatePage = () => {
 
       <div className="ice-body">
         {menuOpen && <button type="button" className="ice-menu-backdrop" aria-label="Close options" onClick={() => setMenuOpen(false)} />}
-        {sheet && <button type="button" className="ice-sheet-backdrop" aria-label="Close panel" onClick={() => setSheet(null)} />}
+        {sheet === "rail" && <button type="button" className="ice-sheet-backdrop" aria-label="Close panel" onClick={() => setSheet(null)} />}
         <aside className={`ice-rail${sheet === "rail" ? " is-open" : ""}`}>
           <div className="ice-sheet-head">
             <strong>{railTab === "templates" ? "Templates" : "Elements"}</strong>
@@ -587,7 +588,7 @@ const IdCardTemplatePage = () => {
                     className="ice-chip"
                     draggable
                     onDragStart={(event) => event.dataTransfer.setData("application/x-id-card", JSON.stringify({ key: item.key }))}
-                    onClick={() => insertElement(item.create())}
+                    onClick={() => { if (insertElement(item.create())) setSheet("props"); }}
                   >
                     {item.label}
                   </button>
@@ -600,7 +601,7 @@ const IdCardTemplatePage = () => {
               <h2>Saved templates</h2>
               {library.templates.map((row) => (
                 <div key={row.id} className={`ice-template${library.active[draft.type] === row.id ? " is-selected" : ""}`}>
-                  <button type="button" onClick={() => guard("Open another template and discard unsaved changes?", () => { openTemplate(row, draft.type); setSheet(null); })}>
+                  <button type="button" onClick={() => { setSheet(null); guard("Open another template and discard unsaved changes?", () => openTemplate(row, draft.type)); }}>
                     <span>{row.name}</span>
                     <small>{CARD_SIZES.find((size) => size.id === row.sizeId)?.label || "Custom"}</small>
                   </button>
@@ -610,7 +611,7 @@ const IdCardTemplatePage = () => {
               <h2>{platformDesigns.length ? "Sclad templates" : "Starting designs"}</h2>
               {(platformDesigns.length ? platformDesigns : STARTER_TEMPLATES).map((row) => (
                 <div key={row.id} className="ice-template">
-                  <button type="button" onClick={() => setAsk({ message: `Replace the current layout with ${row.name}?`, confirmLabel: "Apply template", action: () => { commit((current) => platformDesigns.length ? applyCatalog(current, row) : applyStarter(current, row.id)); setSheet(null); } })}>
+                  <button type="button" onClick={() => { setSheet(null); setAsk({ message: `Replace the current layout with ${row.name}?`, confirmLabel: "Apply template", action: () => commit((current) => platformDesigns.length ? applyCatalog(current, row) : applyStarter(current, row.id)) }); }}>
                     <span>{row.name}</span>
                     <small>{CARD_SIZES.find((size) => size.id === row.sizeId)?.label || "Custom"}</small>
                   </button>

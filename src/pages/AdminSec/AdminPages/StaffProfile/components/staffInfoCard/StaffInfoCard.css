@@ -163,3 +163,16 @@
 [data-theme="dark"] .sic2-dropdown-item.success:hover { background: #052e16; }
 [data-theme="dark"] .sic2-dropdown-divider { background: #2a2a2a; }
 [data-theme="dark"] .sic2-section-title { color: #555555; border-bottom-color: #2a2a2a; }
+
+@media (max-width: 768px) {
+  .sic2-body { padding: 0 12px 16px; gap: 16px; }
+
+  .sic2-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .sic2-grid .ssp-info-item { padding: 8px 10px; }
+  .sic2-grid .ssp-info-label { font-size: 9px; letter-spacing: 0.04em; }
+  .sic2-grid .ssp-info-value { font-size: 12px; }
+}

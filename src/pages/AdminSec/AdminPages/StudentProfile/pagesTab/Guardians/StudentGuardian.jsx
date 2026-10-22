@@ -319,58 +319,6 @@ const StudentGuardian = () => {
     addNotification("PDF exported successfully!", "success");
   };
 
-  const handlePrint = () => {
-    if (!guardianData.length) {
-      addNotification("No guardian data to print.", "error");
-      return;
-    }
-    const printContent = `
-      <html><head><title>Guardians — ${studentName}</title>
-      <style>
-        body { font-family: Arial, sans-serif; margin: 24px; color: #111; }
-        h1 { font-size: 18px; font-weight: 800; margin: 0 0 4px; }
-        .sub { font-size: 12px; color: #888; margin: 0 0 20px; }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-        .card { border: 1px solid #e8e8e8; border-radius: 10px; overflow: hidden; }
-        .card-head { background: #f7f7f7; padding: 12px 16px; border-bottom: 1px solid #e8e8e8; display: flex; align-items: center; gap: 10px; }
-        .avatar { width: 36px; height: 36px; border-radius: 8px; background: #111; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px; flex-shrink: 0; }
-        .name { font-size: 13px; font-weight: 800; }
-        .rel  { font-size: 11px; color: #888; }
-        .badge { display: inline-block; background: #111; color: #fff; font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 20px; margin-left: 6px; text-transform: uppercase; }
-        .body { padding: 12px 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .field label { font-size: 9px; font-weight: 700; text-transform: uppercase; color: #aaa; display: block; margin-bottom: 2px; }
-        .field span  { font-size: 12px; color: #111; }
-        @media print { body { margin: 12px; } }
-      </style></head><body>
-      <h1>Guardian Information</h1>
-      <p class="sub">Student: ${studentName} &nbsp;|&nbsp; ${new Date().toLocaleDateString()}</p>
-      <div class="grid">
-        ${guardianData.map(g => `
-          <div class="card">
-            <div class="card-head">
-              <div class="avatar">${g.guardian_name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2)}</div>
-              <div>
-                <div class="name">${g.guardian_name}${g.is_primary ? '<span class="badge">Primary</span>' : ""}</div>
-                <div class="rel">${g.guardian_relationship || "—"}</div>
-              </div>
-            </div>
-            <div class="body">
-              <div class="field"><label>Phone</label><span>${g.guardian_phone || "N/A"}</span></div>
-              <div class="field"><label>WhatsApp</label><span>${g.guardian_whatsapp || "N/A"}</span></div>
-              <div class="field"><label>Email</label><span>${g.guardian_email || "N/A"}</span></div>
-              <div class="field"><label>Occupation</label><span>${g.guardian_occupation || "N/A"}</span></div>
-              <div class="field"><label>Address</label><span>${g.guardian_address || "N/A"}</span></div>
-            </div>
-          </div>`).join("")}
-      </div>
-      </body></html>`;
-    const w = window.open("", "_blank");
-    w.document.write(printContent);
-    w.document.close();
-    w.focus();
-    setTimeout(() => { w.print(); w.close(); }, 400);
-  };
-
   const GuardianCard = ({ guardian, onEdit }) => {
     const isOpen = openDropdown === guardian.guardian_id;
     const btnRef = useRef(null);
@@ -459,7 +407,6 @@ const StudentGuardian = () => {
           </div>
           <div className="topExButton">
             <Button variant={"secondary"} onClick={handleExportPDF}>Export PDF</Button>
-            <Button variant={"secondary"} onClick={handlePrint}>Print</Button>
             <Button onClick={handleAdd}>+ Add Guardian</Button>
           </div>
         </div>

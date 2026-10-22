@@ -608,10 +608,6 @@ const ReportCardLayoutTemplates = () => {
     }
   };
 
-  const handlePreview = () => {
-    setIsPreviewOpen(true);
-  };
-
   const handleDuplicate = async (template) => {
     try {
       const result = await duplicateReportCardTemplate(
@@ -1348,9 +1344,6 @@ const ReportCardLayoutTemplates = () => {
               >
                 Cancel
               </Button>
-              <Button variant="secondary" onClick={handlePreview}>
-                Preview
-              </Button>
               <Button
                 onClick={handleSubmit}
                 disabled={
@@ -1923,6 +1916,13 @@ const ReportCardLayoutTemplates = () => {
               </div>
 
               <div className="template-detail-actions">
+                <Button
+                  variant="secondary"
+                  className="detail-close-btn"
+                  onClick={() => setIsDetailMenuOpen(false)}
+                >
+                  Close
+                </Button>
                 <Button
                   variant="secondary"
                   onClick={() => handleEditTemplate(selectedTemplate)}

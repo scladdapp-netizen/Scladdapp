@@ -168,14 +168,6 @@ const StudentHealth = () => {
     addNotification("PDF exported!", "success");
   };
 
-  const handlePrint = () => {
-    if (!medicalRecords.length) { addNotification("No records to print.", "error"); return; }
-    const w = window.open("","_blank");
-    w.document.open();
-    w.document.write(`<html><head><title>Medical Records</title><style>body{font-family:Arial,sans-serif;margin:24px;color:#111}h1{font-size:18px;font-weight:800;margin:0 0 4px}.sub{font-size:12px;color:#888;margin:0 0 20px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}.card{border:1px solid #e8e8e8;border-radius:10px;overflow:hidden}.ch{background:#f7f7f7;padding:12px 16px;border-bottom:1px solid #e8e8e8}.diag{font-size:13px;font-weight:800;margin:0 0 3px}.meta{font-size:11px;color:#888}.cb{padding:12px 16px;display:grid;grid-template-columns:1fr 1fr;gap:10px}.f label{font-size:9px;font-weight:700;text-transform:uppercase;color:#aaa;display:block;margin-bottom:2px}.f span{font-size:12px;color:#111}@media print{body{margin:12px}}</style></head><body><h1>Medical Records</h1><p class="sub">Student: ${studentName} | ${new Date().toLocaleDateString()}</p><div class="grid">${medicalRecords.map(r=>`<div class="card"><div class="ch"><div class="diag">${r.diagnosis||"Medical Record"}</div><div class="meta">${getRecordTypeLabel(r.record_type)} • ${r.record_date?new Date(r.record_date).toLocaleDateString():"N/A"}</div></div><div class="cb"><div class="f"><label>Doctor</label><span>${r.doctor_name||"N/A"}</span></div><div class="f"><label>Hospital</label><span>${r.hospital_clinic||"N/A"}</span></div><div class="f"><label>Symptoms</label><span>${r.symptoms||"N/A"}</span></div><div class="f"><label>Treatment</label><span>${r.treatment||"N/A"}</span></div></div></div>`).join("")}</div></body></html>`);
-    w.document.close(); w.focus(); setTimeout(()=>{w.print();w.close();},400);
-  };
-
   // ── Card component ──────────────────────────────────────────────────────
   const MedicalRecordCard = ({ record }) => {
     const isOpen = openDropdown === record.record_id;
@@ -279,7 +271,6 @@ const StudentHealth = () => {
           </div>
           <div className="topExButton">
             <Button variant="secondary" onClick={handleExportPDF}>Export PDF</Button>
-            <Button variant="secondary" onClick={handlePrint}>Print</Button>
             <Button onClick={handleAddRecord}>Add Record</Button>
           </div>
         </div>

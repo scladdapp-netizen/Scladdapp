@@ -216,13 +216,51 @@
 
 /* ── Responsive ───────────────────────────────────────────────────────────── */
 @media (max-width: 768px) {
-  .classHeader { flex-direction: column; gap: 14px; }
-  .classHeaderRight { flex-wrap: wrap; }
-  .overviewGrid { grid-template-columns: 1fr 1fr; }
-}
+  .classStudentInfo .classHeader {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    padding-bottom: 12px;
+    margin-bottom: 14px;
+  }
 
-@media (max-width: 480px) {
-  .overviewGrid { grid-template-columns: 1fr; }
+  .classStudentInfo .classTitle {
+    font-size: 16px;
+    font-weight: 800;
+    line-height: 1.3;
+    color: #111111;
+  }
+
+  .classStudentInfo .classSubtitle { line-height: 1.4; }
+
+  .classStudentInfo .classHeaderRight { width: 100%; }
+
+  .classStudentInfo .classHeaderRight .btn {
+    width: 100%;
+    min-height: 40px;
+    height: auto;
+    padding: 8px 10px;
+    font-size: 0.82rem;
+  }
+
+  .classStudentInfo .overviewCardHeader { padding: 14px; gap: 10px; }
+  .classStudentInfo .overviewHeaderIcon { width: 38px; height: 38px; }
+  .classStudentInfo .overviewCardBody { padding: 12px; }
+
+  .classStudentInfo .overviewGrid {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .classStudentInfo .overviewGrid .ssp-info-item { padding: 8px 10px; }
+  .classStudentInfo .overviewGrid .ssp-info-label { font-size: 9px; letter-spacing: 0.04em; }
+  .classStudentInfo .overviewGrid .ssp-info-value { font-size: 12px; }
+
+  .classStudentInfo .overviewGrid .ssp-info-item:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+  }
+
+  .classStudentInfo .overviewCardFooter { padding: 10px 12px; }
 }
 
 /* ── Dark theme ───────────────────────────────────────────────────────────── */

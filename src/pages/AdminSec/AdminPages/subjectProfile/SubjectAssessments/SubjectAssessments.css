@@ -290,3 +290,75 @@
   border-color: #3a3a3a;
   border-top-color: #60a5fa;
 }
+
+@media (max-width: 768px) {
+  .subjectAssessments .table-wrap {
+    overflow-x: auto;
+    border: 1px solid #e8e8e8;
+    border-radius: 12px;
+    background: #ffffff;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  }
+
+  .subjectAssessments .smart-table-container .smart-table {
+    display: table;
+    width: max-content;
+    min-width: 100% !important;
+    border-collapse: collapse;
+  }
+
+  .subjectAssessments .smart-table thead { display: table-header-group; }
+
+  .subjectAssessments .smart-table tbody {
+    display: table-row-group;
+  }
+
+  .subjectAssessments .smart-table-container .smart-table tbody tr {
+    display: table-row;
+    width: auto;
+    max-width: none;
+    padding: 0;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    background: transparent;
+  }
+
+  .subjectAssessments .smart-table-container .smart-table th,
+  .subjectAssessments .smart-table-container .smart-table td,
+  .subjectAssessments .smart-table-container .smart-table td.st-card-title,
+  .subjectAssessments .smart-table-container .smart-table td.st-card-sub,
+  .subjectAssessments .smart-table-container .smart-table td.st-card-field,
+  .subjectAssessments .smart-table-container .smart-table td.st-card-badge {
+    display: table-cell;
+    position: static;
+    width: auto;
+    max-width: none;
+    padding: 11px 12px;
+    border-bottom: 1px solid #f0f0f0;
+    white-space: nowrap;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0;
+    text-align: left;
+    vertical-align: middle;
+  }
+
+  .subjectAssessments .smart-table-container .smart-table th {
+    font-size: 11px;
+    font-weight: 700;
+    border-bottom: 1px solid #e8e8e8;
+  }
+
+  .subjectAssessments .smart-table-container .smart-table td[data-label]::before { content: none; }
+
+  .subjectAssessments .sa-student-name {
+    font-size: 13px;
+    font-weight: 700;
+  }
+}
+
+[data-theme="dark"] .subjectAssessments .table-wrap {
+  background: #1e1e1e;
+  border-color: #2a2a2a;
+}

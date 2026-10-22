@@ -149,7 +149,7 @@ const SessionStudents = () => {
 
       {/* Student detail panel */}
       <SlideInMenu isShow={panelOpen} onClose={() => setPanelOpen(false)} width="560px">
-        <div className="cs-panel">
+        <div className="cs-panel ss-detail">
           {/* Header */}
           <div className="cs-panel-header default">
             <span className="cs-panel-header-deco" aria-hidden="true" />

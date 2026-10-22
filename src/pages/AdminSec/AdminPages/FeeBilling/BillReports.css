@@ -114,9 +114,26 @@
 }
 
 /* ── Responsive ───────────────────────────────────────────────────────────── */
-@media (max-width: 640px) {
-  .br-stats-grid  { grid-template-columns: 1fr 1fr; }
-  .br-status-grid { grid-template-columns: 1fr; }
+@media (max-width: 768px) {
+  .bd-content .innerlkk { padding: 12px 12px 24px; }
+
+  .br-wrap { padding: 0; gap: 12px; }
+
+  .br-stats-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+  .br-stat-card { padding: 10px 12px; }
+  .br-stat-value { font-size: 16px; }
+
+  .br-section { padding: 12px; gap: 8px; }
+
+  .br-status-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .br-status-card { padding: 10px 6px; }
+  .br-status-count { font-size: 18px; }
+  .br-status-label { font-size: 11px; }
+  .br-status-pct { font-size: 10px; }
 }
 
 /* ── Dark theme ───────────────────────────────────────────────────────────── */

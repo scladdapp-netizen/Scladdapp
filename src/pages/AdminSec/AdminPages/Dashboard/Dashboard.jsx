@@ -546,12 +546,13 @@ const Dashboard = () => {
               </div>
             ) : (() => {
               const totalStudents = liveStats?.students || todayAttendance.total;
+              const absentCount = Math.max(0, totalStudents - (todayAttendance.present || 0));
               const presentPct  = totalStudents > 0 ? Math.min(100, Math.round((todayAttendance.present  / totalStudents) * 100)) : 0;
-              const absentPct   = totalStudents > 0 ? Math.min(100, Math.round((todayAttendance.absent   / totalStudents) * 100)) : 0;
+              const absentPct   = totalStudents > 0 ? Math.min(100, Math.round((absentCount / totalStudents) * 100)) : 0;
               const excusedPct  = totalStudents > 0 ? Math.min(100, Math.round((todayAttendance.excused  / totalStudents) * 100)) : 0;
               const bars = [
                 { pct: presentPct,  label: "Present", val: todayAttendance.present  },
-                { pct: absentPct,   label: "Absent",  val: todayAttendance.absent   },
+                { pct: absentPct,   label: "Absent",  val: absentCount              },
                 { pct: excusedPct,  label: "Excused", val: todayAttendance.excused  },
               ];
               return (
@@ -596,7 +597,7 @@ const Dashboard = () => {
                         <FaUserCheck className="breakdown-icon" />
                       </div>
                       <div className="breakdown-item absent">
-                        <span className="breakdown-val">{todayAttendance.absent}</span>
+                        <span className="breakdown-val">{absentCount}</span>
                         <span className="breakdown-label">Absent</span>
                         <FaUserTimes className="breakdown-icon" />
                       </div>

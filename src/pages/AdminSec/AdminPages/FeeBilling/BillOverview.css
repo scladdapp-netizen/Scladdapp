@@ -78,6 +78,14 @@
   padding: 8px 0 0;
 }
 
+@media (max-width: 768px) {
+  .bo-wrap { padding: 0; gap: 12px; }
+  .bo-meta-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+  .bo-meta-card { padding: 10px 12px; }
+  .bo-section { padding: 12px; }
+  .bo-created-row { flex-wrap: wrap; gap: 6px 14px; }
+}
+
 /* ── Created row ──────────────────────────────────────────────────────────── */
 .bo-created-row {
   display: flex; gap: 24px; font-size: 13px; color: #888888;

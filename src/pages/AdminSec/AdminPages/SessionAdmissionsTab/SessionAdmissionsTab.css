@@ -284,13 +284,53 @@
 
 /* ── Responsive ───────────────────────────────────────────────────────────── */
 @media (max-width: 768px) {
-  .sa-stats { grid-template-columns: 1fr; }
-  .sa-detail-grid { grid-template-columns: 1fr; }
-}
+  .session-admissionss .sa-stats {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+    margin-bottom: 16px;
+  }
 
-@media (max-width: 480px) {
-  .sa-stats { grid-template-columns: 1fr; gap: 10px; }
-  .sa-stat-value { font-size: 22px; }
+  .session-admissionss .sa-stat-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px;
+    border-radius: 12px;
+  }
+
+  .session-admissionss .sa-stat-card:hover {
+    transform: none;
+  }
+
+  .session-admissionss .sa-stat-ico {
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+  }
+
+  .session-admissionss .sa-stat-ico svg {
+    width: 15px;
+    height: 15px;
+  }
+
+  .session-admissionss .sa-stat-label {
+    font-size: 9px;
+    letter-spacing: 0.04em;
+  }
+
+  .session-admissionss .sa-stat-value {
+    font-size: 20px;
+  }
+
+  .session-admissionss .sa-stat-card::after {
+    width: 52px;
+    height: 52px;
+    border-width: 8px;
+    bottom: -18px;
+    right: -12px;
+  }
+
+  .sa-detail-grid { grid-template-columns: 1fr; }
 }
 
 /* ── Dark theme ───────────────────────────────────────────────────────────── */

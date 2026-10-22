@@ -863,3 +863,90 @@
   background: #252525;
   color: #888888;
 }
+
+@media (max-width: 768px) {
+  .eat-page {
+    height: 100dvh;
+    width: 100%;
+  }
+
+  .eat-topbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    height: auto;
+    padding: 8px 10px;
+    gap: 8px;
+  }
+
+  .eat-topbar-left {
+    flex: 1 1 auto;
+    min-width: 0;
+    gap: 6px;
+  }
+
+  .eat-back-btn {
+    padding: 4px 8px;
+    font-size: 11px;
+  }
+
+  .eat-name {
+    flex: 1;
+    max-width: none;
+    font-size: 13px;
+  }
+
+  .eat-mode-btn {
+    min-width: 64px;
+    height: 30px;
+    padding: 0 10px;
+  }
+
+  .eat-topbar-right {
+    flex: 1 1 100%;
+    gap: 8px;
+  }
+
+  .eat-reset-btn,
+  .eat-save-btn {
+    flex: 1;
+    justify-content: center;
+    min-height: 36px;
+    padding: 6px 8px;
+    font-size: 12px;
+  }
+
+  .eat-toolbar {
+    align-items: center;
+    gap: 4px;
+    padding: 8px 10px;
+  }
+
+  .eat-tb-btn {
+    min-width: 32px;
+    height: 32px;
+  }
+
+  .eat-tb-select {
+    height: 32px;
+    max-width: 108px;
+  }
+
+  .eat-bg-panel {
+    flex: 1 1 100%;
+    flex-wrap: wrap;
+    margin: 4px 0 0;
+    padding: 8px 0 0;
+    border-left: none;
+    border-top: 1px solid #e2e8f0;
+    gap: 6px 8px;
+  }
+
+  .eat-bg-upload-btn {
+    min-height: 32px;
+  }
+}
+
+[data-theme="dark"] .eat-bg-panel {
+  border-top-color: #2a2a2a;
+}

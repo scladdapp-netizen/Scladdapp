@@ -336,3 +336,24 @@
 [data-theme="dark"] .ti-effects-title { color: #888888; }
 [data-theme="dark"] .ti-effects li { color: #555555; }
 [data-theme="dark"] .ti-panel-empty { color: #555555; }
+
+@media (max-width: 768px) {
+  .tic-body { padding: 0 12px 16px; gap: 16px; }
+
+  .tic-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .tic-grid .ssp-info-item { padding: 8px 10px; }
+  .tic-grid .ssp-info-label { font-size: 9px; letter-spacing: 0.04em; }
+  .tic-grid .ssp-info-value { font-size: 12px; }
+
+  .tic-link-chip {
+    padding: 8px 10px;
+    font-size: 12px;
+    width: 100%;
+    justify-content: space-between;
+    box-sizing: border-box;
+  }
+}

@@ -615,6 +615,7 @@ const CombinedTemplates = () => {
                 </div>
 
                 <div className="template-detail-actions">
+                  <Button variant="secondary" className="detail-close-btn" onClick={() => setIsDetailMenuOpen(false)}>Close</Button>
                   <Button variant="secondary" title="Edit" aria-label="Edit" onClick={() => openEdit(selectedTemplate)}><FaEdit size={14} /></Button>
                   <Button variant="secondary" title="Duplicate" aria-label="Duplicate" onClick={() => handleDuplicate(selectedTemplate)}><FaCopy size={14} /></Button>
                   <Button

@@ -42,7 +42,12 @@
   font-size: 13px;
   font-weight: 700;
   color: #111111;
-  line-height: 1.2;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  word-break: break-word;
 }
 .std-class-session {
   font-size: 11px;

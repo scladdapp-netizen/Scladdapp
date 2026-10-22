@@ -394,24 +394,41 @@
 }
 
 .asl-card-code {
-  font-size: 12px;
-  color: #888888;
-  font-family: "Courier New", monospace;
-  background: #f4f4f4;
-  padding: 3px 8px;
-  border-radius: 5px;
-  display: inline-block;
+  align-self: flex-start;
+  width: fit-content;
   margin: 0;
+  padding: 3px 9px;
+  border-radius: 999px;
+  border: 1px solid #e4e4e4;
+  background: #f4f4f4;
+  color: #555555;
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  line-height: 1.3;
 }
 
 .asl-card-dates {
   display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 12px;
+  align-items: stretch;
+  gap: 0;
+  padding: 0;
   background: #f7f7f7;
-  border-radius: 8px;
+  border: 1px solid #eeeeee;
+  border-radius: 10px;
   margin-top: 4px;
+  overflow: hidden;
+}
+
+.asl-date-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+  padding: 12px 14px;
 }
 
 .asl-date-label {
@@ -430,8 +447,9 @@
 
 .asl-date-divider {
   width: 1px;
-  height: 32px;
-  background: #e0e0e0;
+  align-self: stretch;
+  background: #e8e8e8;
+  flex-shrink: 0;
 }
 
 .asl-card-meta {
@@ -481,14 +499,16 @@
     grid-template-columns: 1fr;
   }
 
-  .asl-card-dates {
-    flex-direction: column;
-    gap: 12px;
+  .asl-card {
+    padding: 16px;
   }
 
-  .asl-date-divider {
-    width: 100%;
-    height: 1px;
+  .asl-date-item {
+    padding: 10px 12px;
+  }
+
+  .asl-date-value {
+    font-size: 12px;
   }
 }
 
@@ -1329,9 +1349,9 @@
   color: #aaaaaa;
 }
 [data-theme="dark"] .asl-card-title { color: #f0f0f0; }
-[data-theme="dark"] .asl-card-code  { background: #252525; color: #888888; }
+[data-theme="dark"] .asl-card-code  { background: #252525; color: #cccccc; border-color: #3a3a3a; }
 
-[data-theme="dark"] .asl-card-dates { background: #252525; }
+[data-theme="dark"] .asl-card-dates { background: #252525; border-color: #333333; }
 [data-theme="dark"] .asl-date-label { color: #555555; }
 [data-theme="dark"] .asl-date-value { color: #e0e0e0; }
 [data-theme="dark"] .asl-date-divider { background: #333333; }

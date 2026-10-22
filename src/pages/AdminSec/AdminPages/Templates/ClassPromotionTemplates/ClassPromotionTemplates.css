@@ -20,10 +20,11 @@
 
 .create-template-form.cp-form .criteria-header {
   display: flex;
+  flex-direction: row;
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
+  gap: 8px;
   margin-bottom: 6px;
 }
 
@@ -38,8 +39,18 @@
 
 .create-template-form.cp-form .header-actions {
   display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
   align-items: center;
   gap: 6px;
+}
+
+.create-template-form.cp-form .header-actions .btn {
+  height: 36px;
+  min-height: 36px;
+  padding: 0 12px;
+  font-size: 0.78rem;
+  white-space: nowrap;
 }
 
 /* the two icon buttons */
@@ -333,11 +344,42 @@ body[data-theme="dark"] .create-template-form.cp-form .remove-criterion-btn:hove
   color: #9ca3af;
 }
 
-@media (max-width: 560px) {
-  .cpm-detail .cpm-mapping-row { grid-template-columns: 24px minmax(0, 1fr); }
-  .cpm-detail .cpm-mapping-arrow { display: none; }
+@media (max-width: 768px) {
+  .cpm-detail .cpm-mapping-row {
+    grid-template-columns: 22px minmax(0, 1fr) 14px minmax(0, 1fr);
+    grid-template-rows: auto;
+    align-items: start;
+    gap: 6px 8px;
+    padding: 10px 12px;
+  }
+
+  .cpm-detail .cpm-mapping-arrow {
+    display: block;
+    grid-column: auto;
+    grid-row: auto;
+    align-self: center;
+    padding: 0;
+    font-size: 13px;
+  }
+
   .cpm-detail .cpm-mapping-chip--to,
-  .cpm-detail .cpm-mapping-chip--alumni { grid-column: 2; }
+  .cpm-detail .cpm-mapping-chip--alumni,
+  .cpm-detail .cpm-mapping-chip--from {
+    grid-column: auto;
+  }
+
+  .cpm-detail .cpm-mapping-chip {
+    max-width: 100%;
+    padding: 3px 8px;
+    font-size: 11px;
+  }
+
+  .cpm-detail .cpm-mapping-name {
+    white-space: normal;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+  }
 }
 
 /* dark */

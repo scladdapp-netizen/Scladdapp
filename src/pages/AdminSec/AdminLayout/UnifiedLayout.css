@@ -55,25 +55,46 @@
     position: relative;
   }
 
+@keyframes apt-handle-bounce {
+  0%, 100% { transform: translateY(0); }
+  30% { transform: translateY(-12px); }
+  60% { transform: translateY(8px); }
+}
+
   /* Drag handle */
   .apt_drag_handle {
     position: fixed;
     top: 52px;
     left: 0;
-    width: 12px;
+    width: 28px;
     height: calc(100% - 52px);
-    cursor: ew-resize;
-    z-index: 9;
+    cursor: pointer;
+    z-index: 20;
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
   }
 
   .apt_mb {
-    height: 100px;
-    width: 4px;
-    background-color: #000000;
-    border-radius: 2px;
+    height: 56px;
+    width: 22px;
+    background-color: #111111;
+    border-radius: 0 12px 12px 0;
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.22);
+    position: relative;
+    animation: apt-handle-bounce 0.9s ease-in-out 10s 3;
+  }
+
+  .apt_mb::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 7px;
+    width: 7px;
+    height: 7px;
+    border-right: 2px solid #ffffff;
+    border-bottom: 2px solid #ffffff;
+    transform: translateY(-50%) rotate(-45deg);
   }
 }
 

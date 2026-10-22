@@ -83,8 +83,36 @@
 
 /* ── Responsive ───────────────────────────────────────────────────────────── */
 @media (max-width: 768px) {
-  .tr-header { flex-direction: column; gap: 14px; }
-  .tr-grid   { grid-template-columns: 1fr; }
+  .teacherResources .tr-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    padding-bottom: 12px;
+    margin-bottom: 14px;
+  }
+
+  .teacherResources .tr-title { font-size: 16px; line-height: 1.25; }
+  .teacherResources .tr-subtitle { line-height: 1.4; }
+
+  .teacherResources .tr-header-right {
+    display: flex;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .teacherResources .tr-header-right .btn {
+    flex: 1;
+    min-width: 0;
+    min-height: 40px;
+    height: auto;
+    padding: 8px 8px;
+    font-size: 0.78rem;
+    white-space: normal;
+    text-align: center;
+  }
+
+  .teacherResources .tr-search-wrap { max-width: none; }
+  .tr-grid { grid-template-columns: 1fr; }
 }
 
 /* ── Dark theme ───────────────────────────────────────────────────────────── */

@@ -46,10 +46,10 @@ const Edit_Seasion_fields = [
 ];
 
 const SubSeasionRoute = [
-  { label: "School Events ", link: "/ss_events" },
-  { label: "School Calendar ", link: "/ss_calendar" },
   { label: "Student Report", link: "/ss_student_report" },
   { label: "Timetable", link: "/ss_timetable" },
+  { label: "School Events ", link: "/ss_events" },
+  { label: "School Calendar ", link: "/ss_calendar" },
 ];
 
 const SubsessionData = {

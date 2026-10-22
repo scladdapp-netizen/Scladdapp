@@ -223,10 +223,52 @@
   .ie-stat-card   { flex: 1; }
 }
 
-@media (max-width: 640px) {
-  .ie-header      { flex-direction: column; gap: 12px; }
-  .ie-stats-grid  { flex-direction: column; }
-  .ie-detail-grid { grid-template-columns: 1fr; }
+@media (max-width: 768px) {
+  .ie-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    padding-bottom: 12px;
+    margin-bottom: 14px;
+  }
+
+  .ie-title { font-size: 16px; line-height: 1.25; }
+  .ie-subtitle { line-height: 1.4; }
+
+  .ie-date-filter { width: 100%; }
+  .ie-filter-select {
+    flex: 1;
+    min-width: 0;
+    height: 40px;
+  }
+
+  .ie-stats-panel { padding: 12px; }
+
+  .ie-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .ie-stat-card { padding: 10px 8px; min-width: 0; }
+  .ie-stat-label { font-size: 9px; letter-spacing: 0.04em; }
+  .ie-stat-amount { font-size: 14px; line-height: 1.25; overflow-wrap: anywhere; }
+
+  .ie-panel-body { padding: 14px; gap: 10px; }
+  .ie-detail-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+  .ie-detail-card { padding: 8px 10px; }
+  .ie-detail-value { font-size: 12px; line-height: 1.35; overflow-wrap: anywhere; }
+
+  .ie-panel-footer {
+    gap: 8px;
+    padding: 12px 14px calc(12px + env(safe-area-inset-bottom));
+  }
+
+  .ie-panel-footer .btn {
+    flex: 1;
+    min-width: 0;
+    min-height: 42px;
+  }
 }
 
 /* ── Dark theme ───────────────────────────────────────────────────────────── */

@@ -775,12 +775,11 @@
 
 @media (max-width: 768px) {
   .al_topbar {
-    padding: 0 12px;
-    gap: 8px;
+    padding: 0 8px;
+    gap: 6px;
   }
 
-  /* Both sides shrink to their content */
-  .al_topbar_left  { width: fit-content; }
+  .al_topbar_left { width: fit-content; gap: 8px; }
   .al_topbar_right { width: auto; flex-shrink: 0; gap: 6px; }
 
   /* Hide center search bar — use icon instead */

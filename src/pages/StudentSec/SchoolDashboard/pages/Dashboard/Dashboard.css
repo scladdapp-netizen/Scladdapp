@@ -1,0 +1,168 @@
+.student-dashboard .school-info-card,
+.student-dashboard .quick-actions-card {
+  grid-column: 1 / -1;
+}
+
+.student-dashboard .quick-actions-card {
+  max-height: none;
+}
+
+.student-dashboard .quick-actions-card .card-content {
+  padding: 16px;
+}
+
+.student-dashboard .quick-actions-card .card-title {
+  margin: 0 0 12px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #888888;
+}
+
+.student-dashboard .actions-grid {
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 8px;
+}
+
+.student-dashboard .action-button {
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 10px;
+  min-height: 48px;
+  height: 100%;
+  padding: 8px 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  background: #ffffff;
+  box-shadow: none;
+  text-align: left;
+}
+
+.student-dashboard .action-button:hover {
+  border-color: #111111;
+  background: #fafafa;
+  transform: none;
+  box-shadow: none;
+}
+
+.student-dashboard .action-button:active {
+  background: #f3f3f3;
+}
+
+.student-dashboard .action-icon {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  flex-shrink: 0;
+  background: #111111;
+  color: #ffffff;
+  font-size: 13px;
+}
+
+.student-dashboard .action-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  line-height: 1.2;
+  text-align: left;
+  color: #111111;
+  white-space: normal;
+}
+
+.student-dashboard .stats-row {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.student-dashboard .stat-card.is-link,
+.student-dashboard .is-clickable {
+  cursor: pointer;
+}
+
+.student-dashboard button.activity-row {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+}
+
+.student-dashboard button.activity-row:hover {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.student-dashboard .activity-row.is-unread .activity-badge {
+  background: #111111;
+  color: #ffffff;
+}
+
+[data-theme="dark"] .student-dashboard button.activity-row:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+[data-theme="dark"] .student-dashboard .activity-row.is-unread .activity-badge {
+  background: #f0f0f0;
+  color: #111111;
+}
+
+[data-theme="dark"] .student-dashboard .quick-actions-card .card-title {
+  color: #888888;
+}
+
+[data-theme="dark"] .student-dashboard .action-button {
+  background: #1a1a1a;
+  border-color: #2a2a2a;
+}
+
+[data-theme="dark"] .student-dashboard .action-button:hover {
+  border-color: #f0f0f0;
+  background: #242424;
+}
+
+[data-theme="dark"] .student-dashboard .action-button:active {
+  background: #2a2a2a;
+}
+
+[data-theme="dark"] .student-dashboard .action-icon {
+  background: #f0f0f0;
+  color: #111111;
+}
+
+[data-theme="dark"] .student-dashboard .action-label {
+  color: #f0f0f0;
+}
+
+@media (max-width: 768px) {
+  .student-dashboard .quick-actions-card .card-content {
+    padding: 12px;
+  }
+
+  .student-dashboard .actions-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .student-dashboard .action-button {
+    min-height: 44px;
+    padding: 8px 10px;
+    gap: 8px;
+  }
+
+  .student-dashboard .action-icon {
+    width: 28px;
+    height: 28px;
+    font-size: 12px;
+  }
+
+  .student-dashboard .action-label {
+    font-size: 0.75rem;
+  }
+}
+
+@media (max-width: 700px) {
+  .student-dashboard .stats-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

@@ -473,5 +473,9 @@
 [data-theme="dark"] .aa-composer button:disabled { background: #424242; color: #8e8e8e; }
 
 @media (max-width: 720px) {
-  .aa-panel { width: min(400px, 92vw); }
+  .aa-panel {
+    width: 100%;
+    max-width: 100%;
+    z-index: 200;
+  }
 }

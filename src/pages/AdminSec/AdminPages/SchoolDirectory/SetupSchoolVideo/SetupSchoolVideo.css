@@ -48,7 +48,11 @@
 }
 
 .setup-school-video--collapsed {
-  width: min(420px, calc(100vw - 32px));
+  width: auto;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  border-radius: 999px;
 }
 
 .setup-school-video--expanded {
@@ -201,16 +205,17 @@
 .setup-school-video__watch-btn {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 8px 12px;
+  gap: 8px;
+  padding: 10px 14px;
   border: none;
-  border-radius: 8px;
+  border-radius: 999px;
   background: #111;
   color: #fff;
-  font-size: 12px;
-  font-weight: 600;
+  font-size: 13px;
+  font-weight: 700;
   cursor: pointer;
   white-space: nowrap;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.22);
   transition: background 0.15s;
 }
 
@@ -486,18 +491,8 @@
 }
 
 @media (max-width: 768px) {
-  .setup-school-video--collapsed,
   .setup-school-video--expanded,
   .setup-school-video--compact {
     width: calc(100vw - 24px);
-  }
-
-  .setup-school-video__collapsed-body {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .setup-school-video__watch-btn {
-    justify-content: center;
   }
 }

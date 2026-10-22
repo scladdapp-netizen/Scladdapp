@@ -64,10 +64,10 @@
 
 @media (max-width: 720px) {
   .AdminLayout.assistant-open .al_topbar {
-    width: calc(100% - min(400px, 92vw));
+    width: 100%;
   }
   .AdminLayout.assistant-open .al_saidNContentSec,
   .AdminLayout.assistant-open .slide-in-menu-container {
-    right: min(400px, 92vw);
+    right: 0;
   }
 }

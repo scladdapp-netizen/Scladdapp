@@ -1056,6 +1056,13 @@ const FeeBillTemplates = () => {
                   <div className="template-detail-actions">
                     <Button
                       variant="secondary"
+                      className="detail-close-btn"
+                      onClick={() => setIsDetailMenuOpen(false)}
+                    >
+                      Close
+                    </Button>
+                    <Button
+                      variant="secondary"
                       title="Edit"
                       aria-label="Edit"
                       onClick={() => handleEditTemplate(selectedTemplate)}
