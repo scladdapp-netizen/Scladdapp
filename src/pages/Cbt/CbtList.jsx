@@ -1,15 +1,34 @@
 import { useCallback, useState } from "react";
+import { useParams } from "react-router-dom";
 import ServerSmartTable from "../../components/ServerSmartTable/ServerSmartTable";
+import { useAuth } from "../../context/AuthContext/AuthContext";
 import { useNotification } from "../../context/NotificationProvider/NotificationProvider";
 import { cbtClose, cbtDelete, cbtList, cbtReset } from "../../api_call/useCbt";
 import { ConfirmDialog } from "./CbtModal";
 import CbtRowMenu from "./CbtRowMenu";
 import { fmt } from "./cbtUtils";
 
+const isPremiumPlan = (name) => String(name || "").trim().toLowerCase() === "premium plan";
+
+const schoolHasPremium = async (schoolId, fallbackName) => {
+  try {
+    const base = import.meta.env.VITE_API_BASE_URL || "http://localhost:4000";
+    const res = await fetch(`${base}/api/subscription/school/${schoolId}/dashboard`);
+    const data = await res.json();
+    if (data?.success) return isPremiumPlan(data.data?.plan?.plan_name);
+  } catch {
+    /* use the plan saved at login */
+  }
+  return isPremiumPlan(fallbackName);
+};
+
 const CbtList = ({ ctx, lockedClassId, go }) => {
+  const { schoolId } = useParams();
+  const { user } = useAuth();
   const { addNotification } = useNotification();
   const [confirm, setConfirm] = useState(null);
   const [busy, setBusy] = useState(false);
+  const [checkingPlan, setCheckingPlan] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
 
   const subjectId = ctx.subject.subject_id;
@@ -49,6 +68,21 @@ const CbtList = ({ ctx, lockedClassId, go }) => {
   };
 
   const canCreate = ctx.can_edit && ctx.classes.length > 0;
+
+  const handleNewTest = async () => {
+    if (checkingPlan) return;
+    setCheckingPlan(true);
+    const premium = await schoolHasPremium(schoolId, user?.subscription?.plan_name);
+    setCheckingPlan(false);
+    if (!premium) {
+      addNotification(
+        "Computer-based tests are available on the Premium Plan. Upgrade your subscription to create tests for this subject.",
+        "error"
+      );
+      return;
+    }
+    go("editor", {});
+  };
 
   const actionsFor = (test) => {
     const id = test.test_id;
@@ -111,7 +145,7 @@ const CbtList = ({ ctx, lockedClassId, go }) => {
             <span className="cbt-head-note">Scores feed the report card after you release results.</span>
           </p>
         </div>
-        <button type="button" className="cbt-btn" disabled={!canCreate} onClick={() => go("editor", {})}>New test</button>
+        <button type="button" className="cbt-btn" disabled={!canCreate || checkingPlan} onClick={handleNewTest}>New test</button>
       </div>
 
       {!canCreate && (
