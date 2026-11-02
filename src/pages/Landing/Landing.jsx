@@ -557,6 +557,7 @@ function IntroVideo() {
 const BILLING_CYCLES = [
   { id: "monthly", label: "Monthly" },
   { id: "quarterly", label: "Quarterly", badge: "-5%" },
+  { id: "half_year", label: "Half year", badge: "-7%" },
   { id: "yearly", label: "Yearly", badge: "-10%" },
 ];
 

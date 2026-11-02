@@ -3,7 +3,8 @@ import { useParams } from "react-router-dom";
 import { useAuth } from "../../../../../../context/AuthContext/AuthContext";
 import { useSubsession } from "../../../../../../api_call/useSubsession";
 import useStudentClassAssignment from "../../../../../../api_call/useStudentClassAssignment";
-import { useClassTimetable } from "../../../../../../api_call/useClassTimetable";
+import { useClassTimetable, listFromTimetablePayload } from "../../../../../../api_call/useClassTimetable";
+import "../../../../../AdminSec/AdminPages/classProfile/ClassTimetable/ClassTimetable.css";
 import InnerTabCon from "../../../../../../components/InnerTabCon/InnerTabCon";
 import Timetable from "../../../../../../components/timetable/Timetable";
 import LoadingData from "../../../../../../components/LoadingData/LoadingData";
@@ -21,8 +22,11 @@ const ClassTimetable = () => {
   const [sessionId, setSessionId]           = useState(null);
   const [subsessionInfo, setSubsessionInfo] = useState(null);
   const [subLoading, setSubLoading]         = useState(true);
-  const [entries, setEntries]               = useState([]);
+  const [timetables, setTimetables]         = useState([]);
+  const [activeId, setActiveId]             = useState(null);
   const [ttLoading, setTtLoading]           = useState(false);
+  const activeTimetable = timetables.find((item) => item.timetable_id === activeId) || timetables[0] || null;
+  const entries = activeTimetable?.entries || [];
 
   useEffect(() => {
     if (!subseasion) return;
@@ -39,7 +43,9 @@ const ClassTimetable = () => {
     if (!assignment?.class_id || !subseasion) return;
     setTtLoading(true);
     loadTimetable(assignment.class_id, subseasion).then((data) => {
-      setEntries(data?.entries || []);
+      const list = listFromTimetablePayload(data);
+      setTimetables(list);
+      setActiveId(list[0]?.timetable_id || null);
       setTtLoading(false);
     });
   }, [assignment?.class_id, subseasion]);
@@ -60,9 +66,24 @@ const ClassTimetable = () => {
           </div>
         </div>
 
+        {timetables.length > 1 && (
+          <div className="ctTabs" role="tablist">
+            {timetables.map((item) => (
+              <button
+                key={item.timetable_id}
+                type="button"
+                className={`ctTab${item.timetable_id === activeTimetable?.timetable_id ? " active" : ""}`}
+                onClick={() => setActiveId(item.timetable_id)}
+              >
+                {item.name || "Timetable"}
+              </button>
+            ))}
+          </div>
+        )}
+
         {entries.length === 0 ? (
           <div className="cls-empty">
-            <p>No timetable set for this subsession yet.</p>
+            <p>No timetable set for this term yet.</p>
           </div>
         ) : (
           <Timetable timetableData={entries} />

@@ -48,6 +48,8 @@ const useAITimetable = () => {
     notes,
     generatedBy = null,
     configId = null,
+    timetableId = null,
+    name = null,
   }) => {
     setGenerating(true);
     setError(null);
@@ -69,6 +71,8 @@ const useAITimetable = () => {
           notes: notes || "",
           generated_by: generatedBy,
           configId: configId || undefined,
+          timetable_id: timetableId || undefined,
+          name: name || undefined,
         }),
       });
       const data = await res.json().catch(() => ({}));

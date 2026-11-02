@@ -18,6 +18,11 @@ export const getPriceDetails = (plan, priceView, dark = false) => {
       months = 3;
       description = "Billed every 3 months";
       break;
+    case "half_year":
+      price = Number(plan.half_year_price) || 0;
+      months = 6;
+      description = "Billed every 6 months";
+      break;
     case "yearly":
       price = Number(plan.yearly_price) || 0;
       months = 12;

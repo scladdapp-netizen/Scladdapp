@@ -274,6 +274,9 @@
 [data-theme="dark"] .cls-action-link { color: #555555; }
 [data-theme="dark"] .cls-action-link:hover { color: #f0f0f0; }
 
+.timetable-editor .te-actions .te-add-btn { flex: 0 0 auto; min-width: 112px; }
+.timetable-editor .te-actions .te-secondary-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
 @media (max-width: 768px) {
   .ss-detail .cs-panel-header {
     padding: 14px 14px 12px;

@@ -165,6 +165,9 @@ const SubjectAssessments = () => {
     label: `${f.field_name.toUpperCase()} (/${f.max_score})`,
     render: (_, row) => {
       const studentId = row.student_id;
+      if (row.field_names && !row.field_names.includes(f.field_name)) {
+        return <span className="sa-score-empty" title="Not used for this class">—</span>;
+      }
       const override = scoreOverrides[studentId];
       const effectiveHasScore = override?._hasScore ?? row.has_score;
       const val = override?.[f.field_name] !== undefined
@@ -256,7 +259,10 @@ const SubjectAssessments = () => {
         if (!effectiveHasScore) return <span className="sa-no-score">No score</span>;
         // Recalculate total from overrides if any
         if (override) {
-          const total = gradingFields.reduce((sum, f) => {
+          const fields = row.field_names?.length
+            ? gradingFields.filter((f) => row.field_names.includes(f.field_name))
+            : gradingFields;
+          const total = fields.reduce((sum, f) => {
             const v = override[f.field_name] !== undefined
               ? override[f.field_name]
               : (row.scores?.[f.field_name] ?? 0);

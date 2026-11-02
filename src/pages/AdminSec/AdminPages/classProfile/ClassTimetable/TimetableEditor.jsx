@@ -55,6 +55,8 @@ const IcoPlus = () => (
 
 const TimetableEditor = ({
   timetableData = [],
+  timetableId = null,
+  timetableName = "",
   className,
   classId,
   schoolId,
@@ -66,6 +68,8 @@ const TimetableEditor = ({
   onTimetableChange,
 }) => {
   const [entries, setEntries] = useState(timetableData.filter((e) => e.start && e.end));
+  const [name, setName] = useState(timetableName || "");
+  const [currentId, setCurrentId] = useState(timetableId || null);
   const [form, setForm] = useState({ day: "", subjectIds: [], start: "", end: "", isBreak: false, breakName: "Break" });
   const [editingId, setEditingId] = useState(null);
   const [availableSubjects, setAvailableSubjects] = useState([]);
@@ -110,10 +114,14 @@ const TimetableEditor = ({
       notes: aiNotes,
       generatedBy: generatedBy || null,
       configId: configId || null,
+      timetableId: currentId,
+      name: name.trim() || null,
     });
     if (result.success && result.entries) {
       const updated = result.entries.filter((e) => e.start && e.end);
       setEntries(updated);
+      if (result.timetable_id) setCurrentId(result.timetable_id);
+      if (result.name) setName(result.name);
       onTimetableChange && onTimetableChange(updated);
       addNotification("AI timetable generated — review and save.", "success");
       setAiPanelOpen(false);
@@ -360,10 +368,21 @@ const TimetableEditor = ({
         <div className="te-header-content">
           <div className="te-header-icon"><IcoCal /></div>
           <div>
-            <h2 className="te-title">Edit Timetable</h2>
+            <h2 className="te-title">{currentId ? "Edit Timetable" : "New Timetable"}</h2>
             <p className="te-subtitle">Manage schedule entries for {className}</p>
           </div>
         </div>
+      </div>
+
+      <div className="te-name-bar">
+        <label className="te-field-label" htmlFor="te-timetable-name">Timetable name</label>
+        <input
+          id="te-timetable-name"
+          className="te-input"
+          value={name}
+          placeholder="Week A, Main, Exam week"
+          onChange={(e) => setName(e.target.value)}
+        />
       </div>
 
       <div className="te-content" ref={contentRef}>
@@ -584,7 +603,7 @@ const TimetableEditor = ({
         <button className="te-ai-btn" onClick={() => setAiPanelOpen(true)}>
           <IcoAI /> AI Generate
         </button>
-        <Button variant="primary" onClick={() => onSave(entries)} disabled={saving}>
+        <Button variant="primary" onClick={() => onSave(entries, { timetable_id: currentId, name: name.trim() })} disabled={saving}>
           {saving ? "Saving..." : "Save Timetable"}
         </Button>
       </div>

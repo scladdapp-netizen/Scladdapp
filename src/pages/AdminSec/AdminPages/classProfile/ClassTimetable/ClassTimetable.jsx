@@ -7,13 +7,13 @@ import SlideInMenu from "../../../../../components/SlideInMenu/SlideInMenu";
 import LoadingData from "../../../../../components/LoadingData/LoadingData";
 import TimetableEditor from "./TimetableEditor";
 import InnerTabCon from "../../../../../components/InnerTabCon/InnerTabCon";
-import { useClassTimetable } from "../../../../../api_call/useClassTimetable";
+import { useClassTimetable, listFromTimetablePayload } from "../../../../../api_call/useClassTimetable";
 import { useAuth } from "../../../../../context/AuthContext/AuthContext";
 import { useNotification } from "../../../../../context/NotificationProvider/NotificationProvider";
 
 const ClassTimetable = ({ classData }) => {
   const { classId, schoolId, subseasion } = useParams();
-  const { loading, saving, error, loadTimetable, saveTimetable } = useClassTimetable();
+  const { loading, saving, error, loadTimetable, saveTimetable, deleteTimetable } = useClassTimetable();
   const { user } = useAuth();
   const { addNotification } = useNotification();
 
@@ -24,16 +24,13 @@ const ClassTimetable = ({ classData }) => {
     (Array.isArray(admin?.permissions) && admin?.permissions.includes("ALL"));
   const canEdit = isSuperAdmin || !!admin?.permissions?.classes?.edit;
 
-  const handleOpenEditor = () => {
-    if (!canEdit) {
-      addNotification("You do not have permission to edit the timetable.", "error");
-      return;
-    }
-    setShowEditMenu(true);
-  };
-
-  const [timetableData, setTimetableData] = useState([]);
+  const [timetables, setTimetables] = useState([]);
+  const [activeId, setActiveId] = useState(null);
+  const [editorTarget, setEditorTarget] = useState(null);
   const [showEditMenu, setShowEditMenu] = useState(false);
+
+  const activeTimetable = timetables.find((item) => item.timetable_id === activeId) || timetables[0] || null;
+  const timetableData = activeTimetable?.entries || [];
 
   // Resolve class name from classData prop (same pattern as other tabs)
   const classInfo = classData?.class || classData || {};
@@ -42,22 +39,58 @@ const ClassTimetable = ({ classData }) => {
   useEffect(() => {
     if (!classId || !subseasion) return;
     loadTimetable(classId, subseasion).then((result) => {
-      if (result) setTimetableData(result.entries || []);
+      const list = listFromTimetablePayload(result);
+      setTimetables(list);
+      setActiveId(list[0]?.timetable_id || null);
     });
-  }, [classId, subseasion]); // re-fetch when subsession changes
+  }, [classId, subseasion]);
 
-  const hasTimetable = timetableData.length > 0;
+  const hasTimetable = timetables.length > 0;
 
-  const handleSaveTimetable = async (updatedEntries) => {
-    const saved = await saveTimetable(classId, subseasion, schoolId, updatedEntries, user?.admin?.admin_id || user?.user_id);
+  const openEditor = (timetable) => {
+    if (!canEdit) {
+      addNotification("You do not have permission to edit the timetable.", "error");
+      return;
+    }
+    setEditorTarget(timetable || null);
+    setShowEditMenu(true);
+  };
+
+  const handleSaveTimetable = async (updatedEntries, meta = {}) => {
+    const saved = await saveTimetable(
+      classId,
+      subseasion,
+      schoolId,
+      updatedEntries,
+      user?.admin?.admin_id || user?.user_id,
+      { timetableId: meta.timetable_id || null, name: meta.name || "" }
+    );
     if (saved) {
-      setTimetableData(saved.entries || updatedEntries);
+      setTimetables((prev) => {
+        const idx = prev.findIndex((item) => item.timetable_id === saved.timetable_id);
+        if (idx >= 0) return prev.map((item, i) => (i === idx ? saved : item));
+        return [...prev, saved];
+      });
+      setActiveId(saved.timetable_id);
+      addNotification(`Saved "${saved.name || "Timetable"}"`, "success");
     }
     setShowEditMenu(false);
   };
 
-  const handleTimetableChange = (updatedEntries) => {
-    setTimetableData(updatedEntries);
+  const handleDeleteTimetable = async (timetable) => {
+    if (!canEdit || !timetable?.timetable_id) return;
+    if (!window.confirm(`Delete "${timetable.name || "this timetable"}"?`)) return;
+    const ok = await deleteTimetable(classId, subseasion, timetable.timetable_id);
+    if (!ok) {
+      addNotification("Failed to delete timetable", "error");
+      return;
+    }
+    setTimetables((prev) => {
+      const next = prev.filter((item) => item.timetable_id !== timetable.timetable_id);
+      setActiveId(next[0]?.timetable_id || null);
+      return next;
+    });
+    addNotification("Timetable deleted", "success");
   };
 
   const handleExportPDF = async () => {
@@ -74,7 +107,7 @@ const ClassTimetable = ({ classData }) => {
       doc.rect(0, 0, pageW, 24, "F");
       doc.setTextColor(255, 255, 255);
       doc.setFontSize(13); doc.setFont("helvetica", "bold");
-      doc.text(`Timetable — ${className}`, margin, 10);
+      doc.text(`${activeTimetable?.name || "Timetable"} — ${className}`, margin, 10);
       doc.setFontSize(8); doc.setFont("helvetica", "normal");
       doc.text(`Generated: ${new Date().toLocaleDateString()}`, pageW - margin, 10, { align: "right" });
       doc.text("Weekly class schedule", margin, 17);
@@ -126,7 +159,7 @@ const ClassTimetable = ({ classData }) => {
         y += rowH;
       }
 
-      doc.save(`Timetable_${className.replace(/\s+/g, "_")}.pdf`);
+      doc.save(`${(activeTimetable?.name || "Timetable").replace(/\s+/g, "_")}_${className.replace(/\s+/g, "_")}.pdf`);
       addNotification("Timetable exported as PDF", "success");
     } catch {
       addNotification("Failed to export timetable", "error");
@@ -140,26 +173,42 @@ const ClassTimetable = ({ classData }) => {
         <div className="ctHeader">
           <div className="ctHeaderLeft">
             <h2 className="ctTitle">Timetable — {className}</h2>
-            <p className="ctSubtitle">Weekly class schedule</p>
+            <p className="ctSubtitle">A class can have more than one timetable this term</p>
           </div>
           {hasTimetable && (
             <div className="ctHeaderRight">
               <Button variant="secondary" onClick={handleExportPDF}>Export PDF</Button>
-              <Button onClick={handleOpenEditor}>Edit Timetable</Button>
+              <Button variant="secondary" onClick={() => openEditor(null)}>New timetable</Button>
+              <Button onClick={() => openEditor(activeTimetable)}>Edit</Button>
+              <Button variant="secondary" onClick={() => handleDeleteTimetable(activeTimetable)}>Delete</Button>
             </div>
           )}
         </div>
 
-        {/* Loading */}
         {loading && <LoadingData message="Loading timetable..." />}
         {error && <p className="ct-error">{error}</p>}
 
-        {/* Content */}
         {!loading && (
           hasTimetable ? (
-            <div className="ctTimetableContainer">
-              <Timetable timetableData={timetableData} />
-            </div>
+            <>
+              <div className="ctTabs" role="tablist">
+                {timetables.map((item) => (
+                  <button
+                    key={item.timetable_id}
+                    type="button"
+                    role="tab"
+                    aria-selected={item.timetable_id === activeTimetable?.timetable_id}
+                    className={`ctTab${item.timetable_id === activeTimetable?.timetable_id ? " active" : ""}`}
+                    onClick={() => setActiveId(item.timetable_id)}
+                  >
+                    {item.name || "Timetable"}
+                  </button>
+                ))}
+              </div>
+              <div className="ctTimetableContainer">
+                <Timetable timetableData={timetableData} />
+              </div>
+            </>
           ) : (
             <div className="ctEmptyState">
               <div className="ctEmptyContent">
@@ -171,33 +220,37 @@ const ClassTimetable = ({ classData }) => {
                 </div>
                 <h3 className="ctEmptyTitle">No Timetable Yet</h3>
                 <p className="ctEmptyMessage">
-                  Create a timetable for {className} to organise the weekly schedule.
+                  Create a timetable for {className}. You can add more than one for this term.
                 </p>
-                <Button onClick={handleOpenEditor}>Create Timetable</Button>
+                <Button onClick={() => openEditor(null)}>Create Timetable</Button>
               </div>
             </div>
           )
         )}
       </div>
 
-      {/* Editor panel */}
       <SlideInMenu
         isShow={showEditMenu}
         onClose={() => setShowEditMenu(false)}
         position="rightt"
         width="620px"
       >
-        <TimetableEditor
-          timetableData={timetableData}
-          className={className}
-          classId={classId}
-          schoolId={schoolId}
-          subsessionId={subseasion}
-          generatedBy={user?.admin?.admin_id || user?.user_id}
-          onClose={() => setShowEditMenu(false)}
-          onSave={handleSaveTimetable}
-          saving={saving}
-        />
+        {showEditMenu && (
+          <TimetableEditor
+            key={editorTarget?.timetable_id || "new"}
+            timetableData={editorTarget?.entries || []}
+            timetableId={editorTarget?.timetable_id || null}
+            timetableName={editorTarget?.name || ""}
+            className={className}
+            classId={classId}
+            schoolId={schoolId}
+            subsessionId={subseasion}
+            generatedBy={user?.admin?.admin_id || user?.user_id}
+            onClose={() => setShowEditMenu(false)}
+            onSave={handleSaveTimetable}
+            saving={saving}
+          />
+        )}
       </SlideInMenu>
     </InnerTabCon>
   );

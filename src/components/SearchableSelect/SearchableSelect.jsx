@@ -92,7 +92,7 @@ const SearchableSelect = ({
       });
       setFilteredOptions(filtered.slice(0, maxDisplayItems));
     }
-  }, [searchTerm, maxDisplayItems]); // Removed options and searchKeys from dependencies
+  }, [searchTerm, maxDisplayItems, options]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -209,6 +209,7 @@ const SearchableSelect = ({
                 {filteredOptions.map((option, index) => (
                   <div
                     key={`${option[valueKey]}-${index}`}
+                    role="option"
                     className={`searchable-select-option ${
                       option[valueKey] === value ? "selected" : ""
                     }`}

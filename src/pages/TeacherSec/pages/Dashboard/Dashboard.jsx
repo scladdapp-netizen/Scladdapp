@@ -160,7 +160,11 @@ const Dashboard = () => {
           try {
             const res = await fetch(`${API}/api/class-timetable/${classId}/subsession/${subsessionId}`);
             const json = await res.json();
-            const entries = json.success ? json.data?.entries || [] : [];
+            const entries = json.success
+              ? (json.data?.timetables?.length
+                ? json.data.timetables.flatMap((item) => item.entries || [])
+                : json.data?.entries || [])
+              : [];
             return entries
               .filter((entry) => entry.day === dayName && !entry.isBreak)
               .map((entry) => ({

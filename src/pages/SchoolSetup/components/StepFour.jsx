@@ -10,6 +10,7 @@ import {
   getMonthsInCycle,
   getSubscriptionTotal,
   formatNaira,
+  formatBillingCycle,
   resolveSelectedPlan,
 } from "../../../utils/planPricing";
 
@@ -70,12 +71,19 @@ export default function StepFour({
 
   /* ── helpers (always use livePlan / plan from availablePlans) ── */
   const getCycleLabel = () =>
-    billingCycle === "monthly" ? "month" : billingCycle === "quarterly" ? "quarter" : "year";
+    billingCycle === "monthly" ? "month"
+      : billingCycle === "quarterly" ? "quarter"
+      : billingCycle === "half_year" ? "half year"
+      : "year";
   const monthsInCycle = getMonthsInCycle(billingCycle);
   const getDiscountPct = () =>
-    billingCycle === "quarterly" ? "10%" : billingCycle === "yearly" ? "20%" : null;
+    billingCycle === "quarterly" ? "10%"
+      : billingCycle === "half_year" ? "15%"
+      : billingCycle === "yearly" ? "20%"
+      : null;
   const cycleHint =
     billingCycle === "quarterly" ? "billed quarterly" :
+    billingCycle === "half_year" ? "billed every 6 months" :
     billingCycle === "yearly" ? "billed yearly" : null;
 
   const monthlyRate = (plan) => getMonthlyRate(plan, billingCycle);
@@ -89,7 +97,7 @@ export default function StepFour({
     if (value.includes(".")) { setDurationError("Whole numbers only"); return; }
     setDurationError("");
     const n = Number(value);
-    const max = billingCycle === "monthly" ? 12 : billingCycle === "quarterly" ? 4 : 2;
+    const max = billingCycle === "monthly" ? 12 : billingCycle === "quarterly" ? 4 : billingCycle === "half_year" ? 2 : 2;
     if (n < 1 || n > max) { setDurationError(`Must be between 1 and ${max}`); return; }
     setDuration(n);
   };
@@ -230,6 +238,7 @@ export default function StepFour({
               >
                 <option value="monthly">Monthly</option>
                 <option value="quarterly">Quarterly — Save 10%</option>
+                <option value="half_year">Half year — Save 15%</option>
                 <option value="yearly">Yearly — Save 20%</option>
               </select>
             </div>
@@ -350,7 +359,7 @@ export default function StepFour({
             <div className="s4-summary-row"><span>Plan</span><strong>{livePlan.plan_name}</strong></div>
             {!isFreePlan(livePlan) && (
               <>
-                <div className="s4-summary-row"><span>Billing</span><strong>{billingCycle.charAt(0).toUpperCase() + billingCycle.slice(1)}</strong></div>
+                <div className="s4-summary-row"><span>Billing</span><strong>{formatBillingCycle(billingCycle)}</strong></div>
                 <div className="s4-summary-row"><span>Duration</span><strong>{duration} {getCycleLabel()}(s) · {totalMonths()} months</strong></div>
                 <div className="s4-summary-row"><span>Rate</span><strong>{formatNaira(monthlyRate(livePlan))}/month</strong></div>
               </>

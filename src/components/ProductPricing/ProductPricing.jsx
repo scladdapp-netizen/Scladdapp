@@ -39,6 +39,7 @@ const ProductPricing = () => {
         >
           <option value="monthly">Monthly</option>
           <option value="quarterly">Quarterly</option>
+          <option value="half_year">Half year</option>
           <option value="yearly">Yearly</option>
         </select>
       </div>

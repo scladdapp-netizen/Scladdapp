@@ -1,4 +1,5 @@
 import React, { useEffect } from "react";
+import { createPortal } from "react-dom";
 import "./SlideInMenu.css";
 
 const SlideInMenu = ({
@@ -35,7 +36,7 @@ const SlideInMenu = ({
 
   if (!isShow) return null;
 
-  return (
+  return createPortal(
     <div className="slide-in-menu-container">
       {/* Overlay */}
       <div className="slide-in-menu-overlay" onClick={onClose} />
@@ -47,7 +48,8 @@ const SlideInMenu = ({
         {/* Children content */}
         <div className="slide-in-menu-children">{children}</div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 

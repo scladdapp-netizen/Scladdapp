@@ -48,15 +48,19 @@ const PricingPage = () => {
         <p>No hidden fees. Cancel anytime.</p>
 
         <div className="pricing-pg__toggle">
-          {["monthly", "quarterly", "yearly"].map((v) => (
+          {[
+            { id: "monthly", label: "Monthly" },
+            { id: "quarterly", label: "Quarterly", badge: "-5%" },
+            { id: "half_year", label: "Half year", badge: "-7%" },
+            { id: "yearly", label: "Yearly", badge: "-10%" },
+          ].map((v) => (
             <button
-              key={v}
-              className={`pricing-pg__toggle-btn${priceView === v ? " active" : ""}`}
-              onClick={() => setPriceView(v)}
+              key={v.id}
+              className={`pricing-pg__toggle-btn${priceView === v.id ? " active" : ""}`}
+              onClick={() => setPriceView(v.id)}
             >
-              {v.charAt(0).toUpperCase() + v.slice(1)}
-              {v === "quarterly" && <span className="pricing-pg__toggle-badge">-5%</span>}
-              {v === "yearly" && <span className="pricing-pg__toggle-badge">-10%</span>}
+              {v.label}
+              {v.badge && <span className="pricing-pg__toggle-badge">{v.badge}</span>}
             </button>
           ))}
         </div>

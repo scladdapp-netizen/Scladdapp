@@ -248,6 +248,7 @@ export const useSchoolSetups = () => {
     const monthsPerCycle = {
       monthly: 1,
       quarterly: 3,
+      half_year: 6,
       yearly: 12,
     };
 

@@ -1,19 +1,14 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Button from "../../../../../components/Button/Button";
-import SlideInMenu from "../../../../../components/SlideInMenu/SlideInMenu";
 import FormInput from "../../../../../components/FormInput";
 import InnerTabCon from "../../../../../components/InnerTabCon/InnerTabCon";
 import LoadingData from "../../../../../components/LoadingData/LoadingData";
-import ReportCardPreview from "../../../../../components/ReportCardPreview/ReportCardPreview";
 import { useNotification } from "../../../../../context/NotificationProvider/NotificationProvider";
 import { useCombinedTemplate } from "../../../../../api_call/useCombinedTemplate";
 import { useAuth } from "../../../../../context/AuthContext/AuthContext";
 import { generateDefaultReportHtml } from "../../../../../utils/generateDefaultReportHtml";
-import { hydrateReportHtml } from "../../../../../utils/hydrateReportHtml";
-import {
-  FaPlus, FaEdit, FaCopy, FaTrash, FaBan, FaCheckCircle, FaExclamationTriangle,
-} from "react-icons/fa";
+import { FaPlus } from "react-icons/fa";
 
 const EMPTY_FORM = {
   name: "",
@@ -25,7 +20,7 @@ const EMPTY_FORM = {
 };
 
 const formatCardDate = (v) => {
-  if (!v) return "—";
+  if (!v) return "â€”";
   const d = new Date(v);
   return Number.isNaN(d.getTime()) ? String(v) : d.toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
 };
@@ -35,7 +30,7 @@ const CombinedTemplates = () => {
   const navigate = useNavigate();
   const { addNotification } = useNotification();
   const { user } = useAuth();
-  const { createTemplate, getTemplatesBySchool, updateTemplate, deleteTemplate, duplicateTemplate, updateTemplateStatus, checkIsAssigned } = useCombinedTemplate();
+  const { createTemplate, getTemplatesBySchool, updateTemplate, deleteTemplate, duplicateTemplate, updateTemplateStatus } = useCombinedTemplate();
 
   // Permission helpers
   const admin = user?.admin;
@@ -49,7 +44,6 @@ const CombinedTemplates = () => {
   const [templates, setTemplates] = useState([]);
   const [dataLoading, setDataLoading] = useState(true);
   const [isCreateMenuOpen, setIsCreateMenuOpen] = useState(false);
-  const [isDetailMenuOpen, setIsDetailMenuOpen] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState(EMPTY_FORM);
@@ -95,7 +89,7 @@ const CombinedTemplates = () => {
   };
   const overlaps = checkOverlaps();
 
-  // How much of 0–100% the grade ranges cover (overlaps counted once), and what is left uncovered.
+  // How much of 0â€“100% the grade ranges cover (overlaps counted once), and what is left uncovered.
   const schemeCoverage = (() => {
     const covered = new Array(101).fill(false);
     formData.gradingScheme.forEach((s) => {
@@ -109,7 +103,7 @@ const CombinedTemplates = () => {
     let start = null;
     for (let p = 0; p <= 101; p++) {
       if (p <= 100 && !covered[p]) { if (start === null) start = p; }
-      else if (start !== null) { gaps.push(start === p - 1 ? `${start}%` : `${start}–${p - 1}%`); start = null; }
+      else if (start !== null) { gaps.push(start === p - 1 ? `${start}%` : `${start}â€“${p - 1}%`); start = null; }
     }
     const percent = Math.round((covered.filter(Boolean).length / 101) * 100);
     return { percent, gaps, full: gaps.length === 0 };
@@ -140,34 +134,15 @@ const CombinedTemplates = () => {
       addNotification("You do not have permission to create templates.", "error");
       return;
     }
-    setSelectedTemplate(null);
-    setFormData(EMPTY_FORM);
-    setTraitInput("");
-    setTemplateAssigned(false);
-    setIsCreateMenuOpen(true);
+    navigate(`/admin/${schoolId}/templates/editor/new`);
   };
 
-  const openEdit = async (template) => {
+  const openEdit = (template) => {
     if (!canEdit) {
       addNotification("You do not have permission to edit templates.", "error");
       return;
     }
-    setSelectedTemplate(template);
-    const gf = template.grading_fields || [];
-    const gs = template.grading_scheme || [];
-    setFormData({
-      name: template.name,
-      description: template.description || "",
-      gradingFields: gf.map((f) => ({ fieldName: f.field_name, weight: f.weight, maxScore: f.max_score || "" })),
-      gradingScheme: gs.map((s) => ({ gradeLetter: s.grade_letter, minRange: s.min_range, maxRange: s.max_range, gradePoint: s.grade_point, passFail: s.pass_fail || "Pass" })),
-      totalWeight: gf.reduce((sum, f) => sum + f.weight, 0),
-      behavioralTraits: template.behavioral_traits || [],
-    });
-    setIsDetailMenuOpen(false);
-    const result = await checkIsAssigned(template.template_id);
-    setTemplateAssigned(result.assigned);
-    setTraitInput("");
-    setIsCreateMenuOpen(true);
+    navigate(`/admin/${schoolId}/templates/editor/${template.template_id}`);
   };
 
   const handleSubmit = async () => {
@@ -184,7 +159,7 @@ const CombinedTemplates = () => {
 
       let payload;
       if (selectedTemplate) {
-        // Update — keep existing html_template / html_template_draft from the visual editor
+        // Update â€” keep existing html_template / html_template_draft from the visual editor
         payload = templateAssigned
           ? { modified_by: modifiedBy }
           : {
@@ -196,7 +171,7 @@ const CombinedTemplates = () => {
               modified_by: modifiedBy,
             };
       } else {
-        // Create — seed with default report HTML
+        // Create â€” seed with default report HTML
         payload = {
           school_id: schoolId,
           name: formData.name,
@@ -221,12 +196,12 @@ const CombinedTemplates = () => {
 
       if (result.success) {
         if (selectedTemplate) {
-          // Update — just close and refresh
+          // Update â€” just close and refresh
           addNotification("Template updated", "success");
           setIsCreateMenuOpen(false);
           fetchTemplates();
         } else {
-          // Create — navigate straight to edit page
+          // Create â€” navigate straight to edit page
           addNotification("Template created", "success");
           setIsCreateMenuOpen(false);
           navigate(`/admin/${schoolId}/templates/edit/${result.data?.template_id || result.template_id}`);
@@ -258,7 +233,7 @@ const CombinedTemplates = () => {
     }
     if (!window.confirm(`Delete "${template.name}"? This cannot be undone.`)) return;
     const result = await deleteTemplate(template.template_id, user?.admin?.admin_id || user?.user_id);
-    if (result.success) { addNotification("Template deleted", "success"); setIsDetailMenuOpen(false); fetchTemplates(); }
+    if (result.success) { addNotification("Template deleted", "success"); fetchTemplates(); }
     else addNotification(result.message || "Failed to delete", "error");
   };
 
@@ -270,7 +245,7 @@ const CombinedTemplates = () => {
     const newStatus = template.status === "active" ? "archived" : "active";
     if (!window.confirm(`${newStatus === "active" ? "Activate" : "Deactivate"} "${template.name}"?`)) return;
     const result = await updateTemplateStatus(template.template_id, newStatus, user?.admin?.admin_id || user?.user_id);
-    if (result.success) { addNotification(`Template ${newStatus}`, "success"); setIsDetailMenuOpen(false); fetchTemplates(); }
+    if (result.success) { addNotification(`Template ${newStatus}`, "success"); fetchTemplates(); }
     else addNotification(result.message || "Failed to update status", "error");
   };
 
@@ -304,7 +279,7 @@ const CombinedTemplates = () => {
           ) : (
             <div className="template-grid">
               {templates.map((t) => (
-                <div key={t.template_id} className="template-card ct-tcard" onClick={async () => { setSelectedTemplate(t); const r = await checkIsAssigned(t.template_id); setTemplateAssigned(r.assigned); setIsDetailMenuOpen(true); }}>
+                <div key={t.template_id} className="template-card ct-tcard" onClick={() => navigate(`/admin/${schoolId}/templates/detail/${t.template_id}`)}>
                   <div className="ct-tcard-top">
                     <h4 className="ct-tcard-title" title={t.name}>{t.name}</h4>
                     <span className={`ct-tcard-status ${t.status}`}><i />{t.status}</span>
@@ -315,7 +290,7 @@ const CombinedTemplates = () => {
                   <div className="ct-tcard-stats">
                     <div className="ct-tcard-stat"><b>{(t.grading_fields || []).length}</b><span>Fields</span></div>
                     <div className="ct-tcard-stat"><b>{(t.grading_scheme || []).length}</b><span>Grades</span></div>
-                    <div className="ct-tcard-stat"><b>{(t.sections || []).length}</b><span>Sections</span></div>
+                    <div className="ct-tcard-stat"><b>{(t.class_overrides || []).length}</b><span>Class setups</span></div>
                   </div>
                   <div className="ct-tcard-foot">
                     {t.level ? <span className="ct-tcard-level">{t.level}</span> : <span />}
@@ -327,312 +302,6 @@ const CombinedTemplates = () => {
           )}
         </div>
 
-        {/* Create / Edit SlideInMenu */}
-        <SlideInMenu isShow={isCreateMenuOpen} onClose={() => setIsCreateMenuOpen(false)} width="820px">
-          <div className="create-template-container">
-            <div className="create-template-header">
-              <h2>{selectedTemplate ? "Edit" : "Create"} Template</h2>
-              <p>Define grading fields, scheme, and report card layout</p>
-            </div>
-
-            <div className="create-template-form">
-              {templateAssigned && (
-                <div style={{ display: "flex", alignItems: "flex-start", gap: "10px", padding: "12px 16px", background: "#fef3c7", border: "1px solid #f59e0b", borderRadius: "8px", marginBottom: "8px" }}>
-                  <FaExclamationTriangle size={16} color="#d97706" style={{ marginTop: 2, flexShrink: 0 }} />
-                  <span style={{ fontSize: "13px", color: "#92400e", lineHeight: 1.5 }}>
-                    This template is assigned to a subsession. Only the Theme and Primary Color can be edited. All other fields are locked and cannot be deleted.
-                  </span>
-                </div>
-              )}
-              {!selectedTemplate && (
-                <div style={{ display: "flex", alignItems: "flex-start", gap: "10px", padding: "12px 16px", background: "#eff6ff", border: "1px solid #3b82f6", borderRadius: "8px", marginBottom: "8px" }}>
-                  <FaExclamationTriangle size={16} color="#2563eb" style={{ marginTop: 2, flexShrink: 0 }} />
-                  <span style={{ fontSize: "13px", color: "#1e40af", lineHeight: 1.5 }}>
-                    Make sure you enter the correct data before assigning this template to a subsession — once assigned, it cannot be edited or deleted.
-                  </span>
-                </div>
-              )}
-              <div style={{ position: "relative" }}>
-                {templateAssigned && (
-                  <div style={{ position: "absolute", inset: 0, zIndex: 10, background: "rgba(249,250,251,0.6)", cursor: "not-allowed" }} />
-                )}
-                <div style={templateAssigned ? { opacity: 0.5, pointerEvents: "none", userSelect: "none" } : {}}>
-                <FormInput label="Template Name *" type="text" value={formData.name} onChange={set("name")} placeholder="e.g., Standard Template" />
-                <FormInput label="Description" type="textarea" value={formData.description} onChange={set("description")} placeholder="Describe this template..." height="70px" />
-
-                {/* ── Grading Fields ── */}
-                <div className="grading-fields-section">
-                  <div className="grading-fields-header">
-                    <h3>Assessment Fields</h3>
-                    <span className={`total-weight ${isWeightValid ? "valid" : "invalid"}`}>
-                      Total: {formData.totalWeight}%
-                      {!isWeightValid && <FaExclamationTriangle size={12} style={{ marginLeft: 4 }} />}
-                    </span>
-                    <Button variant="secondary" onClick={() => setFormData((p) => ({ ...p, gradingFields: [...p.gradingFields, { fieldName: "", weight: 0, maxScore: "" }] }))}>
-                      <FaPlus size={12} /> Add Field
-                    </Button>
-                  </div>
-                  {formData.gradingFields.map((f, i) => (
-                    <div key={i} className="grading-field-row">
-                      <FormInput label="Field Name" type="text" value={f.fieldName} onChange={(v) => setGradingField(i, "fieldName", v)} placeholder="e.g., ft" />
-                      <FormInput label="Weight (%)" type="number" value={f.weight} onChange={(v) => setGradingField(i, "weight", parseInt(v) || 0)} placeholder="20" />
-                      <FormInput label="Max Score" type="number" value={f.maxScore} onChange={(v) => setGradingField(i, "maxScore", v)} placeholder="20" />
-                      {formData.gradingFields.length > 1 && (
-                        <button className="remove-field-btn" onClick={() => setFormData((p) => ({ ...p, gradingFields: p.gradingFields.filter((_, idx) => idx !== i) }))}>
-                          <FaTrash size={12} />
-                        </button>
-                      )}
-                    </div>
-                  ))}
-                  {!isWeightValid && <div className="weight-warning"><FaExclamationTriangle size={14} /><span>Total weight must equal 100%</span></div>}
-                </div>
-
-                {/* ── Grading Scheme ── */}
-                <div className="grading-scheme-section">
-                  <div className="grading-scheme-header">
-                    <h3>Grading Scheme</h3>
-                    <span className={`total-weight ${isSchemeValid ? "valid" : "invalid"}`} title="How much of 0%–100% your grades cover">
-                      Total: {schemeCoverage.percent}%
-                      {!isSchemeValid && <FaExclamationTriangle size={12} style={{ marginLeft: 4 }} />}
-                    </span>
-                    <Button variant="secondary" onClick={() => setFormData((p) => ({ ...p, gradingScheme: [...p.gradingScheme, { gradeLetter: "", minRange: "", maxRange: "", gradePoint: "", passFail: "Pass" }] }))}>
-                      <FaPlus size={12} /> Add Grade
-                    </Button>
-                  </div>
-                  <div className="scheme-scroll" style={{ overflowX: "auto", width: "100%" }}>
-                    <table className="scheme-edit-table">
-                      <thead>
-                        <tr>
-                          <th>Grade</th>
-                          <th>Min %</th>
-                          <th>Max %</th>
-                          <th>Points</th>
-                          <th>Pass/Fail</th>
-                          <th></th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {formData.gradingScheme.map((s, i) => (
-                          <tr key={i}>
-                            <td><FormInput type="text" value={s.gradeLetter} onChange={(v) => setScheme(i, "gradeLetter", v)} placeholder="A" /></td>
-                            <td><FormInput type="number" value={s.minRange} onChange={(v) => setScheme(i, "minRange", v)} placeholder="80" /></td>
-                            <td><FormInput type="number" value={s.maxRange} onChange={(v) => setScheme(i, "maxRange", v)} placeholder="100" /></td>
-                            <td><FormInput type="number" value={s.gradePoint} onChange={(v) => setScheme(i, "gradePoint", v)} placeholder="4.0" /></td>
-                            <td><FormInput type="select" value={s.passFail} onChange={(v) => setScheme(i, "passFail", v)} options={[{ value: "Pass", label: "Pass" }, { value: "Fail", label: "Fail" }]} /></td>
-                            <td>
-                              {formData.gradingScheme.length > 1 && (
-                                <button className="remove-scheme-btn" onClick={() => setFormData((p) => ({ ...p, gradingScheme: p.gradingScheme.filter((_, idx) => idx !== i) }))}>
-                                  <FaTrash size={12} />
-                                </button>
-                              )}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                  {!schemeCoverage.full && <div className="weight-warning"><FaExclamationTriangle size={14} /><span>Grades should cover 0% to 100%. Not covered: {schemeCoverage.gaps.join(", ")}</span></div>}
-                  {overlaps.length > 0 && <div className="range-warning"><FaExclamationTriangle size={14} /><span>{overlaps.join(", ")}</span></div>}
-                </div>
-
-                {/* ── Behavioral Traits ── */}
-                <div className="behavioral-traits-section bt-section" style={{ marginTop: "16px" }}>
-                  <div className="bt-head">
-                    <h3>Behavioral Traits</h3>
-                    <span className="bt-count">{formData.behavioralTraits.length} selected</span>
-                  </div>
-                  <p className="bt-hint">Pick the traits teachers will rate on the report card.</p>
-                  <div className="bt-chips">
-                    {["Neatness","Punctuality","Politeness","Honesty","Leadership","Cooperation","Attentiveness","Initiative","Self-Control","Respect for Others","Responsibility","Perseverance","Creativity","Problem Solving","Time Management","Teamwork"].map((t) => {
-                      const selected = formData.behavioralTraits.includes(t);
-                      return (
-                        <button key={t} type="button" onClick={() => toggleTrait(t)} className={`bt-chip${selected ? " is-on" : ""}`}>
-                          <span className="bt-chip-mark">{selected ? "✓" : "+"}</span>{t}
-                        </button>
-                      );
-                    })}
-                  </div>
-                  <div className="bt-add">
-                    <input type="text" className="bt-input" value={traitInput} onChange={(e) => setTraitInput(e.target.value)} onKeyDown={(e) => e.key === "Enter" && addCustomTrait()} placeholder="Or type a custom trait and press Add..." />
-                    <Button variant="secondary" onClick={addCustomTrait}>Add</Button>
-                  </div>
-                  {formData.behavioralTraits.length > 0 && (
-                    <div className="bt-selected">
-                      <div className="bt-selected-label">Selected</div>
-                      <div className="bt-selected-list">
-                        {formData.behavioralTraits.map((t, i) => (
-                          <div key={t} className="bt-tag">
-                            <span className="bt-tag-num">{i + 1}</span>
-                            <span className="bt-tag-name">{t}</span>
-                            <button type="button" className="bt-tag-x" aria-label={`Remove ${t}`} onClick={() => toggleTrait(t)}>✕</button>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-              </div>
-
-              {/* ── Report Card Layout (Theme only — always editable) — removed ── */}
-            </div>
-
-            <div className="create-template-footer">
-              <Button variant="secondary" onClick={() => setIsCreateMenuOpen(false)} disabled={isSubmitting}>Cancel</Button>
-              <Button onClick={handleSubmit} disabled={(!templateAssigned && (!formData.name || !isWeightValid || overlaps.length > 0)) || isSubmitting}>
-                {isSubmitting ? (selectedTemplate ? "Updating..." : "Creating...") : (selectedTemplate ? "Update Template" : "Create Template")}
-              </Button>
-            </div>
-          </div>
-        </SlideInMenu>
-
-        {/* Detail / View SlideInMenu */}
-        <SlideInMenu isShow={isDetailMenuOpen} onClose={() => setIsDetailMenuOpen(false)} width="650px">
-          {selectedTemplate && (() => {
-            const gf = selectedTemplate.grading_fields || [];
-            const gs = selectedTemplate.grading_scheme || [];
-            return (
-              <div className="template-detail-container ct-detail">
-                <div className="template-detail-header">
-                  <div className="template-detail-title">
-                    <h2>{selectedTemplate.name}</h2>
-                    <span className={`template-card-status ${selectedTemplate.status}`}>{selectedTemplate.status}</span>
-                  </div>
-                  <p className="template-detail-description">{selectedTemplate.description}</p>
-                  <div className="template-detail-meta">
-                    <div className="template-meta-item"><strong>Modified:</strong> {selectedTemplate.last_modified}</div>
-                    <div className="template-meta-item"><strong>Level:</strong> {selectedTemplate.level}</div>
-                    <div className="template-meta-item"><strong>Layout:</strong> {selectedTemplate.layout}</div>
-                    <div className="template-meta-item"><strong>Grade Display:</strong> {selectedTemplate.grade_display}</div>
-                  </div>
-                </div>
-
-                <div className="template-detail-content">
-                  {templateAssigned && (
-                    <div className="ct-assigned-note">
-                      <FaExclamationTriangle size={14} color="#d97706" />
-                      <span>This template is assigned to a subsession. It cannot be deactivated or deleted.</span>
-                    </div>
-                  )}
-                  {/* Assessment Fields */}
-                  <div className="detail-section ct-compact ct-card">
-                    <h3>Assessment Fields ({gf.length})</h3>
-                    <div className="assessment-fields-table">
-                      <div className="fields-table-header"><span>Field</span><span>Weight</span><span>Max Score</span></div>
-                      {gf.map((f, i) => (
-                        <div key={i} className="fields-table-row">
-                          <span>{f.field_name}</span><span>{f.weight}%</span><span>{f.max_score || "N/A"}</span>
-                        </div>
-                      ))}
-                      <div className="fields-table-footer">
-                        <span><strong>Total</strong></span>
-                        <span><strong>{gf.reduce((s, f) => s + f.weight, 0)}%</strong></span>
-                        <span></span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Grading Scheme */}
-                  <div className="detail-section ct-compact ct-card">
-                    <h3>Grading Scheme ({gs.length} grades)</h3>
-                    <div className="scheme-scroll" style={{ overflowX: "auto" }}>
-                      <table className="scheme-view-table">
-                        <thead>
-                          <tr>
-                            <th>Grade</th>
-                            <th>Min %</th>
-                            <th>Max %</th>
-                            <th>Points</th>
-                            <th>Pass/Fail</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {gs.map((s, i) => (
-                            <tr key={i}>
-                              <td>{s.grade_letter}</td>
-                              <td>{s.min_range}%</td>
-                              <td>{s.max_range}%</td>
-                              <td>{s.grade_point}</td>
-                              <td><span className={`pass-fail ${(s.pass_fail || "").toLowerCase()}`}>{s.pass_fail}</span></td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-
-                  {/* Report Card Info */}
-                  {/* <div className="detail-section">
-                    <h3>Report Card Settings</h3>
-                    <div className="config-grid">
-                      <div className="config-item"><strong>GPA:</strong> <span>{selectedTemplate.include_gpa ? "Yes" : "No"}</span></div>
-                      <div className="config-item"><strong>Ranking:</strong> <span>{selectedTemplate.include_ranking ? "Yes" : "No"}</span></div>
-                      <div className="config-item"><strong>Attendance:</strong> <span>{selectedTemplate.include_attendance ? "Yes" : "No"}</span></div>
-                      <div className="config-item"><strong>Grade Display:</strong> <span>{selectedTemplate.grade_display}</span></div>
-                      <div className="config-item"><strong>Level:</strong> <span>{selectedTemplate.level}</span></div>
-                      <div className="config-item"><strong>Layout:</strong> <span>{selectedTemplate.layout}</span></div>
-                    </div>
-                  </div> */}
-
-
-                  {/* Behavioral Traits */}
-                  {(selectedTemplate.behavioral_traits || []).length > 0 && (
-                    <div className="detail-section ct-card">
-                      <h3>Behavioral Traits ({selectedTemplate.behavioral_traits.length})</h3>
-                      <div className="behavioral-traits-overview">
-                        {selectedTemplate.behavioral_traits.map((t, i) => (
-                          <div key={i} className="trait-overview-item">
-                            <span className="trait-number">{i + 1}</span>
-                            <span className="trait-name">{t}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Preview toggle */}
-                  {/* <div className="detail-section">
-                    ...
-                  </div> */}
-
-                  {/* Report Card Preview — always visible, renders saved html_template */}
-                  <div className="detail-section" style={{ marginTop: 4 }}>
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-                      <h3 style={{ margin: 0 }}>Report Card Preview</h3>
-                      <Button
-                        variant="secondary"
-                        onClick={() => navigate(`/admin/${schoolId}/templates/edit/${selectedTemplate.template_id}`)}
-                      >
-                        <FaEdit size={13} style={{ marginRight: 6 }} />
-                        Edit Template
-                      </Button>
-                    </div>
-                    {selectedTemplate.html_template
-                      ? <div dangerouslySetInnerHTML={{ __html: hydrateReportHtml(selectedTemplate.html_template, selectedTemplate, user?.school || {}) }} />
-                      : <ReportCardPreview template={selectedTemplate} school={user?.school} />
-                    }
-                  </div>
-                </div>
-
-                <div className="template-detail-actions">
-                  <Button variant="secondary" className="detail-close-btn" onClick={() => setIsDetailMenuOpen(false)}>Close</Button>
-                  <Button variant="secondary" title="Edit" aria-label="Edit" onClick={() => openEdit(selectedTemplate)}><FaEdit size={14} /></Button>
-                  <Button variant="secondary" title="Duplicate" aria-label="Duplicate" onClick={() => handleDuplicate(selectedTemplate)}><FaCopy size={14} /></Button>
-                  <Button
-                    variant={selectedTemplate.status === "active" ? "warning" : "success"}
-                    title={selectedTemplate.status === "active" ? "Deactivate" : "Activate"}
-                    aria-label={selectedTemplate.status === "active" ? "Deactivate" : "Activate"}
-                    onClick={() => handleStatusToggle(selectedTemplate)}
-                    disabled={templateAssigned}
-                  >
-                    {selectedTemplate.status === "active" ? <FaBan size={14} /> : <FaCheckCircle size={14} />}
-                  </Button>
-                  <Button variant="danger" title="Delete" aria-label="Delete" onClick={() => handleDelete(selectedTemplate)} disabled={templateAssigned}><FaTrash size={14} /></Button>
-                </div>
-              </div>
-            );
-          })()}
-        </SlideInMenu>
       </div>
     </InnerTabCon>
   );

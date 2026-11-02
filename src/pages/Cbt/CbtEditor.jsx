@@ -184,8 +184,9 @@ const CbtEditor = ({ ctx, testId, lockedClassId, onBack, onSaved }) => {
       .map((row) => row.grading_field);
     return [...new Set(names)];
   }, [ctx.used_assessments, form.class_id, form.test_id]);
-  const openFields = ctx.fields.filter((item) => !takenFields.includes(item.field_name));
-  const assessmentMax = useMemo(() => ctx.fields.find((item) => item.field_name === form.grading_field)?.max_score ?? null, [ctx.fields, form.grading_field]);
+  const classFields = (form.class_id && ctx.fields_by_class?.[form.class_id]) || ctx.fields;
+  const openFields = classFields.filter((item) => !takenFields.includes(item.field_name));
+  const assessmentMax = useMemo(() => classFields.find((item) => item.field_name === form.grading_field)?.max_score ?? null, [classFields, form.grading_field]);
   const problems = useMemo(() => formProblems(form, assessmentMax), [form, assessmentMax]);
   const total = totalMarks(form.questions);
   const overMax = useMemo(() => overMaxMessages(form.questions, assessmentMax), [form.questions, assessmentMax]);
@@ -288,8 +289,10 @@ const CbtEditor = ({ ctx, testId, lockedClassId, onBack, onSaved }) => {
                 value={form.class_id}
                 onChange={(event) => {
                   const classId = event.target.value;
+                  const nextFields = (classId && ctx.fields_by_class?.[classId]) || ctx.fields;
+                  const missing = form.grading_field && !nextFields.some((item) => item.field_name === form.grading_field);
                   const blocked = (ctx.used_assessments || []).some((row) => row.class_id === classId && row.grading_field === form.grading_field && row.test_id !== form.test_id);
-                  edit(blocked ? { class_id: classId, grading_field: "" } : { class_id: classId });
+                  edit(missing || blocked ? { class_id: classId, grading_field: "" } : { class_id: classId });
                 }}
                 disabled={Boolean(lockedClassId) || readOnly}
               >

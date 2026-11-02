@@ -177,7 +177,11 @@ const Dashboard = () => {
         if (cancelled) return;
         const dayName = DAY_NAMES[new Date().getDay()];
         const nowMins = new Date().getHours() * 60 + new Date().getMinutes();
-        const lessons = (json.success ? json.data?.entries || [] : [])
+        const lessons = (json.success
+          ? (json.data?.timetables?.length
+            ? json.data.timetables.flatMap((item) => item.entries || [])
+            : json.data?.entries || [])
+          : [])
           .filter((entry) => entry.day === dayName && !entry.isBreak)
           .map((entry) => ({
             subject: entry.name || entry.subjects?.[0]?.name || "Lesson",

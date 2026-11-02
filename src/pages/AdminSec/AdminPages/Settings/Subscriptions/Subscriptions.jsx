@@ -6,6 +6,7 @@ import ServerSmartTable from "../../../../../components/ServerSmartTable/ServerS
 import SlideInMenu from "../../../../../components/SlideInMenu/SlideInMenu";
 import { PaystackButton } from "react-paystack";
 import { getPriceDetails } from "../../../../../components/ProductPricing/getPriceDetails";
+import { formatBillingCycle } from "../../../../../utils/planPricing";
 import useSubscription from "../../../../../api_call/useSubscription";
 import { useAuth } from "../../../../../context/AuthContext/AuthContext";
 import { useAlert } from "../../../../../context/AlertProvider/AlertProvider";
@@ -113,7 +114,7 @@ const Subscriptions = () => {
       accessor: "billing_cycle",
       render: (v) => (
         <span className={`billing-cycle-badge ${v || "monthly"}`}>
-          {v ? v.charAt(0).toUpperCase() + v.slice(1) : "—"}
+          {formatBillingCycle(v)}
         </span>
       ),
     },
@@ -172,13 +173,14 @@ const Subscriptions = () => {
     if (selectedPlan.plan_type === "Free") return 0;
     switch (upgradeBillingCycle) {
       case "quarterly": return parseFloat(selectedPlan.quataly_price) || 0;
+      case "half_year": return parseFloat(selectedPlan.half_year_price) || 0;
       case "yearly": return parseFloat(selectedPlan.yearly_price) || 0;
       default: return parseFloat(selectedPlan.monthly_price) || 0;
     }
   };
 
   const getUpgradeTotalMonths = () => {
-    const map = { monthly: 1, quarterly: 3, yearly: 12 };
+    const map = { monthly: 1, quarterly: 3, half_year: 6, yearly: 12 };
     return (map[upgradeBillingCycle] || 1) * upgradeDuration;
   };
 
@@ -443,6 +445,7 @@ const Subscriptions = () => {
           >
             <option value="monthly">Monthly</option>
             <option value="quarterly">Quarterly</option>
+            <option value="half_year">Half year</option>
             <option value="yearly">Yearly</option>
           </select>
         </div>
@@ -612,12 +615,13 @@ const Subscriptions = () => {
                       >
                         <option value="monthly">Monthly</option>
                         <option value="quarterly">Quarterly (Save 10%)</option>
+                        <option value="half_year">Half year (Save 15%)</option>
                         <option value="yearly">Yearly (Save 20%)</option>
                       </select>
                     </div>
                     <div className="up-billing-field">
                       <label className="up-billing-label">
-                        Number of {upgradeBillingCycle === "monthly" ? "month(s)" : upgradeBillingCycle === "quarterly" ? "quarter(s)" : "year(s)"}
+                        Number of {upgradeBillingCycle === "monthly" ? "month(s)" : upgradeBillingCycle === "quarterly" ? "quarter(s)" : upgradeBillingCycle === "half_year" ? "half year(s)" : "year(s)"}
                       </label>
                       <input className="up-billing-input" type="number"
                         min={1}
@@ -862,7 +866,7 @@ const Subscriptions = () => {
                   <div className="bd-detail-grid">
                     {[
                       { label: "Plan", value: selectedBilling.plan_name },
-                      { label: "Billing Cycle", value: selectedBilling.billing_cycle?.charAt(0).toUpperCase() + selectedBilling.billing_cycle?.slice(1) },
+                      { label: "Billing Cycle", value: formatBillingCycle(selectedBilling.billing_cycle) },
                       { label: "Period Start", value: periodStart },
                       { label: "Period End", value: periodEnd },
                       { label: "Payment Date", value: paidOn },

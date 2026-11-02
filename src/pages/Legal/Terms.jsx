@@ -26,7 +26,7 @@ const SECTIONS = [
     id: "subscriptions",
     title: "4. Subscriptions and payments",
     body: [
-      "Paid plans are billed according to the cycle you select (for example monthly, quarterly, or yearly). Fees are charged through our payment partners and are generally non-refundable except where required by law or stated otherwise at purchase.",
+      "Paid plans are billed according to the cycle you select (for example monthly, quarterly, half a year, or yearly). Fees are charged through our payment partners and are generally non-refundable except where required by law or stated otherwise at purchase.",
       "If a subscription lapses, your data remains stored, but creating or editing records may be restricted until you renew. Free trial terms, if offered, are described at signup.",
     ],
   },

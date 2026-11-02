@@ -169,7 +169,10 @@ const Assessment = ({ subjectData }) => {
         return acc;
       }, {});
       allFields[fieldName] = newVal;
-      const newTotal = gradingFields.reduce((s, f) => s + (Number(allFields[f.field_name]) || 0), 0);
+      const rowFields = Array.isArray(row.field_names) && row.field_names.length
+        ? gradingFields.filter((f) => row.field_names.includes(f.field_name))
+        : gradingFields;
+      const newTotal = rowFields.reduce((s, f) => s + (Number(allFields[f.field_name]) || 0), 0);
       setScoreOverrides((prev) => ({
         ...prev,
         [studentId]: { ...(prev[studentId] ?? {}), [fieldName]: newVal, __total: newTotal },
@@ -265,6 +268,10 @@ const Assessment = ({ subjectData }) => {
 
                       {/* Score columns */}
                       {gradingFields.map((f) => {
+                        const applies = !row.field_names || row.field_names.includes(f.field_name);
+                        if (!applies) {
+                          return <td key={f.field_name} className="as-td as-td-score" title="Not used for this class">—</td>;
+                        }
                         const isActive = activeCell?.studentId === row.student_id && activeCell?.fieldName === f.field_name;
                         const cellKey  = `${row.student_id}:${f.field_name}`;
                         const isSaving = savingCells.has(cellKey);

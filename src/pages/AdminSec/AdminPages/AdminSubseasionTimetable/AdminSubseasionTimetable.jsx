@@ -48,7 +48,7 @@ const AdminSubseasionTimetable = () => {
   const pathParts = window.location.pathname.split("/");
   const subsessionId = pathParts[pathParts.length - 1];
 
-  const { classes, timetables, loading, saving, error, saveTimetable, refetch } =
+  const { classes, timetables, loading, saving, error, saveTimetable, deleteTimetable, refetch } =
     useSubsessionTimetable(schoolId, subsessionId);
 
   const { generating, generate } = useAITimetable();
@@ -56,6 +56,7 @@ const AdminSubseasionTimetable = () => {
 
   const [editorOpen, setEditorOpen]               = useState(false);
   const [activeClass, setActiveClass]             = useState(null);
+  const [activeTimetable, setActiveTimetable]     = useState(null);
   const [editorEntries, setEditorEntries]         = useState([]);
   const [aiPanelOpen, setAiPanelOpen]             = useState(false);
   const [aiTargetClass, setAiTargetClass]         = useState(null);
@@ -79,11 +80,19 @@ const AdminSubseasionTimetable = () => {
     (Array.isArray(admin?.permissions) && admin?.permissions.includes("ALL"));
   const canEdit = isSuperAdmin || !!admin?.permissions?.classes?.edit;
 
-  const openEditor = (cls) => {
+  const openEditor = (cls, timetable = null) => {
     if (!canEdit) { addNotification("No permission to edit timetables.", "error"); return; }
     setActiveClass(cls);
-    setEditorEntries(timetables[cls.class_id] || []);
+    setActiveTimetable(timetable);
+    setEditorEntries(timetable?.entries || []);
     setEditorOpen(true);
+  };
+
+  const handleDelete = async (cls, timetable) => {
+    if (!canEdit || !timetable?.timetable_id) return;
+    if (!window.confirm(`Delete "${timetable.name || "this timetable"}" for ${cls.class_name}?`)) return;
+    const ok = await deleteTimetable(cls.class_id, timetable.timetable_id);
+    addNotification(ok ? "Timetable deleted" : "Failed to delete timetable", ok ? "success" : "error");
   };
 
   const openAIPanel = (cls) => {
@@ -97,11 +106,14 @@ const AdminSubseasionTimetable = () => {
     setAiTargetClass(null);
   };
 
-  const handleSave = async (entries) => {
+  const handleSave = async (entries, meta = {}) => {
     if (!activeClass) return;
-    const ok = await saveTimetable(activeClass.class_id, entries, user?.admin?.admin_id || user?.user_id);
-    if (ok) {
-      addNotification(`Timetable saved for ${activeClass.class_name}`, "success");
+    const saved = await saveTimetable(activeClass.class_id, entries, user?.admin?.admin_id || user?.user_id, {
+      timetableId: meta.timetable_id || activeTimetable?.timetable_id || null,
+      name: meta.name || "",
+    });
+    if (saved) {
+      addNotification(`Saved "${saved.name || "Timetable"}" for ${activeClass.class_name}`, "success");
       setEditorOpen(false);
     } else {
       addNotification("Failed to save timetable", "error");
@@ -175,7 +187,7 @@ const AdminSubseasionTimetable = () => {
           <div className="ast-header-row">
             <div>
               <h2>Subsession Timetables</h2>
-              <p>{classes.length} class{classes.length !== 1 ? "es" : ""} in this subsession</p>
+              <p>{classes.length} class{classes.length !== 1 ? "es" : ""} in this term. Each class can have more than one timetable.</p>
             </div>
           </div>
         </div>
@@ -183,8 +195,8 @@ const AdminSubseasionTimetable = () => {
         {/* ── Class cards ── */}
         <div className="ast-grid">
           {classes.map((cls) => {
-            const entries = timetables[cls.class_id] || [];
-            const hasTimetable = entries.length > 0;
+            const classTimetables = timetables[cls.class_id] || [];
+            const hasTimetable = classTimetables.length > 0;
             const isGeneratingThis = generating && aiTargetClass?.class_id === cls.class_id;
             return (
               <div key={cls.class_id} className="ast-card">
@@ -199,31 +211,44 @@ const AdminSubseasionTimetable = () => {
                         className="ast-card-btn ast-card-btn-ai"
                         onClick={() => openAIPanel(cls)}
                         disabled={generating}
-                        title={`AI generate timetable for ${cls.class_name}`}
+                        title={`AI generate another timetable for ${cls.class_name}`}
                       >
                         <IcoAI /> {isGeneratingThis ? "Generating..." : "AI Generate"}
                       </button>
                     )}
-                    {hasTimetable ? (
-                      <button className="ast-card-btn ast-card-btn-edit" onClick={() => openEditor(cls)}>
-                        <IcoEdit /> Edit
-                      </button>
-                    ) : (
-                      <button className="ast-card-btn ast-card-btn-create" onClick={() => openEditor(cls)}>
-                        <IcoPlus /> Create Timetable
+                    {canEdit && (
+                      <button className="ast-card-btn ast-card-btn-create" onClick={() => openEditor(cls, null)}>
+                        <IcoPlus /> {hasTimetable ? "Add timetable" : "Create Timetable"}
                       </button>
                     )}
                   </div>
                 </div>
                 {hasTimetable ? (
-                  <div className="ast-timetable-wrap">
-                    <Timetable timetableData={entries} />
-                  </div>
+                  classTimetables.map((timetable) => (
+                    <div key={timetable.timetable_id} className="ast-tt-block">
+                      <div className="ast-tt-bar">
+                        <span className="ast-tt-name">{timetable.name || "Timetable"}</span>
+                        {canEdit && (
+                          <div className="ast-card-actions">
+                            <button className="ast-card-btn ast-card-btn-edit" onClick={() => openEditor(cls, timetable)}>
+                              <IcoEdit /> Edit
+                            </button>
+                            <button className="ast-card-btn ast-card-btn-edit" onClick={() => handleDelete(cls, timetable)}>
+                              Delete
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                      <div className="ast-timetable-wrap">
+                        <Timetable timetableData={timetable.entries || []} />
+                      </div>
+                    </div>
+                  ))
                 ) : (
                   <div className="ast-empty">
                     <div className="ast-empty-icon"><IcoCal /></div>
                     <p className="ast-empty-text">No timetable yet for this class</p>
-                    <p className="ast-empty-hint">Click "Create Timetable" to get started</p>
+                    <p className="ast-empty-hint">Click "Create Timetable" to get started. You can add more than one.</p>
                   </div>
                 )}
               </div>
@@ -243,7 +268,10 @@ const AdminSubseasionTimetable = () => {
       <SlideInMenu isShow={editorOpen} onClose={() => setEditorOpen(false)} width="680px">
         {activeClass && (
           <TimetableEditor
+            key={activeTimetable?.timetable_id || "new"}
             timetableData={editorEntries}
+            timetableId={activeTimetable?.timetable_id || null}
+            timetableName={activeTimetable?.name || ""}
             className={activeClass.class_name}
             classId={activeClass.class_id}
             schoolId={schoolId}
